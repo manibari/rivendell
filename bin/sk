@@ -3050,12 +3050,17 @@ cmd_check_ssot() {
   # `com.sk.dashboard.api` are intentionally excluded — they're services,
   # not project-scoped agents.
   local conf_pairs=""
-  while IFS='|' read -r label _rest; do
+  while IFS='|' read -r label project_rel _rest; do
     label="$(echo "$label" | xargs)"
+    project_rel="$(echo "$project_rel" | xargs)"
     [[ "$label" =~ ^# ]] && continue
     [ -z "$label" ] && continue
-    if [[ "$label" =~ ^com\.sk\.agent\.([^.]+)\.(.+)$ ]]; then
-      conf_pairs+="${BASH_REMATCH[1]}|${BASH_REMATCH[2]}"$'\n'
+    if [[ "$label" =~ ^com\.sk\.agent\.[^.]+\.(.+)$ ]]; then
+      # Project = PROJECT_REL_PATH (col 2 — the authoritative repo dir name).
+      # The label's project segment is only a short label convention and can
+      # diverge (e.g. the sales-assistant agents are labelled com.sk.agent.sales.*),
+      # so deriving project from it produced false drift. Agent = label's tail.
+      conf_pairs+="${project_rel}|${BASH_REMATCH[1]}"$'\n'
     fi
   done < "$AGENTS_CONF_FILE"
 
