@@ -8,6 +8,7 @@
 set -euo pipefail
 
 REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+PROJECT_NAME="$(basename "$REPO_DIR")"
 REPORT_DIR="$REPO_DIR/reports"
 TODAY="$(date '+%Y-%m-%d')"
 REPORT_FILE="$REPORT_DIR/ssot-drift-$TODAY.md"
@@ -17,6 +18,8 @@ mkdir -p "$REPORT_DIR"
 # Source exec lib (best-effort — used by dashboard for run tracking)
 set +e; source "$REPO_DIR/bin/sk-exec-lib" 2>/dev/null || true; set -e
 
+start_epoch="$(date +%s)"
+
 # Capture drift in JSON form for parsing + text form for the report
 JSON_OUT="$("$REPO_DIR/bin/sk" check ssot --json 2>/dev/null || true)"
 TEXT_OUT="$("$REPO_DIR/bin/sk" check ssot 2>/dev/null || true)"
@@ -25,13 +28,15 @@ TEXT_OUT="$("$REPO_DIR/bin/sk" check ssot 2>/dev/null || true)"
 TOTAL_DRIFT="$(echo "$JSON_OUT" | grep -o '"total_drift":[0-9-]*' | head -1 | cut -d: -f2)"
 TOTAL_DRIFT="${TOTAL_DRIFT:-0}"
 
-# Record run for dashboard observability
+end_epoch="$(date +%s)"
+
+# Record run for dashboard observability. _sk_exec_record_run's real signature is
+# 11-arg (project agent start end exit log ...); the old 3-arg call died on
+# `$4: unbound variable` under set -u whenever the fn was defined. The run
+# succeeded as long as the check executed, so record exit 0 regardless of drift.
 if declare -f _sk_exec_record_run > /dev/null 2>&1; then
-    if [ "$TOTAL_DRIFT" -gt 0 ]; then
-        _sk_exec_record_run "ssot-drift" "drift_detected" "drift=$TOTAL_DRIFT" || true
-    else
-        _sk_exec_record_run "ssot-drift" "clean" "" || true
-    fi
+    _sk_exec_record_run "$PROJECT_NAME" "ssot-drift" "$start_epoch" "$end_epoch" \
+      0 "" "" "" "" "" "" || true
 fi
 
 # Only write a report if drift detected — sticking to "noisy when broken, silent

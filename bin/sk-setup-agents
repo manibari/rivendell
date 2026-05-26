@@ -19,7 +19,11 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONF="$REPO_DIR/agents/agents.conf"
 LAUNCH_DIR="$HOME/Library/LaunchAgents"
 SK_AGENT_RUN="$HOME/.local/bin/sk-agent-run"
-PROJECTS_DIR="$HOME/Documents/Projects"
+# Derive from REPO_DIR's parent (all project repos are siblings of rivendell),
+# NOT a hardcoded path. Hardcoding "$HOME/Documents/Projects" broke after the
+# iCloud-detach move to ~/code: rerunning regenerated every plist pointing at
+# the dead old path. Override with SK_PROJECTS_DIR if repos live elsewhere.
+PROJECTS_DIR="${SK_PROJECTS_DIR:-$(dirname "$REPO_DIR")}"
 DRY_RUN=false
 UNLOAD_ONLY=false
 
