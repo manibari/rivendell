@@ -9,6 +9,32 @@
 > learnings stay here or get promoted directly to `rivendell/.claude/CLAUDE.md` if
 > they're a rule. See `reports/learnings-promotion-sprint-2026-05-13.md`.
 
+## 2026-06-08 — Dashboard「Port 對應」頁資料源錯：讀 docker-compose.yml，但 rivendell 是 launchd 原生跑
+
+- **Category**: best_practice（"信 ground truth 不信 derived/cached state" 的又一例，見 global CLAUDE.md Engineering Gotchas）
+- **Seen in**: Peter 問「port 對應的部分應該是錯的」。`/api/ports`（`dashboard-next/api/server.py:1871`）只 parse `docker-compose.yml` 當 SoT，前端頁腳也寫「資料源：docker-compose.yml」。
+- **真相**: rivendell 服務全是 launchd 原生 process，**根本沒走 docker**（與 `.claude/CLAUDE.md`「dashboard-next is launchd-managed」一致）。實測：
+  - compose 宣告 8000/3000 → 實際是 native `python3.1`(8000)/`node`(3000)，非容器
+  - compose 宣告 8001/3001/8501/8002/3002/3004 → **全沒在跑**
+  - 實際在聽的 3100/8011/8100 → **compose 沒宣告**
+  - 機器上唯二真容器 5433(spms-postgres)/5434(chimesflow-db) → **是別專案的**，不在 rivendell compose
+- **Rule**: 任何「服務狀態/port 對應」頁要以**實際 listening sockets**（`lsof -nP -iTCP -sTCP:LISTEN` 或 `psutil`）為 SoT，docker-compose 宣告只能當「期望值」疊上去標 drift。死設定檔不等於執行現況。
+- **Fix 方向（未實作）**: 改 `/api/ports` 掃實際 listener + 疊 compose 宣告，狀態分 `live符合宣告` / `live野生(未宣告)` / `drift(宣告沒跑)`。
+
+## 2026-05-26 — 搬動 symlink 部署的技能 repo 後，跑它自己的 relink，別手改 symlink（gstack = `bin/gstack-relink`）
+
+- **Category**: knowledge_gap（iCloud detach 殘留第三例，見 [[同源 sk undeploy orphan-symlink 條]]）
+- **Seen in**: rivendell dashboard「Skill 總覽」少了 gstack —— Peter 問「gstack 為什麼不在 skills 總覽」
+- **Context**: dashboard `dashboard/lib/skills.py:list_skills` 掃 `~/.claude/skills/`，每個 entry 要 `SKILL.md.is_file()` 為真才算。gstack 五月初部署時（SKILL_PREFIX=true）建了 47 個 `~/.claude/skills/gstack-<name>/SKILL.md` symlink 指向當時的 `~/Documents/Projects/gstack/<name>/SKILL.md`。iCloud detach 把 gstack 搬到 `~/code/gstack` 後，umbrella `~/.claude/skills/gstack` symlink 有更新、但這 47 個 per-skill symlink **全部 dangling**（指舊路徑）→ `is_file()` False → list_skills 靜默全跳過，總覽只剩 umbrella `gstack` 1 個。`/api/issues` 的 dangling 檢查也抓不到（它只看頂層 entry 是不是斷 symlink，這裡頂層是真目錄、斷的是裡面那層 SKILL.md）。
+- **Rule**:
+  1. **搬動以 symlink 部署技能/工具的 repo 後，跑該 repo 自己的 relink/deploy，不要手改 symlink**。gstack 是 `~/code/gstack/bin/gstack-relink` —— 冪等、會自動偵測 `~/.claude/skills/gstack`、讀 `gstack-config get skill_prefix` 重建前綴 symlink、**不需 bun、不重建二進位**（比 `./setup` 輕）。
+  2. `./setup` 有 dirname 陷阱：`INSTALL_SKILLS_DIR=dirname(gstack dir)`，直接跑 `~/code/gstack/setup` 會算成 `~/code`（錯）；要透過 symlink 路徑 `~/.claude/skills/gstack/setup` 跑。`gstack-relink` 沒這問題（明確偵測 `~/.claude/skills/gstack`）。
+  3. relink 的 skip 清單**故意排除 `browse`**（跟 browser 二進位綁一起，由 `./setup` 另外處理）→ `gstack-browse` 要完整 `./setup`（需 bun）才會通。
+  4. relink 不清理「來源已移除」的舊技能殘留目錄（如 `gstack-checkpoint`），那種 dangling 要手動 `rm`。
+- **Promote when**: 此規則 gstack 專屬，留 history 即可；若再有第二個 symlink-deployed repo 搬家踩到，promote 一行通則到 `~/.claude/CLAUDE.md`（已有 iCloud detach 段落可掛）。
+
+---
+
 ## 2026-05-23 — `sk-setup-agents` PROJECTS_DIR 寫死舊 iCloud 路徑；重跑會把全部 plist 倒回壞路徑
 
 - **Category**: knowledge_gap
