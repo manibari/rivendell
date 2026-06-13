@@ -46,7 +46,7 @@ cd ~/any-project && claude
 | `./bin/sk readme` | Regenerate Skills Catalog in README.md from SKILL.md frontmatter |
 | `./bin/sk sync` | Show Google Drive import status for re-import |
 
-## Skills Catalog (96 skills)
+## Skills Catalog (97 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -57,6 +57,7 @@ cd ~/any-project && claude
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
+| **doc-drift-sync** | 自動 | Keep a project's living docs aligned when version or state moves — detect and |
 | **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
 | **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：追蹤人物、公司、專案的持久事實，寫入 JSONL + 摘要 |
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
