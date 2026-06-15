@@ -5,7 +5,7 @@ description: >
   TRIGGER when: 使用者說「新 client」「presales」「這個可以 archive / lost 了」「宸祿科技」這類公司級 prospect 命名、或 `cd` 進入 `01_presales` 目錄時。
 when_to_use: 使用者說「新 client」「presales」「這個可以 archive / lost 了」「宸祿科技」這類公司級 prospect 命名、或 `cd` 進入 `01_presales` 目錄時。
 version: 1.0.0
-tags: [workflow/]
+tags: [workflow, sales, presales]
 languages: all
 source: harvest-auto
 ---

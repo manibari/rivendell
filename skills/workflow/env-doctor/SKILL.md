@@ -5,7 +5,7 @@ description: >
   TRIGGER when: 使用者說「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」「寫一個 doctor 腳本」「跨機器 setup 驗證」。
 when_to_use: 使用者說「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」「寫一個 doctor 腳本」「跨機器 setup 驗證」。
 version: 1.0.0
-tags: [backend/` 或 `quality/]
+tags: [workflow, environment, reproducibility, diagnostics]
 languages: all
 source: harvest-auto
 ---

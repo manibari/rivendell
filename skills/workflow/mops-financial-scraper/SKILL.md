@@ -5,7 +5,7 @@ description: >
   TRIGGER when: 使用者說「抓財報」「MOPS 爬蟲」「建一個像 TEJ 的資料庫」「月營收歷史」「公開資訊觀測站下載」「台股財務資料庫」。
 when_to_use: 使用者說「抓財報」「MOPS 爬蟲」「建一個像 TEJ 的資料庫」「月營收歷史」「公開資訊觀測站下載」「台股財務資料庫」。
 version: 1.0.0
-tags: [backend/]
+tags: [workflow, finance, scraping]
 languages: all
 source: harvest-auto
 ---

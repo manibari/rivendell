@@ -5,7 +5,7 @@ description: >
   TRIGGER when: 使用者說「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」「reference output for comparison」。
 when_to_use: 使用者說「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」「reference output for comparison」。
 version: 1.0.0
-tags: [quality/]
+tags: [workflow, quality, reproducibility]
 languages: all
 source: harvest-auto
 ---
