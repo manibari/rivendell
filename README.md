@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (96 skills)
+## Skills Catalog (97 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -80,6 +80,7 @@ as release notes.
 | **skill-creator** | 自動 | 建立、修改、評測 skills，含 eval 和 benchmark 工具 |
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
+| **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
 
 ### workflow/ — 工作流程與規劃
