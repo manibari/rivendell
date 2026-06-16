@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -18,7 +19,7 @@ from pydantic import BaseModel
 LIB_DIR = Path(__file__).resolve().parent.parent.parent / "dashboard"
 sys.path.insert(0, str(LIB_DIR))
 
-from lib.agents import (
+from lib.agents import (  # noqa: E402
     list_agents,
     load_agent,
     unload_agent,
@@ -27,8 +28,8 @@ from lib.agents import (
     update_schedule,
     get_recent_commit,
 )
-from lib.db import init_db, get_conn, get_today_agent_cost, get_last_success_time
-from lib.projects import (
+from lib.db import init_db, get_conn, get_today_agent_cost, get_last_success_time  # noqa: E402
+from lib.projects import (  # noqa: E402
     load_projects,
     get_project,
     create_project,
@@ -38,16 +39,13 @@ from lib.projects import (
     enrich_git,
     get_git_log,
 )
-from lib.tokens import (
-    get_daily_usage,
-    get_model_summary,
+from lib.tokens import (  # noqa: E402
     get_total_stats,
     get_filtered_usage,
-    get_project_usage,
     get_all_time_usage,
 )
-from lib.skills import list_skills
-from lib.hooks import list_hooks
+from lib.skills import list_skills  # noqa: E402
+from lib.hooks import list_hooks  # noqa: E402
 
 app = FastAPI(
     title="rivendell API",
@@ -95,7 +93,6 @@ def _get_agent_activity(agent) -> dict[str, Any] | None:
     Returns {"tool": "WebFetch", "label": "抓取網頁", "detail": "..."} or None.
     """
     import json as _json
-    import os
 
     if agent.pid is None:
         return None
@@ -804,7 +801,7 @@ def api_agent_artifacts(agent_label: str, started_at: str = "") -> list[dict[str
     if not reports_dir.is_dir():
         return []
 
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     try:
         run_dt = datetime.fromisoformat(started_at)
@@ -1564,59 +1561,46 @@ def _generate_skill_md(candidate: dict[str, Any]) -> str:
     category = candidate.get("category", "workflow")
     reasoning = candidate.get("reasoning", "")
 
-    # Build description — truncate if too long
+    # Single model-facing description with TRIGGER (Claude Code triggers on
+    # `description`; a separate when_to_use line is non-standard and redundant).
     description = purpose[:200] if purpose else f"{name} skill"
+    trig = trigger[:200] if trigger else f"when working with {name}"
 
-    # Build when_to_use from trigger
-    when_to_use = trigger[:200] if trigger else f"when working with {name}"
+    # Clean category -> tag; strip any path slash so the YAML stays valid
+    # (this was the source of '[backend/]' / '[workflow/]' malformed tags).
+    cat = (category or "workflow").split("/")[0].strip() or "workflow"
 
-    # Build tags from category
-    tags = [category] if category else ["workflow"]
-
+    # Emit a clean, lintable stub: valid frontmatter + a scaffolded Gotchas
+    # section (the highest-signal content) + 待補 markers. No Overview/When-to-Use
+    # duplication, no raw harvest-digest dump, no TODO boilerplate.
     lines = [
         "---",
         f"name: {name}",
         "description: >",
         f"  {description}",
-        f"  TRIGGER when: {when_to_use}",
-        f"when_to_use: {when_to_use}",
-        "version: 1.0.0",
-        f"tags: [{', '.join(tags)}]",
-        "languages: all",
+        f"  TRIGGER: {trig}",
+        "  SKIP: 待補 — add negative triggers vs competing skills.",
+        f"tags: [{cat}]",
+        "version: 0.1.0",
         "source: harvest-auto",
         "---",
         "",
         f"# {name}",
         "",
-        "## Overview",
+        "> ⚠️ Harvest stub — fill before use, then flip `source:` to `manual`.",
+        f"> Validate with `sk lint {name}`.",
         "",
-        purpose or f"Auto-generated skill from session harvest.",
+        "## What this does",
         "",
-    ]
-
-    if trigger:
-        lines += [
-            "## When to Use",
-            "",
-            trigger,
-            "",
-        ]
-
-    if reasoning:
-        lines += [
-            "## Background",
-            "",
-            "From session harvest analysis:",
-            "",
-            reasoning,
-            "",
-        ]
-
-    lines += [
-        "## TODO",
+        purpose or "待補",
         "",
-        "This skill was auto-generated from a harvest candidate.",
-        "Fill in the implementation details, patterns, and examples.",
+        "## Workflow",
+        "",
+        "待補 — concrete steps.",
+        "",
+        "## Gotchas",
+        "",
+        "待補 — highest-signal section. Add real failure points as they surface.",
         "",
     ]
 
@@ -1625,8 +1609,6 @@ def _generate_skill_md(candidate: dict[str, Any]) -> str:
 
 def _auto_create_skill(candidate: dict[str, Any]) -> dict[str, Any]:
     """Create skill directory + SKILL.md + deploy symlink. Returns result dict."""
-    import re
-
     name = candidate.get("name", "")
     if not name:
         return {"created": False, "error": "no name"}
@@ -1702,7 +1684,6 @@ def api_harvest_decide(body: HarvestDecision) -> dict[str, Any]:
 def api_issues() -> dict[str, Any]:
     """Aggregate pending issues from multiple sources."""
     import re
-    import subprocess
 
     issues: list[dict[str, Any]] = []
 
@@ -1746,7 +1727,7 @@ def api_issues() -> dict[str, Any]:
             if not lines:
                 continue
             heading = lines[0].strip()
-            body_lines = [l.strip() for l in lines[1:] if l.strip() and not l.strip().startswith("#")]
+            body_lines = [line.strip() for line in lines[1:] if line.strip() and not line.strip().startswith("#")]
 
             # Check if resolved
             full_text = " ".join(body_lines).lower()
@@ -1781,7 +1762,7 @@ def api_issues() -> dict[str, Any]:
                     "source": "skill",
                     "severity": "warning",
                     "title": f"Skill {name} 未部署",
-                    "detail": f"執行 sk deploy 修復",
+                    "detail": "執行 sk deploy 修復",
                     "label": name,
                 })
         # Dangling symlinks
@@ -1868,11 +1849,77 @@ def _infer_category(port_type: str) -> str:
     return "其他"
 
 
+def _parse_compose_host_port(port_spec: Any) -> int | None:
+    """Return the host-side TCP port from Docker Compose short/long syntax."""
+    if isinstance(port_spec, int):
+        return port_spec
+
+    if isinstance(port_spec, dict):
+        published = port_spec.get("published")
+        if published is None:
+            return None
+        try:
+            return int(str(published))
+        except ValueError:
+            return None
+
+    if not isinstance(port_spec, str):
+        return None
+
+    spec = port_spec.split("/", 1)[0]
+    parts = spec.rsplit(":", 2)
+    if len(parts) == 1:
+        # Expose-only short syntax, no host mapping.
+        return None
+    try:
+        return int(parts[-2])
+    except ValueError:
+        return None
+
+
+def _listening_tcp_ports() -> tuple[dict[int, dict[str, str]], str | None]:
+    """Return local listening TCP ports from lsof.
+
+    The port map is a drift detector, not just a compose viewer:
+    - declared + listening => live
+    - declared + not listening => drift
+    - listening + not declared => wild
+    """
+    try:
+        proc = subprocess.run(
+            ["lsof", "-nP", "-iTCP", "-sTCP:LISTEN"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except Exception as exc:
+        return {}, str(exc)
+
+    if proc.returncode not in (0, 1):
+        return {}, (proc.stderr or proc.stdout or f"lsof exited {proc.returncode}").strip()
+
+    listeners: dict[int, dict[str, str]] = {}
+    for line in proc.stdout.splitlines()[1:]:
+        match = re.search(r":(\d+)(?:\s|\s*\()", line)
+        if not match:
+            continue
+        try:
+            port = int(match.group(1))
+        except ValueError:
+            continue
+        cols = line.split()
+        listeners[port] = {
+            "command": cols[0] if cols else "",
+            "pid": cols[1] if len(cols) > 1 else "",
+            "name": cols[-2] if len(cols) >= 2 and cols[-1] == "(LISTEN)" else (cols[-1] if cols else ""),
+        }
+    return listeners, None
+
+
 @app.get("/api/ports", tags=["Ports"])
 async def api_ports() -> dict[str, Any]:
-    """Parse docker-compose.yml, infer service metadata, check port reachability."""
-    import asyncio
-
+    """Parse compose declarations and compare them with actual local listeners."""
     try:
         import yaml
     except ImportError:
@@ -1887,20 +1934,17 @@ async def api_ports() -> dict[str, Any]:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to parse docker-compose.yml: {exc}")
 
-    entries: list[dict[str, Any]] = []
+    entries_by_port: dict[int, dict[str, Any]] = {}
     for svc_name, svc_cfg in dc.get("services", {}).items():
         if not isinstance(svc_cfg, dict):
             continue
         container = svc_cfg.get("container_name", svc_name)
         for port_spec in svc_cfg.get("ports", []):
-            if not isinstance(port_spec, str) or ":" not in port_spec:
-                continue
-            try:
-                host_port = int(port_spec.split(":")[0])
-            except ValueError:
+            host_port = _parse_compose_host_port(port_spec)
+            if host_port is None:
                 continue
             port_type = _infer_port_type(host_port)
-            entries.append({
+            entries_by_port[host_port] = {
                 "port": host_port,
                 "service": svc_name,
                 "container": container,
@@ -1909,34 +1953,46 @@ async def api_ports() -> dict[str, Any]:
                 "category": _infer_category(port_type),
                 "project": _infer_project(svc_name),
                 "status": "unknown",
-            })
+                "declared": True,
+                "source": "compose",
+                "listener": None,
+            }
 
-    async def check_port(port: int) -> str:
-        # Try IPv4 AND IPv6 -- a Node `next dev` server commonly binds to
-        # ::1 only, in which case 127.0.0.1 fails to connect and a service
-        # that's actually running gets reported as stopped. See global
-        # CLAUDE.md "Engineering Gotchas" / dual-listener entry.
-        for host in ("127.0.0.1", "::1"):
-            try:
-                _, writer = await asyncio.wait_for(
-                    asyncio.open_connection(host, port),
-                    timeout=0.4,
-                )
-                writer.close()
-                try:
-                    await writer.wait_closed()
-                except Exception:
-                    pass
-                return "live"
-            except Exception:
-                continue
-        return "stopped"
+    listeners, listener_error = _listening_tcp_ports()
 
-    statuses = await asyncio.gather(*[check_port(e["port"]) for e in entries])
-    for entry, status in zip(entries, statuses):
-        entry["status"] = status
+    for port, entry in entries_by_port.items():
+        listener = listeners.get(port)
+        if listener_error:
+            entry["status"] = "unknown"
+            entry["listener_error"] = listener_error
+        elif listener:
+            entry["status"] = "live"
+            entry["listener"] = listener
+        else:
+            entry["status"] = "drift"
 
-    return {"ports": entries}
+    for port, listener in listeners.items():
+        if port in entries_by_port:
+            continue
+        port_type = _infer_port_type(port)
+        entries_by_port[port] = {
+            "port": port,
+            "service": listener.get("command") or "local-listener",
+            "container": f"pid:{listener.get('pid', '')}".rstrip(":"),
+            "type": port_type,
+            "web": port_type not in ("DB", "Cache"),
+            "category": _infer_category(port_type),
+            "project": "local",
+            "status": "wild",
+            "declared": False,
+            "source": "listener",
+            "listener": listener,
+        }
+
+    return {
+        "ports": sorted(entries_by_port.values(), key=lambda e: (e["project"], e["port"], e["service"])),
+        "listener_error": listener_error,
+    }
 
 
 # ── Workflow Map ──────────────────────────────────────────────────────────────
