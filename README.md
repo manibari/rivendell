@@ -1,6 +1,6 @@
 # Skills Library
 
-Personal Claude Code skills library — manage, version control, and deploy custom skills.
+Personal Claude Code and Codex skills library — manage, version control, and deploy custom skills.
 
 ## Structure
 
@@ -18,7 +18,7 @@ skills/
 ## Quick Start
 
 ```bash
-# Deploy all skills globally
+# Deploy all skills globally for Claude Code and Codex
 ./bin/sk deploy
 
 # Use in any project
@@ -31,8 +31,8 @@ cd ~/any-project && claude
 
 | Command | Description |
 |---------|-------------|
-| `./bin/sk deploy` | Symlink all skills → `~/.claude/skills/` + install plist templates → `~/Library/LaunchAgents/` |
-| `./bin/sk undeploy` | Remove repo symlinks from `~/.claude/skills/` |
+| `./bin/sk deploy` | Symlink all skills → `~/.claude/skills/` and `${CODEX_HOME:-~/.codex}/skills/` + install plist templates → `~/Library/LaunchAgents/` |
+| `./bin/sk undeploy` | Remove repo symlinks from Claude Code and Codex skill directories |
 | `./bin/sk create <cat/name>` | Scaffold new skill (e.g. `quality/my-linter`) |
 | `./bin/sk import <name>` | Import from SkillsMP via `agent-skills-cli` |
 | `./bin/sk import-gh <url>` | Clone skill from GitHub URL |
@@ -45,6 +45,18 @@ cd ~/any-project && claude
 | `./bin/sk agent <cmd>` | Manage automated agents: `list`, `start`, `stop`, `status`, `log`, `create` |
 | `./bin/sk readme` | Regenerate Skills Catalog in README.md from SKILL.md frontmatter |
 | `./bin/sk sync` | Show Google Drive import status for re-import |
+
+## Roadmap And Releases
+
+| File | Purpose |
+|------|---------|
+| `VERSION` | Current human-managed Rivendell baseline version |
+| `CHANGELOG.md` | Notable human-authored changes by version/date |
+| `docs/ROADMAP.md` | Development priorities and release checklist |
+
+Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
+`reports/*` remain owned by scheduled agents and should not be manually edited
+as release notes.
 
 ## Skills Catalog (96 skills)
 
@@ -230,9 +242,19 @@ strings $(which claude) | grep -oE '\{type:"prompt",name:"[a-z][a-z0-9-]+"[^}]+s
 
 ## How Deploy Works
 
-Each skill directory gets symlinked individually into `~/.claude/skills/`. Edits to skill files take effect immediately — re-deploy only when adding new skills.
+Each skill directory gets symlinked individually into both `~/.claude/skills/` and `${CODEX_HOME:-~/.codex}/skills/`. Edits to skill files take effect immediately — re-deploy only when adding new skills.
+
+Codex reads repo-level system guidance from `AGENTS.md`, which delegates to `.claude/CLAUDE.md` so the same Rivendell operating rules apply in both agents.
 
 Deploy also installs `com.*.plist` templates into `~/Library/LaunchAgents/`, replacing `REPO_PATH` with the actual repo path.
+
+Gstack skills are managed by the gstack repo, not by `./bin/sk deploy`. To refresh
+Codex's gstack skills, run:
+
+```bash
+cd /Users/manibari/code/gstack
+./setup --host codex
+```
 
 ## System Architecture
 
@@ -294,6 +316,16 @@ tail -f reports/watchdog.log       # only written when health checks fail
 The dashboard URLs are http://localhost:8000 (API) and http://localhost:3000 (web).
 `start-api.sh` / `start-web.sh` handle venv + deps; you do not invoke them directly.
 
+The `/ports` dashboard page compares `docker-compose.yml` declarations with
+local TCP listeners:
+
+| Status | Meaning |
+|--------|---------|
+| `live` | Declared in compose and listening locally |
+| `declared-only` | Declared in compose but not listening |
+| `wild` | Listening locally but not declared in compose |
+| `unknown` | Listener scan failed |
+
 ### How the watchdog works
 
 `bin/sk-watchdog` runs every 60s (via `com.sk.dashboard.watchdog`) and HTTP-probes
@@ -329,7 +361,7 @@ clean up rows that no longer exist).
 
 ## Using Skills in Other Projects
 
-Skills deploy 後是**全域生效**的，不需要在每個專案裡做任何設定。
+Skills deploy 後會在 Claude Code 和 Codex **全域生效**，不需要在每個專案裡做任何設定。
 
 ```bash
 # Deploy once
@@ -341,7 +373,7 @@ cd ~/any-project && claude
 
 | 情境 | 做法 |
 |------|------|
-| 新增 skill 後看不到 | `./bin/sk deploy` 然後重啟 Claude Code |
+| 新增 skill 後看不到 | `./bin/sk deploy` 然後重啟 Claude Code / Codex |
 | 修改現有 skill | 直接編輯 SKILL.md，symlink 立即生效 |
 | 確認部署狀態 | `./bin/sk list` |
 | 移除所有 skills | `./bin/sk undeploy` |
