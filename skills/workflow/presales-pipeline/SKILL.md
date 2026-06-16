@@ -1,33 +1,41 @@
 ---
 name: presales-pipeline
 description: >
-  以檔案系統（`01_presales/<client-slug>/`）管理 B2B 售前 pipeline：`new-client.sh` 建立標準資料夾（`client-readme.md` + `company-overview.md` + 狀態 frontmatter），支援 `active` / `won` / `lost` / `archive` 狀態轉移，整合既有 `customer-
-  TRIGGER when: 使用者說「新 client」「presales」「這個可以 archive / lost 了」「宸祿科技」這類公司級 prospect 命名、或 `cd` 進入 `01_presales` 目錄時。
-when_to_use: 使用者說「新 client」「presales」「這個可以 archive / lost 了」「宸祿科技」這類公司級 prospect 命名、或 `cd` 進入 `01_presales` 目錄時。
-version: 1.0.0
+  Manage a B2B presales pipeline on the file system (`01_presales/<client-slug>/`):
+  a `new-client.sh` scaffolds the standard folder (client-readme.md +
+  company-overview.md + status frontmatter), with active / won / lost / archive
+  state transitions, integrating customer-intel reports.
+  TRIGGER: 「新 client」「presales」「這個可以 archive / lost 了」, company-level
+  prospect naming, or cd-ing into an `01_presales` directory.
+  SKIP: deep one-off company research (customer-intel); CRM record edits
+  (crm-projection); a sales deck (sales-material / pitch-deck).
 tags: [workflow, sales, presales]
-languages: all
-source: harvest-auto
+version: 1.1.0
+source: manual
 ---
 
 # presales-pipeline
 
-## Overview
+A filesystem-as-database presales tracker: one folder per prospect, status in
+frontmatter, transitions by script — no external CRM needed for the early funnel.
 
-以檔案系統（`01_presales/<client-slug>/`）管理 B2B 售前 pipeline：`new-client.sh` 建立標準資料夾（`client-readme.md` + `company-overview.md` + 狀態 frontmatter），支援 `active` / `won` / `lost` / `archive` 狀態轉移，整合既有 `customer-intel` 做 one-shot research、以及 `crm-projection` 做 CRM 回填。產出 `INDEX.md` 彙總所有 prospect 現況。
+## Workflow
 
-## When to Use
+1. **New prospect** — `new-client.sh <client-slug>` creates
+   `01_presales/<client-slug>/` with `client-readme.md` + `company-overview.md` and
+   `status: active` frontmatter.
+2. **Enrich** — pull a customer-intel report into the folder so the prospect file
+   carries real research, not just a name.
+3. **Transition** — move status through `active → won | lost | archive`. Keep the
+   folder; status lives in frontmatter (the SoT), not in the directory location.
+4. **Review** — list/filter by status frontmatter to see the live funnel.
 
-使用者說「新 client」「presales」「這個可以 archive / lost 了」「宸祿科技」這類公司級 prospect 命名、或 `cd` 進入 `01_presales` 目錄時。
+## Gotchas
 
-## Background
-
-From session harvest analysis:
-
-Session 5 展現的工作模式跟 `customer-intel`（單次深度研究）、`crm-projection`（DB → markdown 投影）都不同——這是 prospect 的**生命週期**管理：新增 → 研究 → 判定 active/lost/archive → 歸檔。使用者已自建 `new-client.sh`，但分類語意（archive vs lost）與 INDEX 規則需要 codify。與 `material-health` 的「素材健康檢查」可進一步形成 pipeline 閉環。
-- **是否存在**：否。`customer-intel`、`crm-projec...
-
-## TODO
-
-This skill was auto-generated from a harvest candidate.
-Fill in the implementation details, patterns, and examples.
+- **Status frontmatter is the SoT**: don't encode state by moving folders between
+  `won/`/`lost/` dirs — a frontmatter field survives moves, greps cleanly, and
+  won't desync from a half-finished `mv`.
+- **Never delete on lost/archive**: archive = status change, not `rm`. Lost
+  prospects are the best source of "why we lose" analysis later.
+- **One folder per prospect, slug is the key**: pick a stable `<client-slug>` up
+  front; renaming later orphans the customer-intel cross-references.

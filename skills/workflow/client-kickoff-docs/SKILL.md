@@ -1,35 +1,45 @@
 ---
 name: client-kickoff-docs
 description: >
-  新客戶 kickoff 時（NDA 簽過、首次討論前），讀客戶提供的 homework 檔 → 建立 `scope.md` + `deadline.md` + `MEMORY.md` + `README.md` 四件套。
-  TRIGGER when: "新客戶 kickoff", "NDA 簽完準備討論", "讀 homework 建專案檔", "建立客戶專案初始檔"
-when_to_use: "新客戶 kickoff", "NDA 簽完準備討論", "讀 homework 建專案檔", "建立客戶專案初始檔"
-version: 1.0.0
-tags: [workflow]
-languages: all
-source: harvest-auto
+  At new-client kickoff (NDA signed, before the first working session), read the
+  client's homework files and scaffold the four-piece project starter:
+  scope.md + deadline.md + MEMORY.md + README.md. Goes beyond init-project (which
+  only makes CLAUDE.md/AGENTS.md) to cover the business-project artifacts.
+  TRIGGER: 「新客戶 kickoff」「NDA 簽完準備討論」「讀 homework 建專案檔」
+  「建立客戶專案初始檔」.
+  SKIP: dev-only project init (CLAUDE.md/AGENTS.md → init-project); a deck/proposal
+  (sales-material / pitch-deck); deep company research (customer-intel).
+tags: [workflow, client, kickoff, scaffolding]
+version: 1.1.0
+source: manual
 ---
 
 # client-kickoff-docs
 
-## Overview
+Turn a new client's raw homework into a consistent four-piece project skeleton so
+every engagement starts from the same shape.
 
-新客戶 kickoff 時（NDA 簽過、首次討論前），讀客戶提供的 homework 檔 → 建立 `scope.md` + `deadline.md` + `MEMORY.md` + `README.md` 四件套。
+## Workflow
 
-## When to Use
+1. **Read the homework** — whatever the client handed over (brief, spec, slides,
+   emails). Extract: goal, scope boundaries, deadlines, key contacts, open
+   questions.
+2. **Scaffold the four-piece set** under the client's project dir:
+   - `scope.md` — what's in / explicitly out, deliverables, acceptance.
+   - `deadline.md` — milestones + dates; flag anything the homework left vague.
+   - `MEMORY.md` — durable context (who / why / constraints) for future sessions.
+   - `README.md` — one-screen orientation + links to the other three.
+3. **Mark gaps, don't invent** — where the homework is silent (budget, exact
+   dates, success metric), write `待補` and list it as an open question rather
+   than fabricating a plausible-sounding answer.
 
-"新客戶 kickoff", "NDA 簽完準備討論", "讀 homework 建專案檔", "建立客戶專案初始檔"
+## Gotchas
 
-## Background
-
-From session harvest analysis:
-
-- 已在 0418 harvest 觀察到（ChimesAI 腳手架）、0420 harvest 再度出現（力成 PTI）— **兩個不同客戶同樣 pattern**
-- 與 0418 harvest 的 `new-client-scaffolding` 候選高度重疊，建議合併為單一候選
-- 現有 `init-project` 只建立 CLAUDE.md/AGENTS.md，不涵蓋商務專案的 scope/deadline/memory 三件套
-- **結論**: 若下一次新客戶再出現（3rd occurrence）即升級為 Strong 並建立。目前保持 Moderate 但可以先動手寫 SK...
-
-## TODO
-
-This skill was auto-generated from a harvest candidate.
-Fill in the implementation details, patterns, and examples.
+- **Thin homework ≠ permission to fabricate**: clients often hand over vague
+  material. Scope/deadline you can't source from the homework go in as `待補` +
+  an open-question list — a confident-but-wrong scope.md is worse than a blank.
+- **Don't duplicate init-project**: this is the *business* layer (scope/deadline/
+  memory), not dev config (CLAUDE.md/AGENTS.md). Run both if the engagement also
+  has a codebase.
+- **MEMORY.md is the handoff**: it's what a future session (or teammate) reads to
+  get up to speed — write durable context, not a task list.

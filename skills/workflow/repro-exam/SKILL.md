@@ -1,33 +1,45 @@
 ---
 name: repro-exam
 description: >
-  依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → expected output），讓對方在自己的機器跑完比對結果，快速定位差異來源（資料源 / 套件版本 / 隨機種子 / floating point）。
-  TRIGGER when: 使用者說「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」「reference output for comparison」。
-when_to_use: 使用者說「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」「reference output for comparison」。
-version: 1.0.0
+  Generate a deterministic "exam" (input → expected output) from a project's core
+  logic (e.g. backtest engine, portfolio strategy) so a collaborator runs it on
+  their machine and diffs results — quickly isolating the divergence source
+  (data source / package version / random seed / floating point).
+  TRIGGER: 「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」
+  「reference output for comparison」.
+  SKIP: environment/setup checks (env-doctor); generating the project's normal
+  unit tests (qa-testing); a one-off value diff you can eyeball.
 tags: [workflow, quality, reproducibility]
-languages: all
-source: harvest-auto
+version: 1.1.0
+source: manual
 ---
 
 # repro-exam
 
-## Overview
+When two machines run the same code and get different numbers, hand the other side
+a fixed exam: known inputs + your reference outputs. Where their answers diverge
+tells you *which layer* is non-deterministic.
 
-依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → expected output），讓對方在自己的機器跑完比對結果，快速定位差異來源（資料源 / 套件版本 / 隨機種子 / floating point）。
+## Workflow
 
-## When to Use
+1. **Pin the inputs** — pick representative inputs that exercise the core logic;
+   freeze them (committed fixtures, not live data).
+2. **Capture reference outputs** on the known-good machine, at a stated tolerance
+   (exact for integers/categoricals; an explicit epsilon for floats).
+3. **Emit a self-contained runner** the collaborator executes: it computes their
+   outputs and diffs against the reference, printing per-case PASS/FAIL + the first
+   divergent value.
+4. **Localize on failure** — the runner reports the layer: data source, package
+   version, random seed, or floating-point/BLAS.
 
-使用者說「我有沒有標準的測驗考題」「跑出來不一樣怎麼排錯」「驗證對方的計算結果」「reference output for comparison」。
+## Gotchas
 
-## Background
-
-From session harvest analysis:
-
-Session 1 中使用者明確要求「標準的測驗考題可以讓對方的電腦排查」，這是與 `qa-testing` 不同的問題：不是驗證程式正確性，而是驗證「兩台機器是否產生相同結果」。常見於量化研究、ML reproducibility、科學運算。
-- **是否存在**：否。
-
-## TODO
-
-This skill was auto-generated from a harvest candidate.
-Fill in the implementation details, patterns, and examples.
+- **Floating point isn't a bug, it's a layer**: tiny diffs usually mean a different
+  BLAS/numpy build or summation order, not wrong code. Use an explicit epsilon and
+  report magnitude; don't assert bit-equality.
+- **Seed everything, and record it**: an unseeded RNG anywhere makes the exam
+  useless. Pin and store every seed in the fixture.
+- **Freeze the data source**: "different result" is most often different *input* (a
+  live feed changed). The exam must ship its inputs, not fetch them.
+- **Compare per-case**: an aggregate "12/13 pass" hides which input class breaks —
+  report the first divergent case + value.

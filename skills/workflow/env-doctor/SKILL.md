@@ -1,33 +1,46 @@
 ---
 name: env-doctor
 description: >
-  為專案產生 `doctor.sh`（或 `doctor.py`），檢查 Python/Node 版本、依賴鎖定檔 hash、模型/資料下載狀態、key env vars、外部服務連線；輸出彩色 PASS/FAIL 報告供跨機器一鍵診斷。
-  TRIGGER when: 使用者說「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」「寫一個 doctor 腳本」「跨機器 setup 驗證」。
-when_to_use: 使用者說「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」「寫一個 doctor 腳本」「跨機器 setup 驗證」。
-version: 1.0.0
+  Generate a project `doctor.sh` (or `doctor.py`) that checks Python/Node
+  versions, dependency lockfile hashes, model/data download state, key env vars,
+  and external-service connectivity, then prints a colored PASS/FAIL report for
+  one-command cross-machine diagnosis.
+  TRIGGER: 「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」
+  「寫一個 doctor 腳本」「跨機器 setup 驗證」.
+  SKIP: a one-off "is the port up" check (use lsof directly); CI pipeline setup
+  (ci-pipeline); a deterministic numeric reproduction test (repro-exam).
 tags: [workflow, environment, reproducibility, diagnostics]
-languages: all
-source: harvest-auto
+version: 1.1.0
+source: manual
 ---
 
 # env-doctor
 
-## Overview
+Produce a single `doctor.sh` a teammate runs on their machine to find *why* "it
+works here but not there" — before debugging the app itself.
 
-為專案產生 `doctor.sh`（或 `doctor.py`），檢查 Python/Node 版本、依賴鎖定檔 hash、模型/資料下載狀態、key env vars、外部服務連線；輸出彩色 PASS/FAIL 報告供跨機器一鍵診斷。
+## Workflow
 
-## When to Use
+1. **Enumerate the environment contract** for this project:
+   - Runtimes: Python / Node versions (exact, from `.python-version` / `.nvmrc` /
+     `package.json` engines).
+   - Dependency integrity: lockfile present + hash matches.
+   - Data/model assets: required downloads present + correct size/hash.
+   - Key env vars: present (and, where safe, non-empty / well-formed).
+   - External services: reachable (DB, API, queue) with a fast timeout.
+2. **Emit `doctor.sh`** that runs each check and prints colored `PASS`/`FAIL` with
+   the actual observed value vs expected.
+3. **Exit non-zero on any FAIL** so it's CI / pre-flight usable.
 
-使用者說「為什麼我在另一台機器跑出來不一樣」「環境排錯」「reproducibility」「寫一個 doctor 腳本」「跨機器 setup 驗證」。
+## Gotchas
 
-## Background
-
-From session harvest analysis:
-
-Session 1 花了大量時間建立 `doctor.sh`，這是任何多人/多機器專案的通用痛點。現有 `qa-testing`、`qa-auto` 處理的是測試，不是環境一致性；`init-project` 只負責初始化，不做 runtime health。值得獨立 skill。
-- **是否存在**：否（已檢查 `skills/` 全部子目錄）。
-
-## TODO
-
-This skill was auto-generated from a harvest candidate.
-Fill in the implementation details, patterns, and examples.
+- **Compare per-key, not aggregate**: "is the env healthy?" hides the one missing
+  var/asset. Check and report each item individually — a single missing row is
+  the common silent root cause of cross-machine divergence.
+- **Lockfile picks the package manager**: `pnpm-lock.yaml` → pnpm,
+  `package-lock.json` → npm, `yarn.lock` → yarn. Wrong choice silently installs to
+  the wrong place; assert the *expected* manager.
+- **Build-time env is baked**: a value correct locally (e.g. `NEXT_PUBLIC_*`) can
+  be wrong in a build others use. Check build-time vars distinctly from runtime.
+- **Trust ground truth**: read actual versions/hashes, not a cached "setup ok"
+  marker file — stale markers are a classic false PASS.
