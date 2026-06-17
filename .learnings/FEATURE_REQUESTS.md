@@ -143,3 +143,14 @@ prompt-cache failure modes ($18.75/M create on system-prompt change /
 When ready: read this file → pick top entry → invoke `skill-creator`
 with the proposed scope as args. If user has new context (e.g. lessons
 from 光泉 deck process), incorporate before writing.
+
+## 2026-06-17 — 後端設計規範候選（暫不抽，n=1/divergent）
+
+cross-check ChimesFlow vs tukey-automl 後,3 個候選都**不是跨專案標準**,故不 codify
+成 skill（避免 n=1 enshrinement，見 ~/.claude/learnings 2026-06-17）：
+
+- **async session/transaction ownership** — DIVERGENT：ChimesFlow async+dependency 自動 commit；tukey-automl sync+handler commit。是架構選擇,不是 style。→ 若第 3 個 FastAPI app 出現,抽成「session 交易歸屬」**分層** rubric（async-dep-owns vs sync-handler-owns），別規定單一做法。
+- **RBAC scoping model** — 不同模型：ChimesFlow department-based 組織 scoping；tukey-automl project-based 多租戶。`rbac-permissions` 已涵蓋基礎;這層「組織 vs 多租戶 scoping」等第 3 例再決定要不要分層 skill。
+- **response envelope + HTTP status** — ABSENT in tukey-automl（只有 ChimesFlow 有 PaginatedResponse/ErrorResponse/CRUD_RESPONSES）。n=1,不是標準。第 2 個 app 也採用時再抽。
+
+**Trigger to revisit**：任一條在第 3 個（或第 2 個一致的）codebase 出現相同模式時，抽成**分層** rubric skill。唯一通過驗證、已 codify 的是 `backend-async-jobs`（tiered）。
