@@ -154,3 +154,24 @@ cross-check ChimesFlow vs tukey-automl 後,3 個候選都**不是跨專案標準
 - **response envelope + HTTP status** — ABSENT in tukey-automl（只有 ChimesFlow 有 PaginatedResponse/ErrorResponse/CRUD_RESPONSES）。n=1,不是標準。第 2 個 app 也採用時再抽。
 
 **Trigger to revisit**：任一條在第 3 個（或第 2 個一致的）codebase 出現相同模式時，抽成**分層** rubric skill。唯一通過驗證、已 codify 的是 `backend-async-jobs`（tiered）。
+
+## 2026-06-24 — 真實 repo harvest（ChimesFlow/tukey-automl/PTI-ARES/IC-YMS 一週開發）
+
+daily harvest 盲區（只收排程噪音）→ 直接挖 4 個主力 repo。候選（嚴格 triage，
+domain-reference 容許 n=1 codebase；design-rubric 需第 2 架構驗證）：
+
+### 🟢 建議優先建（grounded domain reference，清楚可重用、零覆蓋）
+- **`odb-dfm-reference`**（PTI-ARES，n≥2）— ODB++ 解析 + DFM domain：matrix/profile/feature 解析、UNITS inch→mm per-layer、.Z gzip-aware 讀層、bbox 旋轉/鏡像。**這就是 session 早期想建未建的 DFM/CAM 知識 skill,現在有真實 code grounding。** src/pti_ares/parser.py, enricher.py。
+- **`ic-lot-normalization`**（IC-YMS,n=3 routers）— 半導體 lot/batch 正規化:wafer/pkg lot、product code、program variant;subcon(SG/GS/JCET/Carsem)+ TE 平台碼(SG9000/STS8200)。backend/normalize.py(257 行,test 驗證)。
+
+### 🟡 tukey-automl ML-platform 群（richest vein,但全 n=1 codebase → 當 reference 待第 2 ML 專案驗證,值得一次專門 pass）
+- DQ monitoring(missing_rate+drift,無 label,n=3)｜CV robustness gate(LOOCV/stratified/Q²,小資料,n=3)｜model registry+lineage(SIT→UAT→PROD,n=4)｜DOE/RSM 參數最佳化(desirability/PSO/factor-rank,n=4,與 tukey-or 連動)｜task-aware metric dispatch(n=2)。
+
+### 🟡 ChimesFlow（偏 design-rubric → 需第 2 架構驗證,先 pending）
+- config-layering-resolver(DB>env per-field fallback,n=3)｜data-consistency-guard(authority 欄位 coercion,n=2)｜temporal-aggregation-view(CRM 週視圖,n=3,domain 偏窄)。
+- temporal-boundary-validation(排除未來日期,n=2)→ 太薄,記成 learning 不抽 skill。
+
+### ⚪ 不抽
+- PPTX 週報(n=1)｜IC SPC/yield(9% 資料覆蓋,太早,2 sprint 後再看)｜DFM rule framework(eng-review locked,未穩)｜前端 viz(UI 迭代無 domain)。
+
+**Trigger to revisit**：ML 群等第 2 個 ML 專案;ChimesFlow rubric 群等第 2 架構;IC-SPC/DFM-framework 等資料/設計穩定。
