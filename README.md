@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (101 skills)
+## Skills Catalog (102 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -162,6 +162,7 @@ as release notes.
 | **ic-lot-normalization** | 自動 | Domain reference for normalizing semiconductor lot / batch / product codes when |
 | **imap-smtp-integration** | 自動 | IMAP/SMTP Integration - Integrate email reading and sending via IMAP/SMTP into |
 | **markdown-file-ssot** | 自動 | Markdown File SSOT - Use Markdown files with YAML frontmatter as a data SSOT. |
+| **ml-eval-quality** | 自動 | Domain reference for the evaluation + quality backbone of an ML/AutoML |
 | **oauth-token-vault** | 自動 | OAuth Token Vault - Implement OAuth 2. |
 | **odb-dfm-reference** | 自動 | Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and |
 | **rbac-permissions** | 自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
