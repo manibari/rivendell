@@ -43,6 +43,7 @@ from lib.tokens import (  # noqa: E402
     get_total_stats,
     get_filtered_usage,
     get_all_time_usage,
+    get_daily_usage,
 )
 from lib.skills import list_skills  # noqa: E402
 from lib.hooks import list_hooks  # noqa: E402
@@ -943,6 +944,9 @@ def api_tokens() -> dict[str, Any]:
         "total_messages": f.total_messages,
         "total_cost_usd": f.total_cost_usd,
         "total_tokens": f.total_tokens,
+        # daily merges SQLite history (older than the ~30-day JSONL window) with
+        # live JSONL so the chart shows full history, not just what Claude Code
+        # hasn't rotated out yet. f.daily alone is JSONL-only (~30 days).
         "daily": [
             {
                 "date": d.date,
@@ -951,7 +955,7 @@ def api_tokens() -> dict[str, Any]:
                 "tokens_total": d.tokens_total,
                 "cost_usd": d.cost_usd,
             }
-            for d in f.daily
+            for d in get_daily_usage(days=None)
         ],
         "models": [
             {
