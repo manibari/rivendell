@@ -985,6 +985,15 @@ def api_tokens_filtered(
     date_end: str | None = None,
 ) -> dict[str, Any]:
     f = get_filtered_usage(date_start, date_end)
+    # Merge SQLite history into the daily series, then clip to the requested
+    # range — so a historical date filter still shows data outside the ~30-day
+    # JSONL window. (projects/models for pre-JSONL dates stay JSONL-limited; the
+    # snapshot table only stores per-day totals, not per-project breakdown.)
+    _daily = [
+        d for d in get_daily_usage(days=None)
+        if (not date_start or d.date >= date_start)
+        and (not date_end or d.date <= date_end)
+    ]
     return {
         "total_sessions": f.total_sessions,
         "total_messages": f.total_messages,
@@ -998,7 +1007,7 @@ def api_tokens_filtered(
                 "tokens_total": d.tokens_total,
                 "cost_usd": d.cost_usd,
             }
-            for d in f.daily
+            for d in _daily
         ],
         "models": [
             {
