@@ -423,3 +423,24 @@
 - **Category**: best_practice
 - **Context**: Dashboard `/live` and `/files` only searched `reports/` but sales agents log to `materials/tenders/`, `materials/subsidies/`, etc.
 - **Learning**: Read plist `StandardOutPath` to find correct log location. Added plist-based log discovery to `/live`, `/files`, `/file` endpoints.
+
+## 2026-06-13 — Telegram bot: one getUpdates consumer only; parallel sessions create duplicate launchd services
+
+- **Category**: errors
+- **Context**: Built a Telegram ops-bot (`~/.local/share/claude-ops-bot/ops_bot.py`, launchd `com.sk.claude-ops-bot`) for one-tap session actions. Hit repeated `HTTP 409: Conflict` on `getUpdates` + duplicate ops_bot processes that kept respawning after `pkill`.
+- **Two root causes**: (1) **A Telegram bot allows exactly ONE getUpdates (or webhook) consumer.** Two pollers on the same token → both get intermittent 409. The notifier's `sendMessage` is fine (outbound never conflicts); only the receiver is exclusive. (2) **A parallel Claude session independently created a competing plist** (`com.manibari.claude-ops-bot.plist`) pointing at the same script — classic "many concurrent sessions, unaware of each other" collision. `pkill` looked futile because each killed process was respawned by a *different* KeepAlive service.
+- **Fix / Rule**: When a launchd service "won't die after pkill", it's KeepAlive respawn — `launchctl bootout` the service FIRST, then kill, then verify zero before bootstrap. `grep -rl <script> ~/Library/LaunchAgents/` to find ALL plists that could spawn it (a duplicate from another session is common). Keep exactly one. Before reusing a bot token for a new receiver, confirm no other poller/webhook owns it (`getWebhookInfo` + a test `getUpdates` — 409 = taken).
+- **Related**: macOS launchd rule (never raw `kill` KeepAlive services) already in ~/.claude/CLAUDE.md. Also migrated the shared bot token OUT of the dying sales-assistant repo to a stable store `~/.config/claude-telegram/env` so the hook + bot don't break when that project is removed.
+
+## 2026-06-13 — Parallel sessions can build the same singleton service → 409 churn
+- category: best_practice / multi-session-coordination
+- **What happened**: Two concurrent Claude sessions independently built the same Telegram ops-bot (a getUpdates poller). Both registered launchd services running the SAME `ops_bot.py` (`com.manibari.claude-ops-bot` vs `com.sk.claude-ops-bot`). Telegram allows only ONE getUpdates consumer → persistent `409 Conflict` + KeepAlive respawn churn + orphan processes that `pkill` couldn't keep down (launchd kept respawning).
+- **Root cause**: a single-consumer external resource (Telegram getUpdates / a webhook / a lockfile-less daemon) had two owners. KeepAlive masks the fight — killing a process just respawns it.
+- **How they converged**: the shared memory file (`memory/telegram-control-bridge.md`) was the coordination point — the other session wrote the canonical label there + disabled the duplicate plist. Convergence happened WITHOUT direct session-to-session comms.
+- **Apply next time**: (1) Before building a singleton daemon, grep `~/Library/LaunchAgents` + `launchctl list` + the shared memory/SoT for an existing one. (2) Diagnose with GROUND TRUTH — `launchctl list` (is the label loaded?) and live `getUpdates` ok/409 — NOT `pgrep`/derived state; an orphan vs a launchd-managed pid look identical to pgrep. (3) For launchd-managed churn, NEVER `pkill` (respawns) — `launchctl bootout` the label first, verify it's gone from `launchctl list`, THEN clean stragglers. (4) One canonical label per single-consumer resource; move duplicates aside, don't run both.
+
+## 2026-06-15 — harvest-auto 生成的 skill 是壞 stub（系統性）
+category: best_practice
+**觀察**：audit 96 支 skill，7 支 `source: harvest-auto`，其中 5 支是未填空殼（`## TODO auto-generated... fill in`）：env-doctor / mops-financial-scraper / presales-pipeline / repro-exam / client-kickoff-docs。共同病徵：(a) `tags:` 是無效 YAML（如 env-doctor `[backend/` 或 `quality/]`，含 backtick+CJK），會讓 bin/sk 解析/計數漂移（README 報 97 vs 實際 96 SKILL.md）；(b) description／when_to_use／Overview／When-to-Use 四重重複；(c) `## Background` 倒 harvest digest 還截斷；(d) 無 Gotchas、無 workflow 步驟。
+**根因**：`session-harvest` 的 skill stub 模板本身就生成這種結構。不修生成器，補完又長新的（colleague 的 fork Jacktsai2785/rivendell 同一批 mops 叢集完全同病）。
+**How to apply**：(1) P0 先掃修壞 frontmatter——`tags` 必須是乾淨 identifier list；(2) refactor 觸發機制：單一 model-facing description + 加 SKIP/DO NOT TRIGGER（競品 skill 才分得開）+ 移除非標準 when_to_use；(3) 空殼填成 runbook + Gotchas（MOPS gotchas 全域 CLAUDE.md 現成有）；(4) 修 harvest stub 模板 + 加 `bin/sk lint`（抓壞 tags/重複觸發/TODO/缺 SKIP）才是根治。
