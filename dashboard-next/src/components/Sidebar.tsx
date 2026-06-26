@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useMemo, useState, useCallback } from "react";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -269,20 +269,20 @@ function RunningAgentsPanel() {
 function SidebarNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [expanded, setExpanded] = useState<Set<string>>(
+  const [manualExpanded, setManualExpanded] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const routeAncestors = useMemo(
     () => ancestorsOfPath(NAV, pathname, searchParams),
+    [pathname, searchParams],
+  );
+  const expanded = useMemo(
+    () => new Set([...manualExpanded, ...routeAncestors]),
+    [manualExpanded, routeAncestors],
   );
 
-  useEffect(() => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      for (const id of ancestorsOfPath(NAV, pathname, searchParams)) next.add(id);
-      return next;
-    });
-  }, [pathname, searchParams]);
-
   function toggle(id: string) {
-    setExpanded((prev) => {
+    setManualExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
