@@ -243,7 +243,7 @@ export default function PortsPage() {
               letterSpacing: "-0.02em",
             }}
           >
-            Port 對應
+            部署管理
           </h1>
           <p
             className="mt-1 text-sm"

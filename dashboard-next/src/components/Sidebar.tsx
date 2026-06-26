@@ -95,7 +95,7 @@ const NAV: NavNode[] = [
       { kind: "link", href: "/health/git", label: "Git 衛生", icon: GitBranch },
     ],
   },
-  { kind: "link", href: "/ports", label: "Port 對應", icon: Network },
+  { kind: "link", href: "/ports", label: "部署管理", icon: Network },
 ];
 
 function nodeId(node: NavNode): string {
