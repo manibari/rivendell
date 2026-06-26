@@ -1930,6 +1930,77 @@ def _listening_tcp_ports() -> tuple[dict[int, dict[str, str]], str | None]:
     return listeners, None
 
 
+def _load_ops_monitors() -> list[dict[str, Any]]:
+    """Read the ops central-monitor SoT (~/projects/ops/monitors.toml), the SAME
+    file ops/check.sh consumes — health definitions live in ONE place. [] if absent."""
+    import tomllib
+
+    p = Path.home() / "projects" / "ops" / "monitors.toml"
+    if not p.exists():
+        return []
+    try:
+        return tomllib.loads(p.read_text(encoding="utf-8")).get("app", [])
+    except Exception:
+        return []
+
+
+def _deployment_health() -> dict[str, dict[str, Any]]:
+    """Per-app deployment health from monitors.toml: health URL == 200 (with the
+    optional X-Health-Key from OPS_KEY_<APP>) + no ERR: in the redeploy log tail.
+    Keyed by app name (== docker compose project). A health URL unreachable from
+    THIS host degrades to 'unknown' — never a false 'down' (the mac can't see WSL
+    localhost apps; the WSL-hosted dashboard will)."""
+    import subprocess
+    import urllib.error
+    import urllib.request
+
+    out: dict[str, dict[str, Any]] = {}
+    for app in _load_ops_monitors():
+        name = app.get("name")
+        if not name:
+            continue
+        status = "ok"
+        reasons: list[str] = []
+
+        url = app.get("url")
+        if url:
+            headers: dict[str, str] = {
+                # Cloudflare in front of these apps 403s the default Python-urllib UA.
+                "User-Agent": "Mozilla/5.0 (compatible; rivendell-dashboard)",
+            }
+            key = os.environ.get("OPS_KEY_" + name.upper().replace("-", "_"))
+            if key:
+                headers["X-Health-Key"] = key
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=4) as resp:
+                    if resp.status != 200:
+                        status = "down"
+                        reasons.append(f"HTTP {resp.status}")
+            except urllib.error.HTTPError as exc:
+                status = "down"
+                reasons.append(f"HTTP {exc.code}")
+            except Exception:
+                status = "unknown"
+                reasons.append("health unreachable from this host")
+
+        log = os.path.expanduser(app.get("redeploy_log") or "")
+        if log and os.path.exists(log):
+            try:
+                tail = subprocess.run(
+                    ["tail", "-c", "20000", log], capture_output=True, text=True, timeout=4
+                ).stdout
+                errs = [ln for ln in tail.splitlines() if "ERR:" in ln]
+                if errs:
+                    if status != "unknown":
+                        status = "down"
+                    reasons.append("log ERR: " + errs[-1].strip()[:80])
+            except Exception:
+                pass
+
+        out[name] = {"status": status, "detail": "; ".join(reasons) or "healthy", "url": url}
+    return out
+
+
 def _docker_running_ports() -> tuple[dict[int, dict[str, Any]], str | None]:
     """Map host_port -> compose metadata (project, source folder, service,
     container) for every RUNNING docker container, via `docker inspect`.
@@ -2095,6 +2166,7 @@ async def api_ports() -> dict[str, Any]:
         ),
         "listener_error": listener_error,
         "docker_error": docker_error,
+        "health": _deployment_health(),
     }
 
 

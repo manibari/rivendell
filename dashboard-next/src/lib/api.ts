@@ -382,10 +382,19 @@ export interface PortInfo {
   listener_error?: string;
 }
 
+export interface DeploymentHealth {
+  status: "ok" | "down" | "unknown";
+  detail: string;
+  url?: string | null;
+}
+
 export interface PortsData {
   ports: PortInfo[];
   listener_error?: string | null;
   docker_error?: string | null;
+  /** Per-app deployment health (keyed by project name), from the shared
+   *  ops/monitors.toml health checks. Absent for projects with no monitor. */
+  health?: Record<string, DeploymentHealth>;
 }
 
 export interface AgentFile {

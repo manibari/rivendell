@@ -382,6 +382,7 @@ export default function PortsPage() {
             {visibleGrouped.map(([project, ports, relatedLen], gi) => {
               const folder = ports.find((p) => p.folder)?.folder ?? null;
               const stale = folder?.includes("/Documents/Projects/") ?? false;
+              const health = data.health?.[project] ?? null;
               return (
               <React.Fragment key={`group-${project}-${gi}`}>
                 <tr>
@@ -437,6 +438,29 @@ export default function PortsPage() {
                           title="此專案另有相關部署（未啟動），開啟上方「相關部署」可見"
                         >
                           +{relatedLen} 相關
+                        </span>
+                      )}
+                      {health && (
+                        <span
+                          className="inline-flex items-center text-[10px] font-mono"
+                          title={`部署健康：${health.detail}${health.url ? ` (${health.url})` : ""}`}
+                        >
+                          <StatusDot
+                            status={
+                              health.status === "ok"
+                                ? "ok"
+                                : health.status === "down"
+                                  ? "err"
+                                  : "idle"
+                            }
+                            label={
+                              health.status === "ok"
+                                ? "healthy"
+                                : health.status === "down"
+                                  ? "unhealthy"
+                                  : "health 未知"
+                            }
+                          />
                         </span>
                       )}
                     </div>
