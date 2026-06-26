@@ -367,11 +367,25 @@ export interface PortInfo {
   web: boolean;
   category: "前端" | "後端" | "資料庫" | "其他";
   project: string;
-  status: "live" | "stopped" | "unknown";
+  status: "live" | "drift" | "wild" | "stopped" | "unknown";
+  declared?: boolean;
+  source?: "compose" | "listener" | "docker";
+  /** Source-code folder behind this port, from the docker compose
+   *  `project.working_dir` label. null when the port isn't a docker container. */
+  folder?: string | null;
+  image?: string;
+  listener?: {
+    command?: string;
+    pid?: string;
+    name?: string;
+  } | null;
+  listener_error?: string;
 }
 
 export interface PortsData {
   ports: PortInfo[];
+  listener_error?: string | null;
+  docker_error?: string | null;
 }
 
 export interface AgentFile {

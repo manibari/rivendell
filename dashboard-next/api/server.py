@@ -1930,9 +1930,65 @@ def _listening_tcp_ports() -> tuple[dict[int, dict[str, str]], str | None]:
     return listeners, None
 
 
+def _docker_running_ports() -> tuple[dict[int, dict[str, Any]], str | None]:
+    """Map host_port -> compose metadata (project, source folder, service,
+    container) for every RUNNING docker container, via `docker inspect`.
+
+    This is the authoritative owner/folder source — it answers "whose 5432 is
+    this?" that a compose-service-name guess cannot, and it covers containers
+    from EVERY repo (chimesflow / family-fiscal / tukey / ...), not just the one
+    compose file this dashboard reads. Returns ({}, error) on failure.
+    """
+    import json as _json
+    import subprocess
+
+    try:
+        ids = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True, timeout=8)
+    except FileNotFoundError:
+        return {}, "docker not installed"
+    except Exception as exc:  # noqa: BLE001
+        return {}, f"{type(exc).__name__}: {exc}"
+    if ids.returncode != 0:
+        return {}, (ids.stderr or "docker ps failed").strip()
+    id_list = ids.stdout.split()
+    if not id_list:
+        return {}, None
+
+    try:
+        insp = subprocess.run(["docker", "inspect", *id_list], capture_output=True, text=True, timeout=12)
+        data = _json.loads(insp.stdout) if insp.returncode == 0 else []
+    except Exception as exc:  # noqa: BLE001
+        return {}, f"{type(exc).__name__}: {exc}"
+
+    out: dict[int, dict[str, Any]] = {}
+    for c in data:
+        cfg = c.get("Config") or {}
+        labels = cfg.get("Labels") or {}
+        meta = {
+            "container": (c.get("Name") or "").lstrip("/"),
+            "project": labels.get("com.docker.compose.project"),
+            "folder": labels.get("com.docker.compose.project.working_dir"),
+            "service": labels.get("com.docker.compose.service"),
+            "image": cfg.get("Image"),
+        }
+        ports = (c.get("NetworkSettings") or {}).get("Ports") or {}
+        for cport, bindings in ports.items():
+            for b in bindings or []:
+                hp = b.get("HostPort")
+                if not hp:
+                    continue
+                try:
+                    out.setdefault(int(hp), {**meta, "container_port": cport})
+                except ValueError:
+                    continue
+    return out, None
+
+
 @app.get("/api/ports", tags=["Ports"])
 async def api_ports() -> dict[str, Any]:
-    """Parse compose declarations and compare them with actual local listeners."""
+    """Compose declarations + local listeners + docker labels (the owner/folder
+    source of truth). Docker is authoritative for what's actually running and
+    whose it is; compose adds 'declared-but-not-running' drift."""
     try:
         import yaml
     except ImportError:
@@ -1968,6 +2024,7 @@ async def api_ports() -> dict[str, Any]:
                 "status": "unknown",
                 "declared": True,
                 "source": "compose",
+                "folder": None,
                 "listener": None,
             }
 
@@ -1999,12 +2056,45 @@ async def api_ports() -> dict[str, Any]:
             "status": "wild",
             "declared": False,
             "source": "listener",
+            "folder": None,
             "listener": listener,
         }
 
+    # ── Docker overlay (authoritative owner + source folder) ──────────────────
+    # Enrich/insert from running containers: docker tells us the real project and
+    # the code folder behind each published port — including containers from repos
+    # this dashboard's compose file never mentions.
+    docker_ports, docker_error = _docker_running_ports()
+    for port, dmeta in docker_ports.items():
+        entry = entries_by_port.get(port)
+        if entry is None:
+            port_type = _infer_port_type(port)
+            entry = {
+                "port": port,
+                "type": port_type,
+                "web": port_type not in ("DB", "Cache"),
+                "category": _infer_category(port_type),
+                "declared": False,
+                "source": "docker",
+                "listener": None,
+            }
+            entries_by_port[port] = entry
+        # A running container IS the current deployment of this port.
+        entry["status"] = "live"
+        entry["container"] = dmeta.get("container") or entry.get("container")
+        entry["service"] = dmeta.get("service") or entry.get("service") or "—"
+        entry["project"] = dmeta.get("project") or entry.get("project") or _infer_project(entry.get("service", ""))
+        entry["folder"] = dmeta.get("folder")
+        entry["image"] = dmeta.get("image")
+        entry["source"] = "docker"
+
     return {
-        "ports": sorted(entries_by_port.values(), key=lambda e: (e["project"], e["port"], e["service"])),
+        "ports": sorted(
+            entries_by_port.values(),
+            key=lambda e: ((e.get("project") or ""), e["port"], (e.get("service") or "")),
+        ),
         "listener_error": listener_error,
+        "docker_error": docker_error,
     }
 
 

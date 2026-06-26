@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch, type PortInfo, type PortsData } from "@/lib/api";
-import { Eye, EyeOff, ExternalLink, Folder, MinusCircle, RefreshCw } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, ExternalLink, Folder, MinusCircle, RefreshCw } from "lucide-react";
 import StatusDot from "@/components/StatusDot";
 
 const TABS = ["全部", "前端", "後端", "資料庫"] as const;
@@ -379,7 +379,10 @@ export default function PortsPage() {
             </tr>
           </thead>
           <tbody>
-            {visibleGrouped.map(([project, ports, relatedLen], gi) => (
+            {visibleGrouped.map(([project, ports, relatedLen], gi) => {
+              const folder = ports.find((p) => p.folder)?.folder ?? null;
+              const stale = folder?.includes("/Documents/Projects/") ?? false;
+              return (
               <React.Fragment key={`group-${project}-${gi}`}>
                 <tr>
                   <td
@@ -408,6 +411,25 @@ export default function PortsPage() {
                       >
                         {ports.length} port{ports.length > 1 ? "s" : ""}
                       </span>
+                      {folder && (
+                        <span
+                          className="text-[10px] font-mono"
+                          style={{ color: "var(--text-subtle)" }}
+                          title={folder}
+                        >
+                          · {folder.split("/").pop()}
+                        </span>
+                      )}
+                      {stale && (
+                        <span
+                          className="inline-flex items-center gap-1 text-[10px] font-mono"
+                          style={{ color: "var(--status-err)" }}
+                          title={`容器跑在舊 iCloud 路徑（${folder}）— 應改用 ~/code 重建`}
+                        >
+                          <AlertTriangle size={11} />
+                          iCloud 路徑
+                        </span>
+                      )}
                       {!showRelated && relatedLen > 0 && (
                         <span
                           className="text-[10px] font-mono tabular-nums"
@@ -427,7 +449,8 @@ export default function PortsPage() {
                   />
                 ))}
               </React.Fragment>
-            ))}
+              );
+            })}
             {visibleGrouped.length === 0 && (
               <tr>
                 <td
