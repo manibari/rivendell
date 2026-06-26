@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch, type PortInfo, type PortsData } from "@/lib/api";
-import { ExternalLink, Folder, MinusCircle, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, ExternalLink, Folder, MinusCircle, RefreshCw } from "lucide-react";
 import StatusDot from "@/components/StatusDot";
 
 const TABS = ["全部", "前端", "後端", "資料庫"] as const;
@@ -31,7 +31,21 @@ function TypeChip({ type }: { type: PortInfo["type"] }) {
 
 function PortStatusBadge({ status }: { status: PortInfo["status"] }) {
   const dot: "ok" | "warn" | "err" | "idle" =
-    status === "live" ? "ok" : status === "stopped" ? "idle" : "warn";
+    status === "live"
+      ? "ok"
+      : status === "drift"
+        ? "err"
+        : status === "wild"
+          ? "warn"
+          : status === "stopped"
+            ? "idle"
+            : "warn";
+  const label =
+    status === "drift"
+      ? "declared-only"
+      : status === "wild"
+        ? "wild"
+        : status;
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-mono"
@@ -41,13 +55,16 @@ function PortStatusBadge({ status }: { status: PortInfo["status"] }) {
       }}
     >
       <StatusDot status={dot} />
-      {status}
+      {label}
     </span>
   );
 }
 
 function PortRow({ port }: { port: PortInfo }) {
   const clickable = port.web && port.status !== "unknown";
+  const listenerTitle = port.listener?.pid
+    ? `${port.listener.command || "listener"} pid ${port.listener.pid}`
+    : undefined;
 
   return (
     <tr
@@ -89,7 +106,7 @@ function PortRow({ port }: { port: PortInfo }) {
       <td className="px-4 py-3">
         <PortStatusBadge status={port.status} />
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2" title={listenerTitle}>
         {port.web ? (
           <a
             href={`http://localhost:${port.port}`}
@@ -131,6 +148,10 @@ export default function PortsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("全部");
+  // Default view = current deployment (live ports only). The toggle reveals the
+  // "related deployments" — ports declared in compose but not currently running
+  // (drift), plus undeclared local listeners (wild).
+  const [showRelated, setShowRelated] = useState(false);
 
   // Inline fetch so we don't trigger the react-hooks/set-state-in-effect lint
   // (calling a wrapper that also setStates from inside useEffect was the prior
@@ -172,7 +193,23 @@ export default function PortsPage() {
   }, [filtered]);
 
   const liveCount = filtered.filter((p) => p.status === "live").length;
-  const stoppedCount = filtered.filter((p) => p.status === "stopped").length;
+  const driftCount = filtered.filter((p) => p.status === "drift").length;
+  const wildCount = filtered.filter((p) => p.status === "wild").length;
+  const relatedCount = filtered.filter((p) => p.status !== "live").length;
+
+  // Current deployment (live) shown by default; related (non-live) ports render
+  // below them within each group only when the toggle is on. Groups with nothing
+  // visible are dropped so the table doesn't show empty project headers.
+  const visibleGrouped = useMemo(() => {
+    return grouped
+      .map(([project, ports]) => {
+        const live = ports.filter((p) => p.status === "live");
+        const related = ports.filter((p) => p.status !== "live");
+        const visible = showRelated ? [...live, ...related] : live;
+        return [project, visible, related.length] as const;
+      })
+      .filter(([, visible]) => visible.length > 0);
+  }, [grouped, showRelated]);
 
   if (err && !data) {
     return (
@@ -212,7 +249,7 @@ export default function PortsPage() {
             className="mt-1 text-sm"
             style={{ color: "var(--text-muted)" }}
           >
-            所有 Docker 服務的 host port 對應一覽
+            當前實際部署的服務 · 切換「相關部署」可顯示已宣告但未啟動的 port
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -221,8 +258,37 @@ export default function PortsPage() {
             style={{ color: "var(--text-muted)" }}
           >
             <StatusDot status="ok" label={`${liveCount} live`} />
-            <StatusDot status="idle" label={`${stoppedCount} stopped`} />
+            <StatusDot status="err" label={`${driftCount} drift`} />
+            <StatusDot status="warn" label={`${wildCount} wild`} />
           </div>
+          <button
+            onClick={() => setShowRelated((v) => !v)}
+            title={
+              showRelated
+                ? "隱藏相關部署（已宣告但未啟動 / 未宣告的本機 listener）"
+                : "顯示相關部署（已宣告但未啟動 / 未宣告的本機 listener）"
+            }
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors"
+            style={{
+              background: showRelated ? "var(--accent-bg)" : "var(--surface)",
+              border: `1px solid ${showRelated ? "var(--accent)" : "var(--border-strong)"}`,
+              borderRadius: "var(--radius-sm)",
+              color: showRelated ? "var(--accent)" : "var(--text-muted)",
+            }}
+          >
+            {showRelated ? <Eye size={14} /> : <EyeOff size={14} />}
+            相關部署
+            <span
+              className="font-mono text-[10px] tabular-nums px-1.5 py-0.5"
+              style={{
+                borderRadius: 99,
+                background: showRelated ? "var(--surface)" : "var(--surface-2)",
+                color: showRelated ? "var(--accent)" : "var(--text-muted)",
+              }}
+            >
+              {relatedCount}
+            </span>
+          </button>
           <button
             onClick={() => load(true)}
             disabled={refreshing}
@@ -313,7 +379,7 @@ export default function PortsPage() {
             </tr>
           </thead>
           <tbody>
-            {grouped.map(([project, ports], gi) => (
+            {visibleGrouped.map(([project, ports, relatedLen], gi) => (
               <React.Fragment key={`group-${project}-${gi}`}>
                 <tr>
                   <td
@@ -342,15 +408,27 @@ export default function PortsPage() {
                       >
                         {ports.length} port{ports.length > 1 ? "s" : ""}
                       </span>
+                      {!showRelated && relatedLen > 0 && (
+                        <span
+                          className="text-[10px] font-mono tabular-nums"
+                          style={{ color: "var(--text-subtle)" }}
+                          title="此專案另有相關部署（未啟動），開啟上方「相關部署」可見"
+                        >
+                          +{relatedLen} 相關
+                        </span>
+                      )}
                     </div>
                   </td>
                 </tr>
                 {ports.map((port) => (
-                  <PortRow key={port.port} port={port} />
+                  <PortRow
+                    key={`${port.project}-${port.service}-${port.port}`}
+                    port={port}
+                  />
                 ))}
               </React.Fragment>
             ))}
-            {grouped.length === 0 && (
+            {visibleGrouped.length === 0 && (
               <tr>
                 <td
                   colSpan={6}
@@ -376,7 +454,7 @@ export default function PortsPage() {
         >
           docker-compose.yml
         </code>{" "}
-        · 狀態：port reachability check via dashboard-api
+        · 狀態：compose 宣告與本機 TCP listener 比對
       </p>
     </div>
   );
