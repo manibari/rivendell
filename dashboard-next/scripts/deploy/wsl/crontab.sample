@@ -1,0 +1,5 @@
+# Install on the WSL host:  crontab crontab.sample
+# Per-minute git poll → redeploy on new commits to main (mirrors chimesflow).
+# Quiet when there's nothing to pull; only rebuilds + restarts on a real change.
+
+* * * * * $HOME/code/rivendell/dashboard-next/scripts/deploy/wsl/dashboard-redeploy.sh >> $HOME/rivendell-dashboard-redeploy.log 2>&1

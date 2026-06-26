@@ -1,0 +1,16 @@
+# rivendell dashboard web (Next.js) — WSL systemd USER unit.
+# start-web.sh rebuilds when src is newer than the build sentinel, then `next start`.
+[Unit]
+Description=rivendell dashboard web (Next.js :3000)
+After=network-online.target rivendell-dashboard-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/code/rivendell
+ExecStart=/usr/bin/env bash dashboard-next/start-web.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

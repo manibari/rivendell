@@ -1,0 +1,19 @@
+# rivendell dashboard API (FastAPI/uvicorn) — WSL systemd USER unit.
+# Install: see ../README.md. Runs the same start-api.sh the mac launchd uses.
+[Unit]
+Description=rivendell dashboard API (uvicorn :8000)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/code/rivendell
+ExecStart=/usr/bin/env bash dashboard-next/start-api.sh
+Restart=always
+RestartSec=5
+# Health checks for keyed apps read OPS_KEY_<APP> from here (chmod 600, not in git).
+# Create it: see README. Safe to omit if no app needs a key.
+EnvironmentFile=-%h/.config/rivendell-dashboard/env
+
+[Install]
+WantedBy=default.target
