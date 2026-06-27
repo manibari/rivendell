@@ -24,7 +24,16 @@
 | 12 | settings 設定中心 | 系統/租戶設定頁 | candidate | `spine-settings` |
 | 13 | email/mail 寄信 | 寄信子系統(通知/邀請/回饋) | candidate | `spine-email` |
 | 14 | file upload/storage | 附件上傳/儲存 | candidate | `spine-file-storage` |
+| 15 | Swagger / OpenAPI policy | API docs:dev 開 / prod 關或 auth-gate(慣例非功能) | candidate | `spine-api-docs` |
+| 16 | HTTP fetch client(retry/backoff) | 爬蟲抓取共用 client | candidate(scraper) | `spine-http-fetch` |
+| 17 | scrape scheduler / job runner | 排程跑爬蟲 job + runner | candidate(scraper) | `spine-job-scheduler` |
+| 18 | idempotent ingestion(upsert/dedup) | 抓回的資料冪等寫入 | candidate(scraper) | `spine-ingestion` |
 
+> **兩個 spine family + 共用核心**(2026-06-27 盤 chimesflow CRM + mops scraper 後發現):
+> - **web-app spine**:#1-2-3-4-5-8-9-10-12(auth/rbac/logs/roadmap/版本/feedback/notif/audit/settings)
+> - **scraper spine**:#16-17-18(+ parser-pkg pattern)。mops 已自抽 `packages/{mops_http,mops_xbrl_parser,facts}` = 先例。
+> - **shared 核心**:#6-7-11-13-14-15(deploy/cloudflare/schema-sync/api-keys/email/file/swagger)
+>
 > 條件性(只有特定產品要):multi-tenant、SSO allowlist、admin snapshot/backup。需要時再加列。
 > #10–14 來自 2026-06-27 盤點 chimesflow code(routers + 跨檔引用數),非憑記憶。
 
