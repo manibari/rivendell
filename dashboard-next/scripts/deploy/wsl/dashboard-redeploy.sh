@@ -12,6 +12,11 @@ set -uo pipefail
 REPO="${RIVENDELL_DIR:-$HOME/code/rivendell}"
 LOG="${DASHBOARD_REDEPLOY_LOG:-$HOME/rivendell-dashboard-redeploy.log}"
 LOCK="/tmp/rivendell-dashboard-redeploy.lock"
+# Which branch prod tracks. Defaults to main; set DASHBOARD_DEPLOY_BRANCH to a
+# feature branch while its work hasn't landed on main yet (e.g. chore/skill-quality
+# until the port-map parallel work is merged). The local checkout must be ON this
+# branch — see README.
+BRANCH="${DASHBOARD_DEPLOY_BRANCH:-main}"
 
 exec 9>"$LOCK"
 flock -n 9 || { echo "SKIP: another redeploy is in progress"; exit 0; }
@@ -27,8 +32,8 @@ if [ -n "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
 fi
 
 before=$(git rev-parse HEAD 2>/dev/null || echo "")
-git fetch --quiet origin main || { log "ERR: git fetch failed"; exit 1; }
-git merge --ff-only origin/main || { log "ERR: ff-only merge failed (diverged history?)"; exit 1; }
+git fetch --quiet origin "$BRANCH" || { log "ERR: git fetch failed ($BRANCH)"; exit 1; }
+git merge --ff-only "origin/$BRANCH" || { log "ERR: ff-only merge failed — local checkout not on $BRANCH, or diverged"; exit 1; }
 after=$(git rev-parse HEAD 2>/dev/null || echo "")
 
 if [ "$before" = "$after" ]; then
