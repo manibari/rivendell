@@ -93,3 +93,9 @@ to `~/rivendell-dashboard-redeploy.log`, which the health check surfaces.
   build` (never a partial delete) — keep it that way.
 - **Don't also run the mac copy against the same data.** This is a separate prod
   instance; it monitors WSL. The mac launchd copy keeps monitoring the mac.
+- **Tunnel / cross-machine access just works.** The web app calls `/api/*` on its
+  own origin; `next.config.ts` proxies that to the backend server-side. So opening
+  the WSL dashboard from another machine through a tunnel needs **no** config — no
+  `NEXT_PUBLIC_API_URL` (which would have pinned the client to loopback). Only set
+  `API_PROXY_TARGET` if the FastAPI backend is NOT on `127.0.0.1:8000` of the same
+  host as the web process.

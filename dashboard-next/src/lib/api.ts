@@ -1,4 +1,8 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Default to SAME-ORIGIN relative URLs: apiFetch("/api/x") → this origin → the
+// next.config.ts rewrite proxies /api/* to the backend server-side. Never bake a
+// host into the client bundle (NEXT_PUBLIC_API_URL=localhost would break tunnel /
+// cross-machine access). Set NEXT_PUBLIC_API_URL only for a deliberate direct API.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
