@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (104 skills)
+## Skills Catalog (105 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -168,6 +168,7 @@ as release notes.
 | **odb-dfm-reference** | 自動 | Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and |
 | **rbac-permissions** | 自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
+| **spine-rbac** | 自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **sqlite-to-postgres** | 自動 | SQLite → PostgreSQL/Supabase 遷移指南：語法差異、schema 轉換、資料遷移、驗證 |
 | **tunnel-proxy-deploy** | 自動 | Deploy FastAPI + Next.js behind Cloudflare Tunnel. |
 | **tw-company-lookup** | `/tw-company-lookup` 或自動 | 用 Playwright 查詢經濟部 findbiz.nat.gov.tw：公司基本資料、董監事、工廠、歷史變更 |

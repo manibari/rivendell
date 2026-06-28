@@ -11,7 +11,7 @@
 | # | 模組 | 做什麼 | 狀態 | recipe-skill (規劃名) |
 |---|------|--------|------|----------------------|
 | 1 | 帳密 auth | 登入 / 憑證 / token | **skill ✅** | `spine-auth`(crypto core 收斂 / token+rbac 分歧→參數) |
-| 2 | rbac | 角色權限,給多人用 | candidate | `spine-rbac` |
+| 2 | rbac | 角色權限,給多人用 | **skill ✅** | `spine-rbac`(無 code core,tier 決策:寫死 vs 矩陣) |
 | 3 | logs + admin API | 後台看 logs 跟資料 | candidate | `spine-admin-observability` |
 | 4 | roadmap | 開發 roadmap 呈現 | candidate | `spine-roadmap` |
 | 5 | 版本 versioning | 開發版本號 / changelog | candidate | `spine-versioning` |
