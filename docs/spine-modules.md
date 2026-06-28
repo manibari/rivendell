@@ -12,11 +12,11 @@
 |---|------|--------|------|----------------------|
 | 1 | 帳密 auth | 登入 / 憑證 / token | **skill ✅** | `spine-auth`(crypto core 收斂 / token+rbac 分歧→參數) |
 | 2 | rbac | 角色權限,給多人用 | **skill ✅** | `spine-rbac`(無 code core,tier 決策:寫死 vs 矩陣) |
-| 3 | logs + admin API | 後台看 logs 跟資料 | candidate | `spine-admin-observability` |
+| 3 | logs + admin API | 後台看 logs 跟資料 | **n=1 deferred** ⏸ | chimesflow 一家有;family-fiscal 缺、mops 走 monitor app → 未過 ≥2 收斂門檻,待第 2 實作 |
 | 4 | roadmap | 開發 roadmap 呈現 | candidate | `spine-roadmap` |
 | 5 | 版本 versioning | 開發版本號 / changelog | candidate | `spine-versioning` |
 | 6 | cloudflare / deploy | tunnel + prod 部署(WSL deploy 工具已建) | candidate | `spine-deploy` |
-| 7 | DB schema sync | alembic + dev↔prod schema 同步 | candidate | `spine-schema-sync` |
+| 7 | DB schema sync | alembic + dev↔prod schema 同步 | **skill ✅** | `spine-schema-sync`(alembic 2/3 收斂;deploy 跑 upgrade head = 同步) |
 | 8 | 表單回饋 feedback | 使用者回饋表單系統 | candidate | `spine-feedback` |
 | 9 | 通知小鈴鐺 | in-app notification bell | candidate | `spine-notifications` |
 | 10 | audit 稽核軌跡 | 誰改了什麼的 audit log | candidate | `spine-audit` |
