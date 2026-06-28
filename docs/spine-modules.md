@@ -39,4 +39,33 @@
 
 狀態:`candidate`(候選,未審計) → `audited`(已比對成熟產品交集) → `skill`(已捕捉成 recipe-skill,可自動觸發)
 
-第一個要跑通迴圈的:**#1 帳密 auth**(design doc 的「第一刀」+ 是其他多數的前置)。跑通 = 證明「系統會替你記」。
+已跑通:#1 auth ✅ · #2 rbac ✅ · #7 schema-sync ✅ · #3 logs ⏸(n=1 deferred)。
+
+---
+
+## 抽取 roadmap
+
+**Cadence = demand-driven,不是一次硬抽 14 個。** 每個模組等真實產品(mops 為當前 driver)需要時才抽——
+在消費它的產品上蓋,本身就是審計的第 2/3 個資料點。已抽的 3 個是前置 + 當下有動能;其餘照下面**優先序**,
+但**觸發點是「mops/某 greenfield 真的要用到」**,不是排程硬幹。
+
+**Phase 2 — shared core / mops 近期(優先)**
+- **#6 deploy/cloudflare** ★ 下一個:本 session 的 WSL deploy 工具已建,多半是寫成 skill;mops 第一需求(prod 部署)
+- **#15 swagger policy** — 收斂(chimesflow+ff 都 `docs_url=None`),小、快贏
+- **#12 settings** — 大概率收斂(pydantic-settings + env)
+- **#11 api-keys** — mops 要對外 API;先驗收斂
+
+**Phase 3 — web-app ops 面(= /app-ops-baseline 那串,mops 要)**
+- #4 roadmap · #5 version/changelog(ff 也有,大概率 2/3)
+- #8 feedback · #9 notifications(mops 要 feedback)
+- #10 audit · #13 email · #14 file-storage
+- **#3 logs 在這裡 revisit**:mops 蓋 log viewer 時 = 第 2 個實作 → 重審,過門檻就解除 deferred
+
+**Phase 4 — scraper spine(mops + 爬蟲家族 news_stock/taiwan-company/IC-YMS)**
+- #16 http-fetch · #17 job-scheduler · #18 ingestion — mops 已自抽 `packages/` → 多半是「把 mops packages 升級成 skill」;對第 2 隻爬蟲審計
+
+**預期**:收斂→core skill(auth/schema/deploy/swagger/email/file)；分歧→tier skill(rbac/notifications?)；
+n=1→deferred(logs;第 2 實作出現再收)。**約 ⅓ 可能 defer——那是框架在運作,不是失敗。**
+
+**往後怎麼跑**:對著**這張登錄表**做,不靠記憶。mops 要功能 X 時 → 它的 spine-skill 存在就自動跳出;
+不存在就跑 audit→capture 迴圈(mops = 第 2/3 資料點)。狀態流:candidate → audited → skill / n=1-deferred。
