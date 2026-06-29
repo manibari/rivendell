@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (107 skills)
+## Skills Catalog (108 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -153,6 +153,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **ai-vision-extract** | 自動 | The pattern for "photo → AI does the OCR/extraction → structured data" |
 | **audio-transcription-flow** | 自動 | Implement a complete audio upload → speech-to-text → transcript display |
 | **backend-async-jobs** | 自動 | Design decision + pattern for backend work that might be slow: when to keep a |
 | **db-migration** | 自動 | 偵測 DB stack，設定 migration 工具（Alembic/Prisma/Drizzle），指導安全 schema 變更 |

@@ -28,6 +28,7 @@
 | 16 | HTTP fetch client(retry/backoff) | 爬蟲抓取共用 client | candidate(scraper) | `spine-http-fetch` |
 | 17 | scrape scheduler / job runner | 排程跑爬蟲 job + runner | candidate(scraper) | `spine-job-scheduler` |
 | 18 | idempotent ingestion(upsert/dedup) | 抓回的資料冪等寫入 | candidate(scraper) | `spine-ingestion` |
+| 19 | AI-vision extract(拍照→AI 當 OCR) | 圖→AI 抽結構,identify→normalize→cache→generate→persist | **skill ✅** | `ai-vision-extract`(AI-feature 家族;iihi 來源,n=1 待第 2 驗) |
 
 > **兩個 spine family + 共用核心**(2026-06-27 盤 chimesflow CRM + mops scraper 後發現):
 > - **web-app spine**:#1-2-3-4-5-8-9-10-12(auth/rbac/logs/roadmap/版本/feedback/notif/audit/settings)
