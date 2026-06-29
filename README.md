@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (106 skills)
+## Skills Catalog (107 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -170,6 +170,7 @@ as release notes.
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
 | **spine-rbac** | 自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
+| **spine-versioning** | 自動 | Canonical version + changelog for the product fleet — and crucially the |
 | **sqlite-to-postgres** | 自動 | SQLite → PostgreSQL/Supabase 遷移指南：語法差異、schema 轉換、資料遷移、驗證 |
 | **tunnel-proxy-deploy** | 自動 | Deploy FastAPI + Next.js behind Cloudflare Tunnel. |
 | **tw-company-lookup** | `/tw-company-lookup` 或自動 | 用 Playwright 查詢經濟部 findbiz.nat.gov.tw：公司基本資料、董監事、工廠、歷史變更 |
