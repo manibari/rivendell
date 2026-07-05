@@ -238,6 +238,113 @@ export default function DiskTreePage() {
         </div>
       )}
 
+      {/* 明細 list — the treemap can't label small tiles (names truncate, tiny
+          squares go blank), so every child gets a readable row here (QA
+          2026-07-05, Peter: 「磁碟容量下面要有 list 說明」). Row click drills
+          the same as clicking the tile. */}
+      {current && current.children.length > 0 && (
+        <div
+          className="mt-4 overflow-hidden"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-md)",
+          }}
+        >
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                {["#", "目錄", "大小", "佔比", ""].map((h, i) => (
+                  <th
+                    key={i}
+                    className="px-4 py-2.5 text-left font-mono text-[10px] uppercase"
+                    style={{ color: "var(--text-subtle)", letterSpacing: "0.08em" }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...current.children]
+                .sort((a, b) => b.size_kb - a.size_kb)
+                .map((c, i) => {
+                  const share = current.size_kb > 0 ? (c.size_kb / current.size_kb) * 100 : 0;
+                  const drillable = c.children.length > 0;
+                  return (
+                    <tr
+                      key={c.path}
+                      onClick={() => drillable && setStack([...stack, c])}
+                      className={drillable ? "cursor-pointer transition-colors" : undefined}
+                      style={{ borderBottom: "1px solid var(--border)" }}
+                      onMouseEnter={(e) => {
+                        if (drillable) e.currentTarget.style.background = "var(--surface-2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (drillable) e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      <td
+                        className="px-4 py-2 font-mono text-xs tabular-nums"
+                        style={{ color: "var(--text-subtle)" }}
+                      >
+                        {i + 1}
+                      </td>
+                      <td
+                        className="px-4 py-2 font-mono text-xs"
+                        style={{ color: "var(--text)" }}
+                        title={c.path}
+                      >
+                        {c.name}
+                      </td>
+                      <td
+                        className="px-4 py-2 font-mono text-xs tabular-nums"
+                        style={{ color: "var(--text)" }}
+                      >
+                        {humanKB(c.size_kb)}
+                      </td>
+                      <td className="px-4 py-2" style={{ minWidth: 140 }}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-1.5 flex-1"
+                            style={{
+                              background: "var(--surface-2)",
+                              borderRadius: 99,
+                              overflow: "hidden",
+                              maxWidth: 90,
+                            }}
+                          >
+                            <div
+                              className="h-full"
+                              style={{
+                                width: `${Math.min(100, share)}%`,
+                                background: "var(--accent-soft)",
+                                borderRadius: 99,
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="font-mono text-[11px] tabular-nums"
+                            style={{ color: "var(--text-muted)" }}
+                          >
+                            {share.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        className="px-4 py-2 text-right font-mono text-[11px]"
+                        style={{ color: "var(--text-subtle)" }}
+                      >
+                        {drillable ? "下鑽 ›" : ""}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {current && current.children.length === 0 && data?.available && (
         <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>
           此目錄無更深的快照資料（快照深度 {data.depth}）。返回上層或重新整理以更深掃描。
