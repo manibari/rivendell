@@ -10,8 +10,10 @@ parse across requests.
 from __future__ import annotations
 
 import json
+import re
 import time
 from collections import defaultdict
+from functools import lru_cache
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -240,45 +242,74 @@ def read_daily_history(start_date: str | None = None,
 _SKIP_PARENT_DIRS = {"Documents", "Projects", "Desktop", "repos", "src", "code", "dev"}
 
 
-def _dir_to_project_name(dir_name: str) -> str:
-    """Convert project dir name to human-readable project name.
+@lru_cache(maxsize=1)
+def _known_repos() -> tuple[str, ...]:
+    """Actual top-level repo dir names under ~/code, longest-encoded-first.
 
-    e.g. '-Users-manibari-Documents-Projects-skills-test' → 'skills-test'
-    The dir name encodes the absolute path with dashes replacing slashes.
-
-    Used as a FALLBACK only — per-line cwd is preferred (see
-    _cwd_to_project_name) because Claude Code sessions launched in a parent
-    directory and `cd`-ed into a subproject would otherwise misattribute all
-    tokens to the parent.
+    Used to resolve the dash-encoded project dir names unambiguously:
+    '-...-code-mops-dbs-apps-analytics' can't be split on dashes alone
+    (both '/' and '_' encode to '-'), but prefix-matching against the real
+    repo names ('mops_dbs') recovers the right top-level project.
     """
-    # Build prefix from actual home directory
+    code = Path.home() / "code"
+    try:
+        names = [d.name for d in code.iterdir() if d.is_dir()]
+    except OSError:
+        return ()
+    return tuple(sorted(names, key=lambda n: len(re.sub(r"[/_]", "-", n)), reverse=True))
+
+
+def _dir_to_project_name(dir_name: str) -> str:
+    """Convert project dir name to the TOP-LEVEL project name.
+
+    e.g. '-Users-manibari-code-tukey-or-apps-web' → 'tukey-or'
+         '-Users-manibari-code-mops-dbs-apps-analytics' → 'mops_dbs'
+
+    Attribution is deliberately rolled up to the top-level repo (2026-07-05,
+    Peter): subfolder sessions (apps/web, apps/api, backend, …) fragmented the
+    per-project view and made 'where does my money go' unanswerable. The dir
+    name encodes the absolute path with '-' replacing both '/' AND '_', so we
+    prefix-match against the real dir names under ~/code (longest first)
+    instead of splitting on dashes.
+
+    Used as a FALLBACK only — per-line cwd is preferred (_cwd_to_project_name).
+    """
     home = str(Path.home())  # e.g. /Users/manibari
     home_prefix = home.replace("/", "-")  # → -Users-manibari
     name = dir_name
     if name.startswith(home_prefix):
         name = name[len(home_prefix):]
-        # Strip leading dash
         name = name.lstrip("-")
         parts = name.split("-")
-        meaningful = []
-        found_project = False
-        for p in parts:
-            if p in _SKIP_PARENT_DIRS and not found_project:
-                continue
-            found_project = True
-            meaningful.append(p)
-        name = "-".join(meaningful) if meaningful else name
+        # Drop generic parent dirs (code, Documents, …) before matching
+        idx = 0
+        while idx < len(parts) and parts[idx] in _SKIP_PARENT_DIRS:
+            idx += 1
+        remainder = "-".join(parts[idx:])
+        if not remainder:
+            return name if name else dir_name
+        # Resolve against real ~/code repo names (handles '-' vs '_' ambiguity)
+        for repo in _known_repos():
+            enc = re.sub(r"[/_]", "-", repo)
+            if remainder == enc or remainder.startswith(enc + "-"):
+                return repo
+        # Unknown root (Vault/…, deleted repo): first segment only — no subfolders
+        name = parts[idx]
     return name if name else dir_name
 
 
 def _cwd_to_project_name(cwd: str) -> str:
-    """Convert a real cwd path to a human-readable project name.
+    """Convert a real cwd path to the TOP-LEVEL project name.
 
-    e.g. '/Users/manibari/Documents/Projects/odb-dfm' → 'odb-dfm'
-         '/Users/manibari/Documents/Peter/ChimesAI/01-Presales' → 'Peter/ChimesAI/01-Presales'
+    e.g. '/Users/manibari/code/tukey-or/apps/web' → 'tukey-or'
+         '/Users/manibari/code/IC-YMS/backend'   → 'IC-YMS'
+         '/Users/manibari/Vault/Peter/Family'    → 'Vault'
 
-    Strips the home prefix and skips intermediate dirs ("Documents",
-    "Projects", etc.) until the first meaningful segment.
+    Rolled up to the first segment after the generic parent dirs (2026-07-05,
+    Peter): sub-folder sessions (apps/web, backend, …) must attribute to the
+    enclosing repo, never appear as their own 'project'. The earlier design
+    kept the full sub-path on purpose (finer attribution); that fragmented the
+    per-project cost view, so the roll-up now wins.
     """
     if not cwd:
         return ""
@@ -288,14 +319,12 @@ def _cwd_to_project_name(cwd: str) -> str:
         if not rel:
             return Path(cwd).name or ""
         parts = rel.split("/")
-        meaningful: list[str] = []
-        found_project = False
-        for p in parts:
-            if p in _SKIP_PARENT_DIRS and not found_project:
-                continue
-            found_project = True
-            meaningful.append(p)
-        return "/".join(meaningful) if meaningful else (parts[-1] if parts else "")
+        idx = 0
+        while idx < len(parts) and parts[idx] in _SKIP_PARENT_DIRS:
+            idx += 1
+        if idx < len(parts):
+            return parts[idx]
+        return parts[-1] if parts else ""
     # Path outside home — use last segment
     return Path(cwd).name or cwd
 
