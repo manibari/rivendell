@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# sk-token-analysis-cron — Daily "where did the tokens go, and WHAT WERE THEY
+# DOING" analysis.
+#
+# The dashboard answers "how much"; this answers "on what". For each project
+# (rolled up to top-level repo — see lib/tokens.py roll-up, 2026-07-05): the
+# day's cost, share, comparison vs the 7-day average, and 2-3 bullets of what
+# the sessions actually worked on (mined from the session JSONLs' user
+# messages, summarised by claude -p).
+#
+# Output: reports/token-analysis-YYYY-MM-DD.md (+ Telegram digest when the
+# claude-telegram env exists). Runs nightly at 23:45 via launchd (agents.conf).
+# Manual run: bin/sk-token-analysis-cron [YYYY-MM-DD]
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_NAME="$(basename "$REPO_DIR")"
+REPORT_DIR="$REPO_DIR/reports"
+DATE="${1:-$(date '+%Y-%m-%d')}"
+REPORT_FILE="$REPORT_DIR/token-analysis-${DATE}.md"
+ERR_FILE="$REPORT_DIR/token-analysis-${DATE}-error.log"
+# Cheap model on purpose: this is nightly summarisation, not reasoning.
+ANALYSIS_MODEL="claude-haiku-4-5-20251001"
+
+mkdir -p "$REPORT_DIR"
+set +e; source "$REPO_DIR/bin/sk-exec-lib" 2>/dev/null || true; set -e
+
+# ── 1. Facts: per-project cost + session intents, assembled in Python ────────
+# NOTE: heredoc deliberately NOT inside $() — macOS bash 3.2's command-
+# substitution parser chokes on quotes/parens inside a heredoc within $().
+CTX_FILE="$(mktemp /tmp/sk-token-analysis-XXXXXX)"
+trap 'rm -f "$CTX_FILE"' EXIT
+(cd "$REPO_DIR/dashboard" && python3 - "$DATE" > "$CTX_FILE") <<'PY'
+import json, sys
+from datetime import date, timedelta
+from pathlib import Path
+
+sys.path.insert(0, ".")
+from lib.tokens import get_filtered_usage, _cwd_to_project_name
+
+DAY = sys.argv[1]
+week_start = (date.fromisoformat(DAY) - timedelta(days=7)).isoformat()
+
+def proj_costs(fu):
+    out = {}
+    for p in fu.projects:
+        name = getattr(p, "project", None) or getattr(p, "name", "?")
+        out[name] = (getattr(p, "cost_usd", 0.0) or 0.0,
+                     getattr(p, "tokens_total", 0) or getattr(p, "tokens", 0) or 0)
+    return out
+
+today = proj_costs(get_filtered_usage(DAY, DAY))
+week = proj_costs(get_filtered_usage(week_start, DAY))
+
+# What each project's sessions were DOING: mine user messages from JSONLs
+# whose content covers DAY. Skip harness noise (<system>, <command…, caveats).
+intents: dict[str, list[str]] = {}
+projects_root = Path.home() / ".claude" / "projects"
+for jf in projects_root.glob("*/*.jsonl"):
+    try:
+        if jf.stat().st_size == 0:
+            continue
+        cwd, msgs, hit_day = "", [], False
+        with jf.open() as fh:
+            for line in fh:
+                if DAY not in line:
+                    # cheap date filter; timestamps are ISO with the date inline
+                    if '"cwd"' in line and not cwd:
+                        try:
+                            cwd = json.loads(line).get("cwd", "") or ""
+                        except Exception:
+                            pass
+                    continue
+                try:
+                    d = json.loads(line)
+                except Exception:
+                    continue
+                ts = d.get("timestamp", "")
+                if not ts.startswith(DAY):
+                    continue
+                hit_day = True
+                cwd = d.get("cwd") or cwd
+                if d.get("type") == "user":
+                    c = d.get("message", {}).get("content")
+                    if isinstance(c, str):
+                        t = c.strip()
+                        if t and not t.startswith("<") and "Caveat:" not in t and len(msgs) < 4:
+                            msgs.append(t[:110].replace("\n", " "))
+        if hit_day and msgs:
+            proj = _cwd_to_project_name(cwd) if cwd else jf.parent.name
+            intents.setdefault(proj, []).extend(msgs)
+    except OSError:
+        continue
+
+lines = [f"DATE: {DAY}", f"TOTAL: ${sum(c for c, _ in today.values()):,.2f}", ""]
+for name, (c, tk) in sorted(today.items(), key=lambda x: -x[1][0]):
+    if c < 0.5:
+        continue
+    wc = week.get(name, (0, 0))[0]
+    avg = wc / 7
+    lines.append(f"## {name} | ${c:,.2f} | {tk/1e6:.1f}M tok | 7日均 ${avg:,.2f}/day")
+    for m in (intents.get(name) or [])[:8]:
+        lines.append(f"  - {m}")
+    lines.append("")
+print("\n".join(lines)[:9000])
+PY
+CONTEXT="$(cat "$CTX_FILE")"
+
+if [ -z "$CONTEXT" ]; then
+    echo "[$(date '+%F %T')] no usage data for $DATE — skipping" | tee -a "$REPORT_DIR/token-analysis.log"
+    exit 0
+fi
+
+# ── 2. Analysis: claude -p turns facts into the daily digest ────────────────
+PROMPT="你是 token 用量分析師。以下是 ${DATE} 每個專案的 Claude Code token 花費 + 該專案當日 sessions 的使用者指令取樣(= 這些 token 實際在做什麼)。
+
+寫一份繁體中文日報 markdown:
+1. 開頭一行總結:今日總花費、最大宗在哪、一句話說今天的錢主要做了什麼。
+2. 每個專案一段(依花費排序,<\$1 的併成一行帶過):**花費、佔比、對 7 日均的倍數**,然後用 2-3 個 bullet 講「做了什麼」——從指令取樣歸納實際工作內容(重構了什麼、修了什麼、建了什麼),不要逐句轉述。
+3. 結尾「⚠️ 值得注意」:花費 ≥2× 7日均的專案、或指令內容顯示卡關重試(同樣的事反覆出現)的專案;沒有就寫「無異常」。
+資料如下:
+
+$CONTEXT"
+
+start_epoch=$(date +%s)
+claude -p "$PROMPT" \
+    --model "$ANALYSIS_MODEL" \
+    --output-format text \
+    < /dev/null \
+    > "$REPORT_FILE" \
+    2> "$ERR_FILE" \
+    && run_exit=0 || run_exit=$?
+end_epoch=$(date +%s)
+
+type _sk_exec_record_run >/dev/null 2>&1 && \
+  _sk_exec_record_run "$PROJECT_NAME" "token-analysis" "$start_epoch" "$end_epoch" \
+    "$run_exit" "" "" "" "" "" "" || true
+
+if [ "$run_exit" -ne 0 ]; then
+    echo "[$(date '+%F %T')] claude -p failed (exit $run_exit) — see $ERR_FILE" | tee -a "$REPORT_DIR/token-analysis.log"
+    exit "$run_exit"
+fi
+rm -f "$ERR_FILE"
+
+# ── 3. Telegram digest (optional; silent skip when env absent) ───────────────
+TG_ENV="$HOME/.config/claude-telegram/env"
+if [ -f "$TG_ENV" ]; then
+    set +e
+    # shellcheck disable=SC1090
+    source "$TG_ENV"
+    if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+        digest="$(head -c 1500 "$REPORT_FILE")"
+        curl -sS -m 10 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=💰 Token 日報 ${DATE}
+${digest}" -o /dev/null
+    fi
+    set -e
+fi
+
+echo "[$(date '+%F %T')] token-analysis complete → $REPORT_FILE" | tee -a "$REPORT_DIR/token-analysis.log"
