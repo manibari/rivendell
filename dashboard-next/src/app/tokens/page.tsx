@@ -53,9 +53,18 @@ const sectionH2: React.CSSProperties = {
   letterSpacing: "-0.01em",
 };
 
+// Default view = the last 30 days (2026-07-05, Peter): the all-time chart packs
+// 90+ daily bars into one row and the x-axis labels collide (破圖). Clearing
+// both date fields still shows all-time.
+const isoDaysAgo = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+};
+
 export default function TokensPage() {
-  const [dateStart, setDateStart] = useState("");
-  const [dateEnd, setDateEnd] = useState("");
+  const [dateStart, setDateStart] = useState(() => isoDaysAgo(30));
+  const [dateEnd, setDateEnd] = useState(() => isoDaysAgo(0));
   const [data, setData] = useState<FilteredTokensData | null>(null);
   const [err, setErr] = useState<string | null>(null);
 

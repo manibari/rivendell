@@ -200,6 +200,68 @@ def upsert_daily_usage(usage: DailyUsage) -> None:
         conn.close()
 
 
+def upsert_project_usage(day: str, rows: list[tuple[str, int, float]]) -> None:
+    """Persist one day's per-project breakdown (project, tokens, cost_usd).
+
+    Why (2026-07-05, Peter): the JSONL session files rotate away after ~5
+    weeks, and they are the ONLY source of the per-project split — the daily
+    token_usage table stores totals only. Without this table the answer to
+    '這些 token 是做了什麼/花在哪個專案' silently disappears for older dates.
+    Idempotent per (date, project); the day's rows are replaced wholesale.
+    Queryable directly: sqlite3 data/rivendell.db
+    'select * from token_project_usage where date=...'
+    """
+    import sqlite3
+    db_path = _history_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS token_project_usage (
+                date TEXT NOT NULL,
+                project TEXT NOT NULL,
+                tokens_total INTEGER,
+                cost_usd REAL,
+                PRIMARY KEY (date, project)
+            )
+        """)
+        conn.execute("DELETE FROM token_project_usage WHERE date = ?", (day,))
+        conn.executemany(
+            "INSERT INTO token_project_usage(date, project, tokens_total, cost_usd) VALUES (?, ?, ?, ?)",
+            [(day, p, tk, c) for p, tk, c in rows],
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def read_project_history(start_date: str | None = None,
+                         end_date: str | None = None) -> list[dict[str, Any]]:
+    """Read per-project daily rows from token_project_usage (oldest first)."""
+    import sqlite3
+    db_path = _history_db_path()
+    if not db_path.exists():
+        return []
+    conn = sqlite3.connect(str(db_path))
+    try:
+        q = "SELECT date, project, tokens_total, cost_usd FROM token_project_usage"
+        cond, args = [], []
+        if start_date:
+            cond.append("date >= ?"); args.append(start_date)
+        if end_date:
+            cond.append("date <= ?"); args.append(end_date)
+        if cond:
+            q += " WHERE " + " AND ".join(cond)
+        q += " ORDER BY date, cost_usd DESC"
+        try:
+            rows = conn.execute(q, args).fetchall()
+        except sqlite3.OperationalError:
+            return []
+        return [{"date": r[0], "project": r[1], "tokens_total": r[2], "cost_usd": r[3]} for r in rows]
+    finally:
+        conn.close()
+
+
 def read_daily_history(start_date: str | None = None,
                        end_date: str | None = None) -> list[DailyUsage]:
     """Read per-day snapshots from token_usage. Empty list if table absent."""

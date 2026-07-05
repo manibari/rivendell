@@ -27,7 +27,8 @@ cd "$REPO_DIR/dashboard"
 written=$(python3 <<PY
 import sys
 sys.path.insert(0, '.')
-from lib.tokens import get_filtered_usage, upsert_daily_usage
+from lib.tokens import (get_filtered_usage, upsert_daily_usage,
+                        upsert_project_usage, read_project_history)
 
 full = get_filtered_usage()
 today = "$TODAY"
@@ -39,10 +40,28 @@ for d in full.daily:
     upsert_daily_usage(d)
     count += 1
 
-print(count)
+# Per-project breakdown (token_project_usage) — the JSONLs are the only source
+# of the per-project split and they rotate away; persist it per finished day.
+# Only parse days the table doesn't have yet (each day = a full JSONL re-parse).
+have = {r["date"] for r in read_project_history()}
+proj_days = 0
+for d in full.daily:
+    if d.date >= today or d.date in have:
+        continue
+    fu = get_filtered_usage(d.date, d.date)
+    rows = [((getattr(p, "project", None) or getattr(p, "name", "?")),
+             getattr(p, "tokens_total", 0) or 0,
+             getattr(p, "cost_usd", 0.0) or 0.0) for p in fu.projects]
+    if rows:
+        upsert_project_usage(d.date, rows)
+        proj_days += 1
+
+print(f"{count} {proj_days}")
 PY
 )
 
-if [ "$written" -gt 0 ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] snapshot wrote $written days" >> "$LOG_FILE"
+days="${written%% *}"
+proj_days="${written##* }"
+if [ "${days:-0}" -gt 0 ] || [ "${proj_days:-0}" -gt 0 ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] snapshot wrote $days days, $proj_days project-days" >> "$LOG_FILE"
 fi
