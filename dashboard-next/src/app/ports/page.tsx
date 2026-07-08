@@ -152,6 +152,8 @@ export default function PortsPage() {
   // "related deployments" — ports declared in compose but not currently running
   // (drift), plus undeclared local listeners (wild).
   const [showRelated, setShowRelated] = useState(false);
+  // System-app wild listeners stay collapsed even when 相關部署 is open.
+  const [showSystem, setShowSystem] = useState(false);
 
   // Inline fetch so we don't trigger the react-hooks/set-state-in-effect lint
   // (calling a wrapper that also setStates from inside useEffect was the prior
@@ -198,18 +200,25 @@ export default function PortsPage() {
   const relatedCount = filtered.filter((p) => p.status !== "live").length;
 
   // Current deployment (live) shown by default; related (non-live) ports render
-  // below them within each group only when the toggle is on. Groups with nothing
-  // visible are dropped so the table doesn't show empty project headers.
+  // below them within each group only when the toggle is on. Wild listeners
+  // flagged `system` (Discord/ControlCenter/devtools…) collapse into one summary
+  // row per group — they drowned the real dev ports (QA ISSUE-002). Groups with
+  // nothing visible are dropped so the table doesn't show empty project headers.
   const visibleGrouped = useMemo(() => {
     return grouped
       .map(([project, ports]) => {
         const live = ports.filter((p) => p.status === "live");
-        const related = ports.filter((p) => p.status !== "live");
-        const visible = showRelated ? [...live, ...related] : live;
-        return [project, visible, related.length] as const;
+        const related = ports.filter((p) => p.status !== "live" && !p.system);
+        const system = ports.filter((p) => p.status !== "live" && p.system);
+        const visible = showRelated
+          ? showSystem
+            ? [...live, ...related, ...system]
+            : [...live, ...related]
+          : live;
+        return [project, visible, related.length + system.length, system] as const;
       })
-      .filter(([, visible]) => visible.length > 0);
-  }, [grouped, showRelated]);
+      .filter(([, visible, , system]) => visible.length > 0 || (showRelated && system.length > 0));
+  }, [grouped, showRelated, showSystem]);
 
   if (err && !data) {
     return (
@@ -379,7 +388,7 @@ export default function PortsPage() {
             </tr>
           </thead>
           <tbody>
-            {visibleGrouped.map(([project, ports, relatedLen], gi) => {
+            {visibleGrouped.map(([project, ports, relatedLen, sysPorts], gi) => {
               const folder = ports.find((p) => p.folder)?.folder ?? null;
               const stale = folder?.includes("/Documents/Projects/") ?? false;
               const health = data.health?.[project] ?? null;
@@ -472,6 +481,36 @@ export default function PortsPage() {
                     port={port}
                   />
                 ))}
+                {showRelated && sysPorts.length > 0 && (
+                  <tr
+                    onClick={() => setShowSystem((v) => !v)}
+                    className="cursor-pointer transition-colors"
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "var(--surface-2)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
+                  >
+                    <td
+                      colSpan={6}
+                      className="px-4 py-2 font-mono text-xs"
+                      style={{ color: "var(--text-subtle)" }}
+                      title={sysPorts
+                        .map((p) => `:${p.port} ${p.service}`)
+                        .join(" · ")}
+                    >
+                      {showSystem ? "▾" : "▸"} 系統程序 {sysPorts.length} 個（
+                      {[...new Set(sysPorts.map((p) => p.service))]
+                        .slice(0, 4)
+                        .join("、")}
+                      {new Set(sysPorts.map((p) => p.service)).size > 4
+                        ? "…"
+                        : ""}
+                      ）— 非部署，點擊{showSystem ? "收合" : "展開"}
+                    </td>
+                  </tr>
+                )}
               </React.Fragment>
               );
             })}

@@ -378,6 +378,9 @@ export interface PortInfo {
    *  `project.working_dir` label. null when the port isn't a docker container. */
   folder?: string | null;
   image?: string;
+  /** True for wild listeners identified as desktop/system apps (Discord,
+   *  ControlCenter, browser devtools…) — collapsed in the UI by default. */
+  system?: boolean;
   listener?: {
     command?: string;
     pid?: string;

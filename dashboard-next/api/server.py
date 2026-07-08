@@ -2112,10 +2112,23 @@ async def api_ports() -> dict[str, Any]:
         else:
             entry["status"] = "drift"
 
+    # Known desktop/system apps that listen on TCP but are NOT deployments —
+    # they drown the wild list (QA 2026-07-05 ISSUE-002: Discord/LINE/AnyDesk/
+    # ControlCenter/devtools swamped the real dev ports). lsof truncates
+    # COMMAND to ~9 chars, so match by lowercase prefix.
+    _SYSTEM_LISTENER_PREFIXES = (
+        "controlce", "rapportd", "discord", "anydesk", "line", "google",
+        "safari", "arc", "firefox", "brave", "msedge", "spotify", "slack",
+        "dropbox", "telegram", "whatsapp", "zoom", "teams", "figma", "notion",
+        "steam", "obs", "adobe", "creative", "mail", "messages", "facetime",
+    )
+
     for port, listener in listeners.items():
         if port in entries_by_port:
             continue
         port_type = _infer_port_type(port)
+        cmd = (listener.get("command") or "").lower()
+        is_system = any(cmd.startswith(p) for p in _SYSTEM_LISTENER_PREFIXES)
         entries_by_port[port] = {
             "port": port,
             "service": listener.get("command") or "local-listener",
@@ -2128,6 +2141,7 @@ async def api_ports() -> dict[str, Any]:
             "declared": False,
             "source": "listener",
             "folder": None,
+            "system": is_system,
             "listener": listener,
         }
 
