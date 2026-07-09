@@ -65,7 +65,69 @@ export default function OverviewPage() {
       <p style={{ color: "var(--status-err)" }}>Error: {err}</p>
     );
   if (!data)
-    return <p style={{ color: "var(--text-muted)" }}>載入中...</p>;
+    // Skeleton instead of a bare 載入中 line — the overview aggregate takes a
+    // few seconds cold (QA ISSUE-001) and a blank page reads as "broken".
+    // Static placeholders (no pulse animation) per DESIGN.md minimal motion.
+    return (
+      <div aria-busy="true" aria-label="載入中">
+        <div
+          className="mb-6"
+          style={{
+            width: 160,
+            height: 28,
+            background: "var(--surface-2)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        />
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              style={{
+                height: 88,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+              }}
+            >
+              <div
+                className="m-4"
+                style={{
+                  width: "60%",
+                  height: 12,
+                  background: "var(--surface-2)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              />
+              <div
+                className="mx-4"
+                style={{
+                  width: "40%",
+                  height: 22,
+                  background: "var(--surface-2)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="mb-6"
+            style={{
+              height: 180,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-md)",
+            }}
+          />
+        ))}
+        <p className="text-xs" style={{ color: "var(--text-subtle)" }}>
+          載入中…（首次聚合約需數秒）
+        </p>
+      </div>
+    );
 
   const { metrics, agents, hooks, projects_summary } = data;
 
