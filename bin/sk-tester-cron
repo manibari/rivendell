@@ -118,7 +118,14 @@ dashboard_dir="$REPO_DIR/dashboard-next"
 if [ -d "$dashboard_dir" ] && [ -f "$dashboard_dir/package.json" ]; then
   build_output=""
   build_exit=0
-  build_output=$(cd "$dashboard_dir" && npx next build 2>&1) || build_exit=$?
+  # Build into a SEPARATE distDir (.next-tester), never the live .next: the
+  # prod next-server holds its chunk manifest in memory, so replacing .next
+  # under it 500s every static asset — success or failure alike. This exact
+  # 06:00 build took the dashboard down twice (2026-07-05 failed build,
+  # 2026-07-13 SUCCESSFUL build — new hashes, old manifest). NEXT_DIST_DIR is
+  # honored by next.config.ts.
+  build_output=$(cd "$dashboard_dir" && NEXT_DIST_DIR=".next-tester" npx next build 2>&1) || build_exit=$?
+  rm -rf "$dashboard_dir/.next-tester"
 
   if [ "$build_exit" -eq 0 ]; then
     echo "**Result:** BUILD SUCCESS" >> "$REPORT"
