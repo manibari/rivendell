@@ -9,7 +9,7 @@ description: >
   TRIGGER when: designing/reviewing model versioning, a model registry, promotion
   (staging/UAT/PROD), model lineage/provenance, "registered model broke after we
   deleted the dataset", serving-key provisioning, MLOps governance; working in
-  tukey-automl registry.
+  Verdandi-AutoML registry.
   SKIP when: the eval/metrics/CV/encoding seams (ml-eval-quality); the async job
   tier for training (backend-async-jobs); a generic file-versioning need with no
   model lifecycle.
@@ -22,7 +22,7 @@ source: manual
 
 The governance hinge: a successful **Run** becomes a **ModelVersion** that survives
 the deletion of its source project / dataset / run. Grounded in
-`~/code/tukey-automl/apps/api/app/registry_service.py` + the `ModelVersion` /
+`~/code/Verdandi-AutoML/apps/api/app/registry_service.py` + the `ModelVersion` /
 `RegisteredModel` schema.
 
 ## The pattern

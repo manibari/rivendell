@@ -65,7 +65,7 @@ eager-dev/broker-prod).
 
 When one user action fans out to many heterogeneous, long, independent jobs, the
 "status-row + poll once" rubric is wrong. What Tier 3 needs (evidence:
-`tukey-automl/apps/api/app/training.py`):
+`Verdandi-AutoML/apps/api/app/training.py`):
 
 - **N independent runs, not 1** — one enqueue creates N runs (e.g. one per
   algorithm). Track **N status rows**; the frontend subscribes to all of them.
@@ -85,7 +85,7 @@ When one user action fans out to many heterogeneous, long, independent jobs, the
   doesn't starve the queue; plan CPU/GPU routing for v2.
 
 > **The trap this skill exists to stop**: applying Tier 1 (ChimesFlow one-off job)
-> to a Tier 3 workload (tukey-automl AutoML). They look similar (both "Celery +
+> to a Tier 3 workload (Verdandi-AutoML AutoML). They look similar (both "Celery +
 > status") but differ on cardinality, failure model, progress, SLA, and artifacts.
 > Don't conflate them.
 

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import {
   workflows,
   skillDetails,
   type Chip as ChipData,
-  type ChipCategory,
   type WorkflowId,
   type Step as StepData,
   type OptionalRow,
@@ -405,7 +404,20 @@ function SkillModal({
 }
 
 // ──────────────────────────────────────────────────────── Public FlowView
-export default function FlowView({ flowId }: { flowId: WorkflowId }) {
+// useSearchParams() needs a <Suspense> boundary or every static page's
+// prerender fails at build ("missing-suspense-with-csr-bailout" — see
+// learnings 2026-05-16; this exact miss broke the 2026-07-05 06:00 build and
+// took the dashboard down). Hook lives in the inner component; the default
+// export only provides the boundary.
+export default function FlowView(props: { flowId: WorkflowId }) {
+  return (
+    <Suspense fallback={null}>
+      <FlowViewInner {...props} />
+    </Suspense>
+  );
+}
+
+function FlowViewInner({ flowId }: { flowId: WorkflowId }) {
   const [openSkill, setOpenSkill] = useState<string | null>(null);
   const searchParams = useSearchParams();
   // Slide branch is URL-driven now (sidebar children navigate via

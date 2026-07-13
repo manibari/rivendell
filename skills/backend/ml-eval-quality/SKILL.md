@@ -9,7 +9,7 @@ description: >
   TRIGGER when: building/reviewing an ML training or AutoML pipeline; choosing/
   computing model metrics; "為什麼這個 R² 很怪", small-dataset reliability, CV /
   Q² / LOOCV, hyperparameter tuning, train/inference skew, feature encoding, model
-  drift / data-quality monitoring; working in tukey-automl.
+  drift / data-quality monitoring; working in Verdandi-AutoML.
   SKIP when: the async/job-tier decision for ML work (backend-async-jobs); model
   registry / versioning / lineage (separate concern); IC lot data (ic-lot-
   normalization); a one-off pandas analysis with no model.
@@ -22,7 +22,7 @@ source: manual
 
 The eval/quality backbone of an ML platform: make every trainer **comparable** and
 every small dataset **trustworthy**, with one metric seam, one encode seam, a CV
-gate, and input-only drift monitoring. Grounded in `~/code/tukey-automl/apps/api/app/`
+gate, and input-only drift monitoring. Grounded in `~/code/Verdandi-AutoML/apps/api/app/`
 (`metrics.py`, `validation.py`, `tuning.py`, `features.py`, `data_quality.py`).
 
 ## The four seams
