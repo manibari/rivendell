@@ -42,6 +42,8 @@
 
 已跑通:#1 auth ✅ · #2 rbac ✅ · #7 schema-sync ✅ · #3 logs ⏸(n=1 deferred)。
 
+**骨架已建(2026-07-14)**:`~/code/product-skeleton`(local git)— A+C 的 C 載體。已接線:auth core、Tier-1 rbac、alembic schema-sync、versioning pre-push gate、keyed /api/health、swagger policy、WSL deploy、port placeholder(3__NN__/8__NN__/54__NN__)。新 greenfield(ic-yms/pti-ares)clone 起手,見其 README。
+
 ---
 
 ## 抽取 roadmap
