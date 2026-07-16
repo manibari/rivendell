@@ -83,7 +83,7 @@ cmd_deploy() {
     else
       ln -s "$skill_dir" "$target"
       echo -e "${GREEN}link${NC}  $name → $target"
-      ((count++))
+      count=$((count+1))
     fi
   done < <(all_skill_dirs)
   echo -e "\n${GREEN}Deployed $count skill(s).${NC}"
@@ -98,7 +98,7 @@ cmd_deploy() {
     local dest="$la_dir/$plist_name"
     sed "s|REPO_PATH|$REPO_DIR|g" "$tpl" > "$dest"
     echo -e "${GREEN}plist${NC} $plist_name → $la_dir/"
-    ((plist_count++))
+    plist_count=$((plist_count+1))
   done
   if [ "$plist_count" -gt 0 ]; then
     echo -e "${GREEN}Installed $plist_count plist(s).${NC}"
@@ -119,7 +119,7 @@ cmd_undeploy() {
       if [[ "$link_dest" == "$REPO_DIR"/* ]]; then
         rm "$target"
         echo -e "${GREEN}unlink${NC}  $name"
-        ((count++))
+        count=$((count+1))
       fi
     fi
   done < <(all_skill_dirs)
@@ -322,7 +322,7 @@ cmd_check() {
     while IFS= read -r link; do
       [ -z "$link" ] && continue
       if [ -L "$link" ] && [ ! -e "$link" ]; then
-        ((dangling++))
+        dangling=$((dangling+1))
         dangling_list+="    $(basename "$link") → $(readlink "$link")\n"
       fi
     done < <(find "$DEPLOY_TARGET" -maxdepth 1 -type l 2>/dev/null)
@@ -338,16 +338,16 @@ cmd_check() {
 
     # Name collision detection
     if echo "$seen_names" | grep -qx "$name"; then
-      ((collision++))
+      collision=$((collision+1))
       collision_list+="    $name (${skill_dir#$REPO_DIR/})\n"
     fi
     seen_names+="$name"$'\n'
 
     if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-      ((missing++))
+      missing=$((missing+1))
       missing_list+="    $name (${skill_dir#$REPO_DIR/})\n"
     elif [ -e "$target" ] && [ ! -L "$target" ]; then
-      ((conflict++))
+      conflict=$((conflict+1))
       conflict_list+="    $name (non-symlink at $target)\n"
     fi
   done < <(all_skill_dirs)
@@ -385,13 +385,13 @@ cmd_check() {
     local reviewed
     reviewed="$(get_frontmatter_field "$skill_dir" "last_reviewed")"
     if [ -z "$reviewed" ]; then
-      ((no_review++))
+      no_review=$((no_review+1))
       no_review_list+="    $name\n"
     else
       local age
       age="$(days_since "$reviewed")"
       if [ "$age" -ge 0 ] && [ "$age" -gt "$stale_days" ]; then
-        ((stale++))
+        stale=$((stale+1))
         stale_list+="    $name (${age}d ago)\n"
       fi
     fi
@@ -425,10 +425,10 @@ cmd_check() {
       local age
       age="$(days_since "$imported_at")"
       if [ "$age" -ge 0 ] && [ "$age" -gt "$stale_days" ]; then
-        ((gdrive_stale++))
+        gdrive_stale=$((gdrive_stale+1))
         gdrive_list+="    $name (imported ${age}d ago)\n"
       elif [ "$age" -lt 0 ]; then
-        ((gdrive_stale++))
+        gdrive_stale=$((gdrive_stale+1))
         gdrive_list+="    $name (no imported_at date)\n"
       fi
     fi
@@ -452,13 +452,13 @@ cmd_check() {
     local tags
     tags="$(get_frontmatter_field "$skill_dir" "tags")"
     if [ -z "$tags" ]; then
-      ((missing_tags++))
+      missing_tags=$((missing_tags+1))
       missing_tags_list+="    $name\n"
     fi
     local version
     version="$(get_frontmatter_field "$skill_dir" "version")"
     if [ -z "$version" ]; then
-      ((missing_version++))
+      missing_version=$((missing_version+1))
       missing_version_list+="    $name\n"
     fi
   done < <(all_skill_dirs)
@@ -803,10 +803,10 @@ cmd_permissions() {
 
     for p in "${perms[@]}"; do
       if echo "$existing_perms" | grep -qF "\"$p\""; then
-        ((kept++))
+        kept=$((kept+1))
       else
         new_perms+=("$p")
-        ((added++))
+        added=$((added+1))
       fi
     done
 
@@ -1182,7 +1182,7 @@ cmd_agent_list() {
 
     printf "  %-14s %-22s %-8s %-18s " "$proj_name" "$agent_name" "$atype" "$sched_display"
     echo -e "$status_str"
-    ((count++))
+    count=$((count+1))
   done < <(agent_scan_all)
 
   echo ""
@@ -1924,7 +1924,7 @@ cmd_maintain() {
     if [ ! -L "$target" ] && [ ! -e "$target" ]; then
       ln -s "$skill_dir" "$target"
       echo -e "  ${GREEN}deployed${NC} $name"
-      ((deployed++))
+      deployed=$((deployed+1))
     fi
   done < <(all_skill_dirs)
 
@@ -1934,7 +1934,7 @@ cmd_maintain() {
     if [ -L "$link" ] && [ ! -e "$link" ]; then
       rm "$link"
       echo -e "  ${YELLOW}cleaned${NC} $(basename "$link") (dangling)"
-      ((cleaned++))
+      cleaned=$((cleaned+1))
     fi
   done
 
@@ -1967,7 +1967,7 @@ cmd_maintain() {
       if [ "$has_tooling" -eq 1 ]; then
         echo -e "  ${CYAN}$proj_name${NC}"
         cmd_permissions "$proj_dir" 2>/dev/null | sed 's/^/    /'
-        ((proj_count++))
+        proj_count=$((proj_count+1))
       fi
     done
     echo -e "  Scanned: $proj_count projects"
@@ -2243,7 +2243,7 @@ cmd_audit() {
   while IFS= read -r d; do
     [ -z "$d" ] && continue
     skill_dirs+=("$d")
-    ((total++))
+    total=$((total+1))
   done < <(all_skill_dirs)
 
   # --- Begin report ---
@@ -2260,7 +2260,7 @@ cmd_audit() {
     if [ -d "$DEPLOY_TARGET" ]; then
       for link in "$DEPLOY_TARGET"/*; do
         if [ -L "$link" ] && [ ! -e "$link" ]; then
-          ((dangling++))
+          dangling=$((dangling+1))
         fi
       done
     fi
@@ -2278,7 +2278,7 @@ cmd_audit() {
 
       # Deploy check
       if [ ! -L "$target" ]; then
-        ((missing_deploy++))
+        missing_deploy=$((missing_deploy+1))
         missing_deploy_list+="- $name\n"
       fi
 
@@ -2286,7 +2286,7 @@ cmd_audit() {
       local tags
       tags="$(get_frontmatter_field "$skill_dir" "tags")"
       if [ -z "$tags" ]; then
-        ((missing_tags++))
+        missing_tags=$((missing_tags+1))
         missing_tags_list+="- $name\n"
       fi
 
@@ -2294,13 +2294,13 @@ cmd_audit() {
       local ver
       ver="$(get_frontmatter_field "$skill_dir" "version")"
       if [ -z "$ver" ]; then
-        ((missing_version++))
+        missing_version=$((missing_version+1))
         missing_version_list+="- $name\n"
       fi
 
       # Description quality: check for TRIGGER
       if ! grep -qi "TRIGGER" "$skill_dir/SKILL.md" 2>/dev/null; then
-        ((no_trigger++))
+        no_trigger=$((no_trigger+1))
         no_trigger_list+="- $name\n"
       fi
 
@@ -2395,7 +2395,7 @@ cmd_audit() {
 
       if [ -z "$last_commit_date" ]; then
         echo "$category|$name|$L_NOT_COMMITTED" >> "$tmp_new"
-        ((new_count++))
+        new_count=$((new_count+1))
         continue
       fi
 
@@ -2407,13 +2407,13 @@ cmd_audit() {
 
       if [ "$age" -le 14 ] && [ "$commit_count" -gt 1 ]; then
         echo "$category|$name|${commit_count} $L_REVISIONS, ${age}${L_DAYS_AGO}" >> "$tmp_dev"
-        ((developing_count++))
+        developing_count=$((developing_count+1))
       elif [ "$age" -le 90 ]; then
         echo "$category|$name|${commit_count} $L_REV, ${age}${L_DAYS_AGO}" >> "$tmp_stable"
-        ((stable_count++))
+        stable_count=$((stable_count+1))
       else
         echo "$category|$name|${commit_count} $L_REV, ${age}${L_DAYS_AGO} ($last_commit_date)" >> "$tmp_abandoned"
-        ((abandoned_count++))
+        abandoned_count=$((abandoned_count+1))
       fi
     done
 
@@ -2602,7 +2602,7 @@ cmd_audit() {
       word_count=$(echo "$skills_in_group" | wc -w | tr -d ' ')
       if [ "$word_count" -gt 1 ]; then
         echo "- **[$combo]**: $skills_in_group — $L_REVIEW_BOUNDARY"
-        ((overlap_found++))
+        overlap_found=$((overlap_found+1))
       fi
     done < <(cut -d'|' -f1 "$tmp_tags" | sort -u)
     rm -f "$tmp_tags"
@@ -2655,7 +2655,7 @@ cmd_audit() {
           config_status="no CLAUDE.md"
         else
           config_status="**missing**"
-          ((proj_issues++))
+          proj_issues=$((proj_issues+1))
         fi
 
         # --- Permissions check ---
@@ -2674,13 +2674,13 @@ cmd_audit() {
 
           if [ "$oneoff_count" -gt 0 ] || [ "$colon_count" -gt 0 ]; then
             perm_status="**cleanup** (${oneoff_count} one-off, ${colon_count} colon-style)"
-            ((proj_issues++))
+            proj_issues=$((proj_issues+1))
           else
             perm_status="OK ($total_perms rules)"
           fi
         else
           perm_status="**missing**"
-          ((proj_issues++))
+          proj_issues=$((proj_issues+1))
         fi
 
         # --- CI/CD status ---
