@@ -11,7 +11,7 @@ skills/
 ├── quality/    # 程式品質、審查、除錯、測試 (7)
 ├── git/        # Git/GitHub 操作 (2)
 ├── frontend/   # 前端設計、iOS、測試 (5)
-├── backend/    # 後端服務 (13)
+├── backend/    # 後端服務 (15)
 └── docs/       # 文件處理與 MCP 建置 (20)
 ```
 
@@ -46,7 +46,7 @@ cd ~/any-project && claude
 | `./bin/sk readme` | Regenerate Skills Catalog in README.md from SKILL.md frontmatter |
 | `./bin/sk sync` | Show Google Drive import status for re-import |
 
-## Skills Catalog (97 skills)
+## Skills Catalog (99 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -141,6 +141,8 @@ cd ~/any-project && claude
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **audio-transcription-flow** | 自動 | Implement a complete audio upload → speech-to-text → transcript display |
+| **cloudflare-tunnel-ops** | `/cloudflare-tunnel-ops` 或自動 | 操作/搬移/除錯既有 Cloudflare Tunnel：error 1033、容器掛掉、換主機（複製憑證不重建）、DNS proxied、憑證輪替 |
+| **cloudflare-tunnel-provision** | `/cloudflare-tunnel-provision` 或自動 | 用 Cloudflare API 從零架設新網域 tunnel：token scope、locally-managed tunnel、憑證+config.yml、DNS CNAME、cloudflared 接進 docker-compose |
 | **db-migration** | 自動 | 偵測 DB stack，設定 migration 工具（Alembic/Prisma/Drizzle），指導安全 schema 變更 |
 | **doc-to-structured-data** | 自動 | 非結構化技術文件（.doc/.pdf 測試計畫、規格書、datasheet）→ 結構化 CSV/JSON，含格式偵測、欄位對映、驗證 |
 | **docker-compose-setup** | 自動 | Set up Docker Compose for multi-service projects (Next. |

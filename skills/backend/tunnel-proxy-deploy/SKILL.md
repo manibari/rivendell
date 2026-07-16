@@ -191,5 +191,12 @@ done
 | `TELEGRAM_BOT_TOKEN not set` | `.env` not loaded | `set -a && source .env` before uvicorn |
 | `Port XXXX is not available` | Old process still running | `lsof -i :PORT -t \| xargs kill` |
 | Wrong app on port (e.g. NBA instead of CRM) | Stale Python 3.9 process | Kill old process, rebuild venv with correct Python |
-| `error 1033` on Cloudflare | Tunnel process died | `launchctl unload/load` the plist |
+| `error 1033` on Cloudflare | Tunnel process died | Restart cloudflared; deeper tunnel ops → `[[cloudflare-tunnel-ops]]` |
 | Next.js build fails | Wrong Node.js version | Use `/opt/homebrew/opt/node@22/bin/npx` |
+
+## Related
+
+This skill covers the **app layer** (307 / CORS / rewrites). For the tunnel itself:
+
+- `[[cloudflare-tunnel-provision]]` — create a tunnel + DNS for a new domain from scratch (Cloudflare API, docker-compose).
+- `[[cloudflare-tunnel-ops]]` — operate / move / troubleshoot an existing tunnel (error 1033, host migration, creds).
