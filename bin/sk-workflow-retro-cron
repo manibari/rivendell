@@ -57,6 +57,7 @@ Write in Traditional Chinese (繁體中文)."
 start_epoch=$(date +%s)
 
 claude -p "$PROMPT" \
+    --model sonnet \
     --output-format text \
     < /dev/null \
     > "$REPORT_FILE" \

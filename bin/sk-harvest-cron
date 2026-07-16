@@ -102,6 +102,7 @@ start_epoch=$(date +%s)
 REPORT_FILE="$REPORT_DIR/harvest-${TODAY}.md"
 
 claude -p "$PROMPT" \
+    --model sonnet \
     --output-format text \
     < /dev/null \
     > "$REPORT_FILE" \
