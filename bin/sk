@@ -15,6 +15,10 @@ NC='\033[0m'
 # Source the unified execution engine
 source "$(dirname "$0")/sk-exec-lib"
 
+# Service-manager adapter (launchd on macOS, systemd --user on linux/WSL).
+# Everything below calls svc_* and must not reach for launchctl directly.
+source "$(dirname "$0")/lib/platform.sh"
+
 usage() {
   cat <<EOF
 Usage: ./bin/sk <command> [args]
@@ -88,20 +92,24 @@ cmd_deploy() {
   done < <(all_skill_dirs)
   echo -e "\n${GREEN}Deployed $count skill(s).${NC}"
 
-  # Install plist templates (replace REPO_PATH with actual path)
-  local la_dir="$HOME/Library/LaunchAgents"
-  local plist_count=0
-  for tpl in "$REPO_DIR"/com.*.plist; do
-    [ -f "$tpl" ] || continue
-    local plist_name
-    plist_name="$(basename "$tpl")"
-    local dest="$la_dir/$plist_name"
-    sed "s|REPO_PATH|$REPO_DIR|g" "$tpl" > "$dest"
-    echo -e "${GREEN}plist${NC} $plist_name → $la_dir/"
-    plist_count=$((plist_count+1))
-  done
-  if [ "$plist_count" -gt 0 ]; then
-    echo -e "${GREEN}Installed $plist_count plist(s).${NC}"
+  # Install service templates. These are launchd-shaped (com.*.plist) and only
+  # meaningful on macOS; linux/WSL agents are generated from agents.json by
+  # svc_generate instead, so there is nothing to copy.
+  if [ "$SK_PLATFORM" = "darwin" ]; then
+    local unit_dir; unit_dir="$(svc_dir)"
+    mkdir -p "$unit_dir"
+    local plist_count=0
+    for tpl in "$REPO_DIR"/com.*.plist; do
+      [ -f "$tpl" ] || continue
+      local plist_name
+      plist_name="$(basename "$tpl")"
+      sed "s|REPO_PATH|$REPO_DIR|g" "$tpl" > "$unit_dir/$plist_name"
+      echo -e "${GREEN}plist${NC} $plist_name → $unit_dir/"
+      plist_count=$((plist_count+1))
+    done
+    if [ "$plist_count" -gt 0 ]; then
+      echo -e "${GREEN}Installed $plist_count plist(s).${NC}"
+    fi
   fi
 }
 
@@ -875,7 +883,7 @@ EOJSON
 # Agent Management
 # =============================================================================
 
-LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+LAUNCH_AGENTS_DIR="$(svc_dir)"
 
 # Scan all projects for .claude/agents.json, output: project_dir|project_name|agent_name
 agent_scan_all() {
@@ -942,10 +950,10 @@ agent_plist_label() {
   echo "com.sk.agent.${project}.${name}"
 }
 
-# Check if agent is loaded in launchd
+# Check if agent is registered with the service manager
 agent_is_loaded() {
   local label="$1"
-  launchctl list "$label" &>/dev/null
+  svc_is_loaded "$label"
 }
 
 # Get agent config field via python
@@ -974,118 +982,10 @@ else:
 " 2>/dev/null
 }
 
+# generate_agent_plist lived here. Unit generation now belongs to svc_generate
+# in bin/lib/platform.sh, which emits a plist or a .service+.timer pair from the
+# same agents.json schema.
 # Generate plist XML from agent config
-generate_agent_plist() {
-  local proj_dir="$1"
-  local proj_name="$2"
-  local agent_name="$3"
-  local agents_file="$proj_dir/.claude/agents.json"
-
-  local label
-  label="$(agent_plist_label "$proj_name" "$agent_name")"
-
-  local script
-  script="$(agent_get_config "$agents_file" "$agent_name" "script")"
-  local args_raw
-  args_raw="$(agent_get_config "$agents_file" "$agent_name" "args")"
-  local sched_type
-  sched_type="$(agent_get_config "$agents_file" "$agent_name" "schedule.type")"
-  local sched_hour
-  sched_hour="$(agent_get_config "$agents_file" "$agent_name" "schedule.hour")"
-  local sched_minute
-  sched_minute="$(agent_get_config "$agents_file" "$agent_name" "schedule.minute")"
-  local sched_weekday
-  sched_weekday="$(agent_get_config "$agents_file" "$agent_name" "schedule.weekday")"
-  local sched_interval
-  sched_interval="$(agent_get_config "$agents_file" "$agent_name" "schedule.interval")"
-  local logs_dir
-  logs_dir="$(agent_get_config "$agents_file" "$agent_name" "logs")"
-  [ -z "$logs_dir" ] && logs_dir="reports/"
-
-  local full_script="$proj_dir/$script"
-  local full_logs="$proj_dir/$logs_dir"
-  mkdir -p "$full_logs"
-
-  # Build ProgramArguments — use wrapper to avoid macOS TCC restrictions
-  local wrapper="$HOME/.local/bin/sk-agent-run"
-  local prog_args=""
-  prog_args+="        <string>$wrapper</string>
-        <string>$proj_dir</string>
-        <string>$script</string>"
-  if [ -n "$args_raw" ]; then
-    for arg in $args_raw; do
-      prog_args+="
-        <string>$arg</string>"
-    done
-  fi
-
-  # Build schedule section
-  local schedule_xml=""
-  case "$sched_type" in
-    daily)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key><integer>$sched_hour</integer>
-        <key>Minute</key><integer>$sched_minute</integer>
-    </dict>"
-      ;;
-    weekdays)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <array>"
-      for wd in 1 2 3 4 5; do
-        schedule_xml+="
-        <dict>
-            <key>Weekday</key><integer>$wd</integer>
-            <key>Hour</key><integer>$sched_hour</integer>
-            <key>Minute</key><integer>$sched_minute</integer>
-        </dict>"
-      done
-      schedule_xml+="
-    </array>"
-      ;;
-    weekly)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Weekday</key><integer>$sched_weekday</integer>
-        <key>Hour</key><integer>$sched_hour</integer>
-        <key>Minute</key><integer>$sched_minute</integer>
-    </dict>"
-      ;;
-    interval)
-      schedule_xml="    <key>StartInterval</key>
-    <integer>$sched_interval</integer>"
-      ;;
-  esac
-
-  cat <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>$label</string>
-
-    <key>ProgramArguments</key>
-    <array>
-$prog_args
-    </array>
-
-$schedule_xml
-
-    <key>StandardOutPath</key>
-    <string>${full_logs}${agent_name}-stdout.log</string>
-    <key>StandardErrorPath</key>
-    <string>${full_logs}${agent_name}-stderr.log</string>
-
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:$HOME/.npm-global/bin:$HOME/.local/bin</string>
-    </dict>
-</dict>
-</plist>
-PLIST
-}
 
 # --- Agent subcommands ---
 
@@ -1259,14 +1159,16 @@ SWIFT
 
   local label
   label="$(agent_plist_label "$proj_name" "$agent_name")"
-  local plist_path="$LAUNCH_AGENTS_DIR/${label}.plist"
+  if ! svc_supported; then
+    echo -e "${RED}Cannot manage agents on this host:${NC} $(svc_unsupported_reason)"
+    return 1
+  fi
 
-  # Generate plist
-  generate_agent_plist "$proj_dir" "$proj_name" "$agent_name" > "$plist_path"
-  echo -e "${GREEN}Generated:${NC} $plist_path"
+  local unit_path
+  unit_path="$(svc_generate "$proj_dir" "$proj_name" "$agent_name")"
+  echo -e "${GREEN}Generated:${NC} $unit_path"
 
-  # Load
-  launchctl load "$plist_path" 2>/dev/null
+  svc_load "$label"
   if agent_is_loaded "$label"; then
     echo -e "${GREEN}Loaded:${NC} $label"
   else
@@ -1298,21 +1200,12 @@ cmd_agent_stop() {
 
   local label
   label="$(agent_plist_label "$proj_name" "$agent_name")"
-  local plist_path="$LAUNCH_AGENTS_DIR/${label}.plist"
-
-  if [ -f "$plist_path" ]; then
-    launchctl unload "$plist_path" 2>/dev/null
-    rm "$plist_path"
+  if agent_is_loaded "$label" || [ -e "$LAUNCH_AGENTS_DIR/${label}.plist" ] \
+     || [ -e "$LAUNCH_AGENTS_DIR/${label}.service" ]; then
+    svc_unload "$label"
     echo -e "${GREEN}Stopped and removed:${NC} $label"
   else
-    echo -e "${YELLOW}Plist not found:${NC} $plist_path"
-    echo -e "Agent may not be started via sk. Checking launchd..."
-    if agent_is_loaded "$label"; then
-      launchctl remove "$label" 2>/dev/null
-      echo -e "${GREEN}Removed from launchd:${NC} $label"
-    else
-      echo -e "${YELLOW}Not loaded in launchd either.${NC}"
-    fi
+    echo -e "${YELLOW}Not registered:${NC} $label"
   fi
 }
 
@@ -1367,18 +1260,12 @@ cmd_agent_status() {
   echo -e "  ${CYAN}Disabled:${NC}    ${disabled:-false}"
   echo ""
 
-  # Launchd status
+  # Service-manager status
   if agent_is_loaded "$label"; then
-    echo -e "  ${CYAN}launchd:${NC}     ${GREEN}● loaded${NC}"
-    local exit_status
-    exit_status="$(launchctl list "$label" 2>/dev/null | grep '"LastExitStatus"' | grep -oE '[0-9]+' || echo "?")"
-    # Try parsing from launchctl list output
-    if [ "$exit_status" = "?" ]; then
-      exit_status="$(launchctl list 2>/dev/null | awk -v lbl="$label" '$3 == lbl {print $2}')"
-    fi
-    echo -e "  ${CYAN}Last Exit:${NC}   $exit_status"
+    echo -e "  ${CYAN}${SK_PLATFORM}:${NC}     ${GREEN}● loaded${NC}"
+    echo -e "  ${CYAN}Last Exit:${NC}   $(svc_last_exit "$label")"
   else
-    echo -e "  ${CYAN}launchd:${NC}     ${RED}○ not loaded${NC}"
+    echo -e "  ${CYAN}${SK_PLATFORM}:${NC}     ${RED}○ not loaded${NC}"
   fi
   echo ""
 
@@ -1881,8 +1768,7 @@ agent_health_report() {
       status_str="disabled"
     elif agent_is_loaded "$label"; then
       status_str="● loaded"
-      last_exit="$(launchctl list 2>/dev/null | awk -v lbl="$label" '$3 == lbl {print $2}')"
-      [ -z "$last_exit" ] && last_exit="?"
+      last_exit="$(svc_last_exit "$label")"
     else
       status_str="○ unloaded"
       if [ "$disabled" != "true" ]; then
@@ -3232,9 +3118,9 @@ cmd_check_agents() {
     [[ "$label" =~ ^com\.sk\.agent\. ]] && conf_labels+="$label"$'\n'
   done < "$AGENTS_CONF_FILE"
 
-  # Labels currently loaded in launchd
+  # Labels currently registered with the service manager
   local loaded_labels
-  loaded_labels="$(launchctl list 2>/dev/null | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
+  loaded_labels="$(svc_list | cut -f1 | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
 
   local conf_sorted loaded_sorted
   conf_sorted="$(echo "$conf_labels" | sort -u | grep -v '^$' || true)"
@@ -3488,10 +3374,11 @@ cmd_status() {
 
   echo ""
 
-  # Launchd agents (macOS only)
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${YELLOW}Launchd agents:${NC}"
-    launchctl list 2>/dev/null | grep "com.sk" | while read -r pid status label; do
+  # Registered agents (launchd on macOS, systemd --user elsewhere)
+  if svc_supported; then
+    echo -e "${YELLOW}Agents (${SK_PLATFORM}):${NC}"
+    while IFS=$'\t' read -r label pid status; do
+      [ -z "$label" ] && continue
       if [ "$pid" != "-" ] && [ "$pid" != "0" ]; then
         echo -e "  ${GREEN}running${NC}  $label (pid=$pid)"
       elif [ "$status" = "0" ]; then
@@ -3499,7 +3386,7 @@ cmd_status() {
       else
         echo -e "  ${RED}error${NC}    $label (exit=$status)"
       fi
-    done
+    done < <(svc_list)
   fi
 
   echo ""
@@ -3628,11 +3515,11 @@ cmd_update() {
     cmd_up --profile "$profile_name"
   fi
 
-  # macOS: re-deploy skills
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${CYAN}Re-deploying skills...${NC}"
-    cmd_deploy
-  fi
+  # Skill symlinks are platform-neutral — this used to be gated on Darwin, which
+  # meant a switch on linux/WSL silently left ~/.claude/skills/ pointing at the
+  # previous machine's paths.
+  echo -e "${CYAN}Re-deploying skills...${NC}"
+  cmd_deploy
 }
 
 cmd_bootstrap() {
@@ -3711,24 +3598,23 @@ cmd_bootstrap() {
   fi
   echo ""
 
-  # Step 5: macOS-only (skills + agents)
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${YELLOW}[5/7] Skills & agents (macOS)${NC}"
+  # Step 5: skills (every platform) + agents (wherever a service manager exists)
+  if svc_supported; then
+    echo -e "${YELLOW}[5/7] Skills & agents (${SK_PLATFORM})${NC}"
     if ! $dry_run; then
       cmd_deploy
-      # Run agent setup if profile has agents
       local has_agents=false
       parse_profile "$profile_name" | grep -q '^agents|' && has_agents=true
       if $has_agents && [ -x "$REPO_DIR/bin/sk-setup-agents" ]; then
         echo ""
-        echo -e "  Setting up launchd agents..."
+        echo -e "  Setting up agents..."
         "$REPO_DIR/bin/sk-setup-agents" 2>&1 | sed 's/^/  /'
       fi
     else
       echo "  (dry-run: would deploy skills + setup agents)"
     fi
   else
-    echo -e "${YELLOW}[5/7] Skills (Linux — no launchd)${NC}"
+    echo -e "${YELLOW}[5/7] Skills only — $(svc_unsupported_reason)${NC}"
     if ! $dry_run; then
       cmd_deploy
     fi
