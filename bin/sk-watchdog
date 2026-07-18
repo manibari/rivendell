@@ -119,7 +119,7 @@ check_and_restart() {
         return 0
     fi
 
-    if curl -fs --max-time 5 -o /dev/null "$url" 2>/dev/null; then
+    if curl -fs --max-time 15 -o /dev/null "$url" 2>/dev/null; then
         if [ "$failures" -gt 0 ]; then
             log "OK $key (recovered after $failures failures)"
             set_state "$key" 0 "$last_restart" "$restarts_today" "$today_date"

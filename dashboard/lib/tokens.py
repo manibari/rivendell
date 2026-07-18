@@ -435,8 +435,11 @@ def get_filtered_usage(date_start: str | None = None,
             continue
         project_name = _dir_to_project_name(project_dir.name)
         for jsonl_path in project_dir.glob("*.jsonl"):
-            _parse_jsonl_unified(
-                jsonl_path, project_name, date_start, date_end,
+            # Cached per-file aggregate (parse once per file version); the date
+            # filter applies at merge time. See _file_agg_cached for why.
+            file_agg = _file_agg_cached(jsonl_path, project_name)
+            _merge_file_agg(
+                file_agg, date_start, date_end,
                 projects, models_agg, daily_agg, all_sessions,
             )
 
@@ -493,20 +496,18 @@ def get_filtered_usage(date_start: str | None = None,
     )
 
 
-def _parse_jsonl_unified(
-    path: Path, fallback_project: str,
-    date_start: str | None, date_end: str | None,
-    projects: dict, models_agg: dict, daily_agg: dict,
-    all_sessions: set,
-) -> None:
-    """Parse one JSONL file, accumulating into all three aggregation dicts.
+def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
+    """Parse one JSONL file into a date→project granular aggregate.
 
-    Project attribution is per-line (uses entry["cwd"]), not per-file.
-    Sessions launched in a parent dir and `cd`-ed elsewhere get split
-    across the actual sub-projects worked on. fallback_project is used
-    only when a line has no cwd and we haven't seen one yet in this
-    session.
+    Shape: {date: {project: {"sessions": [ids], "messages": n, "tool_calls": n,
+                             "models": {model: [input, output, cache_read, cache_create]}}}}
+
+    Every aggregate the dashboard needs (per-project, per-model, per-day, any
+    date filter) derives EXACTLY from this, which is what makes it cacheable:
+    parse once per file version, merge many times. Project attribution is
+    per-line (entry["cwd"]); fallback_project only when no cwd seen yet.
     """
+    agg: dict = {}
     last_cwd: str | None = None
     try:
         with open(path) as f:
@@ -516,21 +517,14 @@ def _parse_jsonl_unified(
                 except json.JSONDecodeError:
                     continue
 
-                # Track cwd as it changes within the session (used for
-                # current and subsequent lines until the next change)
                 cwd_now = entry.get("cwd")
                 if cwd_now:
                     last_cwd = cwd_now
 
-                # Date filtering via entry timestamp
                 ts = entry.get("timestamp", "")
                 if not ts:
                     continue
-                date_str = ts[:10]  # "2026-02-15T14:54:11.096Z" → "2026-02-15"
-                if date_start and date_str < date_start:
-                    continue
-                if date_end and date_str > date_end:
-                    continue
+                date_str = ts[:10]
 
                 msg = entry.get("message", {})
                 usage = msg.get("usage")
@@ -539,14 +533,12 @@ def _parse_jsonl_unified(
 
                 model = msg.get("model", "unknown")
                 session_id = entry.get("sessionId", str(path))
-                all_sessions.add(session_id)
 
                 input_t = usage.get("input_tokens", 0)
                 output_t = usage.get("output_tokens", 0)
                 cache_read = usage.get("cache_read_input_tokens", 0)
                 cache_create = usage.get("cache_creation_input_tokens", 0)
 
-                # Count tool calls
                 tool_calls = 0
                 if msg.get("role") == "assistant":
                     content = msg.get("content", [])
@@ -556,39 +548,110 @@ def _parse_jsonl_unified(
                             if isinstance(c, dict) and c.get("type") == "tool_use"
                         )
 
-                # Per-line cwd → project; fall back to filename-derived
-                # project when no cwd has appeared yet in this session.
                 project = _cwd_to_project_name(last_cwd) if last_cwd else ""
                 if not project:
                     project = fallback_project
 
-                # Accumulate per-project
-                pd = projects[project]
-                pd["sessions"].add(session_id)
-                pd["messages"] += 1
-                pd["tool_calls"] += tool_calls
-                pd["by_model"][model]["input"] += input_t
-                pd["by_model"][model]["output"] += output_t
-                pd["by_model"][model]["cache_read"] += cache_read
-                pd["by_model"][model]["cache_create"] += cache_create
-
-                # Accumulate per-model
-                models_agg[model]["input"] += input_t
-                models_agg[model]["output"] += output_t
-                models_agg[model]["cache_read"] += cache_read
-                models_agg[model]["cache_create"] += cache_create
-
-                # Accumulate per-day
-                dd = daily_agg[date_str]
-                dd["sessions"].add(session_id)
-                dd["messages"] += 1
-                dd["tool_calls"] += tool_calls
-                dd["by_model"][model]["input"] += input_t
-                dd["by_model"][model]["output"] += output_t
-                dd["by_model"][model]["cache_read"] += cache_read
-                dd["by_model"][model]["cache_create"] += cache_create
+                day = agg.setdefault(date_str, {})
+                p = day.setdefault(project, {
+                    "sessions": set(), "messages": 0, "tool_calls": 0, "models": {},
+                })
+                p["sessions"].add(session_id)
+                p["messages"] += 1
+                p["tool_calls"] += tool_calls
+                m = p["models"].setdefault(model, [0, 0, 0, 0])
+                m[0] += input_t
+                m[1] += output_t
+                m[2] += cache_read
+                m[3] += cache_create
     except Exception:
         pass
+    # sets → lists for JSON serialization
+    for day in agg.values():
+        for p in day.values():
+            p["sessions"] = sorted(p["sessions"])
+    return agg
+
+
+def _file_agg_cached(path: Path, fallback_project: str) -> dict:
+    """Per-file aggregate with a SQLite cache keyed on (mtime, size).
+
+    Why: the JSONL corpus reached ~1GB and the api re-parsed ALL of it on every
+    cold start. That parse (GIL-bound) starved every other endpoint past the
+    watchdog's 5s probe → kickstart -k → cache gone → re-parse → a permanent
+    kill/restart spiral (22,474 restarts observed, 2026-07-18). With this cache
+    an old 148MB session parses ONCE ever; a cold start re-parses only files
+    that changed since last seen (normally just the active sessions).
+    """
+    import sqlite3
+
+    try:
+        st = path.stat()
+    except OSError:
+        return {}
+    db_path = _history_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path), timeout=10)
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS jsonl_file_cache (
+                path TEXT PRIMARY KEY,
+                mtime REAL NOT NULL,
+                size INTEGER NOT NULL,
+                agg TEXT NOT NULL
+            )
+        """)
+        row = conn.execute(
+            "SELECT mtime, size, agg FROM jsonl_file_cache WHERE path = ?",
+            (str(path),),
+        ).fetchone()
+        if row and row[0] == st.st_mtime and row[1] == st.st_size:
+            try:
+                return json.loads(row[2])
+            except json.JSONDecodeError:
+                pass  # corrupt cache row → re-parse below
+        agg = _parse_jsonl_granular(path, fallback_project)
+        conn.execute(
+            "INSERT INTO jsonl_file_cache(path, mtime, size, agg) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(path) DO UPDATE SET mtime=excluded.mtime, size=excluded.size, agg=excluded.agg",
+            (str(path), st.st_mtime, st.st_size, json.dumps(agg)),
+        )
+        conn.commit()
+        return agg
+    finally:
+        conn.close()
+
+
+def _merge_file_agg(
+    agg: dict,
+    date_start: str | None, date_end: str | None,
+    projects: dict, models_agg: dict, daily_agg: dict,
+    all_sessions: set,
+) -> None:
+    """Merge one cached per-file aggregate into the query accumulators,
+    applying the date filter at merge time (the cache itself is unfiltered)."""
+    for date_str, day in agg.items():
+        if date_start and date_str < date_start:
+            continue
+        if date_end and date_str > date_end:
+            continue
+        dd = daily_agg[date_str]
+        for project, p in day.items():
+            sessions = p.get("sessions", [])
+            all_sessions.update(sessions)
+            pd = projects[project]
+            pd["sessions"].update(sessions)
+            pd["messages"] += p.get("messages", 0)
+            pd["tool_calls"] += p.get("tool_calls", 0)
+            dd["sessions"].update(sessions)
+            dd["messages"] += p.get("messages", 0)
+            dd["tool_calls"] += p.get("tool_calls", 0)
+            for model, m in p.get("models", {}).items():
+                for agg_slot in (pd["by_model"][model], models_agg[model], dd["by_model"][model]):
+                    agg_slot["input"] += m[0]
+                    agg_slot["output"] += m[1]
+                    agg_slot["cache_read"] += m[2]
+                    agg_slot["cache_create"] += m[3]
 
 
 def get_project_usage() -> list[ProjectUsage]:

@@ -225,40 +225,57 @@ def _extract_name_and_project(label: str, plist_data: dict[str, Any]) -> tuple[s
     return name, project
 
 
+_LAUNCHCTL_SNAP: dict[str, Any] = {"t": 0.0, "rows": {}}
+
+
+def _launchctl_snapshot() -> dict[str, tuple[int | None, int | None]]:
+    """{label: (pid, exit_code)} from ONE `launchctl list` dump, 5s TTL.
+
+    Why: the old per-label `launchctl list <label>` ran a subprocess for EVERY
+    agent — 20+ agents made /api/agents take ~18s, which (combined with the
+    token-corpus cold parse) fed the watchdog kill/restart spiral of 2026-07-18.
+    One tabular dump carries the same facts for all labels.
+    """
+    import time as _time
+
+    now = _time.time()
+    if now - _LAUNCHCTL_SNAP["t"] < 5 and _LAUNCHCTL_SNAP["rows"]:
+        return _LAUNCHCTL_SNAP["rows"]
+    rows: dict[str, tuple[int | None, int | None]] = {}
+    try:
+        result = subprocess.run(
+            ["launchctl", "list"], capture_output=True, text=True, timeout=10,
+        )
+        for line in result.stdout.splitlines()[1:]:
+            parts = line.split("\t")
+            if len(parts) != 3:
+                continue
+            pid_s, status_s, label = parts
+            pid = int(pid_s) if pid_s.strip().isdigit() else None
+            try:
+                raw = int(status_s.strip())
+                # tabular status is a wait status when >255, plain code otherwise
+                exit_code: int | None = raw >> 8 if raw > 255 else raw
+            except ValueError:
+                exit_code = None
+            rows[label.strip()] = (pid, exit_code)
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return _LAUNCHCTL_SNAP["rows"] or {}
+    _LAUNCHCTL_SNAP["rows"] = rows
+    _LAUNCHCTL_SNAP["t"] = now
+    return rows
+
+
 def _check_loaded(label: str) -> tuple[bool, int | None, int | None]:
-    """Check if agent is loaded via launchctl list <label>.
+    """Check if agent is loaded, via the shared launchctl snapshot.
 
     Returns (loaded, pid, exit_code).
     """
-    try:
-        result = subprocess.run(
-            ["launchctl", "list", label],
-            capture_output=True, text=True, timeout=5,
-        )
-        if result.returncode != 0:
-            return False, None, None
-
-        # Parse output for PID and LastExitStatus
-        pid: int | None = None
-        exit_code: int | None = None
-        for line in result.stdout.splitlines():
-            stripped = line.strip()
-            if '"PID"' in stripped or "PID" in stripped:
-                # Format: "PID" = 12345;
-                val = stripped.split("=")[-1].strip().rstrip(";").strip()
-                if val.isdigit():
-                    pid = int(val)
-            if "LastExitStatus" in stripped:
-                val = stripped.split("=")[-1].strip().rstrip(";").strip()
-                try:
-                    raw = int(val)
-                    # LastExitStatus is POSIX wait() status: exit_code << 8
-                    exit_code = raw >> 8
-                except ValueError:
-                    pass
-        return True, pid, exit_code
-    except (subprocess.TimeoutExpired, FileNotFoundError):
+    snap = _launchctl_snapshot()
+    if label not in snap:
         return False, None, None
+    pid, exit_code = snap[label]
+    return True, pid, exit_code
 
 
 def list_agents() -> list[AgentInfo]:
