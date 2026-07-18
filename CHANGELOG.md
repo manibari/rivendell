@@ -18,6 +18,14 @@ feature/fix 一條 bullet 帶短 hash;不把多個修正捲成一條模糊敘述
 
 （空）
 
+## 0.2.1 — api 死亡螺旋根治 — 2026-07-18
+
+- **fix(api): watchdog death-spiral** — 1GB session 語料冷掃 × 併發疊加 + 每
+  agent 一次 launchctl(18s)→ 5s 探針必死 → kickstart 殺 → cache 清空 → 重掃,
+  歷史累計 22,474 次重啟。修法:per-file granular JSONL cache(SQLite,
+  mtime+size key,老檔一生解析一次)+ launchctl 單次 dump snapshot(5s TTL)+
+  探針 5→15s。實測 overview 冷 2.4s/熱 1.4ms、agents 0.69s、tokens 3ms。
+
 ## 0.2.0 — 平台月:部署管理 × token 三層 × spine × skeleton — 2026-07-18
 
 > Catch-up cut:0.1.0(6/13)後一個月的主線。當時無 granularity 規則,本段按
