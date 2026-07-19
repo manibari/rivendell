@@ -959,6 +959,9 @@ def api_tokens() -> dict[str, Any]:
         "total_messages": f.total_messages,
         "total_cost_usd": f.total_cost_usd,
         "total_tokens": f.total_tokens,
+        "total_cache_tokens": sum(
+            m.cache_read_tokens + m.cache_create_tokens for m in f.models
+        ),
         # daily merges SQLite history (older than the ~30-day JSONL window) with
         # live JSONL so the chart shows full history, not just what Claude Code
         # hasn't rotated out yet. f.daily alone is JSONL-only (~30 days).
@@ -968,6 +971,7 @@ def api_tokens() -> dict[str, Any]:
                 "sessions": d.sessions,
                 "messages": d.messages,
                 "tokens_total": d.tokens_total,
+                "cache_tokens": d.cache_tokens,
                 "cost_usd": d.cost_usd,
             }
             for d in get_daily_usage(days=None)
@@ -1014,12 +1018,16 @@ def api_tokens_filtered(
         "total_messages": f.total_messages,
         "total_cost_usd": f.total_cost_usd,
         "total_tokens": f.total_tokens,
+        "total_cache_tokens": sum(
+            m.cache_read_tokens + m.cache_create_tokens for m in f.models
+        ),
         "daily": [
             {
                 "date": d.date,
                 "sessions": d.sessions,
                 "messages": d.messages,
                 "tokens_total": d.tokens_total,
+                "cache_tokens": d.cache_tokens,
                 "cost_usd": d.cost_usd,
             }
             for d in _daily

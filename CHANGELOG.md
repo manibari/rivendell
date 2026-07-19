@@ -18,6 +18,19 @@ feature/fix 一條 bullet 帶短 hash;不把多個修正捲成一條模糊敘述
 
 （空）
 
+## 0.2.2 — tokens 頁誠實化：雙軸吞吐 + 砍幻覺金額 — 2026-07-19
+
+- **fix(tokens): Max 吃到飽用戶的幻覺 $**。舊頁頭條大字是 `$total_cost_usd`
+  ($64K),但那是 cache_read × opus 預設價（現役 fable-5 / opus-4-8 根本不在
+  價格表→全 fallback opus $15/$75），而 Max 逐 token 實付 $0 → 純虛構。改：
+  headline 拆「產出(in+out) / Context 重讀(cache) / 估算花費(API 等值·非實付)」；
+  砍掉「每日花費」bar。
+- **feat(tokens): context 疊加可視化**。後端 `DailyUsage.cache_tokens` +
+  `total_cache_tokens`（read+create）；每日圖改**雙軸並排**（產出左軸·百萬、
+  context 右軸·十億——兩者差 ~280× 不能共軸，疊線性軸會壓死產出那條）。
+  recharts bar 關 `isAnimationActive`（headless QA 才截得到，rAF 動畫在虛擬
+  時間下不觸發→bar 卡高度 0）。
+
 ## 0.2.1 — api 死亡螺旋根治 — 2026-07-18
 
 - **fix(api): watchdog death-spiral** — 1GB session 語料冷掃 × 併發疊加 + 每

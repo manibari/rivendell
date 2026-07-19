@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
@@ -18,6 +19,9 @@ import {
 // computed root style at render time.
 const ACCENT = "#2d4a3e";
 const ACCENT_SOFT = "#5b7a6a";
+// Palest step of the sequential-green ramp (DESIGN.md Color rules) — used for the
+// context/cache_read mass, which dwarfs real output ~280×, so it must recede.
+const CACHE_GREEN = "#d1ddd5";
 const BORDER = "#e5e7eb";
 const TEXT_SUBTLE = "#9ca3af";
 const SURFACE = "#ffffff";
@@ -166,11 +170,15 @@ export default function TokensPage() {
             value: data.total_messages.toLocaleString(),
           },
           {
-            label: "總 Tokens",
+            label: "產出 Tokens (in+out)",
             value: data.total_tokens.toLocaleString(),
           },
           {
-            label: "估算花費",
+            label: "Context 重讀 (cache)",
+            value: (data.total_cache_tokens ?? 0).toLocaleString(),
+          },
+          {
+            label: "估算花費 (API 等值·非實付)",
             value: `$${data.total_cost_usd.toFixed(2)}`,
           },
         ]}
@@ -180,13 +188,18 @@ export default function TokensPage() {
       {data.daily.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-3" style={sectionH2}>
-            每日 Token 用量
+            每日 Token 吞吐（產出 vs context 重讀）
           </h2>
+          <p className="mb-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
+            雙軸：深綠＝產出 (左軸·百萬)，淺綠＝context 重讀 (右軸·十億)。
+            兩者各自刻度，因 context 是產出的 ~280×，不能共用一軸。
+          </p>
           <div className="h-64 w-full" style={tableWrap}>
             <ResponsiveContainer width="100%" height={256}>
               <BarChart
                 data={data.daily}
-                margin={{ top: 16, right: 16, bottom: 16, left: 0 }}
+                margin={{ top: 16, right: 8, bottom: 16, left: 0 }}
+                barGap={1}
               >
                 <CartesianGrid stroke={BORDER} strokeDasharray="3 3" />
                 <XAxis
@@ -196,55 +209,59 @@ export default function TokensPage() {
                   stroke={BORDER}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: TEXT_SUBTLE, fontFamily: "monospace" }}
-                  stroke={BORDER}
+                  yAxisId="out"
+                  orientation="left"
+                  tick={{ fontSize: 10, fill: ACCENT, fontFamily: "monospace" }}
+                  stroke={ACCENT}
+                  tickFormatter={(v: number) =>
+                    v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : `${(v / 1e3).toFixed(0)}K`
+                  }
+                />
+                <YAxis
+                  yAxisId="cache"
+                  orientation="right"
+                  tick={{ fontSize: 10, fill: ACCENT_SOFT, fontFamily: "monospace" }}
+                  stroke={ACCENT_SOFT}
+                  tickFormatter={(v: number) =>
+                    v >= 1e9 ? `${(v / 1e9).toFixed(1)}B` : `${(v / 1e6).toFixed(0)}M`
+                  }
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
                   formatter={(value) => Number(value).toLocaleString()}
                   cursor={{ fill: "var(--surface-2)" }}
                 />
-                <Bar dataKey="tokens_total" fill={ACCENT} name="Tokens" />
+                <Legend wrapperStyle={{ fontSize: 11, fontFamily: "monospace" }} />
+                {/* Dual-axis grouped (NOT stacked): output and context are ~280×
+                    apart, so a shared linear axis buries output as a 1px sliver.
+                    Each series rides its own axis — output on the left (millions),
+                    context on the right (billions) — so both show real height and
+                    you can read the daily work rhythm AND the context mass. */}
+                <Bar
+                  yAxisId="out"
+                  dataKey="tokens_total"
+                  fill={ACCENT}
+                  name="產出 (in+out) ·左軸"
+                  isAnimationActive={false}
+                />
+                <Bar
+                  yAxisId="cache"
+                  dataKey="cache_tokens"
+                  fill={CACHE_GREEN}
+                  name="Context 重讀 (cache) ·右軸"
+                  isAnimationActive={false}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
       )}
 
-      {/* Daily cost chart */}
-      {data.daily.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-3" style={sectionH2}>
-            每日花費
-          </h2>
-          <div className="h-64 w-full" style={tableWrap}>
-            <ResponsiveContainer width="100%" height={256}>
-              <BarChart
-                data={data.daily}
-                margin={{ top: 16, right: 16, bottom: 16, left: 0 }}
-              >
-                <CartesianGrid stroke={BORDER} strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 10, fill: TEXT_SUBTLE, fontFamily: "monospace" }}
-                  tickFormatter={(v: string) => v.slice(5)}
-                  stroke={BORDER}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: TEXT_SUBTLE, fontFamily: "monospace" }}
-                  stroke={BORDER}
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  formatter={(value) => `$${Number(value).toFixed(4)}`}
-                  cursor={{ fill: "var(--surface-2)" }}
-                />
-                <Bar dataKey="cost_usd" fill={ACCENT_SOFT} name="Cost (USD)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
+      {/* Daily cost chart removed 2026-07-19: the $ was fiction for a Max
+          flat-fee user (cache_read × opus-default pricing, no per-token bill).
+          Dollar figures now survive only as labeled "API 等值·非實付" reference
+          columns in the tables below. See the dual-axis throughput chart above
+          for the honest daily picture. */}
 
       {/* Model breakdown */}
       <section className="mt-8">

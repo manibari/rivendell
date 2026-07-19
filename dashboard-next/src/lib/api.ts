@@ -143,11 +143,13 @@ export interface FilteredTokensData {
   total_messages: number;
   total_cost_usd: number;
   total_tokens: number;
+  total_cache_tokens: number;
   daily: {
     date: string;
     sessions: number;
     messages: number;
     tokens_total: number;
+    cache_tokens: number;
     cost_usd: number;
   }[];
   models: {

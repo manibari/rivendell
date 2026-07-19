@@ -43,6 +43,7 @@ class DailyUsage:
     tool_calls: int
     tokens_total: int
     cost_usd: float
+    cache_tokens: int = 0  # cache_read + cache_create: context re-read, not new work
     models: dict[str, int] = field(default_factory=dict)
 
 
@@ -474,6 +475,7 @@ def get_filtered_usage(date_start: str | None = None,
     for date_str in sorted(daily_agg):
         d = daily_agg[date_str]
         tokens = sum(m["input"] + m["output"] for m in d["by_model"].values())
+        cache = sum(m["cache_read"] + m["cache_create"] for m in d["by_model"].values())
         cost = sum(
             _estimate_cost(mdl, m["input"], m["output"], m["cache_read"], m["cache_create"])
             for mdl, m in d["by_model"].items()
@@ -481,7 +483,7 @@ def get_filtered_usage(date_start: str | None = None,
         daily_results.append(DailyUsage(
             date=date_str, sessions=len(d["sessions"]),
             messages=d["messages"], tool_calls=d["tool_calls"],
-            tokens_total=tokens, cost_usd=cost,
+            tokens_total=tokens, cost_usd=cost, cache_tokens=cache,
             models={mdl: m["input"] + m["output"] for mdl, m in d["by_model"].items()},
         ))
 
