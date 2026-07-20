@@ -80,6 +80,33 @@ def get_current_user(creds: HTTPAuthorizationCredentials | None = Depends(_beare
     return CurrentUser(...)   # shape is per-product (see decisions)
 ```
 
+**SECRET_KEY guard — copy this, never ship a fallback default.** Put it right after
+`settings = Settings()`. HS256 is symmetric, so a source-visible default key = anyone
+can forge a token for any user. Fail loud in prod instead of silently signing:
+
+```python
+# In Settings: no source-visible fallback — empty default, real key comes from .env
+SECRET_KEY: str = ""          # (or lowercase secret_key)
+ENV: str = "development"      # development | production
+
+settings = Settings()
+
+# ENV-gated so dev/tests stay green; prod refuses to boot on a missing/placeholder key.
+if settings.ENV == "production" and (
+    not settings.SECRET_KEY
+    or settings.SECRET_KEY == "dev-secret-key-change-in-production"
+):
+    raise RuntimeError(
+        "SECRET_KEY must be set to a real secret when ENV=production. Generate one "
+        'with: python3 -c "import secrets; print(secrets.token_hex(32))"'
+    )
+```
+
+`product-skeleton` uses the stricter `len(SECRET_KEY) < 32` form; prefer it for
+greenfield, but a live product already running a <32-char key must rotate the key
+first (rotating invalidates every existing JWT → users re-login), so ship the
+placeholder-check form above and rotate on the next planned deploy.
+
 ## Decisions to make — DIVERGENT, ask before writing
 
 These genuinely differ across the fleet; pick per product, don't inherit blindly:
@@ -105,10 +132,16 @@ These genuinely differ across the fleet; pick per product, don't inherit blindly
   DIVERGE (chimesflow refresh + data-driven RBAC vs family-fiscal single-token +
   hardcoded roles). Copying one product whole freezes its policy into the new one.
   Answer the 5 decisions first — that's the whole reason this skill exists.
-- **`SECRET_KEY` fallback default is a landmine**: family-fiscal ships
+- **`SECRET_KEY` fallback default is a landmine**: family-fiscal shipped
   `os.getenv("SECRET_KEY", "fallback-insecure-key-change-me")` — forget to set it in
   prod and you silently run on a public default with no error. The spine version must
-  **fail loud** when `SECRET_KEY` is missing/short in prod, never default-and-continue.
+  **fail loud** when `SECRET_KEY` is missing/short in prod, never default-and-continue
+  (see the SECRET_KEY guard above). A 2026-07-20 fleet audit found the SAME landmine in
+  chimesflow + Norns-ERP (`SECRET_KEY: str = "dev-secret-key-change-in-production"`) and
+  lorien (`secret_key: str = "change-this-in-production"`), all publicly tunneled — every
+  product built before this gotcha was written inherited it. pti-ares + product-skeleton
+  (built after) already guard correctly. When you spin a new product, grep the fleet for
+  this pattern before assuming it's isolated.
 - **`sub` must be `str(user_id)`, never username**: family-fiscal originally put
   username in `sub`, then had to reject old tokens (`int(sub)` fails → force re-login).
   Use `str(user_id)` from day one.
