@@ -7,8 +7,8 @@ Personal Claude Code and Codex skills library — manage, version control, and d
 ```
 skills/
 ├── meta/       # Claude Code 自身管理工具 (17)
-├── workflow/   # 工作流程與規劃 (31)
-├── quality/    # 程式品質、審查、除錯、測試 (7)
+├── workflow/   # 工作流程與規劃 (32)
+├── quality/    # 程式品質、審查、除錯、測試 (8)
 ├── git/        # Git/GitHub 操作 (2)
 ├── frontend/   # 前端設計、iOS、測試 (5)
 ├── backend/    # 後端服務 (13)
@@ -58,7 +58,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (108 skills)
+## Skills Catalog (110 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -93,6 +93,7 @@ as release notes.
 | **candidate-analysis** | `/candidate-analysis` 或自動 | 面試候選人管理：PDF 履歷解析、GitHub repo 程式品質分析、候選人 profile markdown 產出 |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
 | **client-kickoff-docs** | 自動 | 新客戶 kickoff 時（NDA 簽過、首次討論前），讀客戶提供的 homework 檔 → 建立 `scope.md` + `deadline. |
+| **context-journal** | `/context-journal` + hook | 每回合自動追加工作日誌到磁碟，讓 /compact 無損：操作/決策紀錄存在 context 之外、compact 後自動注回、context 超過門檻自動提醒壓縮 |
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
 | **crm-projection** | `/crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
 | **customer-intel** | `/customer-intel` 或自動 | B2B 客戶情蒐：公司名 → WebSearch + Playwright → 結構化報告（概覽、管理層、財務、競爭、痛點、策略建議） |
@@ -130,6 +131,7 @@ as release notes.
 | **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
 | **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
 | **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
+| **say-it-plain** | `/say-it-plain` 或自動 | 把「講不清、抓不到重點、要人一問再問」的中文重寫成人能秒懂的版本——結論先行 |
 
 ### git/ — Git/GitHub
 
