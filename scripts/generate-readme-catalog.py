@@ -18,7 +18,7 @@ RIVENDELL_ROOT = Path(__file__).parent.parent
 SKILLS_DIR = RIVENDELL_ROOT / "skills"
 README_PATH = RIVENDELL_ROOT / "README.md"
 
-CATEGORY_ORDER = ["meta", "workflow", "quality", "git", "frontend", "backend", "docs"]
+CATEGORY_ORDER = ["meta", "workflow", "quality", "git", "frontend", "backend", "media", "docs"]
 CATEGORY_NAMES = {
     "meta": "Claude Code 管理",
     "workflow": "工作流程與規劃",
@@ -26,6 +26,7 @@ CATEGORY_NAMES = {
     "git": "Git/GitHub",
     "frontend": "前端設計、iOS、測試",
     "backend": "後端服務",
+    "media": "影音抓讀",
     "docs": "文件處理與 MCP 建置",
 }
 

@@ -444,3 +444,10 @@ category: best_practice
 **觀察**：audit 96 支 skill，7 支 `source: harvest-auto`，其中 5 支是未填空殼（`## TODO auto-generated... fill in`）：env-doctor / mops-financial-scraper / presales-pipeline / repro-exam / client-kickoff-docs。共同病徵：(a) `tags:` 是無效 YAML（如 env-doctor `[backend/` 或 `quality/]`，含 backtick+CJK），會讓 bin/sk 解析/計數漂移（README 報 97 vs 實際 96 SKILL.md）；(b) description／when_to_use／Overview／When-to-Use 四重重複；(c) `## Background` 倒 harvest digest 還截斷；(d) 無 Gotchas、無 workflow 步驟。
 **根因**：`session-harvest` 的 skill stub 模板本身就生成這種結構。不修生成器，補完又長新的（colleague 的 fork Jacktsai2785/rivendell 同一批 mops 叢集完全同病）。
 **How to apply**：(1) P0 先掃修壞 frontmatter——`tags` 必須是乾淨 identifier list；(2) refactor 觸發機制：單一 model-facing description + 加 SKIP/DO NOT TRIGGER（競品 skill 才分得開）+ 移除非標準 when_to_use；(3) 空殼填成 runbook + Gotchas（MOPS gotchas 全域 CLAUDE.md 現成有）；(4) 修 harvest stub 模板 + 加 `bin/sk lint`（抓壞 tags/重複觸發/TODO/缺 SKIP）才是根治。
+
+## 2026-07-23 — 新增 skills/ 分類：`sk readme` 會靜默漏算，CATEGORY_ORDER 是硬編碼
+- category: errors / gotcha
+- **情境**: 新增 `skills/media/` 分類放 3 個 skill 後跑 `./bin/sk readme`，數字顯示 110（少了 3），media 區塊完全沒出現，也沒報錯。
+- **根因**: `scripts/generate-readme-catalog.py` 的 `CATEGORY_ORDER` / `CATEGORY_NAMES` 是**硬編碼白名單**（原本 7 類 meta/workflow/quality/git/frontend/backend/docs），`scan_skills()` 只 iterate 這份清單 → 不在清單裡的分類目錄整個被忽略、skill 不計數。
+- **How to apply**: 新增分類目錄時，除了建 `skills/<cat>/` 還必須：(1) 在 `generate-readme-catalog.py` 的 `CATEGORY_ORDER` 加該 key、`CATEGORY_NAMES` 加中文名；(2) 手改 README「Structure」樹（那段是**手維護**、`sk readme` 不會動它——改分類計數/新增列都要手動）；(3) 若分類含 `_shared/`（無 SKILL.md 的共用 script 目錄），確認 scan 只抓 `*/SKILL.md` 不會誤收。驗證：`sk readme` 印出的「N skills in M categories」M 要對。
+- **Related**: 全域 learnings 2026-07-23 的 yt-dlp/bash 三連坑（同一次建 media skill 群踩到的）。`_shared` script 靠 `cd -P` 實體路徑穿透 symlink 定位（rivendell deploy 是 `ln -s`）。

@@ -12,6 +12,7 @@ skills/
 ├── git/        # Git/GitHub 操作 (2)
 ├── frontend/   # 前端設計、iOS、測試 (5)
 ├── backend/    # 後端服務 (13)
+├── media/      # 影音抓讀 (3)
 └── docs/       # 文件處理與 MCP 建置 (20)
 ```
 
@@ -58,7 +59,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (110 skills)
+## Skills Catalog (113 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -178,6 +179,14 @@ as release notes.
 | **tunnel-proxy-deploy** | 自動 | Deploy FastAPI + Next.js behind Cloudflare Tunnel. |
 | **tw-company-lookup** | `/tw-company-lookup` 或自動 | 用 Playwright 查詢經濟部 findbiz.nat.gov.tw：公司基本資料、董監事、工廠、歷史變更 |
 | **vector-search-setup** | 自動 | Set up a vector search knowledge base in a FastAPI project from scratch. |
+
+### media/ — 影音抓讀
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **subtitle-file** | 自動 | Produce a subtitle FILE (.srt / . |
+| **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
+| **video-transcript** | 自動 | Read an online video's spoken content (via its subtitles) and transform it into |
 
 ### docs/ — 文件處理與 MCP 建置
 
