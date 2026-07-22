@@ -58,18 +58,23 @@ bash "$SHARED/media_fetch.sh" "<video-url>" /tmp/transcript.txt
   `<output>.meta` sidecar (title/url/lang/kind) — no second yt-dlp call needed for attribution.
 - **Auto-captions have no punctuation and mishear proper nouns** — if kind is `auto`, say so and be
   cautious with exact quotes.
-- **No subtitles at all** ("no subtitles found"): captions are disabled. Don't guess at content —
-  fall back to local speech-to-text on the audio:
+- **No subtitles at all** ("no subtitles found"): captions are disabled — OR (very common on
+  **Bilibili**) the subs are login-walled and your browser isn't logged into that site, which looks
+  identical. Don't guess at content — fall back to local speech-to-text on the audio. Two ways:
 
   ```bash
-  bash "$SHARED/audio_transcribe.sh" "<url>" /tmp/transcript.txt
-  # Chinese/other: WHISPER_LANG=zh ; bigger model: WHISPER_MODEL=medium ; login-walled: COOKIES=chrome
+  # one-shot: let the fetcher auto-degrade to Whisper when no subs exist
+  FALLBACK=whisper COOKIES=chrome WHISPER_LANG=zh bash "$SHARED/media_fetch.sh" "<url>" /tmp/t.txt
+  # or call the transcriber directly
+  bash "$SHARED/audio_transcribe.sh" "<url>" /tmp/t.txt   # WHISPER_MODEL=medium for better zh
   ```
 
-  This downloads the audio and runs whisper.cpp (`brew install whisper-cpp ffmpeg`; the model
-  auto-downloads on first use). It's **ASR, not human subtitles** — slower, and it mishears proper
-  nouns and homophones, so flag it as machine-transcribed and be cautious with names/quotes. Then
-  transform as usual. For a long video this takes a few minutes; run it in the background.
+  It downloads the audio and runs whisper.cpp (`brew install whisper-cpp ffmpeg`; model auto-downloads
+  on first use). It's **ASR, not human subtitles** — slower (a few minutes for a long video; run it in
+  the background), and it mishears proper nouns/homophones, so flag it as machine-transcribed and be
+  cautious with names/quotes. **Bilibili tip**: if you ARE logged into Bilibili in Chrome, retry the
+  normal fetch with `COOKIES=chrome` first — real subs beat ASR. Only fall back to Whisper if that
+  still finds nothing.
 
 Then read it: `wc -l /tmp/transcript.txt && head -50 /tmp/transcript.txt`
 
