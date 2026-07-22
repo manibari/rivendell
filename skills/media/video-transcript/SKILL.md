@@ -116,13 +116,17 @@ with Mode 3 or 1 if useful.
 ## Notes & gotchas
 
 - **HTTP 429 (Too Many Requests) — the main failure mode.** YouTube's subtitle endpoint rate-limits
-  hard. *Transient* (requests too close): the fetcher's exponential backoff (5→10→20s) clears it,
-  and it downloads only ONE track to avoid the multi-language 429 cascade. *Persistent* (your IP got
-  limited after many requests / a playlist): backoff won't save you — it's a server-side block that
-  needs **minutes to clear**. Don't hammer it; wait, switch networks, or pass cookies
-  (`--cookies-from-browser chrome`). *Prevent it*: `pip install curl_cffi` beside yt-dlp — the
-  fetcher auto-adds `--impersonate chrome`, cutting 429s sharply (but it can't rescue an
-  already-blocked IP).
+  hard (auto-caption-only videos get limited first). Three tiers, in order of what actually works:
+  - *Transient* (requests too close): the fetcher's exponential backoff (5→10→20s) clears it, and it
+    downloads only ONE track to avoid the multi-language 429 cascade.
+  - *Persistent* (IP limited after many requests / a playlist): backoff won't save you — it's a
+    server-side block. **The tested fix that works: `COOKIES=chrome bash media_fetch.sh …`** — it
+    authenticates with your logged-in browser cookies and uses that quota. (Tested 2026-07-23:
+    cookies got through a hard 429 that impersonation could NOT.) Works with any browser yt-dlp
+    supports (`COOKIES=firefox`, etc.).
+  - *Prevent it up front*: install `curl_cffi` beside yt-dlp (`pipx inject yt-dlp curl_cffi`) — the
+    fetcher auto-adds `--impersonate chrome`, cutting 429 *frequency* sharply. But note it **cannot
+    rescue an already-blocked IP** — only cookies or time does that.
 - **Very long / playlist videos**: fetch works the same; a 2-hour transcript is huge. Summaries are
   fine; for a full rewrite, chunk by chapter.
 - **Age-restricted / private**: needs cookies (`--cookies-from-browser chrome`).

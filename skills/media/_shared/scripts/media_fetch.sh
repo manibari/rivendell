@@ -62,11 +62,23 @@ if yt-dlp --list-impersonate-targets 2>/dev/null | grep -i chrome | grep -vq una
   IMPERSONATE=(--impersonate chrome)
 fi
 
+# Escape hatch for a PERSISTENT 429 (IP rate-limited after many requests). Tested
+# 2026-07-23: impersonation does NOT rescue a hard-blocked IP, but authenticating
+# with browser cookies DOES — it uses your logged-in quota instead. Opt in with
+# COOKIES=chrome (or firefox/edge/…). --ignore-no-formats-error is needed because
+# the cookie path can otherwise abort with "Requested format is not available"
+# before writing the (format-less) subtitle. Auto-caption-only videos are the
+# ones that hit persistent 429 first, so this is often the only way to get them.
+COOKIES_ARGS=()
+if [[ -n "${COOKIES:-}" ]]; then
+  COOKIES_ARGS=(--cookies-from-browser "$COOKIES" --ignore-no-formats-error)
+fi
+
 # --- Step 1: metadata pass (title + available subtitle languages) ------------
 # One call, one request — safe from the multi-download 429. Don't let a non-zero
 # exit abort us; validate the output instead.
 set +e
-yt-dlp -J --skip-download --retries 3 "${IMPERSONATE[@]}" "$URL" >"$META" 2>>"$OUTDIR/yt.log"
+yt-dlp -J --skip-download --retries 3 ${IMPERSONATE[@]+"${IMPERSONATE[@]}"} ${COOKIES_ARGS[@]+"${COOKIES_ARGS[@]}"} "$URL" >"$META" 2>>"$OUTDIR/yt.log"
 set -e
 if [[ ! -s "$META" ]]; then
   echo "error: could not read video metadata for $URL" >&2
@@ -113,7 +125,7 @@ for attempt in 1 2 3 4; do
     --sub-langs "$LANG" \
     --sub-format vtt --convert-subs vtt \
     --sleep-subtitles 1 --sleep-requests 1 --retries 3 \
-    "${IMPERSONATE[@]}" \
+    ${IMPERSONATE[@]+"${IMPERSONATE[@]}"} ${COOKIES_ARGS[@]+"${COOKIES_ARGS[@]}"} \
     -o "$OUTDIR/%(id)s.%(ext)s" \
     "$URL" >>"$OUTDIR/yt.log" 2>&1
   set -e
