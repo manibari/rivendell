@@ -21,6 +21,7 @@
 | `pick_track.py` | 從 metadata 挑**單一**最佳字幕軌（手動優先於自動；語言偏好序）。只下載一軌 = 避開多語言 429 連鎖 |
 | `vtt_to_text.py` | VTT → 乾淨純文字（**去**時間戳、去滾動字幕重複）。給 video-transcript 用 |
 | `vtt_to_srt.py` | VTT → 乾淨 SRT（**保留**時間戳、合併重複軌）。給 subtitle-file 用 |
+| `audio_transcribe.sh` | **無字幕 fallback**：yt-dlp 抽音訊 → 16kHz wav → whisper.cpp 本地語音轉文字。模型首次自動下載。ASR 非人工字幕，較慢且會誤聽專有名詞 |
 
 ### 為什麼 `_shared/` 用相對路徑能 work
 
@@ -36,4 +37,5 @@ SHARED="$SKILL_DIR/../_shared/scripts"
 ## 前置工具
 
 - `yt-dlp`（全部）：`brew install yt-dlp`；重度使用或常撞 429 改 `pipx install yt-dlp && pipx inject yt-dlp curl_cffi`（brew 版裝不了 impersonation 後端）
-- `ffmpeg`（只有 video-clip-extract）：`brew install ffmpeg`
+- `ffmpeg`（video-clip-extract 與無字幕 fallback）：`brew install ffmpeg`
+- `whisper-cpp`（只有無字幕 fallback `audio_transcribe.sh`）：`brew install whisper-cpp`；模型首次執行自動下載到 `~/.cache/whisper-cpp/`

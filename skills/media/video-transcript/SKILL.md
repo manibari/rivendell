@@ -58,8 +58,18 @@ bash "$SHARED/media_fetch.sh" "<video-url>" /tmp/transcript.txt
   `<output>.meta` sidecar (title/url/lang/kind) — no second yt-dlp call needed for attribution.
 - **Auto-captions have no punctuation and mishear proper nouns** — if kind is `auto`, say so and be
   cautious with exact quotes.
-- **No subtitles at all** ("no subtitles found"): captions are disabled. Tell the user honestly and
-  offer the Whisper route (download audio → speech-to-text) rather than guessing at content.
+- **No subtitles at all** ("no subtitles found"): captions are disabled. Don't guess at content —
+  fall back to local speech-to-text on the audio:
+
+  ```bash
+  bash "$SHARED/audio_transcribe.sh" "<url>" /tmp/transcript.txt
+  # Chinese/other: WHISPER_LANG=zh ; bigger model: WHISPER_MODEL=medium ; login-walled: COOKIES=chrome
+  ```
+
+  This downloads the audio and runs whisper.cpp (`brew install whisper-cpp ffmpeg`; the model
+  auto-downloads on first use). It's **ASR, not human subtitles** — slower, and it mishears proper
+  nouns and homophones, so flag it as machine-transcribed and be cautious with names/quotes. Then
+  transform as usual. For a long video this takes a few minutes; run it in the background.
 
 Then read it: `wc -l /tmp/transcript.txt && head -50 /tmp/transcript.txt`
 
