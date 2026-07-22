@@ -89,8 +89,16 @@ fi
 
 # --- Step 2: choose exactly one track ----------------------------------------
 if ! pick_out="$(python3 "$SCRIPT_DIR/pick_track.py" "$META" "$SUB_LANGS")"; then
-  echo "error: no subtitles found for $URL (captions likely disabled)" >&2
-  echo "  next step: download the audio and run speech-to-text (Whisper)." >&2
+  # No subtitles at all. FALLBACK=whisper degrades gracefully to local ASR
+  # instead of dead-ending (opt-in: Whisper is slow + downloads audio, so it's
+  # not the default). Bilibili is the common trigger — its subs are login-walled,
+  # so a browser not logged into Bilibili looks identical to "no captions".
+  if [[ "${FALLBACK:-}" == "whisper" ]]; then
+    echo "no subtitles for $URL — falling back to whisper.cpp (audio ASR)…" >&2
+    exec bash "$SCRIPT_DIR/audio_transcribe.sh" "$URL" ${OUT:+"$OUT"}
+  fi
+  echo "error: no subtitles found for $URL (captions disabled, or Bilibili not logged in)" >&2
+  echo "  next step: re-run with FALLBACK=whisper to transcribe the audio locally." >&2
   exit 3
 fi
 IFS=$'\t' read -r LANG KIND TITLE <<<"$pick_out"

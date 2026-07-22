@@ -46,15 +46,23 @@ if [[ ! -f "$MODEL_FILE" ]]; then
     -o "$MODEL_FILE" || { echo "error: model download failed" >&2; rm -f "$MODEL_FILE"; exit 2; }
 fi
 
-# --- 2. download audio only, convert to 16kHz mono wav (what whisper wants) ---
+# --- 2. download native audio, convert to 16kHz mono wav (what whisper wants) -
+# Grab the raw audio stream (bestaudio) WITHOUT yt-dlp re-encoding it — we do the
+# only conversion we need (→16kHz mono wav) with ffmpeg ourselves. Skipping
+# yt-dlp's --audio-format postprocess removes a fragile, redundant re-encode that
+# fails outright on flaky/throttled sources (seen on Bilibili: "Conversion
+# failed!"). ffmpeg reads whatever container comes back (m4a/webm/opus).
 echo "downloading audio…" >&2
-yt-dlp -x --audio-format mp3 --audio-quality 0 \
-  --retries 3 ${COOKIES_ARGS[@]+"${COOKIES_ARGS[@]}"} \
+yt-dlp -f "bestaudio/best" \
+  --retries 5 --fragment-retries 5 ${COOKIES_ARGS[@]+"${COOKIES_ARGS[@]}"} \
   -o "$WORK/audio.%(ext)s" "$URL" >&2
 AUDIO="$(find "$WORK" -maxdepth 1 -name 'audio.*' | head -1)"
 [[ -n "$AUDIO" ]] || { echo "error: audio download produced nothing" >&2; exit 3; }
 
-ffmpeg -y -i "$AUDIO" -ar 16000 -ac 1 -c:a pcm_s16le "$WORK/audio16.wav" >/dev/null 2>&1
+if ! ffmpeg -y -i "$AUDIO" -ar 16000 -ac 1 -c:a pcm_s16le "$WORK/audio16.wav" >/dev/null 2>&1; then
+  echo "error: ffmpeg could not convert the audio ($AUDIO) to 16kHz wav" >&2
+  exit 3
+fi
 
 # --- 3. transcribe ------------------------------------------------------------
 echo "transcribing with whisper.cpp (model=${MODEL}, lang=${LANG})… this takes a while" >&2
