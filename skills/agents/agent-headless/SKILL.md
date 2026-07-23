@@ -424,7 +424,7 @@ Tips for better visibility:
 
 ## Portability
 
-Hardcoded paths in launchd plists break when moving to a new machine. For managing multiple agents portably, see the **Portable Multi-Agent Fleet Pattern** in the `launchd-agent` skill, which provides:
+Hardcoded paths in launchd plists break when moving to a new machine. For managing multiple agents portably, see the **Portable Multi-Agent Fleet Pattern** in the `agent-launchd` skill, which provides:
 - Declarative `agents.conf` — all agents in one file
 - Auto-detect PATH (conda, homebrew, npm)
 - Compiled C launcher with FDA for `~/Documents/` access

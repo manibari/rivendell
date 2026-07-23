@@ -7,13 +7,16 @@ Personal Claude Code and Codex skills library — manage, version control, and d
 ```
 skills/
 ├── meta/       # Claude Code 自身管理工具 (17)
-├── workflow/   # 工作流程與規劃 (32)
-├── quality/    # 程式品質、審查、除錯、測試 (8)
-├── git/        # Git/GitHub 操作 (2)
+├── agents/     # 自動化 Agent：排程、觀測、persona (5)
+├── planning/   # 需求與規劃：requirement → user-flow → mockup → plans (7)
+├── workflow/   # 工作流程與 Session 維運 (8)
+├── quality/    # 程式品質、審查、除錯、測試 (9)
+├── git/        # Git/GitHub 操作 (3)
 ├── frontend/   # 前端設計、iOS、測試 (5)
-├── backend/    # 後端服務 (13)
+├── backend/    # 後端服務 (24)
+├── business/   # 商業開發：情蒐、sales、招募、財務研究 (14)
 ├── media/      # 影音抓讀 (3)
-└── docs/       # 文件處理與 MCP 建置 (20)
+└── docs/       # 文件處理與簡報 (20)
 ```
 
 ## Quick Start
@@ -65,7 +68,6 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **agent-persona** | 自動 | Generate structured role prompts for headless Claude Code agents (tester |
 | **audit-fix** | 自動 | 分析 `sk audit` 報告，自動清理各專案 permission 白名單（刪 one-off、統一格式、移除全域重複） |
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
@@ -84,42 +86,40 @@ as release notes.
 | **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
 
-### workflow/ — 工作流程與規劃
+### agents/ — 自動化 Agent（排程、觀測、persona）
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **agent-dispatch** | 自動 | 3+ 個獨立問題時，派 subagent 並行處理 |
-| **agent-headless** | 自動 | 將 Claude Code 作為非互動式 agent 執行，含排程、結構化日誌、auto-commit/push、QA gate、branch workflow、multi-role agents |
-| **agent-launchd** | 自動 | 建立、設定、除錯 macOS launchd agents（plist 產生、排程、launchctl 生命週期管理） |
-| **agent-observability** | 自動 | 讓 script-based agent 在 rivendell 可見：exec-lib 執行歷史、progress logging、log discovery 三層整合指南 |
+| **agent-dispatch** | 自動 | Use multiple Claude agents to investigate and fix independent problems |
+| **agent-headless** | `/agent-headless` | Pattern for running Claude Code as an automated |
+| **agent-launchd** | 自動 | Create / debug / manage macOS launchd LaunchAgents — plist generation |
+| **agent-observability** | 自動 | Make any script-based agent visible in rivendell: execution history |
+| **agent-persona** | 自動 | Generate structured role prompts for headless Claude Code agents (tester |
+
+### planning/ — 需求與規劃（requirement → user-flow → mockup → plans）
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
 | **app-ops-baseline** | 自動 | Planning-stage gate that injects a standard "ops baseline" feature checklist |
+| **executing-plans** | 自動 | Execute detailed plans in batches with review checkpoints |
+| **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
+| **planning-with-files** | 自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
+| **requirement** | `/requirement` 或自動 | Define structured requirements, user stories |
+| **user-flow** | `/user-flow` 或自動 | Design user workflow diagrams with Mermaid flowcharts |
+| **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
+
+### workflow/ — 工作流程與 Session 維運
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
-| **candidate-analysis** | `/candidate-analysis` 或自動 | 面試候選人管理：PDF 履歷解析、GitHub repo 程式品質分析、候選人 profile markdown 產出 |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
-| **client-kickoff-docs** | 自動 | 新客戶 kickoff 時（NDA 簽過、首次討論前），讀客戶提供的 homework 檔 → 建立 `scope.md` + `deadline. |
 | **context-journal** | `/context-journal` + hook | 每回合自動追加工作日誌到磁碟，讓 /compact 無損：操作/決策紀錄存在 context 之外、compact 後自動注回、context 超過門檻自動提醒壓縮 |
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
-| **crm-projection** | `/crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
-| **customer-intel** | `/customer-intel` 或自動 | B2B 客戶情蒐：公司名 → WebSearch + Playwright → 結構化報告（概覽、管理層、財務、競爭、痛點、策略建議） |
 | **env-doctor** | 自動 | 為專案產生 `doctor.sh`（或 `doctor. |
-| **executing-plans** | 自動 | 分批執行計畫，每批有 review checkpoint |
 | **gdrive-to-skills** | `/gdrive-to-skills` | 讀取 Google Drive 文件，分類並自動建立 knowledge skills |
-| **investment-research** | `/investment-research` 或自動 | 投資研究流程：總經掃描 → 選股池 → Alpha 發現 → 風險評估 → 回測 → 四大報表 → 報告 |
-| **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
-| **keyword-discovery** | 自動 | 自動分析爬蟲未匹配項目，發現新關鍵字候選詞，高信心詞自動升級至 active 列表 |
-| **material-health** | `/material-health` | Health check for the sales materials library — detects missing frontmatter |
-| **mockup** | `/mockup` 或自動 | 三階段 UI mockup（ASCII → 靜態 HTML → 互動 HTML），讀取 design system，支援 Figma 匯出 |
-| **mops-financial-scraper** | 自動 | 自動化從 MOPS（`mopsov.twse.com. |
-| **planning-with-files** | `/planning-with-files` | Manus 風格的檔案式規劃，用 task_plan.md 追蹤進度，支援 session 恢復 |
-| **presales-pipeline** | 自動 | 以檔案系統（`01_presales/<client-slug>/`）管理 B2B 售前 pipeline：`new-client. |
 | **repro-exam** | 自動 | 依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → |
-| **requirement** | `/requirement` 或自動 | 定義需求：user story、acceptance criteria、scope boundary |
-| **sales-material** | `/sales-material` | Assemble client-specific sales presentations by matching customer intelligence |
 | **settings-audit** | 自動 | 審查清理 .claude/settings.local.json — 移除無效 permissions、修正 JSON 語法、偵測一次性指令誤存為永久權限 |
-| **subsidy-scraper** | `/subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
-| **tender-scraper** | `/tender-scraper` 或自動 | 自動爬取政府標案（g0v API）、data-driven 關鍵字篩選（keywords.yml + 自動發現）、網路韌性（retry/backoff）、歸檔過期、生成索引、dashboard 可觀測性 |
-| **user-flow** | `/user-flow` 或自動 | 用 Mermaid 繪製使用者流程圖，含 happy path 與 error branch |
-| **writing-plans** | 自動 | 產出 bite-sized 實作計畫，假設工程師零 codebase context |
 
 ### quality/ — 程式品質
 
@@ -167,6 +167,7 @@ as release notes.
 | **ic-lot-normalization** | 自動 | Domain reference for normalizing semiconductor lot / batch / product codes when |
 | **imap-smtp-integration** | 自動 | IMAP/SMTP Integration - Integrate email reading and sending via IMAP/SMTP into |
 | **markdown-file-ssot** | 自動 | Markdown File SSOT - Use Markdown files with YAML frontmatter as a data SSOT. |
+| **mcp-builder** | 自動 | 建立 MCP server 的指南（Python FastMCP / Node MCP SDK） |
 | **ml-eval-quality** | 自動 | Domain reference for the evaluation + quality backbone of an ML/AutoML |
 | **ml-model-registry** | 自動 | Domain reference for the model-registry / governance layer of an ML platform: |
 | **oauth-token-vault** | 自動 | OAuth Token Vault - Implement OAuth 2. |
@@ -177,9 +178,28 @@ as release notes.
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
 | **spine-versioning** | 自動 | Canonical version + changelog for the product fleet — and crucially the |
 | **sqlite-to-postgres** | 自動 | SQLite → PostgreSQL/Supabase 遷移指南：語法差異、schema 轉換、資料遷移、驗證 |
+| **telegram-bot** | 自動 | grammY / python-telegram-bot 機器人開發指南：架構、Bot API、部署模式 |
 | **tunnel-proxy-deploy** | 自動 | Deploy FastAPI + Next.js behind Cloudflare Tunnel. |
-| **tw-company-lookup** | `/tw-company-lookup` 或自動 | 用 Playwright 查詢經濟部 findbiz.nat.gov.tw：公司基本資料、董監事、工廠、歷史變更 |
 | **vector-search-setup** | 自動 | Set up a vector search knowledge base in a FastAPI project from scratch. |
+
+### business/ — 商業開發（情蒐、sales、招募、財務研究）
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **candidate-analysis** | `/candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
+| **client-kickoff-docs** | 自動 | At new-client kickoff (NDA signed, before the first working session) |
+| **crm-projection** | `/crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
+| **customer-intel** | `/customer-intel` | B2B customer intelligence: company name → web research → actionable sales |
+| **investment-research** | `/investment-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
+| **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
+| **keyword-discovery** | 自動 | Automated keyword discovery for scraper filter systems. |
+| **material-health** | `/material-health` | Health check for the sales materials library — detects missing frontmatter |
+| **mops-financial-scraper** | 自動 | Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站, mopsov.twse. |
+| **presales-pipeline** | 自動 | Manage a B2B presales pipeline on the file system |
+| **sales-material** | `/sales-material` | Assemble client-specific sales presentations by matching customer intelligence |
+| **subsidy-scraper** | `/subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
+| **tender-scraper** | `/tender-scraper` | Automated government tender scraper — fetches public tender listings from |
+| **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov. |
 
 ### media/ — 影音抓讀
 
@@ -189,7 +209,7 @@ as release notes.
 | **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
 | **video-transcript** | 自動 | Read an online video's spoken content (via its subtitles) and transform it into |
 
-### docs/ — 文件處理與 MCP 建置
+### docs/ — 文件處理與簡報
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
@@ -200,7 +220,6 @@ as release notes.
 | **gdoc-report-builder** | 自動 | Build structured reports in Google Docs/Slides via MCP tools — batch table |
 | **internal-comms** | `/internal-comms` 或自動 | Templates and formats for ongoing organizational communications during and |
 | **iot-factory-report** | 自動 | Analyze factory IoT/SCADA time-series data (CSV/Excel) and produce visual |
-| **mcp-builder** | 自動 | 建立 MCP server 的指南（Python FastMCP / Node MCP SDK） |
 | **mermaid-diagram** | `/mermaid-diagram` 或自動 | Generate Mermaid `.mmd` files that argue visually (flowcharts, sequence, state |
 | **metadata-workshop** | 自動 | Run a structured Metadata Workshop with a consulting client to convert their |
 | **office-docx** | 自動 | Word (.docx) 建立、編輯、分析，支援追蹤修訂與註解 |
@@ -214,7 +233,6 @@ as release notes.
 | **slide-workflow** | 自動 | Step-by-step presentation creation workflow with confirmation gates. |
 | **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
 | **subsidy-writer** | `/subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
-| **telegram-bot** | 自動 | grammY / python-telegram-bot 機器人開發指南：架構、Bot API、部署模式 |
 
 
 ## Built-in Claude Code Skills (not in this repo)

@@ -76,6 +76,17 @@ TXT="$WORK/transcript.txt"
 if [[ -n "$OUT" ]]; then
   sed 's/^[[:space:]]*//' "$TXT" > "$OUT"
   echo "  transcript → $OUT ($(wc -w <"$OUT" | tr -d ' ') words)" >&2
+  # Write a .meta sidecar (title from a cheap metadata call) so downstream
+  # archiving (save_note.sh) gets a real title/url. kind=asr flags reliability.
+  TITLE="$(yt-dlp --skip-download ${COOKIES_ARGS[@]+"${COOKIES_ARGS[@]}"} \
+    --print "%(title)s" "$URL" 2>/dev/null | head -1)"
+  cat >"${OUT}.meta" <<EOF
+title: ${TITLE:-untitled}
+url: ${URL}
+lang: ${LANG}
+kind: asr
+model: whisper-${MODEL}
+EOF
 else
   sed 's/^[[:space:]]*//' "$TXT"
 fi
