@@ -128,6 +128,21 @@ For a foreign-language video. Translate meaning, not words — idiomatic 繁中.
 accurate (original in parens on first use, e.g. 「注意力機制（attention）」). Preserve tone. Combine
 with Mode 3 or 1 if useful.
 
+## Step 4 — Archive to the knowledge base (don't let it evaporate)
+
+A transcript in `/tmp` and a summary in chat both vanish. Persist the work so it's searchable later.
+Write your summary/article to a file, then archive it alongside the transcript:
+
+```bash
+# you already have /tmp/transcript.txt (+ .meta). Write your summary to /tmp/summary.md, then:
+bash "$SHARED/save_note.sh" /tmp/transcript.txt /tmp/transcript.txt.meta /tmp/summary.md
+```
+
+This writes `knowledge/videos/YYYY-MM-DD-<title>/{note.md, transcript.txt}` in the rivendell repo
+(git-tracked, greppable). `note.md` carries frontmatter (title/url/source/reliability/date/tags) plus
+your summary. Override the destination with `VIDEO_NOTES_DIR=…` if the user wants it elsewhere. Do
+this by default for substantive videos — skip only if the user explicitly says "don't save".
+
 ## Notes & gotchas
 
 - **HTTP 429 (Too Many Requests) — the main failure mode.** YouTube's subtitle endpoint rate-limits
