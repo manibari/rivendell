@@ -1,8 +1,8 @@
 ---
 name: De-Slopify
-description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written.
-when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews
-version: 2.0.0
+description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written. Includes 審查文體模式 (review-ready mode) for formal documents going to reviewers/committees/client executives — scrubs internal-strategy traces, English shop-talk, and reviewer-facing asides from the body text.
+when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews; before submitting proposals, tenders, SOWs, or any document read by 審查委員 or client executives (審查文體模式)
+version: 2.1.0
 tags: [writing, quality, documentation]
 languages: all
 user_invocable: true
@@ -446,6 +446,62 @@ LLMs writing Chinese text tend to insert excessive emojis. Remove them unless th
 **After (clean):**
 > 這個框架提供了一套完整的開發方式，而不只是單一工具。以下說明它的主要功能。
 
+
+## 審查文體模式 (Review-Ready Mode)
+
+A separate pass for **formal documents whose reader is a review committee, government
+agency, or client executive** — 補助計畫書, 標書, SOW, 提案書. Trigger phrases:
+"審查文體", "掃內部盤算", "這要送審", or when invoked by the subsidy-writer skill.
+
+Regular slop removal makes text sound human. This mode fixes a different failure:
+**the author's internal strategy leaking into the body text**. A proposal drafted
+with AI assistance often contains notes-to-self about how to win the review —
+deadly if the committee reads them. Real-case calibration: a proposal the author
+believed was clean still contained 12 instances across these three categories.
+
+Scan the ENTIRE document for:
+
+### A. 對審查者的盤算寫進正文 (most severe)
+
+Strategy vocabulary that reveals the author is gaming the review: 佐證、硬要求、
+審查命門、加分、紅線、灌水、黑箱、宣稱、「委員視角」、審查關鍵.
+
+| Before | After |
+|---|---|
+| M1 不量，結案就只剩自己宣稱 | 此三項基期數字為結案成效前後對照之比較基準 |
+| 取得付費證明——這是本補助類別的結案硬要求 | 取得付費證明 |
+| 不得使用中國模型（紅線） | 符合不得使用中國來源 AI 模型之規定 |
+
+Fix: delete the strategy clause or recast as neutral report language stating the
+same fact.
+
+### B. 英文行話 (English shop-talk)
+
+Recall-first、human-in-the-loop、MVP、pipeline、POC and similar. In a 中文 formal
+document these read as unexplained jargon AND as internal engineering voice.
+
+| Before | After |
+|---|---|
+| Recall-first 設計哲學 | 檢核設計原則——寧可多報、不可漏抓 |
+| human-in-the-loop 機制 | 工程師於畫面上檢視、核可後放行 |
+
+### C. 括號裡的內部視角註記 (parenthetical asides)
+
+「（審查關鍵佐證）」「（國際化加分）」「（供審查檢驗）」「（委員視角：買得起、
+算得回來）」— delete entirely. If the parenthetical contains a real fact, promote
+it into the sentence as neutral prose.
+
+### Process for this mode
+
+1. Grep-style sweep for the category-A vocabulary list and all parentheticals; read
+   every hit in context.
+2. Read the full text once more for category B — shop-talk can't be caught by a
+   fixed word list.
+3. Report the instances found (grouped by category) before fixing, so the author
+   learns the pattern.
+4. Pending-item markers (紅字▲ / ⚠️) are exempt — they are removed before
+   submission by a separate step and are the ONLY legitimate place for
+   internal notes.
 
 ## What NOT to Fix
 

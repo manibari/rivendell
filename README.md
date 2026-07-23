@@ -59,7 +59,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (113 skills)
+## Skills Catalog (115 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -88,6 +88,9 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **agent-dispatch** | 自動 | 3+ 個獨立問題時，派 subagent 並行處理 |
+| **agent-headless** | 自動 | 將 Claude Code 作為非互動式 agent 執行，含排程、結構化日誌、auto-commit/push、QA gate、branch workflow、multi-role agents |
+| **agent-launchd** | 自動 | 建立、設定、除錯 macOS launchd agents（plist 產生、排程、launchctl 生命週期管理） |
 | **agent-observability** | 自動 | 讓 script-based agent 在 rivendell 可見：exec-lib 執行歷史、progress logging、log discovery 三層整合指南 |
 | **app-ops-baseline** | 自動 | Planning-stage gate that injects a standard "ops baseline" feature checklist |
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
@@ -98,15 +101,12 @@ as release notes.
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
 | **crm-projection** | `/crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
 | **customer-intel** | `/customer-intel` 或自動 | B2B 客戶情蒐：公司名 → WebSearch + Playwright → 結構化報告（概覽、管理層、財務、競爭、痛點、策略建議） |
-| **dispatching-parallel-agents** | 自動 | 3+ 個獨立問題時，派 subagent 並行處理 |
 | **env-doctor** | 自動 | 為專案產生 `doctor.sh`（或 `doctor. |
 | **executing-plans** | 自動 | 分批執行計畫，每批有 review checkpoint |
 | **gdrive-to-skills** | `/gdrive-to-skills` | 讀取 Google Drive 文件，分類並自動建立 knowledge skills |
-| **headless-agent** | 自動 | 將 Claude Code 作為非互動式 agent 執行，含排程、結構化日誌、auto-commit/push、QA gate、branch workflow、multi-role agents |
 | **investment-research** | `/investment-research` 或自動 | 投資研究流程：總經掃描 → 選股池 → Alpha 發現 → 風險評估 → 回測 → 四大報表 → 報告 |
 | **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
 | **keyword-discovery** | 自動 | 自動分析爬蟲未匹配項目，發現新關鍵字候選詞，高信心詞自動升級至 active 列表 |
-| **launchd-agent** | 自動 | 建立、設定、除錯 macOS launchd agents（plist 產生、排程、launchctl 生命週期管理） |
 | **material-health** | `/material-health` | Health check for the sales materials library — detects missing frontmatter |
 | **mockup** | `/mockup` 或自動 | 三階段 UI mockup（ASCII → 靜態 HTML → 互動 HTML），讀取 design system，支援 Figma 匯出 |
 | **mops-financial-scraper** | 自動 | 自動化從 MOPS（`mopsov.twse.com. |
@@ -130,6 +130,7 @@ as release notes.
 | **large-file-refactor** | 自動 | Systematically split large single-file components (500+ lines) into modular |
 | **protect-secrets** | Hook (PreToolUse) | 攔截讀取/修改 .env、private keys、credentials 等敏感檔案 |
 | **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
+| **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
 | **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
 | **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
 | **say-it-plain** | `/say-it-plain` 或自動 | 把「講不清、抓不到重點、要人一問再問」的中文重寫成人能秒懂的版本——結論先行 |
@@ -212,6 +213,7 @@ as release notes.
 | **slide-template-extractor** | 自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
 | **slide-workflow** | 自動 | Step-by-step presentation creation workflow with confirmation gates. |
 | **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
+| **subsidy-writer** | `/subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
 | **telegram-bot** | 自動 | grammY / python-telegram-bot 機器人開發指南：架構、Bot API、部署模式 |
 
 
