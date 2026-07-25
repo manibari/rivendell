@@ -1,0 +1,23 @@
+{
+  "skill_name": "qa-journey",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "幫我用旅程測試走一遍 rivendell dashboard（http://localhost:3000）：模擬一個第一次用的內部同事，任務是「找出 harvest agent 最近一次執行結果並看它產出的報告」。走完給我摩擦報告。",
+      "expected_output": "Creates/loads a persona card, walks the dashboard via UI clicks only from the entry URL, logs WIRING_GAP/LOST/etc events with screenshots, outputs a friction report with a wiring-gap section — not a page-by-page feature checklist.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "/qa-journey 這個 app 的發票流程，persona 用 docs/personas/accountant.md，flow 用 docs/flows/invoice-flow.md",
+      "expected_output": "Reads both SoT files (HARD GATE), compiles the card's rule layer into constraints, follows the flow's happy path as the expected route, reports deviations and friction against it.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "QA 一下我們的網站有沒有 bug",
+      "expected_output": "Should NOT be handled by qa-journey (functional bug hunting → gstack-qa/qa-only). If invoked anyway, it should redirect rather than run a journey.",
+      "files": []
+    }
+  ]
+}
