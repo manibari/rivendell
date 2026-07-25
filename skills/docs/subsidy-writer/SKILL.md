@@ -11,7 +11,7 @@ description: >
   SKIP: finding subsidies to apply for (subsidy-scraper); RFQ/tender responses
   (rfq-writer); consulting contracts (sow-writer).
 tags: [docs, business, government]
-version: 1.0.0
+version: 1.1.0
 source: manual
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
@@ -86,10 +86,16 @@ Write into a single markdown file — the **content SoT** (e.g.
 `cache/YYYYMMDD-計畫書內文/計畫書內文_v1.md`). All edits happen here first; docx
 is always regenerated, never hand-edited.
 
-Apply `references/writing-rules.md` throughout. The two highest-yield rules:
+Apply `references/writing-rules.md` throughout. The three highest-yield rules:
 
-- Every work item = **one bold plain-language sentence** (the claim) + an indented
-  natural paragraph (the detail). No 「細節：」 labels, no meta-notes to the reader.
+- **Prose, not layout** (rule 9): narrative content (pain points, current-state
+  analysis) is written as thesis-style paragraphs — no 破折號「——」, no tables
+  for narrative, no inline labels/arrow chains, no parenthetical
+  viewpoint lines. Tables only for genuinely tabular content (經費/指標/風險).
+- Every work item = **three sections: 功能說明／執行項目／驗證項目** (rule 10) —
+  a work item without a verification section is not a fundable 分項. Inside each,
+  claims are one bold plain sentence + natural paragraphs; no 「細節：」 labels,
+  no meta-notes to the reader.
 - Body text must read as a **neutral report**. Strategy words (佐證/命門/加分/
   紅線/審查委員視角) and English shop-talk (recall-first, human-in-the-loop) never
   appear in the body — see Phase 6 for the scan.
@@ -109,6 +115,11 @@ KPI targets stated as numbers (處理時間 ≤X、正確率 ≥Y%、導入 ≤Z
 from a citable industry statistic (source + year), target-customer count as an
 estimate with a stated calibration method — never a fake-precise number.
 
+**Three-tier benefit language** (rule 12) — never mix the tiers: 結案承諾 only
+for auditable facts (付費成交 N 案、合約認列); technical/operational metrics are
+目標值; assumption-derived numbers are 試算值. Writing a 試算 as a 承諾 is
+exactly the 「宣稱」 reviewers strike down.
+
 ## Phase 6 — 紅字▲歸零 + 文體掃描
 
 1. Every pending fact = red ▲ marker in the docx (`color C00000`). The user can
@@ -118,7 +129,15 @@ estimate with a stated calibration method — never a fake-precise number.
 2. Run the **審查文體掃描** from the de-slopify skill (審查文體模式 section):
    sweep the full text for internal-calculus traces, English shop-talk, and
    reviewer-facing asides. In the real case this pass found 12 instances after the
-   author thought the text was clean — do not skip it.
+   author thought the text was clean — do not skip it. Also run its
+   structural-tells sweep: grep the full text for 「——」 (must be zero), arrow
+   chains, inline labels, and parenthetical viewpoint lines.
+3. **連動網 check** (rule 11): the document is a cross-reference web — 功能規格表
+   has a 對應交付 column, 分項驗證項目 point back to the spec table, pain points
+   keep their numbers and later sections cite 「回應痛點 N」, and work-item names
+   are identical across 內文/架構圖/甘特圖. After ANY rename, renumber, or
+   deletion, grep the full text for the old reference before regenerating the
+   docx — a dangling reference is the first thing a reviewer catches.
 
 ## Phase 7 — 輸出
 

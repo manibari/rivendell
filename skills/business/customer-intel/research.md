@@ -46,6 +46,21 @@ WebFetch: [official about page]
 
 If WebFetch fails (anti-scraping), use the **web-scraper** skill as fallback.
 
+**104 job postings (TW companies — standard step, not optional):**
+
+```
+WebSearch: "[company_name] site:104.com.tw"
+WebSearch: "[company_name] 104 徵才"
+WebFetch: [company's 104 company page + 2-3 active job postings]
+```
+
+104 is the highest signal-to-noise source for what a TW SME actually does:
+job descriptions state the business scope, tech stack, department structure, and
+shift patterns in the company's own words. Best of all, JDs are **self-admitted
+pain points** — a 2026-07 real case: an SMT house's engineer JD said 「不良問題
+分析對策、良率提升」 outright, which became the pitch's opening. Record findings
+as `[confirmed]` (company-authored) with the posting date.
+
 **Collect:**
 - Official name / English name
 - Founded year
@@ -54,6 +69,7 @@ If WebFetch fails (anti-scraping), use the **web-scraper** skill as fallback.
 - Main products/services
 - B2B/B2C orientation
 - Group/parent company affiliation
+- Hiring signals from 104: roles, department sizes, stated responsibilities/pains
 
 ---
 

@@ -2,7 +2,7 @@
 name: De-Slopify
 description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written. Includes 審查文體模式 (review-ready mode) for formal documents going to reviewers/committees/client executives — scrubs internal-strategy traces, English shop-talk, and reviewer-facing asides from the body text.
 when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews; before submitting proposals, tenders, SOWs, or any document read by 審查委員 or client executives (審查文體模式)
-version: 2.1.0
+version: 2.2.0
 tags: [writing, quality, documentation]
 languages: all
 user_invocable: true
@@ -433,6 +433,20 @@ When reviewing Traditional Chinese text, also watch for these AI tells:
 | 深度融合 | 結合、整合 |
 | 全方位 | 完整的、各方面的 |
 | 顯著提升 | 提高、改善 |
+
+### Structural Tells in Formal Chinese Documents (報告/計畫書/提案)
+
+The deepest Chinese AI tell is not vocabulary — it is **using layout structure in
+place of prose**. A human writing a formal report carries the argument in
+paragraphs; AI reflexively shatters it into tables, labels, and arrows. Four
+patterns, all earned from a real 補助計畫書 revision (2026-07):
+
+| Pattern | Problem | Fix |
+|---------|---------|-----|
+| 破折號「——」 | 「檢核設計原則——寧可多報、不可漏抓」— AI 的中文破折號慣性，正式文書罕見 | 改冒號（「檢核設計原則：寧可多報、不可漏抓」）或改寫句構。目標：全文「——」歸零，可 grep 驗證 |
+| 表格化敘事 | 把痛點分析、現況描述等**敘事型內容**切成表格 | 改論文式段落：每項寫成完整一段（現況、行為、損失）。只有真表格性內容（經費、指標、風險矩陣）留表 |
+| Inline 標籤與箭頭鏈 | 【辨識】【生成】這類標籤、A→B→C 箭頭鏈、「vs」、粗體標籤開頭（「**產業挑戰。**台灣…」） | 改自然中文句：標籤內容寫進句子裡；箭頭鏈改「先…再…最後」；「vs」改「相較於」 |
+| 括號視角行 | 「（以目標客戶——中小型代工廠——視角）」— 用括號跟讀者打招呼 | 改正式引言段：「以下自目標客戶之角度分析其營運痛點。」 |
 
 ### Emoji Overuse
 
