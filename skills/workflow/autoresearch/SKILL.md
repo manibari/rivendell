@@ -2,11 +2,11 @@
 name: autoresearch
 description: >
   Autonomous iteration loop — define goal + metric + verify command, agent loops
-  modify→verify→keep/discard. Integrates with headless-agent + dashboard.
+  modify→verify→keep/discard. Integrates with agent-headless + dashboard.
   TRIGGER: "autoresearch", "自動迭代", "improve overnight", measurable-metric optimization.
   SKIP: one-time optimization; subjective quality work.
 version: 1.0.0
-tags: [workflow, automation, optimization, headless-agent]
+tags: [workflow, automation, optimization, agent-headless]
 languages: [bash, python, yaml]
 user_invocable: true
 ---

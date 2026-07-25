@@ -5,6 +5,7 @@ description: >
   Use when: user wants to import Google Drive files into the skills library, or says /gdrive-to-skills.
 tags: [workflow]
 version: 1
+imported_at: 2026-06-13
 user_invocable: true
 ---
 

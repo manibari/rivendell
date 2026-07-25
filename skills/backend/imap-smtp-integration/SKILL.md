@@ -1,6 +1,8 @@
 ---
 name: imap-smtp-integration
 description: IMAP/SMTP Integration - Integrate email reading and sending via IMAP/SMTP into a FastAPI project. TRIGGER when integrating email into FastAPI without OAuth, setting up Gmail IMAP fallback, or building email compose/read features with IMAP/SMTP. DO NOT TRIGGER when using OAuth-based email APIs (Microsoft Graph, Gmail API).
+tags: [backend, email, imap, smtp, fastapi]
+version: 1.0.0
 ---
 
 # IMAP/SMTP Integration

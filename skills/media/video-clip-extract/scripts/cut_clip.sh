@@ -68,7 +68,7 @@ yt-dlp \
   --force-keyframes-at-cuts \
   -f "bv*+ba/b" \
   --merge-output-format mp4 \
-  --retries 3 "${IMPERSONATE_ARGS[@]}" \
+  --retries 3 ${IMPERSONATE_ARGS[@]+"${IMPERSONATE_ARGS[@]}"} \
   -o "$OUT" \
   "$URL"
 

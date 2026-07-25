@@ -788,7 +788,7 @@ On session start, **always read this file first** to resume.
 | **office-xlsx** | Export backtest results and portfolio to spreadsheet |
 | **office-pdf** | Generate formatted research report PDF |
 | **webapp-testing** | Verify news_stock web dashboard displays correctly |
-| **dispatching-parallel-agents** | Run multiple stock analyses in parallel |
+| **agent-dispatch** | Run multiple stock analyses in parallel |
 
 ## Data Freshness
 

@@ -1,6 +1,7 @@
 ---
 name: markdown-file-ssot
 description: Markdown File SSOT - Use Markdown files with YAML frontmatter as a data SSOT. TRIGGER when storing semi-structured domain data where humans need to edit files directly AND code needs to query/filter them. DO NOT TRIGGER when data requires relational queries, high write concurrency, or strict schema enforcement.
+version: 1.0.0
 ---
 
 # Markdown File SSOT

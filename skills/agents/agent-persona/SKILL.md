@@ -6,7 +6,7 @@ description: >
   and output format. Manages persona templates with version control.
   TRIGGER when: user says "建立 agent", "新增 tester", "agent prompt", "agent 角色",
   "create agent persona", "設定 maintainer", or is setting up a new headless agent role.
-  DO NOT TRIGGER when: user wants to schedule an agent (use headless-agent/launchd-agent),
+  DO NOT TRIGGER when: user wants to schedule an agent (use agent-headless/agent-launchd),
   or wants to run an existing agent.
 tags: [meta]
 version: 1.0.0

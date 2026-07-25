@@ -11,7 +11,7 @@ description: >
   bigger than your change; "撞車"; a PR bundles commits you didn't make; before
   committing on a repo another session/agent is also touching.
   SKIP when: you're the only writer in the repo; spawning fresh parallel agents
-  on independent problems (use dispatching-parallel-agents — it isolates up front;
+  on independent problems (use agent-dispatch — it isolates up front;
   this skill is for recovering when sharing already collided).
 tags: [git, concurrency, hygiene, multi-session]
 version: 1.0.0

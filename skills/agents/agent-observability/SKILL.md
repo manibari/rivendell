@@ -7,7 +7,7 @@ description: >
   TRIGGER when: building a new scraper/script agent, user asks why agent
   has no execution history, dashboard shows "等待輸出" or empty timeline,
   or user says "看不到 agent 的執行狀況".
-  DO NOT TRIGGER when: building Claude headless agents (use headless-agent),
+  DO NOT TRIGGER when: building Claude headless agents (use agent-headless),
   or working on dashboard UI itself (use frontend-design).
 version: 1.0.0
 tags: [workflow, dashboard, observability, agents]

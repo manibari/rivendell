@@ -1,6 +1,8 @@
 ---
 name: oauth-token-vault
 description: OAuth Token Vault - Implement OAuth 2.0 flow with Fernet-encrypted token storage in FastAPI + PostgreSQL projects. TRIGGER when integrating third-party OAuth providers, storing access/refresh tokens securely, or building "Connect [Service]" UI. DO NOT TRIGGER when using API keys or non-OAuth authentication.
+tags: [backend, oauth, security, tokens, fastapi]
+version: 1.0.0
 ---
 
 # OAuth Token Vault
