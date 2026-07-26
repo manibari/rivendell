@@ -2,7 +2,7 @@
 name: office-pptx
 description: >
   PowerPoint (.pptx) creation, editing, and analysis. Layouts, speaker notes,
-  comments, media.
+  comments, media, and Codex-generated visual asset placement.
   TRIGGER when: user asks to create, edit, or analyze .pptx files or presentations.
   DO NOT TRIGGER when: working with .docx, .pdf, .xlsx, or non-presentation files.
 tags: [docs]
@@ -152,24 +152,35 @@ When creating a new PowerPoint presentation from scratch, use the **html2pptx** 
 - **Full-slide layout**: Let the featured content (chart/table) take up the entire slide for maximum impact and readability
 - **NEVER vertically stack**: Do not place charts/tables below text in a single column - this causes poor readability and layout issues
 
+### Codex-generated visual assets
+When a deck includes `hybrid` or `image-heavy` slides, read
+[`references/codex-visual-assets.md`](references/codex-visual-assets.md) before Step 2. Generated images are assets, not full slides; `visual_assets.json` maps slide IDs to image paths, safe areas, and placement rules. Text, labels, metrics, logos, charts, and callouts remain native PPT/HTML elements.
+
 ### Workflow
 1. **MANDATORY - READ ENTIRE FILE**: Read [`html2pptx.md`](html2pptx.md) completely from start to finish. **NEVER set any range limits when reading this file.** Read the full file content for detailed syntax, critical formatting rules, and best practices before proceeding with presentation creation.
-2. Create an HTML file for each slide with proper dimensions (e.g., 720pt × 405pt for 16:9)
+2. Resolve visual assets before HTML generation
+   - Read `visual_assets.json`, falling back to `visual_briefs.md`; every `hybrid` / `image-heavy` slide needs a real asset path
+   - For external/client decks, unresolved generated assets block final PPTX export unless the user explicitly accepts draft quality
+   - Keep generated images out of charts, data labels, logos, and exact UI
+3. Create an HTML file for each slide with proper dimensions (e.g., 720pt × 405pt for 16:9)
    - Use `<p>`, `<h1>`-`<h6>`, `<ul>`, `<ol>` for all text content
    - Use `class="placeholder"` for areas where charts/tables will be added (render with gray background for visibility)
+   - Use generated images through `<img>` or CSS background images with `object-fit: cover` / `background-size: cover`; never distort aspect ratio
+   - Add native overlay layers for titles, subtitles, labels, metrics, and logos
    - **CRITICAL**: Rasterize gradients and icons as PNG images FIRST using Sharp, then reference in HTML
    - **LAYOUT**: For slides with charts/tables/images, use either full-slide layout or two-column layout for better readability
-3. Create and run a JavaScript file using the [`html2pptx.js`](scripts/html2pptx.js) library to convert HTML slides to PowerPoint and save the presentation
+4. Create and run a JavaScript file using the [`html2pptx.js`](scripts/html2pptx.js) library to convert HTML slides to PowerPoint and save the presentation
    - Use the `html2pptx()` function to process each HTML file
    - Add charts and tables to placeholder areas using PptxGenJS API
    - Save the presentation using `pptx.writeFile()`
-4. **Visual validation**: Generate thumbnails and inspect for layout issues
+5. **Visual validation**: Generate thumbnails and inspect for layout issues
    - Create thumbnail grid: `python scripts/thumbnail.py output.pptx workspace/thumbnails --cols 4`
    - Read and carefully examine the thumbnail image for:
      - **Text cutoff**: Text being cut off by header bars, shapes, or slide edges
      - **Text overlap**: Text overlapping with other text or shapes
      - **Positioning issues**: Content too close to slide boundaries or other elements
      - **Contrast issues**: Insufficient contrast between text and backgrounds
+     - **Image issues**: Blurry assets, wrong crop, stretched aspect ratio, visible watermark/text, hidden subject, or style clash with the locked template
    - If issues found, adjust HTML margins/spacing/colors and regenerate the presentation
    - Repeat until all slides are visually correct
 

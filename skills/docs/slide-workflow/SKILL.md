@@ -1,8 +1,9 @@
 ---
 name: slide-workflow
 description: >
-  Seven-stage gated presentation workflow: purpose → style → outline → content → generate
-  → review → export. Prevents jumping to generation with no outline.
+  Gated presentation workflow: purpose → style → outline → content → Codex visual
+  assets → generate → review → export. Prevents jumping to generation with no
+  outline or missing visual briefs.
   TRIGGER: "做簡報", "做 deck", "準備提案", "幫我做 slides", "簡報流程".
   SKIP: complete outline + locked template + "直接生成".
 tags: [docs, workflow]
@@ -13,7 +14,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 
 # Slide Workflow
 
-Eight gates + a pre-flight router, each requires user confirmation before proceeding. Never skip a gate unless the user explicitly says to.
+Gated workflow + a pre-flight router. Each gate requires user confirmation before proceeding. Never skip a gate unless the user explicitly says to.
 
 > 上層 routing 邏輯（哪一類 deck → 哪個 skill 接手）見 `~/.claude/CLAUDE.md` 的 `### Slide / Deck Building` flow。本 SKILL.md 是該 flow 的 D 路徑（通用流程）的執行細節。
 
@@ -135,17 +136,17 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 ```markdown
 ## 簡報大綱
 
-| # | Slide 類型 | 標題 | 核心訊息（1 句話） | 數據/素材來源 |
-|---|-----------|------|-------------------|-------------|
-| 1 | Cover | {title} | — | brand logo |
-| 2 | Agenda | 目錄 | 3 個 section | — |
-| 3 | Problem | {pain point} | 量化痛點 | discovery data |
-| 4 | Solution | {product/service} | 1 flow 或 3 步驟 | product info |
-| 5 | How it works | {demo/arch} | 技術示意 | screenshot/diagram |
-| 6 | Traction | {metrics} | 數字說話 | CRM / 報告 |
-| 7 | Case study | {client name} | before → after | case study doc |
-| 8 | Team | {key people} | 相關經歷 | bios |
-| 9 | Ask / Next steps | {CTA} | 明確行動 | — |
+| # | Slide 類型 | 標題 | 核心訊息（1 句話） | 數據/素材來源 | Visual mode |
+|---|-----------|------|-------------------|-------------|-------------|
+| 1 | Cover | {title} | — | brand logo | image-heavy |
+| 2 | Agenda | 目錄 | 3 個 section | — | native |
+| 3 | Problem | {pain point} | 量化痛點 | discovery data | hybrid |
+| 4 | Solution | {product/service} | 1 flow 或 3 步驟 | product info | hybrid |
+| 5 | How it works | {demo/arch} | 技術示意 | screenshot/diagram | native |
+| 6 | Traction | {metrics} | 數字說話 | CRM / 報告 | native |
+| 7 | Case study | {client name} | before → after | case study doc | hybrid |
+| 8 | Team | {key people} | 相關經歷 | bios | hybrid |
+| 9 | Ask / Next steps | {CTA} | 明確行動 | — | hybrid |
 ```
 
 ### 大綱原則
@@ -153,7 +154,9 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 - 核心訊息用 1 句話寫完（如果需要 2 句，拆成 2 張 slide）
 - Cover / Agenda / Closing 不算在「核心 slides」裡
 - 數據 slide 必須標明數據來源
-- 如果有 demo / screenshot，標明「需要準備 image」
+- 每張 slide 必須標明 visual mode：`native`、`hybrid`、`image-heavy`
+- 如果有 demo / screenshot / generated hero image，標明「需要準備 image」
+- `hybrid` / `image-heavy` 必須在 Gate 4.5 產生 visual brief，不可直接進 HTML
 
 **Gate 3 輸出**: 用戶確認大綱表（可能修改順序、增刪 slides、調整核心訊息）。
 
@@ -179,7 +182,85 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 
 **Gate 4 輸出**: 所有 slide 的素材已就位（或用戶確認「先用 placeholder」）。
 
-> 等待用戶確認後才進入 Gate 5。
+> 等待用戶確認後才進入 Gate 4.5。
+
+---
+
+## Gate 4.5: Codex 視覺圖片資產
+
+這道 gate 只處理 `hybrid` 和 `image-heavy` slides。目標是把圖片生成變成正式素材供應鏈，而不是在做 PPTX 時臨場補洞。
+
+### 先分類
+
+| Visual mode | 處理方式 |
+|-------------|----------|
+| `native` | 不生成圖片；用 template 元件、圖表、表格、icon、diagram |
+| `hybrid` | 產生背景/情境/產品脈絡圖片，再用原生文字與標註覆蓋 |
+| `image-heavy` | 產生全版主視覺，保留 safe area 給原生標題/副標 |
+
+### Codex handoff
+
+圖片資產由 Codex 的 image generation 能力產生。若目前正在 Claude Code 中執行，先輸出 `visual_briefs.md`，交給 Codex 生成圖片後再回到本流程；不要讓 Claude Code 用 CSS 漸層、抽象裝飾、假 stock 圖或圖片內文字替代。
+
+### Visual brief
+
+每張圖用這個格式：
+
+```markdown
+## slide-03-problem-bg
+- slide purpose:
+- audience/tone:
+- image role: hero | background | concept visual | customer scene | product context
+- visual subject:
+- composition:
+- aspect ratio: 16:9
+- safe area:
+- template palette/style constraints:
+- negative constraints: no visible text, no logos, no fake UI, no watermarks, no tiny details
+- output path: assets/generated/slide-03-problem-bg.png
+```
+
+保存規則：
+- 圖片放在 `{output-dir}/assets/generated/` 或 `assets/generated/`
+- brief/prompt 與圖片同名保存，方便重生
+- 檔名包含 slide 編號與角色，例如 `slide-01-cover-hero.png`
+- 同步建立 `visual_assets.json`，讓 `office-pptx` 不用從 markdown 猜圖檔與 placement
+
+`visual_assets.json` 最小格式：
+
+```json
+{
+  "deck_id": "client-deck",
+  "assets": [
+    {
+      "slide_id": "slide-03",
+      "slide_number": 3,
+      "mode": "hybrid",
+      "role": "background",
+      "brief_path": "visual_briefs.md#slide-03-problem-bg",
+      "image_path": "assets/generated/slide-03-problem-bg.png",
+      "prompt_path": "assets/generated/slide-03-problem-bg.prompt.md",
+      "status": "briefed",
+      "safe_area": "right 35% clear for title and metrics",
+      "placement": {"fit": "cover", "focal_point": "left center", "overlay": "dark 30%"}
+    }
+  ]
+}
+```
+
+狀態規則：
+- `briefed`: 已寫 brief，尚未產圖
+- `generated`: 已產圖，尚未人工/縮圖確認
+- `approved`: 可進 final PPTX
+- `draft-placeholder`: 只允許內部草稿或用戶明確接受低保真交付
+
+禁止用圖片生成的內容：
+- 真實 logo、精確 UI screenshot、架構圖文字、財務圖表、KPI 數字、法規文字、小字密集頁
+- 這些內容用原生 slide 元素或來源素材處理
+
+**Gate 4.5 輸出**: 所有 `hybrid` / `image-heavy` slides 都有 `approved` 圖片資產；或用戶明確確認這次只輸出 draft/internal 版本。
+
+> 等待圖片資產確認後才進入 Gate 5。
 
 ---
 
@@ -188,12 +269,18 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 **必須使用 Gate 2 確認的 locked template**。
 
 1. Read the template file → 提取 `:root` CSS variables + slide component classes
-2. 依 Gate 3 大綱逐張生成 HTML
+2. 依 Gate 3 大綱逐張生成 HTML，並使用 Gate 4.5 的 generated assets
 3. 每張 slide 使用 template 裡對應的 slide 類型（cover / section / cards / comparison / metrics / table）
 4. 如果大綱有 template 未提供的 slide 類型，用最接近的 slide 類型改造
 5. 存檔：`{output-dir}/{client}-deck.html`
 
 **注意 CJK 字型**：如果 template 的 font stack 有 `Noto Sans TC`，確認 Google Fonts link 存在。
+
+**圖片分層規則**：
+- 圖片只承擔背景、情境、產品脈絡或主視覺
+- 標題、副標、註解、數據、logo、CTA 都用 HTML/PPT 原生元素
+- 不拉伸圖片；用 cover/crop/position 保持比例
+- 背景圖片加 overlay 或遮罩，確保文字對比足夠
 
 **Gate 5 輸出**: HTML 檔案路徑 → 請用戶在瀏覽器打開確認。
 
@@ -273,6 +360,8 @@ open {output-dir}/{client}-deck.html
 |------|---|
 | 沒確認 template 就開始寫 HTML | Gate 2 先選 template |
 | 沒確認大綱就開始填 slide 內容 | Gate 3 先確認每張 slide 的 1 句話核心訊息 |
+| `hybrid` / `image-heavy` 沒 visual brief / `visual_assets.json` 就做 HTML | Gate 4.5 先讓 Codex 產生圖片資產 |
+| 讓圖片生成出現標題、數字、logo、UI 字 | 圖片只當主視覺，所有文字與資料用原生元素 |
 | 在 HTML 裡硬寫顏色/字型 | 使用 template 的 `:root` CSS variables |
 | 一次生成 20 張 slides | 先做 3-5 張讓用戶確認風格對不對，再做剩下的 |
 | 發現缺素材時用 placeholder 蒙混 | Gate 4 就列出缺口，請用戶補 |

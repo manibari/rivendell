@@ -19,10 +19,10 @@ audio-transcription-flow	後端	音檔上傳 → speech-to-text → 逐字稿顯
 mcp-builder	文件	MCP Server 開發指南：FastMCP、工具設計、外部 API 整合
 office-docx	文件	Word 文件處理：建立（docx-js）、編輯（redlining）、追蹤修訂、批註
 office-pdf	文件	PDF 處理：擷取文字/表格、合併拆分、建立、表單填寫、OCR
-office-pptx	文件	PowerPoint 處理：建立（html2pptx）、投影片設計、講者備註、縮圖
+office-pptx	文件	PowerPoint 處理：建立（html2pptx）、投影片設計、講者備註、Codex 圖片資產 placement、縮圖 QA
 office-xlsx	文件	試算表處理：公式計算（openpyxl）、財務模型色彩規範、pandas 分析
 slide-template-extractor	文件	從既有 PPTX/Google Slides 萃取設計系統，產出鎖定的 HTML slide template（CSS 變數：色彩、字型、版面）
-slide-workflow	文件	簡報製作七階段 gate：目的 → 風格鎖定 → 大綱 → 內容 → 生成 → 審查 → 匯出
+slide-workflow	文件	簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出
 gdoc-report-builder	文件	經 MCP 建 Google Docs/Slides 結構化報告：批次編表、段落樣式、find-and-replace、多媒體插入
 iot-factory-report	文件	廠務 IoT/SCADA 時序資料分析（UPW/RO/壓縮機/冷凍機）：cycle detection、異常標記、趨勢分析、PPTX 匯出
 
@@ -102,7 +102,7 @@ material-health	商業	銷售素材庫健康檢查：frontmatter 缺漏、過期
 sales-material	商業	客製化銷售簡報：匹配情蒐、案例、方案、補助，產生 PPTX
 subsidy-scraper	商業	政府補助爬蟲：自動擷取補助公告、去重、歸檔、產生 INDEX.md
 tender-scraper	商業	政府標案爬蟲：g0v API 擷取、關鍵字過濾、自動探索、dashboard 可觀測
-pitch-deck	商業	投資人/BP pitch deck 製作：discovery → narrative → HTML slides → PPTX 匯出
+pitch-deck	商業	投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出
 discovery-interview	商業	結構化客戶 Discovery 訪談：找最痛的手動流程，產出 discovery-summary.md（接 sow-writer）
 sow-writer	商業	台灣格式 SOW 工作說明書：12+ 標準章節、Mermaid Gantt、人天計費
 rfq-writer	商業	RFQ 報價單：pre-contract 議價、範圍選項、版本控制（合約前輕量版）

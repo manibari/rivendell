@@ -224,13 +224,13 @@ as release notes.
 | **metadata-workshop** | 自動 | Run a structured Metadata Workshop with a consulting client to convert their |
 | **office-docx** | 自動 | Word (.docx) 建立、編輯、分析，支援追蹤修訂與註解 |
 | **office-pdf** | 自動 | PDF 操作：文字/表格擷取、建立、合併/分割、表單填寫 |
-| **office-pptx** | 自動 | PowerPoint (.pptx) 建立、編輯、分析，支援版面配置與講者備註 |
+| **office-pptx** | 自動 | PowerPoint (.pptx) 建立、編輯、分析，支援版面配置、講者備註與 Codex 圖片資產 placement |
 | **office-xlsx** | 自動 | 試算表 (.xlsx/.csv) 建立、編輯、分析，支援公式與資料視覺化 |
-| **pitch-deck** | 自動 | Create professional business pitch decks and investor presentations with |
+| **pitch-deck** | 自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
 | **rfq-writer** | 自動 | Generate Request for Quotation (RFQ / 報價單) for consulting projects. |
 | **slide-office-hours** | 自動 | Red-team review for a B2B presales deck storyline (storyline. |
 | **slide-template-extractor** | 自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
-| **slide-workflow** | 自動 | Step-by-step presentation creation workflow with confirmation gates. |
+| **slide-workflow** | 自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
 | **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
 | **subsidy-writer** | `/subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
 
