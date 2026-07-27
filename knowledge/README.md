@@ -7,10 +7,13 @@
 ```
 knowledge/
 └── videos/                          # 影片摘要（video-transcript skill 產出）
+    ├── INDEX.md                     # 可瀏覽索引（save_note 自動重生；按日期排序 + 可信度）
     └── YYYY-MM-DD-<標題>/
         ├── note.md                  # frontmatter（title/url/source/reliability/date/tags）+ 摘要
         └── transcript.txt           # 完整逐字稿
 ```
+
+**先看 `videos/INDEX.md`** 找筆記；它是從各 note.md frontmatter 衍生的視圖，`save_note.sh` 每次寫入自動重生。
 
 未來可長 `knowledge/articles/`、`knowledge/papers/` 等同構子目錄。
 
