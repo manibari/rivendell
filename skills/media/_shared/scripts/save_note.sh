@@ -82,4 +82,8 @@ reliability="$kind"
   head -40 "$DIR/transcript.txt"
 } > "$DIR/note.md"
 
+# Keep the browsable index in sync (same pattern as the tender/subsidy scrapers:
+# notes are source of truth, INDEX.md is a derived view regenerated on each write).
+python3 "$SCRIPT_DIR/build_index.py" "$NOTES_DIR" >&2 2>/dev/null || true
+
 echo "$DIR"

@@ -22,7 +22,8 @@
 | `vtt_to_text.py` | VTT → 乾淨純文字（**去**時間戳、去滾動字幕重複）。給 video-transcript 用 |
 | `vtt_to_srt.py` | VTT → 乾淨 SRT（**保留**時間戳、合併重複軌）。給 subtitle-file 用 |
 | `audio_transcribe.sh` | **無字幕 fallback**：yt-dlp 抽音訊 → 16kHz wav → whisper.cpp 本地語音轉文字。模型首次自動下載。ASR 非人工字幕，較慢且會誤聽專有名詞 |
-| `save_note.sh` | **歸檔**：把 transcript + 摘要存進 `knowledge/videos/YYYY-MM-DD-<標題>/`（git-tracked 知識庫），note.md 帶 frontmatter。根治「只讀不存」 |
+| `save_note.sh` | **歸檔**：把 transcript + 摘要存進 `knowledge/videos/YYYY-MM-DD-<標題>/`（git-tracked 知識庫），note.md 帶 frontmatter，並自動重生 INDEX。根治「只讀不存」 |
+| `build_index.py` | 掃 `knowledge/videos/*/note.md` frontmatter → 重生 `INDEX.md`（可瀏覽表格，按日期排序、標可信度）。save_note 每次自動呼叫，也可手動重跑 |
 
 ### 為什麼 `_shared/` 用相對路徑能 work
 
