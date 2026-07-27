@@ -34,13 +34,15 @@ Commands:
   check ssot          SSOT drift: diff agents.conf vs ~/.claude/projects.json
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   check disk          Disk capacity: data volume backing \$HOME (WARN ≥90%, CRIT ≥95%)
-                      Flags: --json (structured), --quiet (only output if not ok, exit non-zero)
+                      Flags: --json (structured), --quiet (only output if not ok, exit non-zero),
+                             --notify (push WARN/CRIT to Telegram via ~/.config/claude-telegram/env)
   check agents        Agent schedule health: agents.conf entries not loaded in launchd
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   run <task>          Run a task as single-shot agent (claude -p)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
-  maintain            Nightly maintenance: permissions sync, deploy check, agent health, audit
+  maintain            Nightly maintenance: permissions sync, deploy check, agent health, audit, disk alert
+  clean               Reclaim disk from regenerable caches (npm/pip/uv/brew, docker build cache, stale .next)
   readme              Regenerate README.md Skills Catalog from SKILL.md frontmatter
   sync                Show Google Drive import status for re-import
   agent               Manage automated agents (list/start/stop/status/log/create)
@@ -286,6 +288,62 @@ cmd_rename() {
   cmd_readme
   echo -e "${GREEN}Done.${NC} Review with: git -C $REPO_DIR diff --stat"
   [ -n "$code_refs" ] && echo -e "${YELLOW}Don't forget the manual code references listed above.${NC}"
+}
+
+# --- Clean: reclaim disk from regenerable caches only ---
+# Everything here is rebuildable (package caches, docker build cache, abandoned
+# .next snapshots). Data, running services, and model caches are never touched;
+# oversized live dev caches are REPORTED with the safe procedure, not deleted.
+cmd_clean() {
+  local avail_before avail_after
+  avail_before="$(df -k "$HOME" | tail -1 | awk '{print $4}')"
+  echo -e "${CYAN}=== sk clean — regenerable caches only ===${NC}"
+
+  echo -e "\n${CYAN}[1/4] Package-manager caches${NC}"
+  command -v npm  >/dev/null && { npm cache clean --force 2>&1 | grep -v "^npm warn" | sed 's/^/  npm: /' || true; }
+  command -v pip3 >/dev/null && { pip3 cache purge 2>&1 | tail -1 | sed 's/^/  pip: /' || true; }
+  command -v uv   >/dev/null && { uv cache prune 2>&1 | tail -1 | sed 's/^/  uv: /' || true; }
+  command -v brew >/dev/null && { brew cleanup -s 2>&1 | tail -1 | sed 's/^/  brew: /' || true; }
+
+  echo -e "\n${CYAN}[2/4] Docker build cache + dangling images${NC}"
+  if docker info >/dev/null 2>&1; then
+    docker builder prune -f 2>&1 | tail -1 | sed 's/^/  builder: /'
+    docker image prune -f 2>&1 | tail -1 | sed 's/^/  images:  /'
+  else
+    echo "  (docker not running — skipped)"
+  fi
+
+  echo -e "\n${CYAN}[3/4] Abandoned .next snapshots${NC}"
+  local snap found_snap=0
+  while IFS= read -r snap; do
+    [ -z "$snap" ] && continue
+    echo "  rm $(du -xsh "$snap" 2>/dev/null | awk '{print $1}')  $snap"
+    rm -rf "$snap"
+    ((found_snap++)) || true
+  done < <(find "$PROJECTS_DIR" -maxdepth 4 -type d \( -name '.next.old*' -o -name '.next.broken*' \) -prune 2>/dev/null)
+  [ "$found_snap" -eq 0 ] && echo "  (none)"
+
+  echo -e "\n${CYAN}[4/4] Oversized dev caches (report-only)${NC}"
+  local limit_kb=$((3 * 1024 * 1024)) dev_dir kb flagged=0
+  while IFS= read -r dev_dir; do
+    [ -z "$dev_dir" ] && continue
+    kb="$(du -sk "$dev_dir" 2>/dev/null | awk '{print $1}')"
+    if [ "${kb:-0}" -gt "$limit_kb" ]; then
+      echo -e "  ${YELLOW}$(awk "BEGIN{printf \"%.1fG\", ${kb}/1024/1024}")  $dev_dir${NC}"
+      ((flagged++)) || true
+    fi
+  done < <(find "$PROJECTS_DIR" -maxdepth 5 -type d -path '*/.next/dev' -prune 2>/dev/null)
+  if [ "$flagged" -gt 0 ]; then
+    echo "  Not auto-deleted (.next is atomic; a dev server may own it)."
+    echo "  Safe path: stop the server → mv .next .next.old-\$(date +%s) → restart → sk clean"
+  else
+    echo "  (all under 3G)"
+  fi
+
+  avail_after="$(df -k "$HOME" | tail -1 | awk '{print $4}')"
+  local freed_g
+  freed_g="$(awk -v a="$avail_after" -v b="$avail_before" 'BEGIN{printf "%.1f", (a-b)/1024/1024}')"
+  echo -e "\n${GREEN}Freed: ${freed_g}G${NC} — $(df -h "$HOME" | tail -1 | awk '{print $5" used, "$4" free"}')"
 }
 
 cmd_import() {
@@ -673,6 +731,20 @@ cmd_list() {
 }
 
 PROJECTS_DIR="$HOME/Documents/Projects"
+
+# --- Telegram notify (best-effort, silent when unconfigured) ---
+# Token SoT: ~/.config/claude-telegram/env (shared with session notifier + ops-bot)
+tg_notify() {
+  local msg="$1"
+  local env_file="$HOME/.config/claude-telegram/env"
+  [ -f "$env_file" ] || return 0
+  # shellcheck disable=SC1090
+  source "$env_file"
+  [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ] || return 0
+  curl -s --max-time 8 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+    -d chat_id="${TELEGRAM_CHAT_ID}" \
+    --data-urlencode text="$msg" >/dev/null 2>&1 || true
+}
 
 # --- Permissions ---
 
@@ -2029,7 +2101,7 @@ cmd_maintain() {
   echo -e "${CYAN}=== Nightly Maintenance — $today ===${NC}\n"
 
   # 1. Deploy check: auto-deploy new skills, clean dangling symlinks
-  echo -e "${CYAN}[1/4] Deploy Check${NC}"
+  echo -e "${CYAN}[1/5] Deploy Check${NC}"
   while IFS= read -r deploy_target; do
     mkdir -p "$deploy_target"
   done < <(deploy_targets)
@@ -2070,7 +2142,7 @@ cmd_maintain() {
   echo ""
 
   # 2. Permissions sync across all projects
-  echo -e "${CYAN}[2/4] Permissions Sync${NC}"
+  echo -e "${CYAN}[2/5] Permissions Sync${NC}"
   if [ -d "$PROJECTS_DIR" ]; then
     local proj_count=0
     for proj_dir in "$PROJECTS_DIR"/*/; do
@@ -2101,7 +2173,7 @@ cmd_maintain() {
   echo ""
 
   # 3. Agent health check
-  echo -e "${CYAN}[3/4] Agent Health${NC}"
+  echo -e "${CYAN}[3/5] Agent Health${NC}"
   local agent_count=0
   agent_count="$(agent_scan_all | wc -l | tr -d ' ')"
   if [ "$agent_count" -gt 0 ]; then
@@ -2118,8 +2190,13 @@ cmd_maintain() {
   echo ""
 
   # 4. Audit report
-  echo -e "${CYAN}[4/4] Audit Report${NC}"
+  echo -e "${CYAN}[4/5] Audit Report${NC}"
   cmd_audit
+  echo ""
+
+  # 5. Disk capacity — alert via Telegram at WARN/CRIT so it reaches a human
+  echo -e "${CYAN}[5/5] Disk Check${NC}"
+  cmd_check_disk --notify || true
 }
 
 cmd_run() {
@@ -3271,12 +3348,13 @@ cmd_check_ssot() {
 # Thresholds: WARN >=90%, CRIT >=95%. Fast — `df` only, never `du`.
 # Exit: 0 ok, 1 warn, 2 crit (mirrors check-ssot's non-zero-on-problem).
 cmd_check_disk() {
-  local mode="text" quiet=false
+  local mode="text" quiet=false notify=false
   local warn_pct="${SK_DISK_WARN_PCT:-90}" crit_pct="${SK_DISK_CRIT_PCT:-95}"
   for arg in "$@"; do
     case "$arg" in
-      --json)  mode="json" ;;
-      --quiet) quiet=true ;;
+      --json)   mode="json" ;;
+      --quiet)  quiet=true ;;
+      --notify) notify=true ;;
     esac
   done
 
@@ -3312,6 +3390,13 @@ cmd_check_disk() {
   if   [ "$pct" -ge "$crit_pct" ]; then status="crit"; rc=2
   elif [ "$pct" -ge "$warn_pct" ]; then status="warn"; rc=1
   else status="ok"; rc=0
+  fi
+
+  # --notify: push warn/crit to Telegram so the threshold is seen, not just logged.
+  # Closes the loop that let the disk ride from 90% to 97% unnoticed (2026-07).
+  if $notify && [ "$rc" -ne 0 ]; then
+    local icon="⚠️"; [ "$status" = "crit" ] && icon="🚨"
+    tg_notify "$icon Disk $status: ${pct}% used (${avail_gb}G free of ${size_gb}G) on $(hostname -s). Run: sk clean"
   fi
 
   if [ "$mode" = "json" ]; then
@@ -4022,6 +4107,7 @@ case "${1:-help}" in
   lint)       shift; cmd_lint "$@" ;;
   permissions) cmd_permissions "${2:-.}" ;;
   maintain)   cmd_maintain ;;
+  clean)      cmd_clean ;;
   agent)      shift; cmd_agent "$@" ;;
   sync)       cmd_sync ;;
   readme)     cmd_readme ;;
