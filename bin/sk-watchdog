@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # sk-watchdog — Health-check rivendell dashboard services and restart on failure.
 #
-# launchd's KeepAlive only catches process death. This watchdog catches the
-# other failure mode: process alive, port listening, but the service is hung
-# (deadlocked event loop, frozen worker, etc.) so requests time out.
+# The service manager's keepalive (launchd KeepAlive / systemd Restart=always)
+# only catches process death. This watchdog catches the other failure mode:
+# process alive, port listening, but the service is hung (deadlocked event loop,
+# frozen worker, mid-rebuild under Type=simple) so requests time out — the
+# "false green" the unit itself can't see.
 #
 # Two-tier recovery:
 #  1. Standard restart: launchctl kickstart -k after THRESHOLD consecutive
@@ -22,6 +24,8 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$REPO_DIR/bin/lib/platform.sh"
+SK_PLATFORM="$(sk_platform)"
 STATE_DIR="$REPO_DIR/reports"
 STATE_FILE="$STATE_DIR/.watchdog-state"
 LOG_FILE="$STATE_DIR/watchdog.log"
@@ -32,7 +36,6 @@ ESCALATE_THRESHOLD=5
 mkdir -p "$STATE_DIR"
 touch "$STATE_FILE"
 
-UID_NUM="$(id -u)"
 NOW=$(date +%s)
 TODAY=$(date '+%Y-%m-%d')
 
@@ -67,7 +70,10 @@ deep_recovery_web() {
     (
         cd "$web_dir"
         rm -rf .next
-        if npm run build >> "$LOG_FILE" 2>&1; then
+        # npm run build recreates .next; only stamp the sentinel on success, and
+        # only if the dir actually exists — a failed build leaves no .next, so
+        # `touch .next/.build-complete` would itself error under set -e.
+        if npm run build >> "$LOG_FILE" 2>&1 && [ -d .next ]; then
             touch .next/.build-complete
             return 0
         fi
@@ -150,7 +156,7 @@ check_and_restart() {
     fi
 
     log "RESTART $label (threshold $THRESHOLD reached)"
-    if launchctl kickstart -k "gui/$UID_NUM/$label" 2>>"$LOG_FILE"; then
+    if svc_restart "$label" 2>>"$LOG_FILE"; then
         set_state "$key" 0 "$NOW" "$((restarts_today + 1))" "$today_date"
     else
         log "  kickstart failed for $label"
