@@ -26,6 +26,7 @@ Commands:
   deploy              Symlink all skills → ~/.claude/skills/ and ~/.codex/skills/
   undeploy            Remove repo symlinks from ~/.claude/skills/ and ~/.codex/skills/
   create <cat/name>   Scaffold new skill + auto-deploy (e.g. meta/my-skill)
+  rename <old> <new>  Rename a skill: refs checklist (dry-run) / --apply to execute
   import <name>       Import from SkillsMP via agent-skills-cli
   import-gh <url>     Clone skill from GitHub URL
   list                Show all skills + deployment status
@@ -211,6 +212,80 @@ TEMPLATE
     fi
   done < <(deploy_targets)
   echo "Edit the file to add your skill instructions."
+}
+
+cmd_rename() {
+  local old="${1:?Usage: sk rename <old-name> <new-name> [--apply]}"
+  local new="${2:?Usage: sk rename <old-name> <new-name> [--apply]}"
+  local apply=false
+  [ "${3:-}" = "--apply" ] && apply=true
+
+  # Accept "category/name" or plain "name"; resolve the actual directory
+  old="${old#*/}"; new="${new#*/}"
+  local old_dir
+  old_dir=$(find "$SKILLS_DIR" -mindepth 2 -maxdepth 2 -type d -name "$old" 2>/dev/null | head -1)
+  if [ -z "$old_dir" ]; then
+    echo -e "${RED}Error:${NC} No skill named '$old' found under $SKILLS_DIR"
+    exit 1
+  fi
+  local category new_dir
+  category=$(basename "$(dirname "$old_dir")")
+  new_dir="$SKILLS_DIR/$category/$new"
+  if [ -e "$new_dir" ]; then
+    echo -e "${RED}Error:${NC} Target '$category/$new' already exists"
+    exit 1
+  fi
+
+  # Reference scan: exact word matches only. reports/ is history — never rewritten.
+  local md_refs code_refs
+  md_refs=$(grep -rlw "$old" "$REPO_DIR" \
+    --include='*.md' --include='agents.conf' \
+    --exclude-dir=.git --exclude-dir=reports --exclude-dir=node_modules \
+    --exclude-dir=.learnings 2>/dev/null | grep -v "$old_dir" || true)
+  code_refs=$(grep -rlw "$old" "$REPO_DIR" \
+    --exclude='*.md' --exclude='agents.conf' \
+    --exclude-dir=.git --exclude-dir=reports --exclude-dir=node_modules \
+    --exclude-dir='.next*' --exclude-dir=.learnings 2>/dev/null || true)
+
+  echo -e "${GREEN}Rename plan:${NC} $category/$old → $category/$new"
+  echo "  1. git mv $old_dir → $new_dir"
+  echo "  2. Replace word '$old' → '$new' in markdown/conf files:"
+  if [ -n "$md_refs" ]; then echo "$md_refs" | sed "s|$REPO_DIR/|     - |"; else echo "     (none)"; fi
+  echo "  3. Re-point deploy symlinks (claude/codex) and regenerate README"
+  if [ -n "$code_refs" ]; then
+    echo -e "  ${YELLOW}4. MANUAL review — code files also mention '$old' (NOT auto-changed):${NC}"
+    echo "$code_refs" | sed "s|$REPO_DIR/|     - |"
+  fi
+  echo -e "  ${YELLOW}Reminders:${NC} telemetry history keeps the old name;"
+  echo "     check ~/.claude/CLAUDE.md and memory files for out-of-repo references:"
+  grep -lw "$old" "$HOME/.claude/CLAUDE.md" \
+    "$HOME/.claude/projects/-Users-manibari-code-rivendell/memory/"*.md 2>/dev/null \
+    | sed 's|^|     - |' || true
+
+  if ! $apply; then
+    echo -e "\n${YELLOW}Dry-run.${NC} Re-run with --apply to execute."
+    return 0
+  fi
+
+  git -C "$REPO_DIR" mv "$old_dir" "$new_dir"
+  echo -e "${GREEN}Moved${NC} $old_dir → $new_dir"
+
+  # Word-boundary replace in the moved skill itself + referencing md/conf files
+  local f
+  while IFS= read -r f; do
+    [ -f "$f" ] && perl -pi -e "s/\\b\Q$old\E\b/$new/g" "$f"
+  done < <(printf '%s\n' "$md_refs"; find "$new_dir" -name '*.md')
+  echo -e "${GREEN}Updated${NC} references in markdown/conf files"
+
+  # Remove stale symlinks for the old name, then redeploy + regenerate README
+  while IFS= read -r deploy_target; do
+    [ -L "$deploy_target/$old" ] && rm "$deploy_target/$old" \
+      && echo -e "${GREEN}Removed${NC} stale link $(deploy_label "$deploy_target")/$old"
+  done < <(deploy_targets)
+  cmd_deploy >/dev/null
+  cmd_readme
+  echo -e "${GREEN}Done.${NC} Review with: git -C $REPO_DIR diff --stat"
+  [ -n "$code_refs" ] && echo -e "${YELLOW}Don't forget the manual code references listed above.${NC}"
 }
 
 cmd_import() {
@@ -3943,6 +4018,7 @@ case "${1:-help}" in
     ;;
   run)        shift; cmd_run "$@" ;;
   audit)      shift; cmd_audit "$@" ;;
+  rename)     shift; cmd_rename "$@" ;;
   lint)       shift; cmd_lint "$@" ;;
   permissions) cmd_permissions "${2:-.}" ;;
   maintain)   cmd_maintain ;;

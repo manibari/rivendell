@@ -44,14 +44,14 @@ audit-fix	基礎建設	分析 sk audit 報告，自動修復專案權限問題
 ci-pipeline	基礎建設	偵測專案技術棧，自動產生 GitHub Actions CI 工作流
 deploy	基礎建設	推薦部署平台，產生 Dockerfile / fly.toml / vercel.json 等配置
 dev-process-gate	基礎建設	攔截跳過設計直接寫 code 的行為，引導走完整開發流程
-headless-agent	基礎建設	Headless agent 模式範本：排程、structured logging、output 管理
+agent-headless	基礎建設	Headless agent 模式範本：排程、structured logging、output 管理
 init-project	基礎建設	初始化 AGENTS.md + .claude/CLAUDE.md 專案配置
 plan-check-style	基礎建設	Plan mode 進入 UI 任務時，掃描並載入對應的設計風格
 self-improving-agent	基礎建設	記錄錯誤/修正/最佳實踐到 .learnings/，持續學習改進
 setup-permissions	基礎建設	偵測專案工具鏈，自動配置 settings.local.json 權限白名單
 skill-creator	基礎建設	Skill 全生命週期：建立、測試、benchmark、優化觸發描述
 skill-scout	基礎建設	從 Clawdbot/OpenClaw 生態系搜尋、評估、移植 skills
-launchd-agent	基礎建設	macOS launchd 排程管理：plist 產生、StartCalendarInterval、launchctl 生命週期
+agent-launchd	基礎建設	macOS launchd 排程管理：plist 產生、StartCalendarInterval、launchctl 生命週期
 repo-rename	基礎建設	Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist
 session-harvest	基礎建設	Session 結束時回顧工作，萃取可復用的 skill 候選
 settings-audit	基礎建設	審計 settings.local.json：移除無效權限、修正 JSON 語法、驗證格式
@@ -78,7 +78,7 @@ large-file-refactor	品質	系統化拆分 500+ 行單一檔案：保持介面�
 # === 工作流 / 規劃 ===
 autoresearch	工作流	自主迭代迴圈：定義目標 + 指標 + 驗證指令，agent 自動 modify → verify → keep/discard
 context-recovery	工作流	Session compaction 後自動恢復上下文（git/檔案/memory）
-dispatching-parallel-agents	工作流	派遣多個 agent 平行處理 3+ 個獨立問題
+agent-dispatch	工作流	派遣多個 agent 平行處理 3+ 個獨立問題
 executing-plans	工作流	分批執行實作計畫，每批完成後 review checkpoint
 planning-with-files	工作流	Manus 風格檔案式規劃（task_plan.md / findings.md / progress.md）
 requirement	工作流	定義結構化需求：user story + acceptance criteria + scope

@@ -56,7 +56,7 @@
       "source": "local",
       "desc": "強制執行開發工作流程：需求 → 使用者故事"
     },
-    "dispatching-parallel-agents": {
+    "agent-dispatch": {
       "source": "local",
       "desc": "使用多個 Claude agents 平行調查"
     },
@@ -84,7 +84,7 @@
       "source": "local",
       "desc": "從 Google Drive 文件讀取內容並分類為 skills"
     },
-    "headless-agent": {
+    "agent-headless": {
       "source": "local",
       "desc": "無頭模式執行 Claude Code 的自動化模式"
     },
@@ -116,7 +116,7 @@
       "source": "local",
       "desc": "系統性拆分大型單檔元件"
     },
-    "launchd-agent": {
+    "agent-launchd": {
       "source": "local",
       "desc": "建立、設定、管理 macOS launchd agents"
     },
@@ -775,7 +775,7 @@
           "desc": "設備效率分析與預防性維護建議",
           "skills": [
             "executing-plans",
-            "dispatching-parallel-agents"
+            "agent-dispatch"
           ]
         },
         {
@@ -966,7 +966,7 @@
           "desc": "大型或平行 Agent 任務執行",
           "skills": [
             "executing-plans",
-            "dispatching-parallel-agents"
+            "agent-dispatch"
           ]
         },
         {
@@ -1438,8 +1438,8 @@
         "deploy",
         "tunnel-proxy-deploy",
         "ci-pipeline",
-        "launchd-agent",
-        "headless-agent",
+        "agent-launchd",
+        "agent-headless",
         "docker-compose-setup",
         "agent-persona"
       ]
