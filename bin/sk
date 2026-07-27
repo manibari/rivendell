@@ -3,7 +3,10 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SKILLS_DIR="$REPO_DIR/skills"
-DEPLOY_TARGET="$HOME/.claude/skills"
+CLAUDE_DEPLOY_TARGET="$HOME/.claude/skills"
+CODEX_DEPLOY_TARGET="${CODEX_HOME:-$HOME/.codex}/skills"
+DEPLOY_TARGETS="$CLAUDE_DEPLOY_TARGET
+$CODEX_DEPLOY_TARGET"
 
 # Colors
 RED='\033[0;31m'
@@ -20,8 +23,8 @@ usage() {
 Usage: ./bin/sk <command> [args]
 
 Commands:
-  deploy              Symlink all skills → ~/.claude/skills/
-  undeploy            Remove repo symlinks from ~/.claude/skills/
+  deploy              Symlink all skills → ~/.claude/skills/ and ~/.codex/skills/
+  undeploy            Remove repo symlinks from ~/.claude/skills/ and ~/.codex/skills/
   create <cat/name>   Scaffold new skill + auto-deploy (e.g. meta/my-skill)
   import <name>       Import from SkillsMP via agent-skills-cli
   import-gh <url>     Clone skill from GitHub URL
@@ -61,6 +64,43 @@ all_skill_dirs() {
   find "$SKILLS_DIR" -name "SKILL.md" -maxdepth 3 -exec dirname {} \; | sort
 }
 
+deploy_targets() {
+  printf '%s\n' "$DEPLOY_TARGETS" | sed '/^$/d'
+}
+
+deploy_label() {
+  local target="$1"
+  if [ "$target" = "$CLAUDE_DEPLOY_TARGET" ]; then
+    echo "claude"
+  elif [ "$target" = "$CODEX_DEPLOY_TARGET" ]; then
+    echo "codex"
+  else
+    basename "$(dirname "$target")"
+  fi
+}
+
+link_skill_to_target() {
+  local skill_dir="$1"
+  local deploy_target="$2"
+  local name
+  name="$(basename "$skill_dir")"
+  local target="$deploy_target/$name"
+  if [ -L "$target" ]; then
+    echo -e "${YELLOW}skip${NC}  $(deploy_label "$deploy_target")/$name (already linked)"
+    return 1
+  elif [ -e "$target" ]; then
+    echo -e "${RED}skip${NC}  $(deploy_label "$deploy_target")/$name (non-symlink exists at target)"
+    return 1
+  else
+    if ln -s "$skill_dir" "$target"; then
+      echo -e "${GREEN}link${NC}  $(deploy_label "$deploy_target")/$name → $target"
+      return 0
+    fi
+    echo -e "${RED}fail${NC}  $(deploy_label "$deploy_target")/$name → $target"
+    return 1
+  fi
+}
+
 # Get category from skill path
 get_category() {
   local skill_dir="$1"
@@ -69,24 +109,19 @@ get_category() {
 }
 
 cmd_deploy() {
-  mkdir -p "$DEPLOY_TARGET"
+  while IFS= read -r deploy_target; do
+    mkdir -p "$deploy_target"
+  done < <(deploy_targets)
   local count=0
   while IFS= read -r skill_dir; do
     [ -z "$skill_dir" ] && continue
-    local name
-    name="$(basename "$skill_dir")"
-    local target="$DEPLOY_TARGET/$name"
-    if [ -L "$target" ]; then
-      echo -e "${YELLOW}skip${NC}  $name (already linked)"
-    elif [ -e "$target" ]; then
-      echo -e "${RED}skip${NC}  $name (non-symlink exists at target)"
-    else
-      ln -s "$skill_dir" "$target"
-      echo -e "${GREEN}link${NC}  $name → $target"
-      ((count++))
-    fi
+    while IFS= read -r deploy_target; do
+      if link_skill_to_target "$skill_dir" "$deploy_target"; then
+        ((count++))
+      fi
+    done < <(deploy_targets)
   done < <(all_skill_dirs)
-  echo -e "\n${GREEN}Deployed $count skill(s).${NC}"
+  echo -e "\n${GREEN}Deployed $count skill link(s).${NC}"
 
   # Install plist templates (replace REPO_PATH with actual path)
   local la_dir="$HOME/Library/LaunchAgents"
@@ -111,19 +146,21 @@ cmd_undeploy() {
     [ -z "$skill_dir" ] && continue
     local name
     name="$(basename "$skill_dir")"
-    local target="$DEPLOY_TARGET/$name"
-    if [ -L "$target" ]; then
-      local link_dest
-      link_dest="$(readlink "$target")"
-      # Only remove if it points back into our repo
-      if [[ "$link_dest" == "$REPO_DIR"/* ]]; then
-        rm "$target"
-        echo -e "${GREEN}unlink${NC}  $name"
-        ((count++))
+    while IFS= read -r deploy_target; do
+      local target="$deploy_target/$name"
+      if [ -L "$target" ]; then
+        local link_dest
+        link_dest="$(readlink "$target")"
+        # Only remove if it points back into our repo
+        if [[ "$link_dest" == "$REPO_DIR"/* ]]; then
+          rm "$target"
+          echo -e "${GREEN}unlink${NC}  $(deploy_label "$deploy_target")/$name"
+          ((count++))
+        fi
       fi
-    fi
+    done < <(deploy_targets)
   done < <(all_skill_dirs)
-  echo -e "\n${GREEN}Undeployed $count skill(s).${NC}"
+  echo -e "\n${GREEN}Undeployed $count skill link(s).${NC}"
 }
 
 cmd_create() {
@@ -163,14 +200,16 @@ TEMPLATE
   echo -e "${GREEN}Created${NC} $dir/SKILL.md"
 
   # Auto-deploy: create symlink immediately
-  mkdir -p "$DEPLOY_TARGET"
-  local target="$DEPLOY_TARGET/$name"
-  if [ -L "$target" ] || [ -e "$target" ]; then
-    echo -e "${YELLOW}Note:${NC} $target already exists, skipping auto-deploy."
-  else
-    ln -s "$dir" "$target"
-    echo -e "${GREEN}Deployed${NC} $name → $target"
-  fi
+  while IFS= read -r deploy_target; do
+    mkdir -p "$deploy_target"
+    local target="$deploy_target/$name"
+    if [ -L "$target" ] || [ -e "$target" ]; then
+      echo -e "${YELLOW}Note:${NC} $target already exists, skipping auto-deploy."
+    else
+      ln -s "$dir" "$target"
+      echo -e "${GREEN}Deployed${NC} $(deploy_label "$deploy_target")/$name → $target"
+    fi
+  done < <(deploy_targets)
   echo "Edit the file to add your skill instructions."
 }
 
@@ -317,16 +356,18 @@ cmd_check() {
   local dangling=0 missing=0 conflict=0 collision=0
   local dangling_list="" missing_list="" conflict_list="" collision_list=""
 
-  # Check for dangling symlinks in deploy target
-  if [ -d "$DEPLOY_TARGET" ]; then
-    while IFS= read -r link; do
-      [ -z "$link" ] && continue
-      if [ -L "$link" ] && [ ! -e "$link" ]; then
-        ((dangling++))
-        dangling_list+="    $(basename "$link") → $(readlink "$link")\n"
-      fi
-    done < <(find "$DEPLOY_TARGET" -maxdepth 1 -type l 2>/dev/null)
-  fi
+  # Check for dangling symlinks in deploy targets
+  while IFS= read -r deploy_target; do
+    if [ -d "$deploy_target" ]; then
+      while IFS= read -r link; do
+        [ -z "$link" ] && continue
+        if [ -L "$link" ] && [ ! -e "$link" ]; then
+          ((dangling++))
+          dangling_list+="    $(deploy_label "$deploy_target")/$(basename "$link") → $(readlink "$link")\n"
+        fi
+      done < <(find "$deploy_target" -maxdepth 1 -type l 2>/dev/null)
+    fi
+  done < <(deploy_targets)
 
   # Check each skill for deploy status and collisions
   local seen_names=""
@@ -334,8 +375,6 @@ cmd_check() {
     [ -z "$skill_dir" ] && continue
     local name
     name="$(basename "$skill_dir")"
-    local target="$DEPLOY_TARGET/$name"
-
     # Name collision detection
     if echo "$seen_names" | grep -qx "$name"; then
       ((collision++))
@@ -343,19 +382,22 @@ cmd_check() {
     fi
     seen_names+="$name"$'\n'
 
-    if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-      ((missing++))
-      missing_list+="    $name (${skill_dir#$REPO_DIR/})\n"
-    elif [ -e "$target" ] && [ ! -L "$target" ]; then
-      ((conflict++))
-      conflict_list+="    $name (non-symlink at $target)\n"
-    fi
+    while IFS= read -r deploy_target; do
+      local target="$deploy_target/$name"
+      if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+        ((missing++))
+        missing_list+="    $(deploy_label "$deploy_target")/$name (${skill_dir#$REPO_DIR/})\n"
+      elif [ -e "$target" ] && [ ! -L "$target" ]; then
+        ((conflict++))
+        conflict_list+="    $(deploy_label "$deploy_target")/$name (non-symlink at $target)\n"
+      fi
+    done < <(deploy_targets)
   done < <(all_skill_dirs)
 
   if [ "$dangling" -gt 0 ]; then
     echo -e "  ${RED}$dangling dangling symlink(s) found${NC}"
     [ "$verbose" -eq 1 ] && echo -e "$dangling_list"
-    echo -e "  ${YELLOW}Clean up with:${NC} find $DEPLOY_TARGET -maxdepth 1 -xtype l -delete"
+    echo -e "  ${YELLOW}Clean up with:${NC} find ~/.claude/skills ~/.codex/skills -maxdepth 1 -xtype l -delete"
   fi
   if [ "$missing" -gt 0 ]; then
     echo -e "  ${YELLOW}$missing skill(s) not deployed${NC}"
@@ -534,12 +576,13 @@ cmd_list() {
     fi
 
     local status
-    local target="$DEPLOY_TARGET/$name"
-    if [ -L "$target" ]; then
-      status="${GREEN}[deployed]${NC}"
-    else
-      status="${YELLOW}[not deployed]${NC}"
-    fi
+    local claude_target="$CLAUDE_DEPLOY_TARGET/$name"
+    local codex_target="$CODEX_DEPLOY_TARGET/$name"
+    local claude_status="claude:-"
+    local codex_status="codex:-"
+    [ -L "$claude_target" ] && claude_status="claude:✓"
+    [ -L "$codex_target" ] && codex_status="codex:✓"
+    status="${GREEN}[$claude_status $codex_status]${NC}"
 
     local tags
     tags="$(get_tags "$skill_dir")"
@@ -1912,7 +1955,9 @@ cmd_maintain() {
 
   # 1. Deploy check: auto-deploy new skills, clean dangling symlinks
   echo -e "${CYAN}[1/4] Deploy Check${NC}"
-  mkdir -p "$DEPLOY_TARGET"
+  while IFS= read -r deploy_target; do
+    mkdir -p "$deploy_target"
+  done < <(deploy_targets)
 
   # Auto-deploy undeployed skills
   local deployed=0
@@ -1920,23 +1965,27 @@ cmd_maintain() {
     [ -z "$skill_dir" ] && continue
     local name
     name="$(basename "$skill_dir")"
-    local target="$DEPLOY_TARGET/$name"
-    if [ ! -L "$target" ] && [ ! -e "$target" ]; then
-      ln -s "$skill_dir" "$target"
-      echo -e "  ${GREEN}deployed${NC} $name"
-      ((deployed++))
-    fi
+    while IFS= read -r deploy_target; do
+      local target="$deploy_target/$name"
+      if [ ! -L "$target" ] && [ ! -e "$target" ]; then
+        ln -s "$skill_dir" "$target"
+        echo -e "  ${GREEN}deployed${NC} $(deploy_label "$deploy_target")/$name"
+        ((deployed++))
+      fi
+    done < <(deploy_targets)
   done < <(all_skill_dirs)
 
   # Clean dangling symlinks
   local cleaned=0
-  for link in "$DEPLOY_TARGET"/*; do
-    if [ -L "$link" ] && [ ! -e "$link" ]; then
-      rm "$link"
-      echo -e "  ${YELLOW}cleaned${NC} $(basename "$link") (dangling)"
-      ((cleaned++))
-    fi
-  done
+  while IFS= read -r deploy_target; do
+    for link in "$deploy_target"/*; do
+      if [ -L "$link" ] && [ ! -e "$link" ]; then
+        rm "$link"
+        echo -e "  ${YELLOW}cleaned${NC} $(deploy_label "$deploy_target")/$(basename "$link") (dangling)"
+        ((cleaned++))
+      fi
+    done
+  done < <(deploy_targets)
 
   if [ "$deployed" -eq 0 ] && [ "$cleaned" -eq 0 ]; then
     echo -e "  ${GREEN}All symlinks OK${NC}"
@@ -2257,13 +2306,15 @@ cmd_audit() {
     local dangling=0 missing_deploy=0 missing_tags=0 missing_version=0
 
     # Dangling symlinks
-    if [ -d "$DEPLOY_TARGET" ]; then
-      for link in "$DEPLOY_TARGET"/*; do
-        if [ -L "$link" ] && [ ! -e "$link" ]; then
-          ((dangling++))
-        fi
-      done
-    fi
+    while IFS= read -r deploy_target; do
+      if [ -d "$deploy_target" ]; then
+        for link in "$deploy_target"/*; do
+          if [ -L "$link" ] && [ ! -e "$link" ]; then
+            ((dangling++))
+          fi
+        done
+      fi
+    done < <(deploy_targets)
 
     # Per-skill checks
     local no_trigger=0
@@ -2274,13 +2325,14 @@ cmd_audit() {
     for skill_dir in "${skill_dirs[@]}"; do
       local name
       name="$(basename "$skill_dir")"
-      local target="$DEPLOY_TARGET/$name"
-
       # Deploy check
-      if [ ! -L "$target" ]; then
-        ((missing_deploy++))
-        missing_deploy_list+="- $name\n"
-      fi
+      while IFS= read -r deploy_target; do
+        local target="$deploy_target/$name"
+        if [ ! -L "$target" ]; then
+          ((missing_deploy++))
+          missing_deploy_list+="- $(deploy_label "$deploy_target")/$name\n"
+        fi
+      done < <(deploy_targets)
 
       # Tags check
       local tags
@@ -2492,8 +2544,9 @@ cmd_audit() {
     done
 
     # Also include local-only skills (not in repo but deployed)
-    if [ -d "$DEPLOY_TARGET" ]; then
-      for deployed_dir in "$DEPLOY_TARGET"/*/; do
+    while IFS= read -r deploy_target; do
+      [ -d "$deploy_target" ] || continue
+      for deployed_dir in "$deploy_target"/*/; do
         [ ! -d "$deployed_dir" ] && continue
         local dname
         dname="$(basename "$deployed_dir")"
@@ -2516,7 +2569,7 @@ cmd_audit() {
         [ -z "$summary" ] && summary="—"
         echo "$category|$dname|$summary" >> "$tmp_overview"
       done
-    fi
+    done < <(deploy_targets)
 
     # Print grouped by category with defined order
     # Define category display order
@@ -3232,9 +3285,11 @@ cmd_check_agents() {
     [[ "$label" =~ ^com\.sk\.agent\. ]] && conf_labels+="$label"$'\n'
   done < "$AGENTS_CONF_FILE"
 
-  # Labels currently loaded in launchd
+  # Labels currently loaded in the user's GUI launchd domain. Modern macOS can
+  # show an empty `launchctl list` even when `launchctl bootstrap gui/$UID ...`
+  # has loaded the service, so query the explicit domain used by sk-setup-agents.
   local loaded_labels
-  loaded_labels="$(launchctl list 2>/dev/null | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
+  loaded_labels="$(launchctl print "gui/$(id -u)" 2>/dev/null | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
 
   local conf_sorted loaded_sorted
   conf_sorted="$(echo "$conf_labels" | sort -u | grep -v '^$' || true)"
@@ -3505,10 +3560,13 @@ cmd_status() {
   echo ""
 
   # Skills deployment
-  local total deployed
+  local total
   total="$(find "$SKILLS_DIR" -name "SKILL.md" -maxdepth 3 2>/dev/null | wc -l | tr -d ' ')"
-  deployed="$(find "$DEPLOY_TARGET" -maxdepth 1 -type l 2>/dev/null | wc -l | tr -d ' ')"
-  echo -e "${YELLOW}Skills:${NC} $deployed/$total deployed"
+  while IFS= read -r deploy_target; do
+    local deployed
+    deployed="$(find "$deploy_target" -maxdepth 1 -type l 2>/dev/null | wc -l | tr -d ' ')"
+    echo -e "${YELLOW}Skills ($(deploy_label "$deploy_target")):${NC} $deployed/$total deployed"
+  done < <(deploy_targets)
 }
 
 cmd_env() {
