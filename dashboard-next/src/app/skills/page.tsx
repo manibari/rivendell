@@ -33,7 +33,6 @@ const SEQ_GREENS = [
 
 const ACCENT = "#2d4a3e";
 const ACCENT_SOFT = "#5b7a6a";
-const ACCENT_BG = "#e8efea";
 const SURFACE = "#ffffff";
 const SURFACE_2 = "#f3f4f6";
 const BORDER = "#e5e7eb";

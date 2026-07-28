@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   apiFetch,
@@ -10,7 +10,6 @@ import {
   type AgentRun,
   type AgentFile,
   type AgentFileContent,
-  type TimelineEvent,
 } from "@/lib/api";
 import RunHistory from "@/components/RunHistory";
 import {
@@ -24,122 +23,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-
-const EVENT_ICONS: Record<string, string> = {
-  tool: "🔧",
-  text: "💬",
-  thinking: "🧠",
-  result: "📊",
-  auto_commit: "📝",
-  auto_push: "🚀",
-  qa_gate_failed: "❌",
-  path_filter_rejected: "🚫",
-};
-
-function Timeline({ label }: { label: string }) {
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    apiFetch<TimelineEvent[]>(
-      `/api/agents/${encodeURIComponent(label)}/timeline`
-    )
-      .then(setEvents)
-      .catch(() => setEvents([]))
-      .finally(() => setLoading(false));
-  }, [label]);
-
-  if (loading) return <p className="text-sm text-zinc-400">載入中...</p>;
-  if (events.length === 0)
-    return (
-      <p className="text-sm text-zinc-500">
-        尚無時間線資料（下次執行將自動記錄）
-      </p>
-    );
-
-  return (
-    <div className="relative space-y-0">
-      {/* Vertical line */}
-      <div className="absolute left-4 top-2 bottom-2 w-px bg-zinc-200 dark:bg-zinc-700" />
-
-      {events.map((ev, i) => {
-        const icon = EVENT_ICONS[ev.type] || "•";
-        const time = ev.ts ? ev.ts.split("T")[1] || ev.ts : "";
-        const isExpanded = expandedIdx === i;
-
-        return (
-          <div key={i} className="relative flex items-start gap-3 py-1.5 pl-1">
-            {/* Icon dot */}
-            <div className="z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-sm dark:bg-zinc-900">
-              {icon}
-            </div>
-
-            {/* Content */}
-            <div className="min-w-0 flex-1">
-              <button
-                onClick={() => setExpandedIdx(isExpanded ? null : i)}
-                className="flex w-full items-start gap-2 text-left text-sm"
-              >
-                <span className="shrink-0 font-mono text-xs text-zinc-400">
-                  {time}
-                </span>
-                <span className="min-w-0 flex-1">
-                  {ev.type === "tool" && (
-                    <span>
-                      <code className="rounded bg-blue-100 px-1 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                        {ev.name}
-                      </code>
-                    </span>
-                  )}
-                  {ev.type === "text" && (
-                    <span className="text-zinc-600 dark:text-zinc-400">
-                      {(ev.text || "").slice(0, 120)}
-                      {(ev.len || 0) > 120 ? "..." : ""}
-                    </span>
-                  )}
-                  {ev.type === "thinking" && (
-                    <span className="italic text-zinc-500">
-                      {ev.preview?.slice(0, 80)}...
-                    </span>
-                  )}
-                  {ev.type === "result" && (
-                    <span className="text-green-600 dark:text-green-400">
-                      完成 — {ev.model} |{" "}
-                      {(ev.input_tokens || 0).toLocaleString()} in /{" "}
-                      {(ev.output_tokens || 0).toLocaleString()} out | $
-                      {ev.cost_usd?.toFixed(4)}
-                    </span>
-                  )}
-                  {(ev.type === "auto_commit" ||
-                    ev.type === "auto_push") && (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      {ev.type === "auto_commit" ? "Commit" : "Push"}:{" "}
-                      {ev.detail}
-                    </span>
-                  )}
-                </span>
-              </button>
-
-              {/* Expanded detail */}
-              {isExpanded && ev.type === "tool" && ev.input && (
-                <pre className="mt-1 max-h-48 overflow-auto rounded-md bg-zinc-50 p-2 text-xs dark:bg-zinc-800">
-                  {JSON.stringify(ev.input, null, 2)}
-                </pre>
-              )}
-              {isExpanded && ev.type === "text" && (
-                <pre className="mt-1 max-h-64 overflow-auto rounded-md bg-zinc-50 p-2 text-xs whitespace-pre-wrap dark:bg-zinc-800">
-                  {ev.text}
-                </pre>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 function StatusBadge({ agent }: { agent: AgentInfo }) {
   if (!agent.installed)
@@ -274,8 +157,8 @@ export default function AgentDetailPage() {
   const [liveMode, setLiveMode] = useState(false);
   const [liveLines, setLiveLines] = useState<string[]>([]);
   const [liveRunning, setLiveRunning] = useState(false);
-  const liveOffset = { current: 0 };
-  const liveRef = { current: null as ReturnType<typeof setInterval> | null };
+  const liveOffset = useRef(0);
+  const liveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(() => {
     apiFetch<AgentsData>("/api/agents").then((data) => {
@@ -388,7 +271,7 @@ export default function AgentDetailPage() {
     return () => {
       if (liveRef.current) clearInterval(liveRef.current);
     };
-  }, []);
+  }, [liveRef]);
 
   if (!agent) return <p className="text-zinc-400">載入中...</p>;
 
