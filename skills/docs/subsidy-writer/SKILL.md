@@ -11,7 +11,7 @@ description: >
   SKIP: finding subsidies to apply for (subsidy-scraper); RFQ/tender responses
   (rfq-writer); consulting contracts (sow-writer).
 tags: [docs, business, government]
-version: 1.1.0
+version: 1.2.0
 source: manual
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
@@ -54,6 +54,11 @@ one of those holes.
    explicitly — what exists (prior PoC, single-client custom work) vs. what is
    genuinely new R&D in this proposal. Never hide the prior art; position it as
    執行優勢 while the 新研發 carries the innovation claim.
+5. **Already have an approved similar plan?** If the company has a prior
+   approved/submitted subsidy plan on a related theme, do NOT rewrite from scratch —
+   mine it as a source library and write a 差異表 to clear the double-funding red
+   line. This is a distinct workflow: read `references/reapply-from-approved.md`
+   before Phase 2.
 
 ## Phase 2 — 分項架構 (before any prose)
 
@@ -125,7 +130,15 @@ exactly the 「宣稱」 reviewers strike down.
 1. Every pending fact = red ▲ marker in the docx (`color C00000`). The user can
    flip pages scanning for red. Before submission, drive 貳章 (the substantive
    chapters) to **zero red marks** — company-profile blanks may stay longer since
-   only the user can fill them.
+   only the user can fill them. Maintain a `待補清單.md` that sorts the ▲ items by
+   **who is blocked and lead time**, not by page order, so the user attacks them in
+   the right sequence:
+   - **A. 要對外要文件的** (longest lead time, do first): 意向書用印、顧問願任
+     同意書、第三方資安檢測機構擇定、ISO 證書影本、客戶名單。
+   - **B. 使用者可直接拍板**: 效益數字定版、關鍵人員名單、經費科目取捨。
+   - **C. 等核定日才能定**: 預定進度表/查核點的實際年月。
+   - **D. 編列體例待審查意見**: LLM 用量列無形資產 vs 雲端租賃等。
+   Only A and B block submission; C and D can carry a note explaining the dependency.
 2. Run the **審查文體掃描** from the de-slopify skill (審查文體模式 section):
    sweep the full text for internal-calculus traces, English shop-talk, and
    reviewer-facing asides. In the real case this pass found 12 instances after the
@@ -145,14 +158,16 @@ exactly the 「宣稱」 reviewers strike down.
    `assets/build-template.js` (docx npm package; includes the ▲red-marker helper,
    numbered-list, claim+detail, and table helpers). Run with
    `NODE_PATH=$(npm root -g) node build.js`.
-2. Figures are **document illustrations, not slides**: height 620–740px at
-   1600px width, tight padding, inserted at ~16.5cm width. Slide-ratio
-   (1600×900) figures leave huge whitespace in A4 — regenerate, don't scale.
-3. Figure content rules (from the diagram defaults): official 章節代碼 as
-   top-level framing, work-item names matching the text, 委員-facing wording
-   (no ports/tech brands).
-4. Deliver: open the docx for the user, report page count, and list remaining
-   ▲ items grouped by who can resolve them.
+2. Figures — read `references/figures.md` before making any. Two distinct types:
+   the **official black-and-white WBS 計畫架構圖** (reviewers use it to check
+   經費占比 and cross-reference 預定進度表 — an HTML skeleton is in that file), and
+   **low-saturation explanatory illustrations** (system function, deployment,
+   Gantt). Both are **document illustrations, not slides**: 1600px wide × 620–740px
+   tall (official WBS closer to 4:3), inserted at ~16.5cm. Slide-ratio (1600×900)
+   figures leave huge whitespace in A4 — regenerate, don't scale. Every figure must
+   be screenshot-verified (headless Chrome) before it counts as done.
+3. Deliver: open the docx for the user, report page count, and hand over the
+   `待補清單.md` (Phase 6) so the user sees what is blocked on whom.
 
 ## Project conventions
 
