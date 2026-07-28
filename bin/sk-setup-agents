@@ -19,6 +19,7 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONF="$REPO_DIR/agents/agents.conf"
 LAUNCH_DIR="$HOME/Library/LaunchAgents"
 SK_AGENT_RUN="$HOME/.local/bin/sk-agent-run"
+LAUNCHD_DOMAIN="gui/$(id -u)"
 # Derive from REPO_DIR's parent (all project repos are siblings of rivendell),
 # NOT a hardcoded path. Hardcoding "$HOME/Documents/Projects" broke after the
 # iCloud-detach move to ~/code: rerunning regenerated every plist pointing at
@@ -36,7 +37,7 @@ done
 
 # ─── Detect PATH components ───
 detect_path() {
-  local parts="/usr/local/bin:/usr/bin:/bin"
+  local parts="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
   # Homebrew
   if [ -d "/opt/homebrew/bin" ]; then
@@ -88,7 +89,10 @@ if $UNLOAD_ONLY; then
     label="$(echo "$label" | xargs)"
     plist="$LAUNCH_DIR/${label}.plist"
     if [ -f "$plist" ]; then
-      launchctl unload "$plist" 2>/dev/null && echo "  Unloaded: $label" || true
+      launchctl bootout "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
+        || launchctl unload "$plist" 2>/dev/null \
+        || true
+      echo "  Unloaded: $label"
     fi
   done
   exit 0
@@ -222,7 +226,9 @@ $schedule
     echo
   else
     # Unload existing
-    launchctl unload "$plist" 2>/dev/null || true
+    launchctl bootout "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
+      || launchctl unload "$plist" 2>/dev/null \
+      || true
 
     # Ensure log dirs exist
     mkdir -p "$launchd_log_dir"
@@ -231,11 +237,17 @@ $schedule
     echo "$plist_content" > "$plist"
 
     # Load
-    launchctl load "$plist" 2>/dev/null && echo "Loaded: $label" || echo "FAILED: $label"
+    launchctl bootstrap "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
+      || launchctl load "$plist" 2>/dev/null
+    if launchctl print "$LAUNCHD_DOMAIN/$label" >/dev/null 2>&1; then
+      echo "Loaded: $label"
+    else
+      echo "FAILED: $label"
+    fi
   fi
 done
 
 if ! $DRY_RUN; then
   echo ""
-  echo "Done. Verify with: launchctl list | grep com.sk"
+  echo "Done. Verify with: launchctl print $LAUNCHD_DOMAIN/<label>"
 fi
