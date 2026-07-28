@@ -27,16 +27,17 @@ The rivendell project runs multiple Docker services. Each service maps one or mo
 
 ---
 
-### US-2: Know at a glance if a service is live or stopped
+### US-2: Know at a glance if a port is live, missing, or unmanaged
 
 **As a** developer
-**I want to** see a live/stopped status badge next to each port
+**I want to** see whether each port is live, declared-only, wild, or unknown
 **So that** I don't try to open a service that isn't running
 
 **Acceptance Criteria:**
-- [ ] Given a service is running, when the page loads, then its rows show a green "live" badge
-- [ ] Given a service is stopped, when the page loads, then its rows show a grey "stopped" badge
-- [ ] Given the status check fails (e.g. Docker not running), when the page loads, then all rows show "unknown" rather than crashing
+- [ ] Given a compose-declared service is listening, when the page loads, then its rows show a green "live" badge
+- [ ] Given a compose-declared service is not listening, when the page loads, then its rows show "declared-only" / drift
+- [ ] Given a local TCP listener is not declared in `docker-compose.yml`, when the page loads, then it appears as "wild"
+- [ ] Given the listener scan fails, when the page loads, then compose rows show "unknown" rather than crashing
 
 ---
 
@@ -60,7 +61,7 @@ The rivendell project runs multiple Docker services. Each service maps one or mo
 
 **Acceptance Criteria:**
 - [ ] Given the page is open, when I click "Refresh", then status badges update to reflect current state
-- [ ] Given a service was stopped and is now started, when I refresh, then its badge changes from "stopped" to "live"
+- [ ] Given a declared-only service is now listening, when I refresh, then its badge changes from "declared-only" to "live"
 
 ---
 
@@ -70,7 +71,7 @@ The rivendell project runs multiple Docker services. Each service maps one or mo
 |---|---|
 | Parse `docker-compose.yml` for host port mappings | Editing port config from the UI |
 | Show service name, container name, port, status, link | Showing container logs |
-| Live/stopped status via port reachability check | Docker stats (CPU/memory) |
+| Live/drift/wild status via listener scan | Docker stats (CPU/memory) |
 | Clickable `localhost:PORT` links for web services | Support for remote hosts / SSH tunnels |
 | Manual refresh button | Auto-refresh on a timer |
 | Page at `/ports` in dashboard-next | Standalone app |
@@ -80,10 +81,10 @@ The rivendell project runs multiple Docker services. Each service maps one or mo
 ## Data Source
 
 - **Port map**: parsed from `docker-compose.yml` at build time or via API endpoint
-- **Status**: runtime check — ping `localhost:PORT` or query Docker daemon
+- **Status**: runtime check — compare `docker-compose.yml` host port declarations with local TCP listeners
 - **Non-HTTP ports** (no link): 5432 (postgres), 6379 (redis)
 
-## Known Port Map (as of 2026-03-31)
+## Known Port Map (as of 2026-06-13)
 
 | Host Port | Service | Container | Type |
 |---|---|---|---|
@@ -94,8 +95,13 @@ The rivendell project runs multiple Docker services. Each service maps one or mo
 | 8501 | news-stock | sk-news-stock | Streamlit (web) |
 | 8002 | sales | sk-sales | API (web) |
 | 3002 | sales | sk-sales | Frontend (web) |
-| 5432 | nexus-postgres | sk-nexus-postgres | DB (no link) |
-| 6379 | nexus-redis | sk-nexus-redis | Cache (no link) |
-| 8003 | nexus-backend | sk-nexus-backend | API (web) |
-| 3003 | nexus-frontend | sk-nexus-frontend | Frontend (web) |
 | 3004 | marketing-web | sk-marketing-web | Frontend (web) |
+
+## Status Semantics
+
+| Status | Meaning |
+|---|---|
+| `live` | Port is declared in compose and has a local TCP listener |
+| `drift` / `declared-only` | Port is declared in compose but no local listener is present |
+| `wild` | Port has a local listener but is not declared in compose |
+| `unknown` | Runtime listener scan failed |

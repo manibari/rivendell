@@ -11,10 +11,6 @@ jobs:
   frontend:
     name: Frontend (lint + build)
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push' ||
-      contains(join(github.event.pull_request.*.filename, ','), 'dashboard-next/') ||
-      contains(join(github.event.pull_request.*.filename, ','), '.github/workflows/')
     defaults:
       run:
         working-directory: dashboard-next
@@ -30,11 +26,8 @@ jobs:
       - run: npm run build
 
   backend:
-    name: Backend (lint + import check)
+    name: Backend (lint + tests + import check)
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push' ||
-      contains(join(github.event.pull_request.*.filename, ','), 'dashboard-next/api/')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -42,6 +35,9 @@ jobs:
           python-version: "3.12"
       - run: pip install -r dashboard-next/api/requirements.txt ruff
       - run: ruff check dashboard-next/api/
+      - name: Run backend tests
+        working-directory: dashboard-next
+        run: python -m unittest discover -s api/tests -p 'test_*.py'
       - name: Smoke test — verify server imports
         working-directory: dashboard-next
         run: python -c "from api.server import app; print('OK')"
@@ -49,9 +45,6 @@ jobs:
   skills:
     name: Skill structure validation
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push' ||
-      contains(join(github.event.pull_request.*.filename, ','), 'skills/')
     steps:
       - uses: actions/checkout@v4
       - name: Validate SKILL.md frontmatter
