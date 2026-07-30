@@ -12,7 +12,7 @@ skills/
 ├── git/        # Git/GitHub 操作 (2)
 ├── frontend/   # 前端設計、iOS、測試 (5)
 ├── backend/    # 後端服務 (13)
-├── media/      # 影音抓讀 (3)
+├── media/      # 影音抓讀 (4)
 └── docs/       # 文件處理與 MCP 建置 (20)
 ```
 
@@ -47,7 +47,7 @@ cd ~/any-project && claude
 | `./bin/sk readme` | Regenerate Skills Catalog in README.md from SKILL.md frontmatter |
 | `./bin/sk sync` | Show Google Drive import status for re-import |
 
-## Skills Catalog (100 skills)
+## Skills Catalog (101 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -159,6 +159,7 @@ cd ~/any-project && claude
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **local-media-transcribe** | 自動 | Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture |
 | **subtitle-file** | 自動 | Produce a subtitle FILE (.srt / . |
 | **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
 | **video-transcript** | 自動 | Read an online video's spoken content (via its subtitles) and transform it into |
