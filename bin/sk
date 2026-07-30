@@ -3233,6 +3233,20 @@ print(f'_{L[\"pricing\"]}_')
 PROFILES_CONF="$REPO_DIR/profiles/profiles.conf"
 AGENTS_CONF_FILE="$REPO_DIR/agents/agents.conf"
 PROJECTS_JSON_FILE="$HOME/.claude/projects.json"
+
+# agents.conf is a GENERATED artifact (SoT = agents/registry/*.md). The on-disk
+# copy is a gitignored cache that goes stale once the registry changes, so drift
+# checks must compare against a FRESH generation, not the stale file. Best-effort:
+# on generation failure, fall back to whatever is on disk.
+_ensure_agents_conf() {
+  local tmp
+  tmp="$(mktemp -t sk-agents-conf.XXXXXX)" || return 0
+  if python3 "$REPO_DIR/bin/sk-registry-gen" generate > "$tmp" 2>/dev/null; then
+    AGENTS_CONF_FILE="$tmp"
+  else
+    rm -f "$tmp"
+  fi
+}
 COMPOSE_FILE="$REPO_DIR/docker-compose.yml"
 ACTIVE_PROFILE_FILE="$REPO_DIR/.active-profile"
 ENV_SHARED_FILE="$REPO_DIR/.env.shared"
@@ -3249,6 +3263,7 @@ cmd_check_ssot() {
       --quiet) quiet=true ;;
     esac
   done
+  _ensure_agents_conf   # compare against a fresh generation, not the stale cache
 
   # Extract (project, agent_short_name) pairs from agents.conf labels
   # matching `com.sk.agent.<project>.<name>`. Service-style labels like
@@ -3435,6 +3450,7 @@ cmd_check_agents() {
       --quiet) quiet=true ;;
     esac
   done
+  _ensure_agents_conf   # compare against a fresh generation, not the stale cache
 
   # Active agent labels declared in agents.conf (skip comments/blanks)
   local conf_labels=""

@@ -245,6 +245,38 @@ total_pass=$((total_pass + agent_pass))
 total_fail=$((total_fail + agent_fail))
 
 # ═══════════════════════════════════════════════════════════════
+# D. Agent Registry Validation
+# ═══════════════════════════════════════════════════════════════
+# Validate agents/registry/*.md — the SoT that generates agents.conf. A broken
+# registry means sk-setup-agents would fail-fast and the fleet stops updating.
+
+cat >> "$REPORT" <<EOF
+## D. Agent Registry Validation
+
+EOF
+
+reg_out="$(python3 "$REPO_DIR/bin/sk-registry-gen" validate 2>&1)"
+reg_exit=$?
+reg_fail_count="$(echo "$reg_out" | grep -c '^\[FAIL\]' || true)"
+reg_warn_count="$(echo "$reg_out" | grep -c '^\[WARN\]' || true)"
+
+if [ "$reg_exit" -eq 0 ]; then
+  echo "All registry files valid. $(echo "$reg_out" | tail -1)" >> "$REPORT"
+  total_pass=$((total_pass + 1))
+else
+  cat >> "$REPORT" <<EOF
+**Registry validation FAILED** — $reg_fail_count error(s), $reg_warn_count warning(s):
+
+\`\`\`
+$reg_out
+\`\`\`
+EOF
+  total_fail=$((total_fail + reg_fail_count))
+fi
+total_warn=$((total_warn + reg_warn_count))
+echo "" >> "$REPORT"
+
+# ═══════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════
 

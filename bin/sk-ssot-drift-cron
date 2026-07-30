@@ -28,6 +28,12 @@ TEXT_OUT="$("$REPO_DIR/bin/sk" check ssot 2>/dev/null || true)"
 TOTAL_DRIFT="$(echo "$JSON_OUT" | grep -o '"total_drift":[0-9-]*' | head -1 | cut -d: -f2)"
 TOTAL_DRIFT="${TOTAL_DRIFT:-0}"
 
+# New drift axis: the registry (agents/registry/*.md) is the SoT that generates
+# agents.conf. A registry that fails validation = the fleet can't regenerate.
+REGISTRY_OUT="$(python3 "$REPO_DIR/bin/sk-registry-gen" validate 2>&1 || true)"
+REGISTRY_FAILS="$(echo "$REGISTRY_OUT" | grep -c '^\[FAIL\]' || true)"
+TOTAL_DRIFT=$((TOTAL_DRIFT + REGISTRY_FAILS))
+
 end_epoch="$(date +%s)"
 
 # Record run for dashboard observability. _sk_exec_record_run's real signature is
@@ -55,9 +61,16 @@ status: drift-detected
 
 # SSOT Drift Report — $TODAY
 
-Daily check by \`bin/sk-ssot-drift-cron\` (03:00). Compares \`agents/agents.conf\`
-(agent identity SSOT) with \`~/.claude/projects.json\` (project metadata SSOT).
+Daily check by \`bin/sk-ssot-drift-cron\` (03:00). Compares the agent registry
+(\`agents/registry/*.md\`, the identity SSOT that generates agents.conf) with
+\`~/.claude/projects.json\` (project metadata SSOT), plus registry validation.
 See README "Agent SSOT vs project metadata" section.
+
+## Registry Validation ($REGISTRY_FAILS FAIL)
+
+\`\`\`
+$REGISTRY_OUT
+\`\`\`
 
 ## Summary
 
