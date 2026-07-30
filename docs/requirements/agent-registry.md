@@ -119,13 +119,17 @@ Schema 設計原則：
 ### US-2: agents.conf 變成生成物
 
 **As a** 排程管線（`sk-setup-agents`）
-**I want to** 從 registry 生成 `agents.conf`（或等價中間格式）再走既有 plist 流程
-**So that** 既有管線改動最小（增量接線），且 conf 不再被手改
+**I want to** 執行時從 registry 現場生成 conf（不進 git 的 build 暫存）再走既有 plist 流程
+**So that** 既有 bash 管線改動最小（增量接線），且只有一份 committed 正本（registry）
+
+> 定案（eng-review 2026-07-28, D3-topology）：agents.conf **不進 git**。`sk-setup-agents`
+> 開頭呼 `sk-registry-gen generate` 產暫存 conf、跑完丟。無雙軌 SoT → drift 偵測自然成立
+> （生成失敗即 drift）。取代原「conf 標 GENERATED 並 commit」設計。
 
 **Acceptance Criteria:**
-- [ ] Given 全量轉檔後的 registry，when 生成 conf，then 與現行手寫 conf 逐條等價（label、schedule、log_dir、extra_args 全比對通過）
-- [ ] Given 生成的 conf，then 檔頭標註 "GENERATED — edit agents/registry/ instead"
-- [ ] Given 有人手改生成的 conf，when `ssot-drift-cron` 執行，then 偵測 drift 並回報
+- [ ] Given 全量轉檔後的 registry，when `sk-registry-gen generate`，then 輸出與搬移前 HEAD conf 的**行為等價**（label、schedule、log_dir、extra_args 全比對通過）
+- [ ] Given `sk-setup-agents` 執行，then 現場生成暫存 conf、跑完刪除；`.gitignore` 含 `agents/agents.conf`
+- [ ] Given registry 檔壞掉（生成失敗），when `sk-ssot-drift-cron` 呼 `--check`，then 回報 drift
 
 ### US-3: Schema 驗證進健檢
 
@@ -157,9 +161,12 @@ Schema 設計原則：
 **So that** 不留雙軌 SoT
 
 **Acceptance Criteria:**
-- [ ] Given 轉檔完成，then conf 每一有效行都有對應 registry 檔，`--dry-run` 生成結果與轉檔前逐條等價
-- [ ] Given sales-assistant 已宣告 deprecated，when 轉檔，then 4 個 sales agent 標 `enabled: false` + body 註記除役原因
-- [ ] Given 被註解的 autoresearch 條目，then 轉為 `enabled: false` 的 registry 檔
+- [ ] Given 轉檔完成，then conf 每一有效行都有對應 registry 檔，生成結果與轉檔前 HEAD conf 行為等價
+- [ ] Given sales-assistant 已宣告 deprecated 但仍在跑，when 轉檔，then 4 個 sales agent **保留 `enabled: true`**（純機械搬移不打斷現跑 agent）+ body 註記「退役待 chimesflow ready，屆時單獨 commit 改 false」
+- [ ] Given 被註解的 autoresearch 條目，then 轉為 `enabled: false` 的 registry 檔（唯一預期的狀態差異）
+
+> 定案（eng-review 2026-07-28, D2-sales）：原「sales 標 enabled:false」與「逐條等價」矛盾——
+> sales 現為 active，disable 會讓 diff≠0 且 bootout 4 個活躍 agent。改純機械搬移，退役分開決策。
 
 ### US-6: 第一個 OODA 大臣 — Check 品質官（registry 定義）
 
