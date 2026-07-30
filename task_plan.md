@@ -27,20 +27,18 @@ dashboard 讀 registry、品質官（第一個 OODA 大臣）registry 檔 + memo
 - [ ] `agents/state/quality-minister/journal.md` 空模板（醒來讀/睡前寫格式）
 - [ ] Schema 若因此修訂 → 同步改 `docs/requirements/agent-registry.md`
 
-### Phase 2: 生成器（US-2）— pending
-- [ ] `bin/sk-registry-gen`（python，import Phase 0 的 registry.py）：`generate` 子命令
-      → 輸出 7 欄 pipe 格式（`label|project|entry|type|value|log_dir|extra_args`）到 stdout
-- [ ] `--validate` 子命令：schema 驗證（Phase 4 與 tester-cron 共用）
-- [ ] `--check` 子命令：生成結果 vs 當前 HEAD 的 conf diff（給 ssot-drift-cron）
-- [ ] fail-fast：檔名≠name、label 撞名、缺必填、**D6 kind:ooda+enabled:true 無 executor** → 非零退出、不落檔
-- [ ] **D5 單元測試**（`dashboard/tests/`）：parse 合法/非法、generate→golden、round-trip 等價
-- [ ] **D3-topology**：`sk-setup-agents` 開頭改呼 `sk-registry-gen generate > $TRANSIENT_CONF`，跑完刪；`.gitignore` 加 `agents/agents.conf`
+### Phase 2: 生成器（US-2）— CLI DONE, rewire PENDING（live 管線,待 checkpoint）
+- [x] `bin/sk-registry-gen`：generate / validate / check 三子命令,import lib.registry
+- [x] generate 拒絕在 validation FAIL 時輸出；check 用 normalized 7-tuple 比對(非文字 diff)
+- [x] fail-fast：檔名≠name、label 撞名、缺必填、D6 ooda guard 全在 registry.py + CLI
+- [x] D5 單元測試 12 綠
+- [ ] **⚠️ live 管線步驟（待 user greenlight）**：`sk-setup-agents` 開頭改呼 `sk-registry-gen generate > $TRANSIENT_CONF`、跑完刪；`.gitignore` 加 `agents/agents.conf`；`git rm --cached agents.conf`。此步會重跑 launchd bootstrap（含 dashboard keepalive 服務）
 
-### Phase 3: 全量轉檔（US-5）— pending
-- [ ] agents.conf 全部條目（含註解的 autoresearch → enabled:false）→ registry 檔
-- [ ] **D2-sales：sales 4 隻保留 enabled:true**（純機械搬移，不打斷現跑 agent）；body 註記「退役待 chimesflow」
-- [ ] 等價驗證（D3-topology 版）：`sk-registry-gen generate` 對比搬移前的 HEAD conf，**行為 diff = 0**（只有 autoresearch 從註解→enabled:false 這一條預期差異，列清單確認）
-- [ ] 切換 commit：agents.conf 從 git 移除（`git rm --cached` + gitignore）；`sk-setup-agents` 檔頭註解更新
+### Phase 3: 全量轉檔（US-5）— 檔案 DONE（等價已證）, conf 移除與 rewire 綁定
+- [x] 21 檔（20 active + autoresearch enabled:false）+ 品質官 = 22 agent
+- [x] **D2-sales：sales 4 隻保留 enabled:true** + body 退役註記
+- [x] **等價驗證通過**：`sk-registry-gen check agents/agents.conf` → "no drift"（行為 diff=0）
+- [ ] conf 從 git 移除 → 與 Phase 2 rewire 原子綁定（同上 ⚠️ 步驟）
 
 ### Phase 4: 驗證接健檢（US-3）— pending
 - [ ] `sk-tester-cron` 加 registry 驗證 section（呼 `sk-registry-gen --validate`，FAIL/WARN 併入報告，零新 pip 依賴）
