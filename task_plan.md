@@ -32,13 +32,16 @@ dashboard 讀 registry、品質官（第一個 OODA 大臣）registry 檔 + memo
 - [x] generate 拒絕在 validation FAIL 時輸出；check 用 normalized 7-tuple 比對(非文字 diff)
 - [x] fail-fast：檔名≠name、label 撞名、缺必填、D6 ooda guard 全在 registry.py + CLI
 - [x] D5 單元測試 12 綠
-- [ ] **⚠️ live 管線步驟（待 user greenlight）**：`sk-setup-agents` 開頭改呼 `sk-registry-gen generate > $TRANSIENT_CONF`、跑完刪；`.gitignore` 加 `agents/agents.conf`；`git rm --cached agents.conf`。此步會重跑 launchd bootstrap（含 dashboard keepalive 服務）
+- [x] `sk-setup-agents` 改呼 `sk-registry-gen generate > $(mktemp)`、trap 清理、validation FAIL 則 bail 不碰 launchd
+- [x] `.gitignore` 加 `agents/agents.conf`；`git rm --cached`（已 untrack，檔留磁碟）
+- [x] `--dry-run` 驗證：生成 20 個 plist（= 原 20 active，autoresearch/品質官正確排除），labels 全對
+- [ ] **⚠️ 唯一手動步驟（待 user）**：實跑 `bin/sk-setup-agents` 重載 live launchd（含 dashboard keepalive）。等價已證,行為不變,但依 CLAUDE.md 規則此步不自動觸發
 
 ### Phase 3: 全量轉檔（US-5）— 檔案 DONE（等價已證）, conf 移除與 rewire 綁定
 - [x] 21 檔（20 active + autoresearch enabled:false）+ 品質官 = 22 agent
 - [x] **D2-sales：sales 4 隻保留 enabled:true** + body 退役註記
 - [x] **等價驗證通過**：`sk-registry-gen check agents/agents.conf` → "no drift"（行為 diff=0）
-- [ ] conf 從 git 移除 → 與 Phase 2 rewire 原子綁定（同上 ⚠️ 步驟）
+- [x] conf 從 git 移除（與 rewire 綁定，已完成）
 
 ### Phase 4: 驗證接健檢（US-3）— pending
 - [ ] `sk-tester-cron` 加 registry 驗證 section（呼 `sk-registry-gen --validate`，FAIL/WARN 併入報告，零新 pip 依賴）
