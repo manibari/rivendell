@@ -14,10 +14,11 @@ dashboard 讀 registry、品質官（第一個 OODA 大臣）registry 檔 + memo
 
 > eng-review 過關（2026-07-28）：D1/D2/D3-topology/D4-parser/D5-tests/D6-guard 全定案，見 Decisions。
 
-### Phase 0: 共用解析模組（D4-parser）— pending
-- [ ] `dashboard/lib/registry.py`：純 stdlib 解析 registry frontmatter（切 `---`、YAML 子集手解或用已裝的 ruamel/yaml 若 dashboard 已有依賴 → 先查 requirements.txt）
-- [ ] 一個 `RegistryAgent` dataclass（吸收 AgentsJsonConfig 欄位：merge_strategy / allowed_paths / forbidden_paths / max_files_changed / qa_pre_commit）
-- [ ] 這是 Phase 2 CLI 與 Phase 5 dashboard 的共用 import，先寫先測
+### Phase 0: 共用解析模組（D4-parser）— DONE
+- [x] `dashboard/lib/registry.py`：用 PyYAML 解析（已是依賴,不多花成本；D4「純 stdlib」就地修正為用 yaml，手解易在邊界出錯）
+- [x] `RegistryAgent` dataclass（吸收 AgentsJsonConfig 欄位）+ validate() + to_conf_tuple/line + check_label_collisions + load_registry_dir
+- [x] D6 guard（`OODA_EXECUTOR_AVAILABLE=False` gate）、filename==name、skill 白名單（known_skills 注入,built-in 豁免留給 CLI）
+- [x] `dashboard/tests/test_registry.py`：12 tests 全綠（parse/validate/collision/ooda-guard/skill-whitelist）
 
 ### Phase 1: Schema + template + 品質官（US-1 檔案面 / US-6）— pending
 - [ ] `agents/registry/` 目錄 + `TEMPLATE.md`（schema v2 全欄位註解版）
