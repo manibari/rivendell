@@ -16,7 +16,16 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-CONF="$REPO_DIR/agents/agents.conf"
+
+# agents.conf is a GENERATED build artifact, not a committed SoT. The registry
+# (agents/registry/*.md) is the only source of truth. Generate a transient conf
+# from it on every run; bail if the registry has validation errors (fail-fast).
+CONF="$(mktemp -t sk-agents-conf.XXXXXX)"
+trap 'rm -f "$CONF"' EXIT
+if ! python3 "$REPO_DIR/bin/sk-registry-gen" generate > "$CONF"; then
+  echo "ERROR: registry validation failed — see errors above. Not touching launchd." >&2
+  exit 1
+fi
 LAUNCH_DIR="$HOME/Library/LaunchAgents"
 SK_AGENT_RUN="$HOME/.local/bin/sk-agent-run"
 LAUNCHD_DOMAIN="gui/$(id -u)"
