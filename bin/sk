@@ -2891,12 +2891,17 @@ print(f'_{L[\"pricing\"]}_')
 
   } > "$report"
 
-  # Insert summary at top (after ## heading)
-  sed -i '' "/^## $L_SUMMARY$/a\\
-\\
-- **$L_TOTAL:** $total skills\\
-- **$L_ATTENTION:** $needs_attention issue(s)\\
-" "$report"
+  # Insert summary at top (after ## heading). awk, not `sed -i '' …a\`: BSD's
+  # in-place flag and append command both differ from GNU's, and `sed -i ''` on
+  # Linux reads '' as the script and the real script as a filename ("can't read
+  # …"). awk behaves identically on both, and `$0==h` is a string match so the
+  # heading needs no regex escaping.
+  local _summary
+  _summary=$'\n'"- **$L_TOTAL:** $total skills"$'\n'"- **$L_ATTENTION:** $needs_attention issue(s)"
+  awk -v h="## $L_SUMMARY" -v s="$_summary" '
+    { print }
+    $0 == h && !done { print s; done = 1 }
+  ' "$report" > "$report.tmp" && mv "$report.tmp" "$report"
 
   echo -e "${GREEN}Report generated:${NC} $report"
   echo ""
@@ -3433,7 +3438,10 @@ cmd_env() {
             [[ "$key" =~ ^[[:space:]]*# ]] && continue
             [ -z "$key" ] && continue
             if grep -q "^${key}=" "$actual"; then
-              sed -i '' "s|^${key}=.*|${key}=${val}|" "$actual"
+              # temp+mv, not `sed -i ''` — GNU sed rejects the BSD empty-suffix
+              # form and the substitution never lands on Linux.
+              _sed_tmp="$(mktemp)"
+              sed "s|^${key}=.*|${key}=${val}|" "$actual" > "$_sed_tmp" && mv "$_sed_tmp" "$actual"
               echo -e "  ${GREEN}shared${NC}  $key (from .env.shared)"
             fi
           done < "$ENV_SHARED_FILE"
