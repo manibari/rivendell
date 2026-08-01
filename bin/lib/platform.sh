@@ -298,9 +298,13 @@ SERVICE
     weekdays) on_calendar="Mon..Fri *-*-* ${hh}:${mm}:00" ;;
     weekly)   on_calendar="$(_svc_weekday_name "${sched_weekday:-1}") *-*-* ${hh}:${mm}:00" ;;
     interval)
-      # launchd StartInterval fires N seconds after each run finishes and also
-      # once at load; OnBootSec+OnUnitActiveSec is the closest systemd analogue.
-      timer_body="OnBootSec=${sched_interval}
+      # launchd StartInterval fires N seconds after load and after each run.
+      # OnActiveSec (relative to timer activation) + OnUnitActiveSec (after each
+      # run) is the faithful analogue. NOT OnBootSec: on a host whose user
+      # manager booted more than N seconds ago (linger keeps it up for weeks),
+      # OnBootSec is already in the past and the timer fires the instant it
+      # loads — an unwanted immediate run for a costly agent.
+      timer_body="OnActiveSec=${sched_interval}
 OnUnitActiveSec=${sched_interval}" ;;
   esac
 
@@ -395,7 +399,10 @@ RestartSec=5"
 WantedBy=default.target"
       ;;
     interval)
-      timer_body="OnBootSec=${sched_val}
+      # OnActiveSec (load-relative), not OnBootSec: on a long-lived user manager
+      # OnBootSec is already elapsed and the timer fires the instant it loads.
+      # See the matching note in _svc_generate_systemd.
+      timer_body="OnActiveSec=${sched_val}
 OnUnitActiveSec=${sched_val}"
       ;;
     calendar)
