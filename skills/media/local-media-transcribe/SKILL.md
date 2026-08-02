@@ -69,11 +69,48 @@ bash "$TX" "$F" /tmp/transcript.txt        # writes transcript.txt + transcript.
 FORMAT=both bash "$TX" "$F" /tmp/transcript.txt   # also writes /tmp/transcript.srt
 # force language / bigger model when needed:
 WHISPER_LANG=zh WHISPER_MODEL=mlx-community/whisper-large-v3 bash "$TX" "$F" /tmp/transcript.txt
+# feed the proper nouns BEFORE the run — this is the lever for names (see below):
+ASR_PROMPT="宏捷、穩懋、Carson、re-tapeout" WHISPER_LANG=zh bash "$TX" "$F" /tmp/transcript.txt
 ```
 
-Defaults: model `whisper-large-v3-turbo` (fast, strong), language auto-detect. `turbo` is the right
-default; reach for `large-v3` only if turbo mishears a lot of proper nouns. **It's ASR** — punctuation
+Defaults: model `whisper-large-v3-turbo` (fast, strong), language auto-detect, EBU R128
+loudness normalization on, `condition_on_previous_text=False`. **It's ASR** — punctuation
 and proper nouns can be wrong; flag uncertainty before quoting exactly.
+
+## Step 2.5 — 可信度：read the script's own warnings before you read the transcript
+
+The script now reports three things on stderr and records them in `.meta`. Read them
+first — a bad transcript reads like a good one.
+
+**`mean_volume` (source level).** Below roughly −30 dB, whisper starts looping. The
+script normalizes by default, so this is usually just a note; it becomes a warning if
+you set `NORMALIZE=0`.
+
+**Repetition-loop check.** After transcription the script counts distinct lines vs total.
+Under 5% distinct it warns and the transcript is garbage — not "a bit rough", unusable.
+Real case (2026-08-02): a meeting at −33 dB produced **10280 lines carrying 123 distinct
+sentences (1.2%)**. It looked like fluent prose. Normalizing the audio and turning off
+`condition_on_previous_text` produced a readable result from the same file.
+
+**Proper nouns — a bigger model does NOT fix this.** Measured on whisper.cpp
+`small` → `large-v3-turbo`: the same names stayed wrong ("Ager" 27 times; SparkLabs came
+out as "Spa Labs"/"Spotless"), and 繁中 output degraded to 简体. Do not reach for a bigger
+model to fix names. Two things that do work:
+
+1. **`ASR_PROMPT`** — list the names you expect before the run; it biases decoding.
+   This is prevention, and it is the cheaper half.
+2. **`(?)` markers** — mark every proper noun you inferred from context rather than
+   heard clearly, and say so in the handoff: *「文件裡標 (?) 的專有名詞是我依上下文推測，
+   建議回聽確認再對外發。」* Never silently guess a name into a document that leaves the
+   building.
+
+`(?)` is per-term; the `kind: asr` flag in the note frontmatter is per-file. Both are
+needed — the file-level flag says "this came from a machine", the term-level marker says
+"this specific word is a guess".
+
+**繁中 caveat.** `large-v3` and its turbo variant tend to emit 简体 for `--language zh`.
+The script prepends a 繁體 initial prompt for zh/yue as a mitigation — it is not a
+guarantee. Spot-check the output when the source is Taiwanese.
 
 ## Step 3 — Add the visual layer (screen recordings only — this is the "說明")
 
