@@ -16,10 +16,24 @@ fi
 # script exits under `set -e`, and systemd just restarts into the same failure.
 # Gating on a hash of requirements.txt makes steady-state startup fully offline;
 # the network is only touched when the deps genuinely changed.
+#
+# `sha256sum` is GNU coreutils and does not exist on macOS, which ships
+# `shasum` instead — and Homebrew's coreutils installs it as `gsha256sum`
+# unless gnubin is on PATH, so it is not there either. Calling it directly
+# made this script exit 127 under launchd, and KeepAlive restarted the API
+# into the same failure forever.
 REQ="$DIR/api/requirements.txt"
 STAMP="$VENV_DIR/.requirements.sha256"
-want="$(sha256sum "$REQ" | cut -d' ' -f1)"
-if [ ! -f "$STAMP" ] || [ "$(cat "$STAMP" 2>/dev/null)" != "$want" ]; then
+if command -v sha256sum >/dev/null 2>&1; then
+    want="$(sha256sum "$REQ" | cut -d' ' -f1)"
+elif command -v shasum >/dev/null 2>&1; then
+    want="$(shasum -a 256 "$REQ" | cut -d' ' -f1)"
+else
+    # No hasher: install every start rather than compare against an empty
+    # hash, which would silently never match and reinstall anyway.
+    want=""
+fi
+if [ -z "$want" ] || [ ! -f "$STAMP" ] || [ "$(cat "$STAMP" 2>/dev/null)" != "$want" ]; then
     "$VENV_DIR/bin/pip" install -q -r "$REQ"
     echo "$want" > "$STAMP"
 fi
