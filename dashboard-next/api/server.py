@@ -1868,9 +1868,92 @@ def _infer_category(port_type: str) -> str:
     return "其他"
 
 
+def _live_listeners() -> dict[int, dict[str, Any]]:
+    """Actually-listening TCP ports, keyed by port.
+
+    This is the source of truth for what is running. The previous version of
+    /api/ports read docker-compose.yml alone and presented it as fact, which
+    was wrong in both directions on this machine: 6 of 8 declared ports belong
+    to opt-in profiles whose repos are not even checked out, while the ports
+    genuinely in use (Rightek-CRM on 3100/8100/5434) appeared nowhere because
+    they run natively, not under docker.
+
+    Ephemeral ports (>= 49152) are excluded — the OS assigns them at random
+    per boot, so they are noise, not services.
+    """
+    import shutil
+    import subprocess
+
+    out: dict[int, dict[str, Any]] = {}
+
+    # Do NOT rely on PATH. On macOS lsof lives in /usr/sbin, which is absent
+    # from the PATH the launchd plist sets — so this worked in an interactive
+    # shell and silently returned nothing under the service, making every port
+    # look idle. Same story for `ss` inside a stripped systemd environment.
+    candidates = [
+        (shutil.which("lsof"), ["-nP", "-iTCP", "-sTCP:LISTEN"]),
+        ("/usr/sbin/lsof", ["-nP", "-iTCP", "-sTCP:LISTEN"]),
+        ("/usr/bin/lsof", ["-nP", "-iTCP", "-sTCP:LISTEN"]),
+    ]
+    rows: list[str] = []
+    for binary, args in candidates:
+        if not binary or not Path(binary).exists():
+            continue
+        try:
+            proc = subprocess.run(
+                [binary, *args], capture_output=True, text=True, timeout=8, check=False
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if proc.stdout.strip():
+            rows = proc.stdout.splitlines()[1:]
+            break
+    if not rows:
+        return out
+
+    for row in rows:
+        cols = row.split()
+        if len(cols) < 9:
+            continue
+        addr = cols[8]
+        try:
+            port = int(addr.rsplit(":", 1)[-1])
+        except ValueError:
+            continue
+        if port >= 49152 or port in out:
+            continue
+        out[port] = {"command": cols[0], "pid": cols[1]}
+    return out
+
+
+def _port_claims() -> dict[int, dict[str, str]]:
+    """Ownership intent from data/ports.conf — who owns a port when stopped.
+
+    The one fact live listeners cannot provide: a stopped service looks exactly
+    like a free port, so without this the next project silently takes it.
+    """
+    claims: dict[int, dict[str, str]] = {}
+    conf = Path(__file__).resolve().parent.parent.parent / "data" / "ports.conf"
+    if not conf.exists():
+        return claims
+    for line in conf.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) < 3 or not parts[0].isdigit():
+            continue
+        claims[int(parts[0])] = {
+            "project": parts[1],
+            "service": parts[2],
+            "notes": parts[3] if len(parts) > 3 else "",
+        }
+    return claims
+
+
 @app.get("/api/ports", tags=["Ports"])
 async def api_ports() -> dict[str, Any]:
-    """Parse docker-compose.yml, infer service metadata, check port reachability."""
+    """Live listeners are truth; ports.conf is intent; compose is a claim."""
     import asyncio
 
     try:
@@ -1878,38 +1961,66 @@ async def api_ports() -> dict[str, Any]:
     except ImportError:
         raise HTTPException(status_code=500, detail="PyYAML not installed")
 
+    live = _live_listeners()
+    claims = _port_claims()
+
     dc_path = Path(os.environ.get("COMPOSE_FILE", str(Path(__file__).resolve().parent.parent.parent / "docker-compose.yml")))
-    if not dc_path.exists():
-        raise HTTPException(status_code=404, detail=f"docker-compose.yml not found: {dc_path}")
+    declared: dict[int, dict[str, str]] = {}
+    if dc_path.exists():
+        try:
+            dc = yaml.safe_load(dc_path.read_text())
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"Failed to parse docker-compose.yml: {exc}")
+        for svc_name, svc_cfg in (dc.get("services") or {}).items():
+            if not isinstance(svc_cfg, dict):
+                continue
+            for port_spec in svc_cfg.get("ports", []) or []:
+                if not isinstance(port_spec, str) or ":" not in port_spec:
+                    continue
+                try:
+                    declared[int(port_spec.split(":")[0])] = {
+                        "service": svc_name,
+                        "container": svc_cfg.get("container_name", svc_name),
+                        "profiles": ",".join(svc_cfg.get("profiles", []) or []),
+                    }
+                except ValueError:
+                    continue
 
-    try:
-        dc = yaml.safe_load(dc_path.read_text())
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to parse docker-compose.yml: {exc}")
-
+    # Union of all three views, so nothing is invisible just because one
+    # source failed to mention it.
     entries: list[dict[str, Any]] = []
-    for svc_name, svc_cfg in dc.get("services", {}).items():
-        if not isinstance(svc_cfg, dict):
-            continue
-        container = svc_cfg.get("container_name", svc_name)
-        for port_spec in svc_cfg.get("ports", []):
-            if not isinstance(port_spec, str) or ":" not in port_spec:
-                continue
-            try:
-                host_port = int(port_spec.split(":")[0])
-            except ValueError:
-                continue
-            port_type = _infer_port_type(host_port)
-            entries.append({
-                "port": host_port,
-                "service": svc_name,
-                "container": container,
-                "type": port_type,
-                "web": port_type not in ("DB", "Cache"),
-                "category": _infer_category(port_type),
-                "project": _infer_project(svc_name),
-                "status": "unknown",
-            })
+    for host_port in sorted(set(live) | set(claims) | set(declared)):
+        claim = claims.get(host_port, {})
+        decl = declared.get(host_port, {})
+        listener = live.get(host_port)
+
+        if listener and claim:
+            state = "live"          # running and accounted for
+        elif listener:
+            state = "unclaimed"     # running, nobody registered it
+        elif claim:
+            state = "idle"          # reserved, service is down
+        else:
+            state = "declared_only"  # compose mentions it, nothing else does
+
+        port_type = _infer_port_type(host_port)
+        entries.append({
+            "port": host_port,
+            "state": state,
+            "service": claim.get("service") or decl.get("service") or (listener or {}).get("command", ""),
+            "container": decl.get("container", ""),
+            "profiles": decl.get("profiles", ""),
+            "process": (listener or {}).get("command", ""),
+            "pid": (listener or {}).get("pid", ""),
+            "notes": claim.get("notes", ""),
+            "declared_in_compose": host_port in declared,
+            "registered": host_port in claims,
+            "type": port_type,
+            "web": port_type not in ("DB", "Cache"),
+            "category": _infer_category(port_type),
+            "project": claim.get("project") or _infer_project(decl.get("service", "")),
+            "status": "unknown",
+        })
 
     async def check_port(port: int) -> str:
         # Try IPv4 AND IPv6 -- a Node `next dev` server commonly binds to
@@ -1936,7 +2047,21 @@ async def api_ports() -> dict[str, Any]:
     for entry, status in zip(entries, statuses):
         entry["status"] = status
 
-    return {"ports": entries}
+    summary = {
+        "live": sum(1 for e in entries if e["state"] == "live"),
+        "unclaimed": sum(1 for e in entries if e["state"] == "unclaimed"),
+        "idle": sum(1 for e in entries if e["state"] == "idle"),
+        "declared_only": sum(1 for e in entries if e["state"] == "declared_only"),
+    }
+    return {
+        "ports": entries,
+        "summary": summary,
+        "sources": {
+            "truth": "live TCP listeners (lsof)",
+            "intent": "data/ports.conf",
+            "claims": "docker-compose.yml",
+        },
+    }
 
 
 # ── Workflow Map ──────────────────────────────────────────────────────────────

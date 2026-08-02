@@ -39,6 +39,8 @@ Commands:
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   check portability   Hardcoded home paths, non-bash-parsable scripts, pipefail traps
                       Flags: --json (structured), --quiet (only output if issues)
+  check ports         Port drift: live listeners vs data/ports.conf vs docker-compose
+                      Flags: --json (structured), --quiet (only output if drift)
   run <task>          Run a task as single-shot agent (claude -p)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
@@ -1799,7 +1801,7 @@ cmd_maintain() {
   echo -e "${CYAN}=== Nightly Maintenance — $today ===${NC}\n"
 
   # 1. Deploy check: auto-deploy new skills, clean dangling symlinks
-  echo -e "${CYAN}[1/5] Deploy Check${NC}"
+  echo -e "${CYAN}[1/6] Deploy Check${NC}"
   mkdir -p "$DEPLOY_TARGET"
 
   # Auto-deploy undeployed skills
@@ -1834,7 +1836,7 @@ cmd_maintain() {
   echo ""
 
   # 2. Permissions sync across all projects
-  echo -e "${CYAN}[2/5] Permissions Sync${NC}"
+  echo -e "${CYAN}[2/6] Permissions Sync${NC}"
   if [ -d "$PROJECTS_DIR" ]; then
     local proj_count=0
     for proj_dir in "$PROJECTS_DIR"/*/; do
@@ -1865,7 +1867,7 @@ cmd_maintain() {
   echo ""
 
   # 3. Agent health check
-  echo -e "${CYAN}[3/5] Agent Health${NC}"
+  echo -e "${CYAN}[3/6] Agent Health${NC}"
   local agent_count=0
   agent_count="$(agent_scan_all | wc -l | tr -d ' ')"
   if [ "$agent_count" -gt 0 ]; then
@@ -1882,14 +1884,21 @@ cmd_maintain() {
   echo ""
 
   # 4. Audit report
-  echo -e "${CYAN}[4/5] Audit Report${NC}"
+  echo -e "${CYAN}[4/6] Audit Report${NC}"
   cmd_audit
   echo ""
 
   # 5. Portability guard. Runs nightly so a hardcoded path or a pipefail trap
   #    is caught the day it lands, not on the next machine six months later.
-  echo -e "${CYAN}[5/5] Portability${NC}"
+  echo -e "${CYAN}[5/6] Portability${NC}"
   cmd_check_portability || true
+  echo ""
+
+  # 6. Port drift. Catches a listener nobody registered regardless of who
+  #    started it — launchd, docker, or a stray `npm run dev`. No hook can do
+  #    that, because a hook only sees this agent's own tool calls.
+  echo -e "${CYAN}[6/6] Port Drift${NC}"
+  cmd_check_ports || true
 }
 
 cmd_run() {
@@ -3054,6 +3063,125 @@ cmd_check_ssot() {
 # `/tmp` write failures and risking agent/report/git breakage.
 # Thresholds: WARN >=90%, CRIT >=95%. Fast — `df` only, never `du`.
 # Exit: 0 ok, 1 warn, 2 crit (mirrors check-ssot's non-zero-on-problem).
+# ─── Port drift (kernel is truth, ports.conf is intent, compose is a claim) ───
+#
+# Three sources disagree and only one of them is real:
+#   kernel   — what is actually listening. Ground truth, unbypassable.
+#   conf     — data/ports.conf: which project OWNS a port even when stopped.
+#              The one fact lsof cannot tell you.
+#   compose  — docker-compose.yml declarations. Historically fiction here:
+#              6 of 8 entries described containers that have never run on this
+#              machine, because those services moved to native launchd.
+# This reports the difference. It deliberately does not enforce: launchd,
+# docker and a stray `npm run dev` all bind ports without asking, and the only
+# real enforcement is the kernel returning EADDRINUSE.
+cmd_check_ports() {
+  local mode="text" quiet=false
+  for arg in "$@"; do
+    case "$arg" in
+      --json)  mode="json" ;;
+      --quiet) quiet=true ;;
+    esac
+  done
+
+  local conf_file="$REPO_DIR/data/ports.conf"
+  local compose_file="$REPO_DIR/docker-compose.yml"
+
+  # reality: listening TCP ports (macOS lsof / Linux ss).
+  # Ports >= 49152 are the IANA ephemeral range — the OS hands them out at
+  # random per boot (macOS rapportd is the usual offender). Registering one is
+  # meaningless because it will be a different number tomorrow, so skip them.
+  local live=""
+  if command -v lsof >/dev/null 2>&1; then
+    live="$(lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null \
+      | awk 'NR>1 {n=split($9,a,":"); if (a[n]+0 > 0 && a[n]+0 < 49152) print a[n]}' | sort -un || true)"
+  elif command -v ss >/dev/null 2>&1; then
+    live="$(ss -ltnH 2>/dev/null \
+      | awk '{n=split($4,a,":"); if (a[n]+0 > 0 && a[n]+0 < 49152) print a[n]}' | sort -un || true)"
+  fi
+
+  # intent: data/ports.conf
+  local claimed="" claim_map=""
+  if [ -f "$conf_file" ]; then
+    while IFS='|' read -r port project service _rest; do
+      [[ "$port" =~ ^[[:space:]]*# ]] && continue
+      port="$(echo "$port" | xargs)"
+      [ -z "$port" ] && continue
+      [[ "$port" =~ ^[0-9]+$ ]] || continue
+      claimed+="$port"$'\n'
+      claim_map+="$port|$(echo "$project" | xargs)|$(echo "$service" | xargs)"$'\n'
+    done < "$conf_file"
+  fi
+  claimed="$(echo "$claimed" | sort -un | grep -v '^$' || true)"
+
+  # claims: docker-compose host ports
+  local declared=""
+  if [ -f "$compose_file" ]; then
+    declared="$(grep -oE '^[[:space:]]*-[[:space:]]*"[0-9]+:' "$compose_file" 2>/dev/null \
+      | grep -oE '[0-9]+' | sort -un || true)"
+  fi
+
+  local unclaimed phantom idle
+  unclaimed="$(comm -23 <(echo "$live" | grep -v '^$' || true) <(echo "$claimed") || true)"
+  idle="$(comm -13 <(echo "$live" | grep -v '^$' || true) <(echo "$claimed") || true)"
+  phantom="$(comm -23 <(echo "$declared" | grep -v '^$' || true) \
+                     <(echo "$live" | grep -v '^$' || true) || true)"
+
+  local n_un n_ph n_idle total
+  n_un="$(echo -n "$unclaimed" | grep -c '^' || true)"
+  n_ph="$(echo -n "$phantom" | grep -c '^' || true)"
+  n_idle="$(echo -n "$idle" | grep -c '^' || true)"
+  # Only unclaimed listeners are drift. A compose declaration that is not
+  # listening is normal — every service here sits behind an opt-in profile
+  # (news-stock, sales, marketing), and those repos are not even checked out
+  # on this machine. Counting them as failures would make the check cry wolf
+  # every night forever.
+  total=$n_un
+
+  if [ "$mode" = "json" ]; then
+    printf '{"total":%d,"unclaimed":%d,"phantom":%d,"idle":%d}\n' \
+      "$total" "$n_un" "$n_ph" "$n_idle"
+    [ "$total" -gt 0 ] && return 1 || return 0
+  fi
+
+  if $quiet && [ "$total" -eq 0 ]; then return 0; fi
+  echo -e "${CYAN}=== Port Drift ===${NC}"
+  echo -e "  reality: kernel   intent: data/ports.conf   claims: docker-compose.yml\n"
+
+  if [ "$n_un" -gt 0 ]; then
+    echo -e "${RED}Listening but unclaimed (${n_un}) — register in data/ports.conf:${NC}"
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      local who=""
+      command -v lsof >/dev/null 2>&1 && \
+        who="$(lsof -nP -iTCP:"$p" -sTCP:LISTEN 2>/dev/null | awk 'NR==2 {print $1" (pid "$2")"}' || true)"
+      printf "  %-6s %s\n" "$p" "${who:-unknown}"
+    done <<< "$unclaimed"
+    echo ""
+  fi
+  if [ "$n_ph" -gt 0 ] && ! $quiet; then
+    echo -e "${CYAN}Declared in docker-compose but not listening (${n_ph}) — informational:${NC}"
+    echo "$phantom" | sed 's/^/  /'
+    echo -e "  ${CYAN}these sit behind opt-in profiles (news-stock / sales / marketing);${NC}"
+    echo -e "  ${CYAN}not drift unless you expected that profile to be up${NC}\n"
+  fi
+  if [ "$n_idle" -gt 0 ] && ! $quiet; then
+    echo -e "${CYAN}Claimed but idle (${n_idle}) — reserved, service not running:${NC}"
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      printf "  %-6s %s\n" "$p" "$(echo "$claim_map" | awk -F'|' -v P="$p" '$1==P {print $2" / "$3}')"
+    done <<< "$idle"
+    echo ""
+  fi
+
+  if [ "$total" -eq 0 ]; then
+    echo -e "${GREEN}No drift — every listener is claimed, no stale declarations.${NC}"
+    return 0
+  fi
+  echo -e "${RED}Total drift: $total${NC}"
+  return 1
+}
+
 # ─── Portability check (guards the class of bug that broke the 2026-07 move) ───
 #
 # Three failure modes, all found the hard way on a fresh machine, all invisible
@@ -3811,6 +3939,7 @@ case "${1:-help}" in
       disk)   shift; cmd_check_disk "$@" ;;
       agents) shift; cmd_check_agents "$@" ;;
       portability) shift; cmd_check_portability "$@" ;;
+      ports)  shift; cmd_check_ports "$@" ;;
       *)    cmd_check "${1:-}" ;;
     esac
     ;;
