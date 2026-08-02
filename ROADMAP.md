@@ -44,6 +44,30 @@
 - [ ] spine P2:`spine-deploy` / `spine-swagger` / `spine-settings` / `spine-api-keys`。
 - [ ] scraper spine(#16–18):mops `packages/` 升格 skill,對第二隻爬蟲審計。
 
+## Wave 4 — 入口(把已有的能力變成看得見、按得下去的東西)
+
+> lever-first。8 個抓取型 workflow 已經在跑(tender-scraper · subsidy-scraper ·
+> mops-financial-scraper · customer-intel · tw-company-lookup · keyword-discovery ·
+> investment-research · media/*),輸出散在 `materials/` · `knowledge/` · `reports/`,
+> 但**沒有任何地方寫著哪個 workflow 的輸出去哪裡**——要知道就得去讀 SKILL.md。
+> 缺的不是能力,是入口(對映 CLAUDE.md「增量接線 > 重寫」)。
+> 起點:2026-08-02 對話(SaaS workflow 卡片牆截圖)。
+
+- [ ] **W4-1(lever)** workflow 契約層:SKILL.md frontmatter 增 `inputs` /
+      `outputs` / `connectors` 三欄,先補那 8 個抓取型 skill。資料源是既有
+      frontmatter,不另建 metadata 系統。
+- [ ] **W4-2** dashboard 卡片牆:讀 W4-1,一張卡 = 一個 workflow,露出串接圖示、
+      輸出落點、最後執行時間(registry label + `reports/` 已有)。
+- [ ] **W4-3** 一鍵執行:卡片 → `sk run <skill>`,輸出串進既有 agent log view。
+- [ ] **W4-4** 淘汰機制:N 個月 0 觸發的 skill 在 `sk audit` 標記。現況是
+      `knowledge-graph` 靠 retro 人工點名 3 次才退,不是機制。
+
+搭配 Skill pipeline 的 `bin/sk index`(INDEX-first 檢索)——那條解 token 成本,
+這個 Wave 解人找不到,同一個病的兩面。
+
+**不做**:可組合的 workflow builder(使用者自己拉抓取節點 → 存放節點)。那是另一個
+產品不是 rivendell 的增量,地基要動;等「臨時想組一個新的」出現第 3 次再重審。
+
 ## Skill pipeline(每週 retro 管理;與 Wave 並行的常態產線)
 
 - **Retire `knowledge-graph`** — 0 triggers,3+ retros 連續點名(W22 action 1)。
@@ -62,7 +86,7 @@
 | ai-vision-extract n=1 | skill 已抽形狀未驗 | 第 2 個拍照→抽取產品出現 |
 | sales-assistant 爬蟲遷移 | parked(Peter) | 決策後擴充既有 import 橋;連動 4 殭屍 agents + :5433 退役 |
 | autoresearch 未釘 model | 跟 CLI 預設飄(現=Fable 5) | Peter 拍板 sonnet 或保留 |
-| auto-stage hook 捲檔 | pathspec 紀律擋著(已捲 2 次) | 評估 hook 限縮到本 session 檔 |
+| auto-stage hook 捲檔 | pathspec 紀律擋著(**已捲 3 次**;2026-08-02 把 pitch-deck 67 行既有 WIP 一起 commit 進 `1537d08`) | 評估 hook 限縮到本 session 檔 |
 | 單機 SPOF(R4) | 接受中 | 規模 justify 第二台 always-on 時 |
 
 ## Done(pre-Wave 主線,2026-06→07;細目見 CHANGELOG 0.2.0)
