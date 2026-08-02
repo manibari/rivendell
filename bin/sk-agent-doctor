@@ -180,7 +180,7 @@ diagnose_and_heal() {
   # ── Pattern: command not found (PATH issue) ──
   if grep -q "command not found" <<< "$stderr"; then
     local missing_cmd
-    missing_cmd=$(echo "$stderr" | grep "command not found" | tail -1 | sed 's/.*: \(.*\): command not found/\1/')
+    missing_cmd=$(echo "$stderr" | grep "command not found" | tail -1 | sed 's/.*: \(.*\): command not found/\1/' || true)
     log "  Diagnosis: '$missing_cmd' not in PATH"
     fix_path_reload "$label"
     diagnosed=true
@@ -189,7 +189,7 @@ diagnose_and_heal() {
   # ── Pattern: No module named (Python import error) ──
   if grep -q "No module named" <<< "$combined"; then
     local missing_module
-    missing_module=$(echo "$combined" | grep "No module named" | tail -1 | sed "s/.*No module named '\([^']*\)'.*/\1/" | sed 's/\..*//')
+    missing_module=$(echo "$combined" | grep "No module named" | tail -1 | sed "s/.*No module named '\([^']*\)'.*/\1/" | sed 's/\..*//' || true)
     log "  Diagnosis: Python module '$missing_module' not installed"
     fix_missing_module "$missing_module"
     diagnosed=true

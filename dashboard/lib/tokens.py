@@ -246,7 +246,7 @@ _SKIP_PARENT_DIRS = {"Documents", "Projects", "Desktop", "repos", "src", "code",
 def _dir_to_project_name(dir_name: str) -> str:
     """Convert project dir name to human-readable project name.
 
-    e.g. '-Users-manibari-Documents-Projects-skills-test' → 'skills-test'
+    e.g. '-Users-you-code-skills-test' → 'skills-test'
     The dir name encodes the absolute path with dashes replacing slashes.
 
     Used as a FALLBACK only — per-line cwd is preferred (see
@@ -255,8 +255,8 @@ def _dir_to_project_name(dir_name: str) -> str:
     tokens to the parent.
     """
     # Build prefix from actual home directory
-    home = str(Path.home())  # e.g. /Users/manibari
-    home_prefix = home.replace("/", "-")  # → -Users-manibari
+    home = str(Path.home())  # e.g. /Users/you
+    home_prefix = home.replace("/", "-")  # → -Users-you
     name = dir_name
     if name.startswith(home_prefix):
         name = name[len(home_prefix):]
@@ -277,8 +277,8 @@ def _dir_to_project_name(dir_name: str) -> str:
 def _cwd_to_project_name(cwd: str) -> str:
     """Convert a real cwd path to a human-readable project name.
 
-    e.g. '/Users/manibari/Documents/Projects/odb-dfm' → 'odb-dfm'
-         '/Users/manibari/Documents/Peter/ChimesAI/01-Presales' → 'Peter/ChimesAI/01-Presales'
+    e.g. '/Users/you/code/odb-dfm' → 'odb-dfm'
+         '/Users/you/Documents/Peter/ChimesAI/01-Presales' → 'Peter/ChimesAI/01-Presales'
 
     Strips the home prefix and skips intermediate dirs ("Documents",
     "Projects", etc.) until the first meaningful segment.

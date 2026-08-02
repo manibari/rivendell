@@ -28,10 +28,13 @@ services:
       - ${HOME}/Library/LaunchAgents:/root/Library/LaunchAgents:ro
       - ${HOME}/.claude/projects:/root/.claude/projects:ro
       - ${HOME}/.claude/skills:/root/.claude/skills:ro
-      # Mount targets must match the HOST paths that ~/.claude/skills symlinks
-      # point at, otherwise those symlinks dangle inside the container.
-      - ./skills:/Users/m5pro/Company/engineering/repos/rivendell/skills:ro
-      - ${PROJECTS_DIR:-/Users/m5pro/Company/engineering/repos}/gstack:/Users/m5pro/Company/engineering/repos/gstack:ro
+      # The mount TARGET has to equal the HOST path, because ~/.claude/skills
+      # is a tree of symlinks pointing at absolute host paths — mount the repo
+      # anywhere else and every one of them dangles inside the container.
+      # ${PWD} is the directory compose was invoked from (the repo root), so
+      # this stays correct on any machine without naming a home directory.
+      - ./skills:${PWD}/skills:ro
+      - ${PROJECTS_DIR:-${PWD}/..}/gstack:${PWD}/../gstack:ro
     restart: unless-stopped
 
   dashboard-web:

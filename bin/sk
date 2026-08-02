@@ -37,6 +37,8 @@ Commands:
                       Flags: --json (structured), --quiet (only output if not ok, exit non-zero)
   check agents        Agent schedule health: agents.conf entries not loaded in launchd
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
+  check portability   Hardcoded home paths, non-bash-parsable scripts, pipefail traps
+                      Flags: --json (structured), --quiet (only output if issues)
   run <task>          Run a task as single-shot agent (claude -p)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
@@ -1797,7 +1799,7 @@ cmd_maintain() {
   echo -e "${CYAN}=== Nightly Maintenance — $today ===${NC}\n"
 
   # 1. Deploy check: auto-deploy new skills, clean dangling symlinks
-  echo -e "${CYAN}[1/4] Deploy Check${NC}"
+  echo -e "${CYAN}[1/5] Deploy Check${NC}"
   mkdir -p "$DEPLOY_TARGET"
 
   # Auto-deploy undeployed skills
@@ -1832,7 +1834,7 @@ cmd_maintain() {
   echo ""
 
   # 2. Permissions sync across all projects
-  echo -e "${CYAN}[2/4] Permissions Sync${NC}"
+  echo -e "${CYAN}[2/5] Permissions Sync${NC}"
   if [ -d "$PROJECTS_DIR" ]; then
     local proj_count=0
     for proj_dir in "$PROJECTS_DIR"/*/; do
@@ -1863,7 +1865,7 @@ cmd_maintain() {
   echo ""
 
   # 3. Agent health check
-  echo -e "${CYAN}[3/4] Agent Health${NC}"
+  echo -e "${CYAN}[3/5] Agent Health${NC}"
   local agent_count=0
   agent_count="$(agent_scan_all | wc -l | tr -d ' ')"
   if [ "$agent_count" -gt 0 ]; then
@@ -1880,8 +1882,14 @@ cmd_maintain() {
   echo ""
 
   # 4. Audit report
-  echo -e "${CYAN}[4/4] Audit Report${NC}"
+  echo -e "${CYAN}[4/5] Audit Report${NC}"
   cmd_audit
+  echo ""
+
+  # 5. Portability guard. Runs nightly so a hardcoded path or a pipefail trap
+  #    is caught the day it lands, not on the next machine six months later.
+  echo -e "${CYAN}[5/5] Portability${NC}"
+  cmd_check_portability || true
 }
 
 cmd_run() {
@@ -2219,7 +2227,9 @@ cmd_audit() {
 
       if [ -n "$skill_missing" ]; then
         local miss_count
-        miss_count=$(echo -e "$skill_missing" | grep -c '^ ')
+        # grep -c exits 1 when the count is 0; under pipefail that would
+        # propagate to the assignment and set -e would abort the audit.
+        miss_count=$(echo -e "$skill_missing" | grep -c '^ ' || true)
         ((integrity_issues += miss_count))
         integrity_list+="- **$name** ($miss_count $L_MISSING_FILES)\n$skill_missing"
       fi
@@ -3044,6 +3054,92 @@ cmd_check_ssot() {
 # `/tmp` write failures and risking agent/report/git breakage.
 # Thresholds: WARN >=90%, CRIT >=95%. Fast — `df` only, never `du`.
 # Exit: 0 ok, 1 warn, 2 crit (mirrors check-ssot's non-zero-on-problem).
+# ─── Portability check (guards the class of bug that broke the 2026-07 move) ───
+#
+# Three failure modes, all found the hard way on a fresh machine, all invisible
+# until something silently stopped working:
+#   1. An absolute /Users/<someone>/ path committed to a tracked file. The
+#      sync-readme hook carried a dead one for months and no-op'd every save.
+#   2. A shell script that only parses under the shell you happened to test in.
+#   3. `var=$(... | grep ...)` under `set -o pipefail`, where a non-match takes
+#      down the whole script with an empty log and no error text.
+cmd_check_portability() {
+  local mode="text" quiet=false
+  for arg in "$@"; do
+    case "$arg" in
+      --json)  mode="json" ;;
+      --quiet) quiet=true ;;
+    esac
+  done
+
+  local hardcoded="" syntax_bad="" pipefail_risk=""
+
+  # 1. Hardcoded home paths in tracked files. reports/ .learnings/ docs/ are
+  #    history — they legitimately record what an old path used to be.
+  hardcoded="$(git -C "$REPO_DIR" grep -nIE '/(Users|home)/[a-zA-Z0-9_.-]+/' -- \
+      ':!reports/*' ':!.learnings/*' ':!docs/*' ':!*.lock' ':!*-lock.json' 2>/dev/null \
+      | grep -vE '\$(HOME|\{HOME\}|\{?PWD)|CLAUDE_PROJECT_DIR|example|e\.g\.' \
+      | grep -vE '/(Users|home)/(\.\.\.|<[^>]+>|you|user|youruser|USERNAME)/' || true)"
+
+  # 2. Every script must at least parse under bash, whatever your login shell is.
+  local f
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    head -1 "$f" 2>/dev/null | grep -q 'bash\|^#!/bin/sh' || continue
+    bash -n "$f" 2>/dev/null || syntax_bad+="$f"$'\n'
+  done < <(git -C "$REPO_DIR" ls-files 'bin/*' 'scripts/*' '*.sh' 2>/dev/null)
+
+  # 3. Assignment from a grep pipeline in a pipefail script, with no `|| true`.
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    grep -q 'set -[a-z]*o pipefail\|set -[a-z]*e[a-z]*o pipefail' "$f" 2>/dev/null || continue
+    local hits
+    # `|| true`, `|| :` and `|| echo …` all neutralise the failing exit status.
+    hits="$(grep -nE '^[^#]*[a-zA-Z_][a-zA-Z0-9_]*=\$\(.*\|[[:space:]]*(grep|rg)[^)]*\)' "$f" 2>/dev/null \
+        | grep -vE '\|\|[[:space:]]*(true|:|echo)' || true)"
+    [ -n "$hits" ] && pipefail_risk+="$(echo "$hits" | sed "s|^|$f:|")"$'\n'
+  done < <(git -C "$REPO_DIR" ls-files 'bin/*' 'scripts/*' '*.sh' 2>/dev/null)
+
+  local n_hard n_syn n_pipe total
+  n_hard="$(echo -n "$hardcoded" | grep -c '^' || true)"
+  n_syn="$(echo -n "$syntax_bad" | grep -c '^' || true)"
+  n_pipe="$(echo -n "$pipefail_risk" | grep -c '^' || true)"
+  total=$((n_hard + n_syn + n_pipe))
+
+  if [ "$mode" = "json" ]; then
+    printf '{"total":%d,"hardcoded_paths":%d,"bash_syntax_errors":%d,"pipefail_risks":%d}\n' \
+      "$total" "$n_hard" "$n_syn" "$n_pipe"
+    [ "$total" -gt 0 ] && return 1 || return 0
+  fi
+
+  if $quiet && [ "$total" -eq 0 ]; then return 0; fi
+
+  echo -e "${CYAN}=== Portability Check ===${NC}\n"
+
+  if [ "$n_hard" -gt 0 ]; then
+    echo -e "${YELLOW}Hardcoded home paths (${n_hard}) — will break on the next machine:${NC}"
+    echo "$hardcoded" | sed 's/^/  /'
+    echo -e "  ${CYAN}fix: \$HOME, \"\$CLAUDE_PROJECT_DIR\", or derive from \$REPO_DIR${NC}\n"
+  fi
+  if [ "$n_syn" -gt 0 ]; then
+    echo -e "${RED}Scripts that do not parse under bash (${n_syn}):${NC}"
+    echo "$syntax_bad" | sed 's/^/  /'
+    echo ""
+  fi
+  if [ "$n_pipe" -gt 0 ]; then
+    echo -e "${YELLOW}pipefail + grep assignment without \`|| true\` (${n_pipe}):${NC}"
+    echo "$pipefail_risk" | sed 's/^/  /'
+    echo -e "  ${CYAN}a non-matching grep exits 1, the assignment inherits it, set -e kills the script${NC}\n"
+  fi
+
+  if [ "$total" -eq 0 ]; then
+    echo -e "${GREEN}Clean — no hardcoded paths, no bash syntax errors, no pipefail traps.${NC}"
+    return 0
+  fi
+  echo -e "${RED}Total issues: $total${NC}"
+  return 1
+}
+
 cmd_check_disk() {
   local mode="text" quiet=false
   local warn_pct="${SK_DISK_WARN_PCT:-90}" crit_pct="${SK_DISK_CRIT_PCT:-95}"
@@ -3714,6 +3810,7 @@ case "${1:-help}" in
       ssot)   shift; cmd_check_ssot "$@" ;;
       disk)   shift; cmd_check_disk "$@" ;;
       agents) shift; cmd_check_agents "$@" ;;
+      portability) shift; cmd_check_portability "$@" ;;
       *)    cmd_check "${1:-}" ;;
     esac
     ;;
