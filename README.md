@@ -49,6 +49,7 @@ cd ~/any-project && claude
 | `./bin/sk agent <cmd>` | Manage automated agents: `list`, `start`, `stop`, `status`, `log`, `create` |
 | `./bin/sk readme` | Regenerate Skills Catalog in README.md from SKILL.md frontmatter |
 | `./bin/sk sync` | Show Google Drive import status for re-import |
+| `./bin/sk reboot [--check]` | Reboot so every service returns without a manual FileVault unlock (`fdesetup authrestart`); `--check` = pre-flight report only |
 
 ## Roadmap And Releases
 

@@ -55,6 +55,8 @@ Deploy & Infrastructure:
   status              Show all services + agents + skills health
   env [project]       Check/generate .env from .env.example
   update [--rebuild]  Pull all repos + optional Docker rebuild
+  reboot [--check]    Reboot so services return without a manual FileVault unlock
+                      (fdesetup authrestart). --check = pre-flight report only.
   help                Show this help message
 
 Categories: meta, workflow, quality, git, frontend, backend, docs
@@ -4134,6 +4136,7 @@ case "${1:-help}" in
   status)     cmd_status ;;
   env)        cmd_env "${2:-}" ;;
   update)     cmd_update "${2:-}" ;;
+  reboot)     shift; exec "$REPO_DIR/bin/sk-reboot" "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo -e "${RED}Unknown command:${NC} $1"

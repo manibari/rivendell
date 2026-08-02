@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# Reboot this Mac so everything comes back WITHOUT anyone typing the FileVault
+# password at the pre-boot screen.
+#
+# Why this exists (verified 2026-07-31 on this machine):
+#   All resident services (com.sk.dashboard.*, com.sk.claude-ops-bot, cloudflared,
+#   family-fiscal, pti-ares) already have RunAtLoad=true + KeepAlive=true, and
+#   launchd also back-fills missed StartCalendarInterval jobs on boot — a boot at
+#   10:04:50 fired the 06:00 tester and the 07:00 doctor at 10:06. So nothing is
+#   missing on the launchd side.
+#
+#   The ONLY thing that stops the machine from healing itself after a reboot is
+#   FileVault: it halts at the pre-boot unlock screen before launchd runs at all.
+#   Converting the LaunchAgents to LaunchDaemons does NOT help (daemons are also
+#   behind that screen) and actively breaks ops-bot, whose Claude Code credentials
+#   live in the login keychain that a system-session daemon cannot read.
+#
+#   `fdesetup authrestart` is the actual fix: it escrows the FileVault unlock key
+#   in NVRAM for exactly ONE reboot, so the machine boots straight to the desktop
+#   and every LaunchAgent starts unattended. The key is consumed by that boot.
+#
+# Usage:
+#   ./bin/sk-reboot            Pre-flight report, confirm, then authrestart
+#   ./bin/sk-reboot --check    Pre-flight report only. Never reboots.
+#   ./bin/sk-reboot --yes      Skip the confirmation prompt (sudo still prompts)
+#   ./bin/sk-reboot --plain    Ordinary reboot — you WILL have to unlock manually
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+NC='\033[0m'
+
+MODE="reboot"
+ASSUME_YES=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --check|--status) MODE="check" ;;
+    --plain)          MODE="plain" ;;
+    --yes|-y)         ASSUME_YES=true ;;
+    --help|-h)
+      # Print the header comment block (everything between the shebang and the
+      # first line of code) rather than a hardcoded line range that drifts.
+      awk 'NR==1 {next} /^#/ {sub(/^# ?/, ""); print; next} {exit}' "$0"
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}Unknown flag:${NC} $arg  (try --help)" >&2
+      exit 1
+      ;;
+  esac
+done
+
+LAUNCH_DIR="$HOME/Library/LaunchAgents"
+
+# ─── Pre-flight ───
+
+echo -e "${CYAN}sk-reboot${NC} — pre-flight"
+echo "─────────────────────────────"
+
+# FileVault
+fv_status="$(fdesetup status 2>/dev/null || echo 'unknown')"
+if echo "$fv_status" | grep -q "FileVault is On"; then
+  FV_ON=true
+  echo -e "FileVault          ${YELLOW}On${NC}  ${DIM}→ a normal reboot halts at the unlock screen${NC}"
+else
+  FV_ON=false
+  echo -e "FileVault          ${GREEN}Off${NC} ${DIM}→ a normal reboot already comes back unattended${NC}"
+fi
+
+# Auto-login (irrelevant while FileVault is on, but worth showing)
+if defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser >/dev/null 2>&1; then
+  echo -e "Auto-login         ${GREEN}set${NC}"
+else
+  echo -e "Auto-login         ${DIM}not set${NC}"
+fi
+
+# Restart after power failure
+autorestart="$(pmset -g 2>/dev/null | awk '/autorestart/ {print $2}')"
+if [ "${autorestart:-0}" = "1" ]; then
+  echo -e "Power-fail restart ${GREEN}on${NC}"
+else
+  echo -e "Power-fail restart ${YELLOW}off${NC} ${DIM}→ enable with: sudo pmset -a autorestart 1${NC}"
+fi
+
+# What comes back on its own, and what does not
+echo
+echo "Services that will restart on boot (RunAtLoad=true):"
+will_return=0
+wont_return=()
+unhealthy=()
+while IFS= read -r plist; do
+  label="$(basename "$plist" .plist)"
+  case "$label" in *.bak-*) continue ;; esac
+  ral="$(/usr/libexec/PlistBuddy -c "Print :RunAtLoad" "$plist" 2>/dev/null || echo false)"
+  running="$(launchctl list 2>/dev/null | awk -v l="$label" '$3==l && $1 ~ /^[0-9]+$/ {print $1}' || true)"
+  if [ "$ral" = "true" ]; then
+    will_return=$((will_return + 1))
+    if [ -n "$running" ]; then
+      printf "  ${GREEN}✓${NC} %-44s pid %s\n" "$label" "$running"
+      continue
+    fi
+    # RunAtLoad but no pid: either a one-shot that already finished, or a
+    # KeepAlive service stuck crash-looping. Only the latter matters here —
+    # rebooting will not heal a service that is already failing to start.
+    keepalive="$(/usr/libexec/PlistBuddy -c "Print :KeepAlive" "$plist" 2>/dev/null | head -1 || true)"
+    exitcode="$(launchctl print "gui/$(id -u)/$label" 2>/dev/null \
+                 | awk -F'= ' '/last exit code/ {print $2; exit}' || true)"
+    if [ "$keepalive" = "true" ] && [ "${exitcode:-0}" != "0" ]; then
+      printf "  ${RED}✗${NC} %-44s ${RED}not running, last exit %s${NC}\n" "$label" "${exitcode:-?}"
+      unhealthy+=("$label")
+    else
+      printf "  ${GREEN}✓${NC} %-44s ${DIM}(one-shot)${NC}\n" "$label"
+    fi
+  elif [ -n "$running" ]; then
+    wont_return+=("$label (pid $running)")
+  fi
+done < <(find "$LAUNCH_DIR" -maxdepth 1 -name '*.plist' | sort)
+
+if [ ${#wont_return[@]} -gt 0 ]; then
+  echo
+  echo -e "${YELLOW}Running now but NOT set to restart on boot:${NC}"
+  for l in "${wont_return[@]}"; do echo "  ! $l"; done
+fi
+
+if [ ${#unhealthy[@]} -gt 0 ]; then
+  echo
+  echo -e "${RED}Already broken — a reboot will NOT fix these:${NC}"
+  for l in "${unhealthy[@]}"; do echo "  ✗ $l"; done
+fi
+
+echo
+echo -e "${DIM}Scheduled agents need no action: launchd back-fills missed"
+echo -e "StartCalendarInterval jobs once on the next boot.${NC}"
+
+# ─── authrestart support ───
+
+echo
+if [ "$MODE" = "plain" ]; then
+  :
+elif ! $FV_ON; then
+  echo -e "${GREEN}FileVault is off — a plain reboot already returns unattended.${NC}"
+  MODE="${MODE/reboot/plain}"
+else
+  # --check must never sit on a password prompt, so it probes with `sudo -n`
+  # (non-interactive) and reports "unknown" rather than blocking.
+  sudo_probe=(sudo)
+  [ "$MODE" = "check" ] && sudo_probe=(sudo -n)
+
+  echo -n "Checking authrestart support... "
+  probe="$("${sudo_probe[@]}" fdesetup supportsauthrestart 2>/dev/null || true)"
+  if echo "$probe" | grep -qi true; then
+    echo -e "${GREEN}supported${NC}"
+  elif [ -z "$probe" ] && [ "$MODE" = "check" ]; then
+    echo -e "${DIM}unknown (needs sudo)${NC}"
+    echo -e "${DIM}  verify with: sudo fdesetup supportsauthrestart${NC}"
+  else
+    echo -e "${RED}NOT supported${NC}"
+    echo -e "${YELLOW}This Mac cannot escrow the FileVault key. A reboot will stop at the"
+    echo -e "unlock screen and nothing restarts until someone types the password.${NC}"
+    [ "$MODE" = "check" ] || exit 1
+  fi
+fi
+
+if [ "$MODE" = "check" ]; then
+  echo
+  echo -e "${DIM}--check: nothing was rebooted.${NC}"
+  exit 0
+fi
+
+# ─── Confirm ───
+
+echo
+if [ "$MODE" = "plain" ]; then
+  echo -e "${YELLOW}About to run: sudo shutdown -r now${NC}"
+  $FV_ON && echo -e "${YELLOW}FileVault is on — you WILL have to unlock at the pre-boot screen.${NC}"
+else
+  echo -e "${YELLOW}About to run: sudo fdesetup authrestart${NC}"
+  echo -e "${DIM}It escrows the FileVault key in NVRAM for one boot, then restarts"
+  echo -e "immediately — no second confirmation. ${will_return} service(s) come back on their own.${NC}"
+fi
+
+if ! $ASSUME_YES; then
+  read -r -p "Reboot now? [y/N] " reply
+  case "$reply" in
+    y|Y|yes|YES) ;;
+    *) echo "Aborted."; exit 0 ;;
+  esac
+fi
+
+# ─── Go ───
+
+if [ "$MODE" = "plain" ]; then
+  exec sudo shutdown -r now
+else
+  exec sudo fdesetup authrestart
+fi
