@@ -1,8 +1,8 @@
 ---
 name: De-Slopify
-description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written. Includes 審查文體模式 (review-ready mode) for formal documents going to reviewers/committees/client executives — scrubs internal-strategy traces, English shop-talk, and reviewer-facing asides from the body text.
-when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews; before submitting proposals, tenders, SOWs, or any document read by 審查委員 or client executives (審查文體模式)
-version: 2.2.0
+description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written. Includes 審查文體模式 (review-ready mode) for formal documents going to reviewers/committees/client executives — scrubs internal-strategy traces, English shop-talk, reviewer-facing asides, self-assessment (「這是最關鍵的一題」/「最核心」), and internal codenames (M1/P0/Phase 1) from the body text.
+when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews; before submitting proposals, tenders, SOWs, decks, or any document read by 審查委員 or client executives (審查文體模式); when told 「自言自語用詞太多」 or asked why internal codenames are still in the text
+version: 2.3.0
 tags: [writing, quality, documentation]
 languages: all
 user_invocable: true
@@ -505,15 +505,58 @@ document these read as unexplained jargon AND as internal engineering voice.
 算得回來）」— delete entirely. If the parenthetical contains a real fact, promote
 it into the sentence as neutral prose.
 
+### D. 自我評價 — 替讀者下結論
+
+The author announcing how important their own point is. The reader is a committee
+or a client executive; they weigh the evidence themselves. Announcing the weight
+for them reads as selling, not reporting. Two shapes:
+
+**D1 重要性宣告** — 「這是三個題目裡效益最直接的一題」「產能瓶頸所在」「本案最大
+的價值在於…」. Fix: **state the fact, then state the question it opens** — let the
+reader draw the conclusion.
+
+| Before | After |
+|---|---|
+| 窯每小時多出一噸，全廠就多一噸 —— 這是三個題目裡效益最直接的一題 | 產能受限於 421.1 / 421.2 兩座窯。這一題要先回答的是：目前是哪個因子把產出壓在這個水準。 |
+| 產能瓶頸所在，窯多出一噸全廠就多一噸 | 可調參數與產出量測多在既有 PLC，取得後即可分析 |
+| …停機會直接影響產線的四台 | 四台都在主流程上，且皆為變頻驅動 |
+
+**D2 自誇形容詞** — 最核心、最重要、最關鍵、最大幅、極為、高度、突破性. Target
+count in a formal document is **zero**; grep for 「最」 and read every hit.
+
+| Before | After |
+|---|---|
+| 此標的可保護本計畫最核心之技術創新 | 此標的涵蓋本計畫之核心技術 |
+| 客戶圖資保護（最核心）： | 客戶圖資保護： |
+
+Not the same thing: factual parentheticals stay — 術語原文（RBAC）、單位（千元）、
+權重（權重 15%）、數值條件（59 條起，可持續擴充）、官方表格用語（含委外測試）.
+Those are annotations, not appraisals.
+
+### E. 內部代號與里程碑編號
+
+Internal shorthand that means nothing to the reader and marks the document as an
+engineering artifact: **M1 / M2、P0 / P1、Phase 1、Sprint N、內部 WBS 編號、內部
+專案代號**. Replace with the reader's own vocabulary:
+
+- 官方章節代碼 (A1.1 / B2.1 / C3) when the reader is reviewing against a 計畫書
+- 民國年月 (105/09～110/06) for anything on a timeline
+- Otherwise name the event outright (「第一次現勘」, not 「M1」)
+
+This one used to live as a single example inside category A and was missed twice
+in real documents (2026-07-28). It is its own scan step now, not an illustration.
+
 ### Process for this mode
 
 1. Grep-style sweep for the category-A vocabulary list and all parentheticals; read
    every hit in context.
-2. Read the full text once more for category B — shop-talk can't be caught by a
-   fixed word list.
-3. Report the instances found (grouped by category) before fixing, so the author
+2. Grep 「最」 (category D2) and the codename patterns `M[0-9]`, `P[0-9]`, `Phase`,
+   `Sprint` (category E). Both are mechanical — do them before the reading passes.
+3. Read the full text once more for categories B and D1 — shop-talk and
+   self-assessment can't be caught by a fixed word list.
+4. Report the instances found (grouped by category) before fixing, so the author
    learns the pattern.
-4. Pending-item markers (紅字▲ / ⚠️) are exempt — they are removed before
+5. Pending-item markers (紅字▲ / ⚠️) are exempt — they are removed before
    submission by a separate step and are the ONLY legitimate place for
    internal notes.
 
