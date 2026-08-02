@@ -225,6 +225,12 @@ def generate_catalog_section(categories: dict, existing: dict) -> str:
         ]
         for skill_name, fm in skills:
             prior = existing.get(skill_name, {})
+            # BOTH columns prefer what is already in the README. detect_trigger
+            # and extract_auto_description are coarse heuristics; the table has
+            # been hand-corrected (e.g. "自動 + hook", "/claude-to-im setup"),
+            # and regenerating over that loses the corrections. This generator
+            # only fills in rows for skills not yet listed — changing an
+            # existing row is a manual edit, by design.
             trigger = prior.get("trigger") or detect_trigger(fm, skill_name)
             description = prior.get("description") or extract_auto_description(fm, skill_name)
             lines.append(f"| **{skill_name}** | {trigger} | {description} |")

@@ -2728,9 +2728,18 @@ daily_sessions = {d: 0 for d in dates}
 daily_calls = {d: 0 for d in dates}
 proj_totals = defaultdict(lambda: defaultdict(int))
 
+SKIP_PARENT_DIRS = {'Documents', 'Projects', 'Desktop', 'repos', 'src', 'code', 'dev',
+                    'Company', 'engineering'}
+home_prefix = os.path.expanduser('~').replace('/', '-')
+
 for pdir in glob.glob(os.path.join(base, '*/')):
     dir_name = os.path.basename(pdir.rstrip('/'))
-    proj = dir_name.split('-Users-manibari-Documents-Projects-')[-1] if '-Users-manibari-Documents-Projects-' in dir_name else dir_name
+    proj = dir_name
+    if proj.startswith(home_prefix):
+        parts = proj[len(home_prefix):].lstrip('-').split('-')
+        while parts and parts[0] in SKIP_PARENT_DIRS:
+            parts.pop(0)
+        proj = '-'.join(parts) or dir_name
     proj = proj.rstrip('-')
 
     for f in glob.glob(os.path.join(pdir, '*.jsonl')):
@@ -2942,9 +2951,11 @@ cmd_check_ssot() {
   # not project-scoped agents.
   local conf_pairs=""
   while IFS='|' read -r label project_rel _rest; do
+    # Skip comments/blanks BEFORE xargs — a comment containing an apostrophe
+    # makes xargs abort with "unterminated quote" and kills the whole check.
+    [[ "$label" =~ ^[[:space:]]*# ]] && continue
     label="$(echo "$label" | xargs)"
     project_rel="$(echo "$project_rel" | xargs)"
-    [[ "$label" =~ ^# ]] && continue
     [ -z "$label" ] && continue
     if [[ "$label" =~ ^com\.sk\.agent\.[^.]+\.(.+)$ ]]; then
       # Project = PROJECT_REL_PATH (col 2 — the authoritative repo dir name).
@@ -3117,8 +3128,9 @@ cmd_check_agents() {
   # Active agent labels declared in agents.conf (skip comments/blanks)
   local conf_labels=""
   while IFS='|' read -r label _rest; do
+    # Comment check must precede xargs — see cmd_check_agents above.
+    [[ "$label" =~ ^[[:space:]]*# ]] && continue
     label="$(echo "$label" | xargs)"
-    [[ "$label" =~ ^# ]] && continue
     [ -z "$label" ] && continue
     [[ "$label" =~ ^com\.sk\.agent\. ]] && conf_labels+="$label"$'\n'
   done < "$AGENTS_CONF_FILE"

@@ -9,6 +9,40 @@
 > learnings stay here or get promoted directly to `rivendell/.claude/CLAUDE.md` if
 > they're a rule. See `reports/learnings-promotion-sprint-2026-05-13.md`.
 
+## 2026-07-28 — `sk readme` 是「只補新列」，不是「重生表格」—— 別想用它同步既有 skill 的改動
+
+- **Category**: knowledge_gap（工具語意與 `.claude/CLAUDE.md` 的規則對不起來）
+- **Seen in**: 把 `setup-permissions` 的 `user_invocable` 改成 `true` 後跑 `./bin/sk readme`，它印「README.md updated: 97 skills」但那一列**完全沒變**。
+- **Root cause**: `scripts/generate-readme-catalog.py:generate_catalog_section` 兩欄都是 `prior.get(...) or detect_trigger(...)` —— **README 既有值永遠優先**。這不是 bug，是刻意的：`detect_trigger` 只是粗略啟發式，而表格被人工修正過（`自動 + hook`、`/claude-to-im setup` 這種它猜不出來的）。
+- **我踩的坑**: 先把 trigger 欄改成 frontmatter 優先，結果**修好 1 列、打壞 20 列** —— `session-harvest` 的 `/session-harvest` 變成 `自動`、`claude-to-telegram` 的真實指令 `/claude-to-im setup` 被換成猜的 `/claude-to-telegram`、`自動 + hook` 全部掉成 `自動`。已還原。
+- **Rule**:
+  1. `sk readme` 的職責是**替沒列進表的新 skill 補一列**。既有 skill 的描述／觸發方式要改，**直接手改 README.md**，改完再跑一次 `sk readme` 確認它不會蓋回去（不會，prior 優先）。
+  2. `.claude/CLAUDE.md` 的 "Post-change rule" 說要「keep the Skills Catalog table in sync」—— 那是**人工動作**，不要以為有工具會自動做。
+  3. 看到「產生器」不代表它會覆寫。改工具前先讀合併邏輯，`or` 的左邊是誰決定一切。
+
+## 2026-07-27 — `agents.conf` 註解裡一個撇號，讓 `sk check ssot` / `check agents` 整個中止
+
+- **Category**: bug（parser 對註解行的處理順序錯）
+- **Seen in**: 新機器 bootstrap 時我在 `agents/agents.conf` 加了一行註解 `# ... relative to rivendell's parent dir ...`，之後 `./bin/sk check agents` 直接吐 `xargs: unterminated quote`，什麼都沒印。
+- **Root cause**: `bin/sk` 兩處解析 `agents.conf` 的 while 迴圈（`cmd_check_ssot`、`cmd_check_agents`）都是**先 `echo "$label" | xargs` 去空白、才判斷 `^#` 跳過註解**。`xargs` 會把單引號當字串開頭，遇到落單的 `'` 就以 exit 1 中止 —— 註解行根本不該進 `xargs`。
+- **Rule**:
+  1. **註解／空行的過濾一定要排在任何 `xargs` / eval / word-splitting 之前**。順序反了，一個不相干的註解就能讓整個健康檢查靜默失效。
+  2. 用 `xargs` 純粹為了 trim 空白是個壞習慣 —— 它會解析引號。要 trim 就用 `${var#"${var%%[![:space:]]*}"}` 或 `sed 's/^ *//;s/ *$//'`。
+  3. `agents.conf` 這類會被 shell 解析的設定檔，**註解裡避免撇號**（已在檔頭加警語）。
+- **Fixed**: `bin/sk` 兩處都改成 `[[ "$label" =~ ^[[:space:]]*# ]] && continue` 提前；`agents.conf` 檔頭補上「避免撇號」警語。
+
+## 2026-07-27 — 新機器上 rivendell 的實際缺件清單（skills 會騙人）
+
+- **Category**: knowledge_gap（環境遷移）
+- **Seen in**: Peter 問「這邊跑了沒啊」。`~/.claude/skills/` 有 97 個 symlink 全部正常 → 看起來一切就緒，**但 launchd 一個 agent 都沒載入、dashboard 沒在跑**。
+- **Root cause**: `bin/sk deploy`（建 symlink）和 `bin/sk-setup-agents`（生 plist + 載入 launchd）是**兩件獨立的事**。checkout + deploy 完就以為裝好了，是錯的。
+- **實際缺的東西**（Jul 25 checkout 的機器）:
+  - `node` / `npm` **完全沒裝** → Next 16 build 不了，`sk-watchdog` 的自動修復路徑（`npm run build`）也一起廢掉
+  - 系統只有 **Python 3.9.6**，但 `dashboard/lib/*.py` + `api/*.py` 有 **48 處 PEP 604（`str | None`）** → 要 3.10+。`start-api.sh` 用 `python3 -m venv`，PATH 撿到 3.9 就爛在 import。brew `python@3.13` **不會**建 `/opt/homebrew/bin/python3` 軟連結，所以要**明確用 `python3.13 -m venv` 預先建好 venv**，`start-api.sh` 才會跳過重建。
+  - `agents.conf` 有 6 個 agent 指向沒 clone 的 repo（`news_stock`、`sales-assistant`）→ 已註解停用
+  - `~/.claude/projects.json`（agent 描述的 metadata SSOT）**沒遷移過來** → `sk check ssot` 報 10 筆 drift、dashboard agent 卡片 description 全空
+- **Rule**: 換機後不要用「skills 在不在」判斷 rivendell 好了沒。照這個順序驗：`sk check agents`（launchd 有沒有載）→ `curl :8000/api/agents` + `curl :3000`（服務活不活）→ `sk check ssot`（metadata 齊不齊）。三個都綠才算裝完。
+
 ## 2026-06-08 — Dashboard「Port 對應」頁資料源錯：讀 docker-compose.yml，但 rivendell 是 launchd 原生跑
 
 - **Category**: best_practice（"信 ground truth 不信 derived/cached state" 的又一例，見 global CLAUDE.md Engineering Gotchas）

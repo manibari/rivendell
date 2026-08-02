@@ -28,8 +28,10 @@ services:
       - ${HOME}/Library/LaunchAgents:/root/Library/LaunchAgents:ro
       - ${HOME}/.claude/projects:/root/.claude/projects:ro
       - ${HOME}/.claude/skills:/root/.claude/skills:ro
-      - ./skills:/Users/manibari/code/rivendell/skills:ro
-      - ${PROJECTS_DIR:-/Users/manibari/code}/gstack:/Users/manibari/code/gstack:ro
+      # Mount targets must match the HOST paths that ~/.claude/skills symlinks
+      # point at, otherwise those symlinks dangle inside the container.
+      - ./skills:/Users/m5pro/Company/engineering/repos/rivendell/skills:ro
+      - ${PROJECTS_DIR:-/Users/m5pro/Company/engineering/repos}/gstack:/Users/m5pro/Company/engineering/repos/gstack:ro
     restart: unless-stopped
 
   dashboard-web:

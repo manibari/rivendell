@@ -49,6 +49,16 @@ get_exit_status() {
   echo "$LAUNCHCTL_SNAPSHOT" | awk -v l="$label" '$3 == l {print $2}'
 }
 
+# Column 1 of `launchctl list` is the PID of the *currently running* instance
+# ("-" when nothing is running). Column 2 is the exit status of the instance
+# that ran *last*. For a KeepAlive service those describe different processes:
+# a healthy, serving daemon shows `21592  -15` after any earlier restart, and
+# reading only column 2 reports a live service as failed.
+get_pid() {
+  local label="$1"
+  echo "$LAUNCHCTL_SNAPSHOT" | awk -v l="$label" '$3 == l {print $1}'
+}
+
 is_loaded() {
   local label="$1"
   echo "$LAUNCHCTL_SNAPSHOT" | awk -v l="$label" '$3 == l {found=1} END {exit !found}'
@@ -137,6 +147,15 @@ diagnose_and_heal() {
   exit_status=$(get_exit_status "$label")
 
   if [ -z "$exit_status" ] || [ "$exit_status" = "0" ] || [ "$exit_status" = "-" ]; then
+    inc_healthy
+    return
+  fi
+
+  # A live PID means the service is running right now; the non-zero status
+  # belongs to a previous instance (see get_pid). Ground truth beats history.
+  local pid
+  pid=$(get_pid "$label")
+  if [ -n "$pid" ] && [ "$pid" != "-" ]; then
     inc_healthy
     return
   fi
