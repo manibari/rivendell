@@ -48,6 +48,26 @@
   不需要為它準備回滾計畫。真正會產生常駐程序的是 `sk agent start`。
   README 那句描述會讓人高估風險，值得補一句「plist 僅在 repo 提供模板時安裝」。
 
+## 2026-08-03 — 大小寫不敏感的檔案系統：`pwd -P` 在 zsh 摺疊大小寫，bash 不會
+
+- **Category**: bug（本 session 第四次被 shell 差異咬到，前三次見下方 pipefail 條）
+- **Seen in**: 把 rivendell 搬到 `~/Code` 之後。目錄實際叫 `Code`（大寫），我用小寫 `code` 下 `sk deploy`，99 個 symlink 存的是小寫路徑。macOS 檔案系統不分大小寫所以**看起來完全正常**，但 `bin/sk` 內部是字串比對：`$REPO_DIR` 來自 `pwd -P`，跟 symlink 裡的字串對不起來 → **下次 `sk undeploy` 會認不得自己建的 symlink**，變成 99 個清不掉的孤兒（跟 2026-05-23 那條 iCloud detach 災難同一個結局）。
+- **實測差異**:
+  ```
+  zsh:  cd ~/code && pwd -P   →  /Users/m5pro/Code    ← 摺疊了
+  bash: cd ~/code && pwd -P   →  /Users/m5pro/code    ← 沒摺疊
+  ```
+  我寫 `sk-relocate` 時用 `pwd -P` 正規化，在 zsh 手測都對，腳本 shebang 是 bash 一跑就錯 —— **把自己要防的坑又踩了一次**。
+- **Rule**:
+  1. **判斷「兩個路徑是不是同一個目錄」一律用 device+inode，不要比字串**：
+     ```bash
+     stat -f '%d:%i' "$a"   # BSD/macOS
+     stat -c '%d:%i' "$a"   # GNU/Linux
+     ```
+     這對大小寫、symlink、結尾斜線全部免疫。`sk-relocate:same_dir()` 是範例。
+  2. 產生 symlink / plist / 任何存路徑的產物前，**路徑要先過一次正規化**，而且不能假設 `pwd -P` 會處理大小寫。
+  3. 「在終端機測過沒問題」對 shebang 是 bash 的腳本**不算驗證**。這個 session 四次都是這個模式：pipefail、`sha256sum`、`lsof` 不在 PATH、`pwd -P` 大小寫。
+
 ## 2026-08-02 — `set -o pipefail` + `var=$(… | grep …)`：grep 沒配到就殺掉整個腳本
 
 - **Category**: bug（跟 remote `1eeb1c8 fix(sk): stop set -e from killing loops at the first iteration` **同一類、不同腳本**）

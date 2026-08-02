@@ -41,6 +41,10 @@ Commands:
                       Flags: --json (structured), --quiet (only output if issues)
   check ports         Port drift: live listeners vs data/ports.conf vs docker-compose
                       Flags: --json (structured), --quiet (only output if drift)
+
+Standalone tools (bin/):
+  sk-preflight        Verify this machine can run rivendell (run before bootstrap)
+  sk-relocate <path>  Move the repo and rebuild every artifact that stored the old path
   run <task>          Run a task as single-shot agent (claude -p)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
