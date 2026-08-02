@@ -63,6 +63,73 @@ Map answers to slides. Standard investor pitch flow:
 > - **BD/Sales deck**: replace Ask with Next Steps + CTA
 > - **Competition deck**: add Demo slide, shorten Team
 
+### First-call / BD deck structure gate
+
+For first-call or sales discovery decks, story is not enough. The deck must
+give the listener a structure they can repeat after the meeting. Before writing
+or approving slides, check whether a person who read the deck can answer these
+seven questions:
+
+- **我們賣什麼** — the product/service category and its concrete shape, not only a metaphor.
+- **我們解決什麼問題** — the operating pain or workflow bottleneck this is meant to remove.
+- **這個東西可以怎麼用** — the main usage patterns, inputs/outputs, and who operates it.
+- **這個東西的效益是什麼** — the business or operational gain, stated in terms the buyer cares about.
+- **在我們這裡可以用在哪** — customer-specific entry points, departments, data sources, or workflows.
+- **這個東西的導入流程是什麼** — the low-risk path from first trial to rollout, including required data, people, timeline, and decision points.
+- **這個東西多少錢** — discuss last, after value, fit, scope, and rollout path are understood; for first-call decks, avoid leading with price unless the user explicitly asks.
+
+If these answers are not obvious by the first third of the deck, add or move a
+structure slide before adding more stories. A useful B2B structure is:
+
+```text
+資料來源 → 底座 / 系統能力 → 應用場景 → 試跑方式
+```
+
+Every proof, scenario, product, or next-step slide should zoom into one part of
+that structure. Do not let nine individually good stories replace one mental
+map the customer can retell.
+
+For B2B first-call decks, a strong default story order is:
+
+```text
+產業痛點（A / B / C）
+→ 案例分享（逐一解決 A / B / C，搭配實際圖片或明確標示的重繪示意）
+→ 解決方案（產品圖片 / 系統畫面）
+→ 導入流程（架構圖 / 工作坊到 PoC 的流程圖）
+```
+
+Do not lead with implementation mechanics before the audience has seen the
+pain and the proof. Case pages should visibly tie back to the named pain they
+solve. Solution pages need product or system visuals; implementation pages need
+architecture or process diagrams, not just text.
+
+For first-call decks where scope is not yet clear, make the default next step
+an **AI 導入盤點工作坊**, not a system quotation. Frame it as:
+
+```text
+AI 導入盤點工作坊 → 盤點報告 → PoC / 系統建置
+```
+
+The workshop should cover data, production line/processes, current workflows,
+users, constraints, and candidate use cases. The report should turn that into
+ranked opportunities, required data, suggested PoC scope, timeline, required
+customer participants, risks, and a build estimate. If the customer enters PoC
+or system build within 90 days, the workshop fee can be fully credited against
+the build fee when the commercial terms allow it. Keep this after value and fit
+are understood; do not make first-call pricing the main topic.
+
+For agenda slides, keep the language human and lightweight. Prefer:
+
+```text
+今天快速過三件事：
+1. 我們做過哪些類似案子
+2. 這套東西實際長什麼樣
+3. 如果要試，第一步怎麼開始
+```
+
+Avoid consultant-like framing such as "今天先確認三件事" unless the meeting is
+explicitly a workshop with agreed decision criteria.
+
 ---
 
 ## Phase 2.5: Codex Visual Asset Strategy
@@ -220,6 +287,40 @@ Generate one HTML file per 3-4 slides, or a single-file multi-slide deck using a
 - **Traction**: metric cards (`<div class="metric">`)
 - **Competition**: 2×2 positioning matrix (CSS grid)
 - **Team**: headshot placeholder + name + 1-line bio
+
+---
+
+## Phase 3.5: 文字審查 (hard gate before export)
+
+Run this before Phase 4. Once the deck is a PPTX in someone's inbox it is too
+late, and this is the stage investor / BD decks fail most often: the copy tells
+the reader what to conclude instead of showing them the evidence.
+
+**Step 0 — load the SoT.** Read `skills/quality/de-slopify/SKILL.md` §審查文體模式
+and bring categories **D (自我評價)** and **E (內部代號)** into the working prompt.
+The two sweeps below are the floor, not the whole check.
+
+**Sweep 1 — 自誇形容詞 (D2), mechanical.** grep 「最」 across all slide copy and
+speaker notes. 最核心 / 最重要 / 最關鍵 / 最大幅 / 突破性 — target count is zero.
+Exempt: factual annotations such as （RBAC）、（千元）、（權重 15%）, and genuine
+superlatives that are a measured fact (「全台唯一取得 X 認證」 with the cert named).
+
+**Sweep 2 — 內部代號 (E), mechanical.** grep `M[0-9]`, `P[0-9]`, `Phase`, `Sprint`,
+internal WBS numbers. The roadmap slide is the usual offender. Replace with the
+reader's vocabulary: 官方章節代碼, 民國年月, or the event named outright.
+
+**Reading pass — 重要性宣告 (D1).** On a deck this hides in the subtitle under a
+chart and in the one-line takeaway at the bottom of a case slide: 「這是三個題目裡
+效益最直接的一題」, 「本案最大的價值在於…」. Fix by stating the fact and the question
+it opens, and let the reader draw the conclusion. An investor or a buyer who
+reaches your conclusion themselves believes it; one who is told it argues with it.
+
+**案例頁去識別化.** Anonymize the identity, never the evidence: 「某特用化學色料廠」
+「某半導體封測大廠」, no personal names on any slide — but keep the technical numbers
+at full resolution (R² 0.94、只用 30 筆數據、驗證誤差 10 分鐘). The persuasive force
+comes from 題目一樣 / 痛點一樣 / 數據量還比你少, none of which needs the company name.
+
+Report every hit grouped by category before fixing, so the pattern is visible.
 
 ---
 
