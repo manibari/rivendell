@@ -21,16 +21,21 @@ from typing import Any
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _CACHE_TTL = 60.0  # seconds; full JSONL parse takes ~1-2s for 500MB
+_FILE_CACHE_VERSION = 3
 
 # Pricing per million tokens
 PRICING: dict[str, dict[str, float]] = {
-    "claude-opus-4-7":              {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75},
-    "claude-opus-4-7[1m]":          {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75},
-    "claude-opus-4-6":              {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75},
-    "claude-opus-4-5-20251101":     {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75},
+    "claude-fable-5":               {"input": 10.0, "output": 50.0, "cache_read": 1.0, "cache_create": 12.5},
+    "claude-opus-4-8":              {"input": 5.0,  "output": 25.0, "cache_read": 0.5, "cache_create": 6.25},
+    "claude-opus-4-7":              {"input": 5.0,  "output": 25.0, "cache_read": 0.5, "cache_create": 6.25},
+    "claude-opus-4-7[1m]":          {"input": 5.0,  "output": 25.0, "cache_read": 0.5, "cache_create": 6.25},
+    "claude-opus-4-6":              {"input": 5.0,  "output": 25.0, "cache_read": 0.5, "cache_create": 6.25},
+    "claude-opus-4-5-20251101":     {"input": 5.0,  "output": 25.0, "cache_read": 0.5, "cache_create": 6.25},
+    "claude-opus-4-1":              {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75},
     "claude-sonnet-4-5-20250929":   {"input": 3.0,  "output": 15.0, "cache_read": 0.3, "cache_create": 3.75},
     "claude-sonnet-4-6":            {"input": 3.0,  "output": 15.0, "cache_read": 0.3, "cache_create": 3.75},
-    "claude-haiku-4-5-20251001":    {"input": 0.8,  "output": 4.0,  "cache_read": 0.08, "cache_create": 1.0},
+    "claude-sonnet-5":              {"input": 2.0,  "output": 10.0, "cache_read": 0.2, "cache_create": 2.5},
+    "claude-haiku-4-5-20251001":    {"input": 1.0,  "output": 5.0,  "cache_read": 0.1, "cache_create": 1.25},
 }
 DEFAULT_PRICING = {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_create": 18.75}
 
@@ -430,18 +435,20 @@ def get_filtered_usage(date_start: str | None = None,
         }),
     })
     all_sessions: set[str] = set()
+    seen_requests: set[str] = set()
 
     for project_dir in PROJECTS_DIR.iterdir():
         if not project_dir.is_dir():
             continue
         project_name = _dir_to_project_name(project_dir.name)
-        for jsonl_path in project_dir.glob("*.jsonl"):
+        for jsonl_path in project_dir.rglob("*.jsonl"):
             # Cached per-file aggregate (parse once per file version); the date
             # filter applies at merge time. See _file_agg_cached for why.
             file_agg = _file_agg_cached(jsonl_path, project_name)
             _merge_file_agg(
                 file_agg, date_start, date_end,
                 projects, models_agg, daily_agg, all_sessions,
+                seen_requests,
             )
 
     # Build model summary
@@ -510,10 +517,12 @@ def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
     per-line (entry["cwd"]); fallback_project only when no cwd seen yet.
     """
     agg: dict = {}
+    requests: dict[str, dict[str, Any]] = {}
+    tool_counts: dict[tuple[str, str], set[str]] = defaultdict(set)
     last_cwd: str | None = None
     try:
         with open(path) as f:
-            for line in f:
+            for line_no, line in enumerate(f):
                 try:
                     entry = json.loads(line)
                 except json.JSONDecodeError:
@@ -530,42 +539,83 @@ def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
 
                 msg = entry.get("message", {})
                 usage = msg.get("usage")
-                if not usage:
-                    continue
-
                 model = msg.get("model", "unknown")
                 session_id = entry.get("sessionId", str(path))
+
+                project = _cwd_to_project_name(last_cwd) if last_cwd else ""
+                if not project:
+                    project = fallback_project
+
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", [])
+                    if isinstance(content, list):
+                        for i, c in enumerate(content):
+                            if not isinstance(c, dict) or c.get("type") != "tool_use":
+                                continue
+                            tool_id = c.get("id") or f"{entry.get('requestId') or entry.get('uuid') or line_no}:{i}"
+                            tool_counts[(date_str, project)].add(tool_id)
+
+                if not usage:
+                    continue
 
                 input_t = usage.get("input_tokens", 0)
                 output_t = usage.get("output_tokens", 0)
                 cache_read = usage.get("cache_read_input_tokens", 0)
                 cache_create = usage.get("cache_creation_input_tokens", 0)
 
-                tool_calls = 0
-                if msg.get("role") == "assistant":
-                    content = msg.get("content", [])
-                    if isinstance(content, list):
-                        tool_calls = sum(
-                            1 for c in content
-                            if isinstance(c, dict) and c.get("type") == "tool_use"
-                        )
+                # Claude Code writes one JSONL row per displayed assistant block
+                # (thinking/text/tool_use) and repeats the same request usage on
+                # each row. Count the API request once, keeping the last record in
+                # case an older CLI version emitted partial usage before the final
+                # row.
+                request_key = entry.get("requestId") or msg.get("id")
+                if not request_key:
+                    request_key = f"{path}:{line_no}:{entry.get('uuid', '')}"
+                requests[request_key] = {
+                    "key": request_key,
+                    "date": date_str,
+                    "project": project,
+                    "session_id": session_id,
+                    "model": model,
+                    "input": input_t,
+                    "output": output_t,
+                    "cache_read": cache_read,
+                    "cache_create": cache_create,
+                }
 
-                project = _cwd_to_project_name(last_cwd) if last_cwd else ""
-                if not project:
-                    project = fallback_project
+        for item in requests.values():
+            date_str = item["date"]
+            project = item["project"]
+            model = item["model"]
+            day = agg.setdefault(date_str, {})
+            p = day.setdefault(project, {
+                "sessions": set(), "messages": 0, "tool_calls": 0,
+                "models": {}, "requests": [],
+            })
+            p["sessions"].add(item["session_id"])
+            p["messages"] += 1
+            p["requests"].append({
+                "key": item["key"],
+                "session_id": item["session_id"],
+                "model": model,
+                "input": item["input"],
+                "output": item["output"],
+                "cache_read": item["cache_read"],
+                "cache_create": item["cache_create"],
+            })
+            m = p["models"].setdefault(model, [0, 0, 0, 0])
+            m[0] += item["input"]
+            m[1] += item["output"]
+            m[2] += item["cache_read"]
+            m[3] += item["cache_create"]
 
-                day = agg.setdefault(date_str, {})
-                p = day.setdefault(project, {
-                    "sessions": set(), "messages": 0, "tool_calls": 0, "models": {},
-                })
-                p["sessions"].add(session_id)
-                p["messages"] += 1
-                p["tool_calls"] += tool_calls
-                m = p["models"].setdefault(model, [0, 0, 0, 0])
-                m[0] += input_t
-                m[1] += output_t
-                m[2] += cache_read
-                m[3] += cache_create
+        for (date_str, project), tool_ids in tool_counts.items():
+            day = agg.setdefault(date_str, {})
+            p = day.setdefault(project, {
+                "sessions": set(), "messages": 0, "tool_calls": 0,
+                "models": {}, "requests": [],
+            })
+            p["tool_calls"] += len(tool_ids)
     except Exception:
         pass
     # sets → lists for JSON serialization
@@ -603,9 +653,10 @@ def _file_agg_cached(path: Path, fallback_project: str) -> dict:
                 agg TEXT NOT NULL
             )
         """)
+        cache_key = f"v{_FILE_CACHE_VERSION}:{path}"
         row = conn.execute(
             "SELECT mtime, size, agg FROM jsonl_file_cache WHERE path = ?",
-            (str(path),),
+            (cache_key,),
         ).fetchone()
         if row and row[0] == st.st_mtime and row[1] == st.st_size:
             try:
@@ -616,7 +667,7 @@ def _file_agg_cached(path: Path, fallback_project: str) -> dict:
         conn.execute(
             "INSERT INTO jsonl_file_cache(path, mtime, size, agg) VALUES (?, ?, ?, ?) "
             "ON CONFLICT(path) DO UPDATE SET mtime=excluded.mtime, size=excluded.size, agg=excluded.agg",
-            (str(path), st.st_mtime, st.st_size, json.dumps(agg)),
+            (cache_key, st.st_mtime, st.st_size, json.dumps(agg)),
         )
         conn.commit()
         return agg
@@ -628,7 +679,7 @@ def _merge_file_agg(
     agg: dict,
     date_start: str | None, date_end: str | None,
     projects: dict, models_agg: dict, daily_agg: dict,
-    all_sessions: set,
+    all_sessions: set, seen_requests: set,
 ) -> None:
     """Merge one cached per-file aggregate into the query accumulators,
     applying the date filter at merge time (the cache itself is unfiltered)."""
@@ -643,11 +694,30 @@ def _merge_file_agg(
             all_sessions.update(sessions)
             pd = projects[project]
             pd["sessions"].update(sessions)
-            pd["messages"] += p.get("messages", 0)
             pd["tool_calls"] += p.get("tool_calls", 0)
             dd["sessions"].update(sessions)
-            dd["messages"] += p.get("messages", 0)
             dd["tool_calls"] += p.get("tool_calls", 0)
+            requests = p.get("requests")
+            if requests:
+                for req in requests:
+                    key = req.get("key")
+                    if key in seen_requests:
+                        continue
+                    seen_requests.add(key)
+                    model = req.get("model", "unknown")
+                    pd["messages"] += 1
+                    dd["messages"] += 1
+                    for agg_slot in (pd["by_model"][model], models_agg[model], dd["by_model"][model]):
+                        agg_slot["input"] += req.get("input", 0)
+                        agg_slot["output"] += req.get("output", 0)
+                        agg_slot["cache_read"] += req.get("cache_read", 0)
+                        agg_slot["cache_create"] += req.get("cache_create", 0)
+                continue
+
+            # Backward compatibility for pre-v3 cache rows; normal execution
+            # uses the versioned key and should not reach this branch.
+            pd["messages"] += p.get("messages", 0)
+            dd["messages"] += p.get("messages", 0)
             for model, m in p.get("models", {}).items():
                 for agg_slot in (pd["by_model"][model], models_agg[model], dd["by_model"][model]):
                     agg_slot["input"] += m[0]

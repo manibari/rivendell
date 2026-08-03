@@ -63,6 +63,7 @@ class RegistryAgent:
     name: str
     kind: str
     project: str
+    description: str = ""
     entry: str = ""
     extra_args: str = ""
     enabled: bool = True
@@ -158,6 +159,7 @@ def parse_registry_file(path: str | Path) -> RegistryAgent:
         name=str(fm.get("name", "")),
         kind=str(fm.get("kind", "")),
         project=str(fm.get("project", "")),
+        description=str(fm.get("description", "") or ""),
         entry=str(fm.get("entry", "") or ""),
         extra_args=str(fm.get("extra_args", "") or ""),
         enabled=bool(fm.get("enabled", True)),
