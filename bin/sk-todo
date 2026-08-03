@@ -76,12 +76,19 @@ if [ -n "${undeployed:-}" ] && [ "$undeployed" -gt 0 ]; then
   say "  ${YELLOW}AUTO${NC} $undeployed 個 skill 未部署        ${DIM}→ sk deploy${NC}"
   AUTO+=("部署 skill|./bin/sk deploy")
 fi
-if ! git diff --quiet --exit-code README.md 2>/dev/null; then :; fi
-before="$(md5 -q README.md 2>/dev/null)"
-./bin/sk readme >/dev/null 2>&1
-after="$(md5 -q README.md 2>/dev/null)"
-if [ "$before" != "$after" ]; then
-  say "  ${YELLOW}AUTO${NC} README 目錄與 SKILL.md 不同步      ${DIM}→ sk readme（已重生）${NC}"
+# Read-only drift check. `sk readme` has no dry-run — it always rewrites the file,
+# and a report command must not touch the working tree. Comparing the skill count
+# catches adds and removals, which is the drift that actually happens; a reworded
+# description slips through, and --fix regenerates unconditionally anyway.
+# Depth must mirror generate-readme-catalog.py, which scans exactly
+# skills/<category>/<name>/SKILL.md. A recursive find also picks up nested
+# sub-pack skills, which the catalog does not list — counting those reports
+# drift that is not there.
+have="$(find skills -mindepth 3 -maxdepth 3 -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')"
+listed="$(grep -oE '^## Skills Catalog \([0-9]+ skills\)' README.md 2>/dev/null | grep -oE '[0-9]+')"
+if [ -n "${listed:-}" ] && [ "$have" != "$listed" ]; then
+  say "  ${YELLOW}AUTO${NC} README 目錄 $listed 個 vs 實際 $have 個   ${DIM}→ sk readme${NC}"
+  AUTO+=("重生 README 目錄|./bin/sk readme")
 fi
 regfail="$(python3 bin/sk-registry-gen validate 2>&1 | grep -oE '[0-9]+ FAIL' | grep -oE '^[0-9]+')"
 if [ -n "${regfail:-}" ] && [ "$regfail" -gt 0 ]; then
