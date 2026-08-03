@@ -42,16 +42,26 @@ while IFS= read -r f; do
     fi
 
     # Extract YYYY-MM-DD or YYYY-WNN from filename
-    file_date=$(echo "$base" | grep -oE '20[0-9]{2}-[0-9]{2}-[0-9]{2}' | head -1)
+    # `|| true` is load-bearing: under `set -o pipefail` a non-matching grep
+    # makes the whole pipeline exit 1, the assignment inherits that status, and
+    # `set -e` kills the script outright. Without it the janitor dies on the
+    # first filename that has no YYYY-MM-DD in it — which is exactly what
+    # workflow-retro-YYYY-Www.md is — and the ISO-week fallback below is
+    # unreachable dead code.
+    file_date=$(echo "$base" | grep -oE '20[0-9]{2}-[0-9]{2}-[0-9]{2}' | head -1 || true)
 
     # workflow-retro uses ISO week — derive an approximate date for comparison
     if [ -z "$file_date" ]; then
-        iso_week=$(echo "$base" | grep -oE '20[0-9]{2}-W[0-9]{2}' | head -1)
+        iso_week=$(echo "$base" | grep -oE '20[0-9]{2}-W[0-9]{2}' | head -1 || true)
         if [ -n "$iso_week" ]; then
             yr="${iso_week%%-W*}"
             wk="${iso_week##*W}"
-            # Approximate: week N ≈ Jan 1 + 7*(N-1) days. Good enough for archival.
-            file_date=$(date -j -v"${yr}"y -v0m -v1d -v+"$((10#${wk} * 7))"d '+%Y-%m-%d' 2>/dev/null \
+            # Approximate: week N ≈ Jan 1 + 7*N days. Good enough for archival.
+            # -v1m, not -v0m: BSD date months are 1-12 and reject 0 with
+            # "Cannot apply date adjustment", which sent every workflow-retro
+            # file down the GNU `date -d` fallback that macOS also lacks — so
+            # file_date came back empty and they were never archived.
+            file_date=$(date -j -v"${yr}"y -v1m -v1d -v+"$((10#${wk} * 7))"d '+%Y-%m-%d' 2>/dev/null \
                 || date -d "${yr}-01-01 +$((10#${wk} * 7)) days" '+%Y-%m-%d' 2>/dev/null \
                 || echo "")
         fi

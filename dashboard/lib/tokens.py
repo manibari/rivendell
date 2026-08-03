@@ -302,7 +302,10 @@ def read_daily_history(start_date: str | None = None,
         conn.close()
 
 
-_SKIP_PARENT_DIRS = {"Documents", "Projects", "Desktop", "repos", "src", "code", "dev"}
+# Keep in sync with SKIP_PARENT_DIRS in bin/sk (cmd_audit's token block) —
+# the dashboard and the CLI audit must name projects identically.
+_SKIP_PARENT_DIRS = {"Documents", "Projects", "Desktop", "repos", "src", "code", "dev",
+                     "Company", "engineering"}
 
 
 @lru_cache(maxsize=1)

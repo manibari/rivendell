@@ -5,6 +5,17 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
+# Resolve node fresh each launch. The service unit's PATH is written once and
+# survives reboots, so baking in a versioned nvm dir (…/v24.13.0/bin) means the
+# next `nvm install` silently deletes node out from under a running service. If
+# node isn't already on PATH, load nvm — which prepends whatever `default`
+# points at — so the toolchain tracks the user's current node, not a frozen one.
+if ! command -v node >/dev/null 2>&1; then
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck disable=SC1091
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" --no-use && nvm use --silent default
+fi
+
 # Install deps if node_modules missing
 if [ ! -d "node_modules" ]; then
     npm install

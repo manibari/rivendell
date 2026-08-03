@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+# sk-preflight — Verify this machine can actually run rivendell, BEFORE
+# anything gets installed.
+#
+# Why this exists: bootstrapping a fresh machine used to check only `git` and
+# `docker`, then charge ahead. On a Mac with no Node and a stock Python 3.9
+# that meant launchd agents were registered, the dashboard web service could
+# not build, and the API crash-looped on `str | None` — all discovered one
+# failure at a time, hours apart. Every requirement below is one that actually
+# broke a real deploy.
+#
+# Usage:
+#   sk-preflight            # human-readable report, non-zero exit if blocked
+#   sk-preflight --quiet    # print only failures
+#   sk-preflight --json     # machine-readable
+set -uo pipefail   # NOT -e: every check must run so the report is complete
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; NC='\033[0m'
+
+MODE="text"; QUIET=false
+for arg in "$@"; do
+  case "$arg" in
+    --json)  MODE="json" ;;
+    --quiet) QUIET=true ;;
+    --help|-h) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  esac
+done
+
+FAILURES=0
+WARNINGS=0
+ROWS=""   # name<TAB>status<TAB>found<TAB>required<TAB>hint
+
+record() {
+  ROWS+="$1	$2	$3	$4	$5"$'\n'
+  case "$2" in
+    FAIL) FAILURES=$((FAILURES + 1)) ;;
+    WARN) WARNINGS=$((WARNINGS + 1)) ;;
+  esac
+}
+
+# Compare dotted versions: ver_ge 3.13.1 3.10 → true
+ver_ge() {
+  [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -1)" = "$2" ]
+}
+
+# ─── git: needed to clone/update ───
+if command -v git >/dev/null 2>&1; then
+  record git OK "$(git --version | awk '{print $3}')" "any" ""
+else
+  record git FAIL "missing" "any" "xcode-select --install"
+fi
+
+# ─── C compiler: sk-setup-agents compiles agents/sk-agent-run.c ───
+if command -v cc >/dev/null 2>&1; then
+  record cc OK "$(cc --version 2>/dev/null | head -1 | awk '{print $NF}')" "any" ""
+else
+  record cc FAIL "missing" "any" "xcode-select --install"
+fi
+
+# ─── Python: dashboard/lib/*.py uses PEP 604 (`str | None`), which is 3.10+ ───
+# A stock macOS python3 is 3.9 and fails at import time, not at install time,
+# so the API registers fine and then crash-loops.
+PY_MIN="3.10"
+py_best=""; py_ver=""
+for cand in python3.13 python3.12 python3.11 python3.10 python3; do
+  if command -v "$cand" >/dev/null 2>&1; then
+    v="$("$cand" -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null)"
+    if [ -n "$v" ] && ver_ge "$v" "$PY_MIN"; then py_best="$cand"; py_ver="$v"; break; fi
+    [ -z "$py_ver" ] && py_ver="$v"
+  fi
+done
+if [ -n "$py_best" ]; then
+  record python3 OK "$py_ver ($py_best)" ">= $PY_MIN" ""
+else
+  record python3 FAIL "${py_ver:-missing}" ">= $PY_MIN" "brew install python@3.13"
+fi
+
+# ─── Node: dashboard-next runs Next.js, which needs a modern runtime ───
+NODE_MIN="20"
+if command -v node >/dev/null 2>&1; then
+  nv="$(node -v 2>/dev/null | sed 's/^v//')"
+  if ver_ge "$nv" "$NODE_MIN"; then
+    record node OK "$nv" ">= $NODE_MIN" ""
+  else
+    record node FAIL "$nv" ">= $NODE_MIN" "brew install node"
+  fi
+else
+  record node FAIL "missing" ">= $NODE_MIN" "brew install node"
+fi
+
+if command -v npm >/dev/null 2>&1; then
+  record npm OK "$(npm -v 2>/dev/null)" "any" ""
+else
+  record npm FAIL "missing" "any" "brew install node"
+fi
+
+# ─── bun: only needed for the gstack external skill pack ───
+# Warning, not failure: rivendell itself runs fine without it.
+if command -v bun >/dev/null 2>&1; then
+  record bun OK "$(bun --version 2>/dev/null)" "any (gstack only)" ""
+else
+  record bun WARN "missing" "any (gstack only)" "brew install bun  # only if you want /gstack-*"
+fi
+
+# ─── Service manager: launchd (macOS) or systemd (Linux) ───
+if command -v launchctl >/dev/null 2>&1; then
+  record "service manager" OK "launchd" "launchd or systemd" ""
+elif command -v systemctl >/dev/null 2>&1; then
+  record "service manager" OK "systemd" "launchd or systemd" ""
+else
+  record "service manager" FAIL "neither" "launchd or systemd" "no supported init system"
+fi
+
+# ─── Report ───
+if [ "$MODE" = "json" ]; then
+  printf '{"failures":%d,"warnings":%d,"checks":[' "$FAILURES" "$WARNINGS"
+  first=true
+  while IFS=$'\t' read -r name status found required hint; do
+    [ -z "$name" ] && continue
+    $first || printf ','
+    first=false
+    printf '{"name":"%s","status":"%s","found":"%s","required":"%s","hint":"%s"}' \
+      "$name" "$status" "$found" "$required" "$hint"
+  done <<< "$ROWS"
+  printf ']}\n'
+  [ "$FAILURES" -gt 0 ] && exit 1 || exit 0
+fi
+
+if ! $QUIET; then
+  echo -e "${CYAN}=== Preflight: can this machine run rivendell? ===${NC}\n"
+  printf "  %-16s %-6s %-22s %s\n" "TOOL" "STATUS" "FOUND" "REQUIRED"
+  printf "  %-16s %-6s %-22s %s\n" "----" "------" "-----" "--------"
+fi
+
+while IFS=$'\t' read -r name status found required hint; do
+  [ -z "$name" ] && continue
+  if $QUIET && [ "$status" = "OK" ]; then continue; fi
+  case "$status" in
+    OK)   c="$GREEN" ;;
+    WARN) c="$YELLOW" ;;
+    *)    c="$RED" ;;
+  esac
+  printf "  %-16s ${c}%-6s${NC} %-22s %s\n" "$name" "$status" "$found" "$required"
+  [ -n "$hint" ] && printf "  %-16s   ${YELLOW}→ %s${NC}\n" "" "$hint"
+done <<< "$ROWS"
+
+echo ""
+if [ "$FAILURES" -gt 0 ]; then
+  echo -e "${RED}Blocked: $FAILURES requirement(s) missing.${NC} Install them, then re-run."
+  exit 1
+fi
+if [ "$WARNINGS" -gt 0 ] && ! $QUIET; then
+  echo -e "${YELLOW}$WARNINGS optional tool(s) missing — rivendell itself will run.${NC}"
+fi
+$QUIET || echo -e "${GREEN}Ready.${NC}"
+exit 0

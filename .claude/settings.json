@@ -1,4 +1,40 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker compose config:*)",
+      "Bash(docker compose version)",
+      "Bash(launchctl list)",
+      "Bash(launchctl list *)",
+      "Bash(launchctl print *)",
+      "Bash(launchctl bootout *)",
+      "Bash(launchctl bootstrap *)",
+      "Bash(launchctl kickstart *)",
+      "Bash(launchctl load *)",
+      "Bash(launchctl unload *)",
+      "Bash(systemctl --user status *)",
+      "Bash(systemctl --user list-units *)",
+      "Bash(journalctl --user *)",
+      "Bash(tailscale status)",
+      "Bash(tailscale status *)",
+      "Bash(bin/sk *)",
+      "Bash(./bin/sk *)",
+      "Bash(bin/sk-setup-agents*)",
+      "Bash(./bin/sk-setup-agents*)",
+      "Bash(bin/sk-agent-doctor*)",
+      "Bash(./bin/sk-agent-doctor*)",
+      "Bash(bin/sk-watchdog*)",
+      "Bash(./bin/sk-watchdog*)",
+      "Bash(npm install)",
+      "Bash(npm ci)",
+      "Bash(npm run build)",
+      "Bash(npm -v)",
+      "Bash(node -v)",
+      "Bash(brew list *)",
+      "Bash(brew --version)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -6,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/manibari/Documents/Projects/rivendell/skills/meta/sync-readme/scripts/sync-readme-hook.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/skills/meta/sync-readme/scripts/sync-readme-hook.sh"
           }
         ]
       }
