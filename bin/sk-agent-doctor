@@ -10,8 +10,20 @@
 set -euo pipefail
 
 REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
-CONF="$REPO_DIR/agents/agents.conf"
-PROJECTS_DIR="$HOME/Documents/Projects"
+
+# agents.conf is generated from the registry (agents/registry/*.md), the only
+# SoT — same contract as sk-setup-agents. Reading the file directly used to work
+# and now silently finds nothing, so fail loud if the registry can't generate.
+CONF="$(mktemp -t sk-doctor-conf.XXXXXX)"
+trap 'rm -f "$CONF"' EXIT
+if ! python3 "$REPO_DIR/bin/sk-registry-gen" generate > "$CONF"; then
+  echo "ERROR: registry validation failed — cannot diagnose agents." >&2
+  exit 1
+fi
+
+# Siblings of rivendell, never a hardcoded path. This was "$HOME/Documents/Projects"
+# and stayed wrong after the iCloud-detach move to ~/code.
+PROJECTS_DIR="${SK_PROJECTS_DIR:-$(dirname "$REPO_DIR")}"
 LAUNCH_DIR="$HOME/Library/LaunchAgents"
 CHECK_ONLY=false
 
@@ -47,6 +59,16 @@ LAUNCHCTL_SNAPSHOT=$(launchctl list 2>/dev/null)
 get_exit_status() {
   local label="$1"
   echo "$LAUNCHCTL_SNAPSHOT" | awk -v l="$label" '$3 == l {print $2}'
+}
+
+# Column 1 of `launchctl list` is the PID of the *currently running* instance
+# ("-" when nothing is running). Column 2 is the exit status of the instance
+# that ran *last*. For a KeepAlive service those describe different processes:
+# a healthy, serving daemon shows `21592  -15` after any earlier restart, and
+# reading only column 2 reports a live service as failed.
+get_pid() {
+  local label="$1"
+  echo "$LAUNCHCTL_SNAPSHOT" | awk -v l="$label" '$3 == l {print $1}'
 }
 
 is_loaded() {
@@ -141,6 +163,15 @@ diagnose_and_heal() {
     return
   fi
 
+  # A live PID means the service is running right now; the non-zero status
+  # belongs to a previous instance (see get_pid). Ground truth beats history.
+  local pid
+  pid=$(get_pid "$label")
+  if [ -n "$pid" ] && [ "$pid" != "-" ]; then
+    inc_healthy
+    return
+  fi
+
   log "${RED}[$label]${NC} exit=$exit_status"
 
   # Read recent stderr + stdout
@@ -161,7 +192,7 @@ diagnose_and_heal() {
   # ── Pattern: command not found (PATH issue) ──
   if grep -q "command not found" <<< "$stderr"; then
     local missing_cmd
-    missing_cmd=$(echo "$stderr" | grep "command not found" | tail -1 | sed 's/.*: \(.*\): command not found/\1/')
+    missing_cmd=$(echo "$stderr" | grep "command not found" | tail -1 | sed 's/.*: \(.*\): command not found/\1/' || true)
     log "  Diagnosis: '$missing_cmd' not in PATH"
     fix_path_reload "$label"
     diagnosed=true
@@ -170,7 +201,7 @@ diagnose_and_heal() {
   # ── Pattern: No module named (Python import error) ──
   if grep -q "No module named" <<< "$combined"; then
     local missing_module
-    missing_module=$(echo "$combined" | grep "No module named" | tail -1 | sed "s/.*No module named '\([^']*\)'.*/\1/" | sed 's/\..*//')
+    missing_module=$(echo "$combined" | grep "No module named" | tail -1 | sed "s/.*No module named '\([^']*\)'.*/\1/" | sed 's/\..*//' || true)
     log "  Diagnosis: Python module '$missing_module' not installed"
     fix_missing_module "$missing_module"
     diagnosed=true

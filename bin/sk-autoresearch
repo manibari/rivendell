@@ -78,7 +78,9 @@ mkdir -p "$LOG_DIR"
 log() { echo "[$NOW] $1" | tee -a "$LOG_FILE"; }
 get_metric() {
   local val
-  val=$(cd "$PROJECT_DIR" && eval "$METRIC_CMD" 2>/dev/null | tail -1 | grep -oE '[0-9]+\.?[0-9]*' | head -1)
+  # A metric command that prints no number must yield "" (caller defaults to
+  # 0), not kill the whole research loop via pipefail + set -e.
+  val=$(cd "$PROJECT_DIR" && eval "$METRIC_CMD" 2>/dev/null | tail -1 | grep -oE '[0-9]+\.?[0-9]*' | head -1 || true)
   echo "${val:-0}"
 }
 

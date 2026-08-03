@@ -359,9 +359,16 @@ function SidebarNav() {
       const Icon = node.icon;
       const fontSize = depth === 0 ? 14 : depth === 1 ? 13 : 12;
       rowEl = (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => toggle(id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggle(id);
+            }
+          }}
           className="flex items-center gap-3 w-full text-left rounded-md py-2 font-medium transition-colors"
           style={{
             paddingLeft: padLeft,
@@ -384,7 +391,7 @@ function SidebarNav() {
           {Icon ? <Icon size={depth === 0 ? 18 : 16} /> : null}
           <span>{node.label}</span>
           <span className="ml-auto">{Chevron}</span>
-        </button>
+        </div>
       );
     } else {
       const { href, label, icon: Icon } = node;

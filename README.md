@@ -63,7 +63,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (116 skills)
+## Skills Catalog (121 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -73,6 +73,7 @@ as release notes.
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
+| **doc-drift-sync** | 自動 | Keep a project's living docs aligned when version or state moves — detect and |
 | **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
 | **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：追蹤人物、公司、專案的持久事實，寫入 JSONL + 摘要 |
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
@@ -86,6 +87,7 @@ as release notes.
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
 | **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
+| **writing-great-skills** | `/writing-great-skills` | Reference for writing and editing skills well — the vocabulary and principles |
 
 ### agents/ — 自動化 Agent（排程、觀測、persona）
 
@@ -143,6 +145,7 @@ as release notes.
 | **auto-stage** | Hook (PostToolUse) | 檔案編輯/建立後自動 git add，跳過 .env 和 node_modules |
 | **concurrent-session-git** | 自動 | Git hygiene when multiple Claude sessions (or a human + an agent) share ONE |
 | **repo-rename** | `/repo-rename` | Repo 改名時全系統審計引用（plist、Claude 設定、腳本、兄弟 repo），產出遷移清單並執行 |
+| **resolving-merge-conflicts** | `/resolving-merge-conflicts` 或自動 | Resolve an in-progress git merge or rebase conflict by recovering each side's |
 
 ### frontend/ — 前端設計、iOS、測試
 
@@ -161,6 +164,8 @@ as release notes.
 | **ai-vision-extract** | 自動 | The pattern for "photo → AI does the OCR/extraction → structured data" |
 | **audio-transcription-flow** | 自動 | Implement a complete audio upload → speech-to-text → transcript display |
 | **backend-async-jobs** | 自動 | Design decision + pattern for backend work that might be slow: when to keep a |
+| **cloudflare-tunnel-ops** | `/cloudflare-tunnel-ops` 或自動 | Operate, move, and troubleshoot an EXISTING Cloudflare Tunnel for a dockerized |
+| **cloudflare-tunnel-provision** | `/cloudflare-tunnel-provision` 或自動 | Stand up a brand-new public domain for a self-hosted dockerized app behind a |
 | **db-migration** | 自動 | 偵測 DB stack，設定 migration 工具（Alembic/Prisma/Drizzle），指導安全 schema 變更 |
 | **doc-to-structured-data** | 自動 | 非結構化技術文件（.doc/.pdf 測試計畫、規格書、datasheet）→ 結構化 CSV/JSON，含格式偵測、欄位對映、驗證 |
 | **docker-compose-setup** | 自動 | Set up Docker Compose for multi-service projects (Next. |

@@ -161,6 +161,49 @@ def list_skills(
             lifecycle=lifecycle,
         ))
 
+        # Second pass: discover sub-pack skills nested one level deeper
+        # (e.g. ~/.claude/skills/gstack/retro/SKILL.md → "gstack-retro").
+        # The leaf SKILL.md frontmatter `name` is just "retro"; we prefix with
+        # the parent dir to match user-facing slash-command form (/gstack-retro)
+        # and avoid name collisions across packs.
+        for sub_dir in sorted(skill_dir.iterdir()):
+            if not sub_dir.is_dir():
+                continue
+            sname = sub_dir.name
+            if sname.startswith(".") or sname.endswith(".bak") or sname.endswith(".old"):
+                continue
+            sub_md = sub_dir / "SKILL.md"
+            if not sub_md.is_file():
+                continue
+
+            display_name = f"{name}-{sname}"
+            sub_text = sub_md.read_text(encoding="utf-8")
+            sub_line_count = len(sub_text.splitlines())
+            sub_fm = _parse_frontmatter(sub_text)
+
+            sub_invocable = sub_fm.get("user_invocable", True)
+            if isinstance(sub_invocable, str):
+                sub_invocable = sub_invocable.lower() not in ("false", "no")
+
+            sub_lifecycle = _detect_lifecycle(display_name, sub_fm)
+
+            sub_tsv = tsv_data.get(display_name, {})
+            sub_category = sub_tsv.get("category_zh", "") or name
+            sub_summary = sub_tsv.get("summary_zh", "")
+            if not sub_summary:
+                desc = sub_fm.get("description", "")
+                if isinstance(desc, str):
+                    sub_summary = desc.strip().splitlines()[0][:200] if desc.strip() else ""
+
+            result.append(SkillInfo(
+                name=display_name,
+                category=sub_category,
+                summary=sub_summary,
+                line_count=sub_line_count,
+                invocable=bool(sub_invocable),
+                lifecycle=sub_lifecycle,
+            ))
+
     result.extend(_get_builtins_cached())
     return result
 

@@ -59,8 +59,24 @@
 - [ ] **W4-2** dashboard 卡片牆:讀 W4-1,一張卡 = 一個 workflow,露出串接圖示、
       輸出落點、最後執行時間(registry label + `reports/` 已有)。
 - [ ] **W4-3** 一鍵執行:卡片 → `sk run <skill>`,輸出串進既有 agent log view。
-- [ ] **W4-4** 淘汰機制:N 個月 0 觸發的 skill 在 `sk audit` 標記。現況是
+- [ ] **W4-4** 淘汰機制:改用**刪除測試**(取自 mattpocock `improve-codebase-architecture`)
+      ——「把這個 skill 拿掉,事情會變糟嗎?」變糟=真的在隱藏複雜度;反而更清爽=空殼。
+      比原本「N 個月 0 觸發就標記」好在它是語意判準、不用等 N 個月。現況是
       `knowledge-graph` 靠 retro 人工點名 3 次才退,不是機制。
+- [ ] **W4-5** invocation 分流:**已量測 = 121 個 skill 的 description 合計
+      58,731 字元 ≈ 16.8K tokens,每個 session 都載入**(對上 FR 2026-05-08 的估算)。
+      Claude Code 原生支援 `disable-model-invocation: true`——description 完全不進
+      context(官方文件已查證;gstack CHANGELOG 說「Claude 會 strip 掉」是過時資訊)。
+      **但機械掃描抽不出候選:121 個裡純斜線指令 0 個**,每一個都寫了自然語言觸發語,
+      連 `knowledge-graph`(`when_to_use: when encountering durable facts during
+      conversation`)、`agent-headless`、`skill-scout`、`gdrive-to-skills` 都是。
+      所以這是**逐個設計決策**,不是 sweep:每個 skill 要答「模型該不該自己叫它,
+      還是我當索引」(context load vs cognitive load,見 `writing-great-skills`)。
+      配套:轉成 user-invoked 的多到記不住時,用 **router skill** 解(同上)。
+      先做前 20 肥的(video-transcript 1171 字元 / doc-drift-sync 1100 / spine-auth
+      1081 / spine-versioning 1080 / ai-vision-extract 1031)。
+      注意:rivendell 現有的 `user_invocable`(底線)是自家 README 產生器讀的欄位,
+      跟 Claude Code 的 `user-invocable`(連字號、語意相反)不是同一個東西。
 
 搭配 Skill pipeline 的 `bin/sk index`(INDEX-first 檢索)——那條解 token 成本,
 這個 Wave 解人找不到,同一個病的兩面。

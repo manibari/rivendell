@@ -1,39 +1,51 @@
 #!/usr/bin/env bash
-# Bootstrap script — generates and loads launchd plists from agents.conf.
+# Bootstrap script — generates and loads service units from agents.conf.
 # Run once on a new machine (or after changing agents.conf):
 #   ./bin/sk-setup-agents
 #
 # What it does:
-#   1. Compiles sk-agent-run binary (sets REPO_DIR env to bypass TCC getcwd)
+#   1. Compiles sk-agent-run binary (macOS only — see below)
 #   2. Detects python3/conda/npm paths → builds PATH
-#   3. Reads agents/agents.conf → generates plist per agent
-#      (launchd logs go to ~/Library/Logs/sk-agent/ to avoid TCC on ~/Documents/)
-#   4. Loads all plists into launchd
+#   3. Reads agents/agents.conf → generates a unit per agent via svc_generate_raw
+#      (launchd plist on macOS, systemd .service/.timer on Linux/WSL)
+#   4. Loads them through svc_load
 #
 # Options:
-#   --dry-run   Print generated plists without installing
+#   --dry-run   Print generated units without installing
 #   --unload    Unload all managed agents
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$REPO_DIR/bin/lib/platform.sh"
+SK_PLATFORM="$(sk_platform)"
+
+if ! svc_supported; then
+  echo "Cannot manage agents on this host: $(svc_unsupported_reason)" >&2
+  exit 1
+fi
 
 # agents.conf is a GENERATED build artifact, not a committed SoT. The registry
 # (agents/registry/*.md) is the only source of truth. Generate a transient conf
 # from it on every run; bail if the registry has validation errors (fail-fast).
 CONF="$(mktemp -t sk-agents-conf.XXXXXX)"
-trap 'rm -f "$CONF"' EXIT
+trap 'rm -f "$CONF" "${DRY_DIR:-}"/* 2>/dev/null; rmdir "${DRY_DIR:-/nonexistent}" 2>/dev/null || true' EXIT
 if ! python3 "$REPO_DIR/bin/sk-registry-gen" generate > "$CONF"; then
-  echo "ERROR: registry validation failed — see errors above. Not touching launchd." >&2
+  echo "ERROR: registry validation failed — see errors above. Not touching services." >&2
   exit 1
 fi
-LAUNCH_DIR="$HOME/Library/LaunchAgents"
 SK_AGENT_RUN="$HOME/.local/bin/sk-agent-run"
-LAUNCHD_DOMAIN="gui/$(id -u)"
 # Derive from REPO_DIR's parent (all project repos are siblings of rivendell),
 # NOT a hardcoded path. Hardcoding "$HOME/Documents/Projects" broke after the
 # iCloud-detach move to ~/code: rerunning regenerated every plist pointing at
 # the dead old path. Override with SK_PROJECTS_DIR if repos live elsewhere.
 PROJECTS_DIR="${SK_PROJECTS_DIR:-$(dirname "$REPO_DIR")}"
+# Self-identity, in order of reliability. basename($REPO_DIR) alone is wrong in a
+# git worktree (the dir is named after the worktree, not the repo) and after a
+# clone into a differently-named directory — and when it is wrong, every agent
+# belonging to THIS repo resolves to a sibling path that does not exist and gets
+# silently skipped. The remote name survives both.
+SELF_NAME="$(basename -s .git "$(git -C "$REPO_DIR" config --get remote.origin.url 2>/dev/null)" 2>/dev/null || true)"
+[ -z "$SELF_NAME" ] && SELF_NAME="$(basename "$REPO_DIR")"
 DRY_RUN=false
 UNLOAD_ONLY=false
 
@@ -48,7 +60,7 @@ done
 detect_path() {
   local parts="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-  # Homebrew
+  # Homebrew (macOS only; on Linux this dir simply won't exist)
   if [ -d "/opt/homebrew/bin" ]; then
     parts="/opt/homebrew/bin:$parts"
   fi
@@ -79,11 +91,19 @@ detect_path() {
 }
 
 AGENT_PATH="$(detect_path)"
+# Consumed by svc_generate_raw when it writes the unit's PATH.
+export SK_AGENT_PATH="$AGENT_PATH"
+export SK_AGENT_RUN
+echo "Platform: $SK_PLATFORM"
 echo "Detected PATH: $AGENT_PATH"
 echo ""
 
 # ─── Compile & install sk-agent-run ───
-if ! $DRY_RUN && ! $UNLOAD_ONLY; then
+# macOS only. The binary exists purely to setenv REPO_DIR and chdir before
+# exec'ing bash, because launchd runs outside the TCC grant and getcwd() fails
+# there. systemd expresses both natively (WorkingDirectory=/Environment=), so on
+# Linux the wrapper would add a compiled C dependency and buy nothing.
+if [ "$SK_PLATFORM" = "darwin" ] && ! $DRY_RUN && ! $UNLOAD_ONLY; then
   echo "Compiling sk-agent-run..."
   mkdir -p "$(dirname "$SK_AGENT_RUN")"
   cc -O2 -o "$SK_AGENT_RUN" "$REPO_DIR/agents/sk-agent-run.c"
@@ -94,169 +114,113 @@ fi
 # ─── Unload mode ───
 if $UNLOAD_ONLY; then
   echo "Unloading all managed agents..."
-  grep -v '^\s*#' "$CONF" | grep -v '^\s*$' | while IFS='|' read -r label _rest; do
+  while IFS='|' read -r label _rest; do
     label="$(echo "$label" | xargs)"
-    plist="$LAUNCH_DIR/${label}.plist"
-    if [ -f "$plist" ]; then
-      launchctl bootout "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
-        || launchctl unload "$plist" 2>/dev/null \
-        || true
-      echo "  Unloaded: $label"
+    [ -z "$label" ] && continue
+    if svc_is_loaded "$label"; then
+      svc_unload "$label" && echo "  Unloaded: $label" || true
     fi
-  done
+  done < <(grep -v '^\s*#' "$CONF" | grep -v '^\s*$')
   exit 0
 fi
 
-# ─── Helper: generate <StartCalendarInterval> ───
-gen_calendar() {
-  local val="$1"
-  local weekday="" hour="" minute=""
+DRY_DIR=""
+# No `trap` here on purpose: the EXIT trap set above already cleans DRY_DIR, and
+# re-arming it would drop the generated-conf cleanup (traps replace, not stack).
+$DRY_RUN && DRY_DIR="$(mktemp -d)"
 
-  IFS=':' read -ra parts <<< "$val"
-  if [ ${#parts[@]} -eq 3 ]; then
-    weekday="${parts[0]}"
-    hour="${parts[1]}"
-    minute="${parts[2]}"
-  elif [ ${#parts[@]} -eq 2 ]; then
-    hour="${parts[0]}"
-    minute="${parts[1]}"
-  fi
+# ─── Host scoping — two independent gates, deliberately separate ───
+#
+# intent  : the active profile decides which agent families this host runs.
+#           profiles/profiles.conf is shared and tracked; .active-profile is
+#           per-host and untracked. That split is the point — a host must never
+#           have to edit the shared SoT to describe its own layout. (Before this,
+#           the only way to say "this box has no news_stock" was to comment the
+#           lines out of the shared agents.conf, which then disabled them for
+#           every other machine too.)
+# reality : skip agents whose project dir is not checked out here, so a missing
+#           sibling repo degrades to a skip instead of a unit that fails on
+#           every single fire.
+ACTIVE_PROFILE="$(tr -d '[:space:]' < "$REPO_DIR/.active-profile" 2>/dev/null || true)"
+PROFILE_PREFIXES=()
+PROFILE_ACTIVE=false
+if [ -n "$ACTIVE_PROFILE" ] && [ -f "$REPO_DIR/profiles/profiles.conf" ]; then
+  PROFILE_ACTIVE=true
+  while IFS= read -r pfx; do
+    [ -n "$pfx" ] && PROFILE_PREFIXES+=("$pfx")
+  done < <(awk -v want="[$ACTIVE_PROFILE]" '
+      /^\[/                            { inblk = ($1 == want); next }
+      inblk && /^agents[[:space:]]*\|/ { sub(/^agents[[:space:]]*\|[[:space:]]*/, "");
+                                         gsub(/[[:space:]]+$/, ""); print }
+    ' "$REPO_DIR/profiles/profiles.conf")
+  echo "Profile: $ACTIVE_PROFILE — ${#PROFILE_PREFIXES[@]} agent prefix(es)"
+else
+  echo "Profile: none set — installing every agent in the registry"
+fi
+echo ""
 
-  echo "    <key>StartCalendarInterval</key>"
-  echo "    <dict>"
-  [ -n "$weekday" ] && echo "        <key>Weekday</key><integer>$weekday</integer>"
-  echo "        <key>Hour</key><integer>$((10#$hour))</integer>"
-  echo "        <key>Minute</key><integer>$((10#$minute))</integer>"
-  echo "    </dict>"
-}
-
-gen_calendar_multi() {
-  local val="$1"
-  echo "    <key>StartCalendarInterval</key>"
-  echo "    <array>"
-  IFS=',' read -ra entries <<< "$val"
-  for entry in "${entries[@]}"; do
-    entry="$(echo "$entry" | xargs)"
-    IFS=':' read -ra parts <<< "$entry"
-    echo "        <dict>"
-    [ ${#parts[@]} -eq 3 ] && echo "            <key>Weekday</key><integer>${parts[0]}</integer>"
-    local h="${parts[$((${#parts[@]}-2))]}"
-    local m="${parts[$((${#parts[@]}-1))]}"
-    echo "            <key>Hour</key><integer>$((10#$h))</integer>"
-    echo "            <key>Minute</key><integer>$((10#$m))</integer>"
-    echo "        </dict>"
+in_profile() {  # $1 = label
+  $PROFILE_ACTIVE || return 0          # no profile on this host → no filtering
+  local p
+  for p in "${PROFILE_PREFIXES[@]}"; do
+    case "$1" in "$p"*) return 0 ;; esac
   done
-  echo "    </array>"
+  return 1
 }
 
-# ─── Generate plists ───
-mkdir -p "$LAUNCH_DIR"
-
-grep -v '^\s*#' "$CONF" | grep -v '^\s*$' | while IFS='|' read -r label project_rel script sched_type sched_val log_dir_rel extra_args; do
-  # Trim whitespace
+# ─── Generate units ───
+# PROJECTS_DIR: derive from REPO_DIR's parent (all project repos are siblings of
+# rivendell), NOT a hardcoded path. Hardcoding "$HOME/Documents/Projects" broke
+# after the iCloud-detach move to ~/code: rerunning regenerated every unit
+# pointing at the dead old path. Override with SK_PROJECTS_DIR.
+while IFS='|' read -r label project_rel script sched_type sched_val log_dir_rel extra_args; do
   label="$(echo "$label" | xargs)"
   project_rel="$(echo "$project_rel" | xargs)"
   script="$(echo "$script" | xargs)"
   sched_type="$(echo "$sched_type" | xargs)"
   sched_val="$(echo "$sched_val" | xargs)"
-  log_dir_rel="$(echo "$log_dir_rel" | xargs)"
-  extra_args="$(echo "$extra_args" | xargs)"
+  extra_args="$(echo "${extra_args:-}" | xargs)"
+  [ -z "$label" ] && continue
 
-  project_dir="$PROJECTS_DIR/$project_rel"
-  plist="$LAUNCH_DIR/${label}.plist"
+  # "." (and this repo's own name) mean rivendell itself; anything else is a
+  # sibling repo. Derived, never hardcoded — a rename must not break this.
+  if [ "$project_rel" = "." ] || [ "$project_rel" = "$SELF_NAME" ]; then
+    project_dir="$REPO_DIR"
+  else
+    project_dir="$PROJECTS_DIR/$project_rel"
+  fi
 
-  # launchd stdout/stderr go to ~/Library/Logs (not TCC-protected)
-  # Script-internal reports still write to project's own log_dir_rel
-  launchd_log_dir="$HOME/Library/Logs/sk-agent"
-
-  # Derive log name from label suffix
-  log_name="${label##*.}"
-
-  # Build ProgramArguments — use sk-agent-run (compiled binary with FDA)
-  # to cd into project dir and exec bash with the script.
-  prog_args="        <string>$SK_AGENT_RUN</string>
-        <string>$project_dir</string>
-        <string>$script</string>"
-  [ -n "$extra_args" ] && prog_args="$prog_args
-        <string>$extra_args</string>"
-
-  # Build schedule block
-  schedule=""
-  case "$sched_type" in
-    interval)
-      schedule="    <key>StartInterval</key>
-    <integer>$sched_val</integer>"
-      ;;
-    calendar)
-      schedule="$(gen_calendar "$sched_val")"
-      ;;
-    calendar_multi)
-      schedule="$(gen_calendar_multi "$sched_val")"
-      ;;
-    keepalive)
-      schedule="    <key>KeepAlive</key>
-    <true/>
-    <key>RunAtLoad</key>
-    <true/>"
-      ;;
-  esac
-
-  # Generate plist
-  plist_content="<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<dict>
-    <key>Label</key>
-    <string>$label</string>
-
-    <key>ProgramArguments</key>
-    <array>
-$prog_args
-    </array>
-
-$schedule
-
-    <key>StandardOutPath</key>
-    <string>$launchd_log_dir/${label}-stdout.log</string>
-    <key>StandardErrorPath</key>
-    <string>$launchd_log_dir/${label}-stderr.log</string>
-
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>$AGENT_PATH</string>
-    </dict>
-</dict>
-</plist>"
+  if ! in_profile "$label"; then
+    echo "  skip: $label — not in profile $ACTIVE_PROFILE"
+    continue
+  fi
+  if [ ! -d "$project_dir" ]; then
+    echo "  skip: $label — project not on this host ($project_dir)"
+    continue
+  fi
 
   if $DRY_RUN; then
-    echo "=== $label ==="
-    echo "$plist_content"
+    echo "=== $label ($sched_type) ==="
+    # Render into a scratch dir so a dry run never touches the live unit dir.
+    unit="$(SK_SVC_DIR="$DRY_DIR" svc_generate_raw "$label" "$project_dir" "$script" "$sched_type" "$sched_val" "$extra_args")"
+    cat "$unit"
+    [ -f "${unit%.service}.timer" ] && cat "${unit%.service}.timer"
     echo
   else
-    # Unload existing
-    launchctl bootout "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
-      || launchctl unload "$plist" 2>/dev/null \
-      || true
-
-    # Ensure log dirs exist
-    mkdir -p "$launchd_log_dir"
-
-    # Write plist
-    echo "$plist_content" > "$plist"
-
-    # Load
-    launchctl bootstrap "$LAUNCHD_DOMAIN" "$plist" 2>/dev/null \
-      || launchctl load "$plist" 2>/dev/null
-    if launchctl print "$LAUNCHD_DOMAIN/$label" >/dev/null 2>&1; then
+    svc_unload "$label" 2>/dev/null || true
+    svc_generate_raw "$label" "$project_dir" "$script" "$sched_type" "$sched_val" "$extra_args" >/dev/null
+    if svc_load "$label"; then
       echo "Loaded: $label"
     else
       echo "FAILED: $label"
     fi
   fi
-done
+done < <(grep -v '^\s*#' "$CONF" | grep -v '^\s*$')
 
 if ! $DRY_RUN; then
+  # Without linger, systemd --user tears down every unit at logout — which on
+  # WSL is every time the last shell closes. No-op on macOS.
+  svc_boot_persist || true
   echo ""
-  echo "Done. Verify with: launchctl print $LAUNCHD_DOMAIN/<label>"
+  echo "Done. Verify with: bin/sk agent list"
 fi

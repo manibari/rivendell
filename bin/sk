@@ -18,6 +18,10 @@ NC='\033[0m'
 # Source the unified execution engine
 source "$(dirname "$0")/sk-exec-lib"
 
+# Service-manager adapter (launchd on macOS, systemd --user on linux/WSL).
+# Everything below calls svc_* and must not reach for launchctl directly.
+source "$(dirname "$0")/lib/platform.sh"
+
 usage() {
   cat <<EOF
 Usage: ./bin/sk <command> [args]
@@ -38,6 +42,8 @@ Commands:
                              --notify (push WARN/CRIT to Telegram via ~/.config/claude-telegram/env)
   check agents        Agent schedule health: agents.conf entries not loaded in launchd
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
+  check portability   Hardcoded home paths, non-bash-parsable scripts, pipefail traps
+                      Flags: --json (structured), --quiet (only output if issues)
   run <task>          Run a task as single-shot agent (claude -p)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
@@ -122,26 +128,30 @@ cmd_deploy() {
     [ -z "$skill_dir" ] && continue
     while IFS= read -r deploy_target; do
       if link_skill_to_target "$skill_dir" "$deploy_target"; then
-        ((count++))
+        count=$((count+1))
       fi
     done < <(deploy_targets)
   done < <(all_skill_dirs)
   echo -e "\n${GREEN}Deployed $count skill link(s).${NC}"
 
-  # Install plist templates (replace REPO_PATH with actual path)
-  local la_dir="$HOME/Library/LaunchAgents"
-  local plist_count=0
-  for tpl in "$REPO_DIR"/com.*.plist; do
-    [ -f "$tpl" ] || continue
-    local plist_name
-    plist_name="$(basename "$tpl")"
-    local dest="$la_dir/$plist_name"
-    sed "s|REPO_PATH|$REPO_DIR|g" "$tpl" > "$dest"
-    echo -e "${GREEN}plist${NC} $plist_name → $la_dir/"
-    ((plist_count++))
-  done
-  if [ "$plist_count" -gt 0 ]; then
-    echo -e "${GREEN}Installed $plist_count plist(s).${NC}"
+  # Install service templates. These are launchd-shaped (com.*.plist) and only
+  # meaningful on macOS; linux/WSL agents are generated from agents.json by
+  # svc_generate instead, so there is nothing to copy.
+  if [ "$SK_PLATFORM" = "darwin" ]; then
+    local unit_dir; unit_dir="$(svc_dir)"
+    mkdir -p "$unit_dir"
+    local plist_count=0
+    for tpl in "$REPO_DIR"/com.*.plist; do
+      [ -f "$tpl" ] || continue
+      local plist_name
+      plist_name="$(basename "$tpl")"
+      sed "s|REPO_PATH|$REPO_DIR|g" "$tpl" > "$unit_dir/$plist_name"
+      echo -e "${GREEN}plist${NC} $plist_name → $unit_dir/"
+      plist_count=$((plist_count+1))
+    done
+    if [ "$plist_count" -gt 0 ]; then
+      echo -e "${GREEN}Installed $plist_count plist(s).${NC}"
+    fi
   fi
 }
 
@@ -160,7 +170,7 @@ cmd_undeploy() {
         if [[ "$link_dest" == "$REPO_DIR"/* ]]; then
           rm "$target"
           echo -e "${GREEN}unlink${NC}  $(deploy_label "$deploy_target")/$name"
-          ((count++))
+          count=$((count+1))
         fi
       fi
     done < <(deploy_targets)
@@ -321,7 +331,7 @@ cmd_clean() {
     [ -z "$snap" ] && continue
     echo "  rm $(du -xsh "$snap" 2>/dev/null | awk '{print $1}')  $snap"
     rm -rf "$snap"
-    ((found_snap++)) || true
+    found_snap=$((found_snap+1)) || true
   done < <(find "$PROJECTS_DIR" -maxdepth 4 -type d \( -name '.next.old*' -o -name '.next.broken*' \) -prune 2>/dev/null)
   [ "$found_snap" -eq 0 ] && echo "  (none)"
 
@@ -332,7 +342,7 @@ cmd_clean() {
     kb="$(du -sk "$dev_dir" 2>/dev/null | awk '{print $1}')"
     if [ "${kb:-0}" -gt "$limit_kb" ]; then
       echo -e "  ${YELLOW}$(awk "BEGIN{printf \"%.1fG\", ${kb}/1024/1024}")  $dev_dir${NC}"
-      ((flagged++)) || true
+      flagged=$((flagged+1)) || true
     fi
   done < <(find "$PROJECTS_DIR" -maxdepth 5 -type d -path '*/.next/dev' -prune 2>/dev/null)
   if [ "$flagged" -gt 0 ]; then
@@ -497,7 +507,7 @@ cmd_check() {
       while IFS= read -r link; do
         [ -z "$link" ] && continue
         if [ -L "$link" ] && [ ! -e "$link" ]; then
-          ((dangling++))
+          dangling=$((dangling+1))
           dangling_list+="    $(deploy_label "$deploy_target")/$(basename "$link") → $(readlink "$link")\n"
         fi
       done < <(find "$deploy_target" -maxdepth 1 -type l 2>/dev/null)
@@ -512,7 +522,7 @@ cmd_check() {
     name="$(basename "$skill_dir")"
     # Name collision detection
     if echo "$seen_names" | grep -qx "$name"; then
-      ((collision++))
+      collision=$((collision+1))
       collision_list+="    $name (${skill_dir#$REPO_DIR/})\n"
     fi
     seen_names+="$name"$'\n'
@@ -520,10 +530,10 @@ cmd_check() {
     while IFS= read -r deploy_target; do
       local target="$deploy_target/$name"
       if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-        ((missing++))
+        missing=$((missing+1))
         missing_list+="    $(deploy_label "$deploy_target")/$name (${skill_dir#$REPO_DIR/})\n"
       elif [ -e "$target" ] && [ ! -L "$target" ]; then
-        ((conflict++))
+        conflict=$((conflict+1))
         conflict_list+="    $(deploy_label "$deploy_target")/$name (non-symlink at $target)\n"
       fi
     done < <(deploy_targets)
@@ -562,13 +572,13 @@ cmd_check() {
     local reviewed
     reviewed="$(get_frontmatter_field "$skill_dir" "last_reviewed")"
     if [ -z "$reviewed" ]; then
-      ((no_review++))
+      no_review=$((no_review+1))
       no_review_list+="    $name\n"
     else
       local age
       age="$(days_since "$reviewed")"
       if [ "$age" -ge 0 ] && [ "$age" -gt "$stale_days" ]; then
-        ((stale++))
+        stale=$((stale+1))
         stale_list+="    $name (${age}d ago)\n"
       fi
     fi
@@ -602,10 +612,10 @@ cmd_check() {
       local age
       age="$(days_since "$imported_at")"
       if [ "$age" -ge 0 ] && [ "$age" -gt "$stale_days" ]; then
-        ((gdrive_stale++))
+        gdrive_stale=$((gdrive_stale+1))
         gdrive_list+="    $name (imported ${age}d ago)\n"
       elif [ "$age" -lt 0 ]; then
-        ((gdrive_stale++))
+        gdrive_stale=$((gdrive_stale+1))
         gdrive_list+="    $name (no imported_at date)\n"
       fi
     fi
@@ -629,13 +639,13 @@ cmd_check() {
     local tags
     tags="$(get_frontmatter_field "$skill_dir" "tags")"
     if [ -z "$tags" ]; then
-      ((missing_tags++))
+      missing_tags=$((missing_tags+1))
       missing_tags_list+="    $name\n"
     fi
     local version
     version="$(get_frontmatter_field "$skill_dir" "version")"
     if [ -z "$version" ]; then
-      ((missing_version++))
+      missing_version=$((missing_version+1))
       missing_version_list+="    $name\n"
     fi
   done < <(all_skill_dirs)
@@ -995,10 +1005,10 @@ cmd_permissions() {
 
     for p in "${perms[@]}"; do
       if echo "$existing_perms" | grep -qF "\"$p\""; then
-        ((kept++))
+        kept=$((kept+1))
       else
         new_perms+=("$p")
-        ((added++))
+        added=$((added+1))
       fi
     done
 
@@ -1067,7 +1077,7 @@ EOJSON
 # Agent Management
 # =============================================================================
 
-LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+LAUNCH_AGENTS_DIR="$(svc_dir)"
 
 # Scan all projects for .claude/agents.json, output: project_dir|project_name|agent_name
 agent_scan_all() {
@@ -1134,10 +1144,10 @@ agent_plist_label() {
   echo "com.sk.agent.${project}.${name}"
 }
 
-# Check if agent is loaded in launchd
+# Check if agent is registered with the service manager
 agent_is_loaded() {
   local label="$1"
-  launchctl list "$label" &>/dev/null
+  svc_is_loaded "$label"
 }
 
 # Get agent config field via python
@@ -1166,118 +1176,10 @@ else:
 " 2>/dev/null
 }
 
+# generate_agent_plist lived here. Unit generation now belongs to svc_generate
+# in bin/lib/platform.sh, which emits a plist or a .service+.timer pair from the
+# same agents.json schema.
 # Generate plist XML from agent config
-generate_agent_plist() {
-  local proj_dir="$1"
-  local proj_name="$2"
-  local agent_name="$3"
-  local agents_file="$proj_dir/.claude/agents.json"
-
-  local label
-  label="$(agent_plist_label "$proj_name" "$agent_name")"
-
-  local script
-  script="$(agent_get_config "$agents_file" "$agent_name" "script")"
-  local args_raw
-  args_raw="$(agent_get_config "$agents_file" "$agent_name" "args")"
-  local sched_type
-  sched_type="$(agent_get_config "$agents_file" "$agent_name" "schedule.type")"
-  local sched_hour
-  sched_hour="$(agent_get_config "$agents_file" "$agent_name" "schedule.hour")"
-  local sched_minute
-  sched_minute="$(agent_get_config "$agents_file" "$agent_name" "schedule.minute")"
-  local sched_weekday
-  sched_weekday="$(agent_get_config "$agents_file" "$agent_name" "schedule.weekday")"
-  local sched_interval
-  sched_interval="$(agent_get_config "$agents_file" "$agent_name" "schedule.interval")"
-  local logs_dir
-  logs_dir="$(agent_get_config "$agents_file" "$agent_name" "logs")"
-  [ -z "$logs_dir" ] && logs_dir="reports/"
-
-  local full_script="$proj_dir/$script"
-  local full_logs="$proj_dir/$logs_dir"
-  mkdir -p "$full_logs"
-
-  # Build ProgramArguments — use wrapper to avoid macOS TCC restrictions
-  local wrapper="$HOME/.local/bin/sk-agent-run"
-  local prog_args=""
-  prog_args+="        <string>$wrapper</string>
-        <string>$proj_dir</string>
-        <string>$script</string>"
-  if [ -n "$args_raw" ]; then
-    for arg in $args_raw; do
-      prog_args+="
-        <string>$arg</string>"
-    done
-  fi
-
-  # Build schedule section
-  local schedule_xml=""
-  case "$sched_type" in
-    daily)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key><integer>$sched_hour</integer>
-        <key>Minute</key><integer>$sched_minute</integer>
-    </dict>"
-      ;;
-    weekdays)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <array>"
-      for wd in 1 2 3 4 5; do
-        schedule_xml+="
-        <dict>
-            <key>Weekday</key><integer>$wd</integer>
-            <key>Hour</key><integer>$sched_hour</integer>
-            <key>Minute</key><integer>$sched_minute</integer>
-        </dict>"
-      done
-      schedule_xml+="
-    </array>"
-      ;;
-    weekly)
-      schedule_xml="    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Weekday</key><integer>$sched_weekday</integer>
-        <key>Hour</key><integer>$sched_hour</integer>
-        <key>Minute</key><integer>$sched_minute</integer>
-    </dict>"
-      ;;
-    interval)
-      schedule_xml="    <key>StartInterval</key>
-    <integer>$sched_interval</integer>"
-      ;;
-  esac
-
-  cat <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>$label</string>
-
-    <key>ProgramArguments</key>
-    <array>
-$prog_args
-    </array>
-
-$schedule_xml
-
-    <key>StandardOutPath</key>
-    <string>${full_logs}${agent_name}-stdout.log</string>
-    <key>StandardErrorPath</key>
-    <string>${full_logs}${agent_name}-stderr.log</string>
-
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:$HOME/.npm-global/bin:$HOME/.local/bin</string>
-    </dict>
-</dict>
-</plist>
-PLIST
-}
 
 # --- Agent subcommands ---
 
@@ -1374,7 +1276,7 @@ cmd_agent_list() {
 
     printf "  %-14s %-22s %-8s %-18s " "$proj_name" "$agent_name" "$atype" "$sched_display"
     echo -e "$status_str"
-    ((count++))
+    count=$((count+1))
   done < <(agent_scan_all)
 
   echo ""
@@ -1451,14 +1353,16 @@ SWIFT
 
   local label
   label="$(agent_plist_label "$proj_name" "$agent_name")"
-  local plist_path="$LAUNCH_AGENTS_DIR/${label}.plist"
+  if ! svc_supported; then
+    echo -e "${RED}Cannot manage agents on this host:${NC} $(svc_unsupported_reason)"
+    return 1
+  fi
 
-  # Generate plist
-  generate_agent_plist "$proj_dir" "$proj_name" "$agent_name" > "$plist_path"
-  echo -e "${GREEN}Generated:${NC} $plist_path"
+  local unit_path
+  unit_path="$(svc_generate "$proj_dir" "$proj_name" "$agent_name")"
+  echo -e "${GREEN}Generated:${NC} $unit_path"
 
-  # Load
-  launchctl load "$plist_path" 2>/dev/null
+  svc_load "$label"
   if agent_is_loaded "$label"; then
     echo -e "${GREEN}Loaded:${NC} $label"
   else
@@ -1490,21 +1394,12 @@ cmd_agent_stop() {
 
   local label
   label="$(agent_plist_label "$proj_name" "$agent_name")"
-  local plist_path="$LAUNCH_AGENTS_DIR/${label}.plist"
-
-  if [ -f "$plist_path" ]; then
-    launchctl unload "$plist_path" 2>/dev/null
-    rm "$plist_path"
+  if agent_is_loaded "$label" || [ -e "$LAUNCH_AGENTS_DIR/${label}.plist" ] \
+     || [ -e "$LAUNCH_AGENTS_DIR/${label}.service" ]; then
+    svc_unload "$label"
     echo -e "${GREEN}Stopped and removed:${NC} $label"
   else
-    echo -e "${YELLOW}Plist not found:${NC} $plist_path"
-    echo -e "Agent may not be started via sk. Checking launchd..."
-    if agent_is_loaded "$label"; then
-      launchctl remove "$label" 2>/dev/null
-      echo -e "${GREEN}Removed from launchd:${NC} $label"
-    else
-      echo -e "${YELLOW}Not loaded in launchd either.${NC}"
-    fi
+    echo -e "${YELLOW}Not registered:${NC} $label"
   fi
 }
 
@@ -1559,18 +1454,12 @@ cmd_agent_status() {
   echo -e "  ${CYAN}Disabled:${NC}    ${disabled:-false}"
   echo ""
 
-  # Launchd status
+  # Service-manager status
   if agent_is_loaded "$label"; then
-    echo -e "  ${CYAN}launchd:${NC}     ${GREEN}● loaded${NC}"
-    local exit_status
-    exit_status="$(launchctl list "$label" 2>/dev/null | grep '"LastExitStatus"' | grep -oE '[0-9]+' || echo "?")"
-    # Try parsing from launchctl list output
-    if [ "$exit_status" = "?" ]; then
-      exit_status="$(launchctl list 2>/dev/null | awk -v lbl="$label" '$3 == lbl {print $2}')"
-    fi
-    echo -e "  ${CYAN}Last Exit:${NC}   $exit_status"
+    echo -e "  ${CYAN}${SK_PLATFORM}:${NC}     ${GREEN}● loaded${NC}"
+    echo -e "  ${CYAN}Last Exit:${NC}   $(svc_last_exit "$label")"
   else
-    echo -e "  ${CYAN}launchd:${NC}     ${RED}○ not loaded${NC}"
+    echo -e "  ${CYAN}${SK_PLATFORM}:${NC}     ${RED}○ not loaded${NC}"
   fi
   echo ""
 
@@ -2073,8 +1962,7 @@ agent_health_report() {
       status_str="disabled"
     elif agent_is_loaded "$label"; then
       status_str="● loaded"
-      last_exit="$(launchctl list 2>/dev/null | awk -v lbl="$label" '$3 == lbl {print $2}')"
-      [ -z "$last_exit" ] && last_exit="?"
+      last_exit="$(svc_last_exit "$label")"
     else
       status_str="○ unloaded"
       if [ "$disabled" != "true" ]; then
@@ -2119,7 +2007,7 @@ cmd_maintain() {
       if [ ! -L "$target" ] && [ ! -e "$target" ]; then
         ln -s "$skill_dir" "$target"
         echo -e "  ${GREEN}deployed${NC} $(deploy_label "$deploy_target")/$name"
-        ((deployed++))
+        deployed=$((deployed+1))
       fi
     done < <(deploy_targets)
   done < <(all_skill_dirs)
@@ -2131,7 +2019,7 @@ cmd_maintain() {
       if [ -L "$link" ] && [ ! -e "$link" ]; then
         rm "$link"
         echo -e "  ${YELLOW}cleaned${NC} $(deploy_label "$deploy_target")/$(basename "$link") (dangling)"
-        ((cleaned++))
+        cleaned=$((cleaned+1))
       fi
     done
   done < <(deploy_targets)
@@ -2165,7 +2053,7 @@ cmd_maintain() {
       if [ "$has_tooling" -eq 1 ]; then
         echo -e "  ${CYAN}$proj_name${NC}"
         cmd_permissions "$proj_dir" 2>/dev/null | sed 's/^/    /'
-        ((proj_count++))
+        proj_count=$((proj_count+1))
       fi
     done
     echo -e "  Scanned: $proj_count projects"
@@ -2446,7 +2334,7 @@ cmd_audit() {
   while IFS= read -r d; do
     [ -z "$d" ] && continue
     skill_dirs+=("$d")
-    ((total++))
+    total=$((total+1))
   done < <(all_skill_dirs)
 
   # --- Begin report ---
@@ -2464,7 +2352,7 @@ cmd_audit() {
       if [ -d "$deploy_target" ]; then
         for link in "$deploy_target"/*; do
           if [ -L "$link" ] && [ ! -e "$link" ]; then
-            ((dangling++))
+            dangling=$((dangling+1))
           fi
         done
       fi
@@ -2483,7 +2371,7 @@ cmd_audit() {
       while IFS= read -r deploy_target; do
         local target="$deploy_target/$name"
         if [ ! -L "$target" ]; then
-          ((missing_deploy++))
+          missing_deploy=$((missing_deploy+1))
           missing_deploy_list+="- $(deploy_label "$deploy_target")/$name\n"
         fi
       done < <(deploy_targets)
@@ -2492,7 +2380,7 @@ cmd_audit() {
       local tags
       tags="$(get_frontmatter_field "$skill_dir" "tags")"
       if [ -z "$tags" ]; then
-        ((missing_tags++))
+        missing_tags=$((missing_tags+1))
         missing_tags_list+="- $name\n"
       fi
 
@@ -2500,13 +2388,13 @@ cmd_audit() {
       local ver
       ver="$(get_frontmatter_field "$skill_dir" "version")"
       if [ -z "$ver" ]; then
-        ((missing_version++))
+        missing_version=$((missing_version+1))
         missing_version_list+="- $name\n"
       fi
 
       # Description quality: check for TRIGGER
       if ! grep -qi "TRIGGER" "$skill_dir/SKILL.md" 2>/dev/null; then
-        ((no_trigger++))
+        no_trigger=$((no_trigger+1))
         no_trigger_list+="- $name\n"
       fi
 
@@ -2539,7 +2427,9 @@ cmd_audit() {
 
       if [ -n "$skill_missing" ]; then
         local miss_count
-        miss_count=$(echo -e "$skill_missing" | grep -c '^ ')
+        # grep -c exits 1 when the count is 0; under pipefail that would
+        # propagate to the assignment and set -e would abort the audit.
+        miss_count=$(echo -e "$skill_missing" | grep -c '^ ' || true)
         ((integrity_issues += miss_count))
         integrity_list+="- **$name** ($miss_count $L_MISSING_FILES)\n$skill_missing"
       fi
@@ -2601,7 +2491,7 @@ cmd_audit() {
 
       if [ -z "$last_commit_date" ]; then
         echo "$category|$name|$L_NOT_COMMITTED" >> "$tmp_new"
-        ((new_count++))
+        new_count=$((new_count+1))
         continue
       fi
 
@@ -2613,13 +2503,13 @@ cmd_audit() {
 
       if [ "$age" -le 14 ] && [ "$commit_count" -gt 1 ]; then
         echo "$category|$name|${commit_count} $L_REVISIONS, ${age}${L_DAYS_AGO}" >> "$tmp_dev"
-        ((developing_count++))
+        developing_count=$((developing_count+1))
       elif [ "$age" -le 90 ]; then
         echo "$category|$name|${commit_count} $L_REV, ${age}${L_DAYS_AGO}" >> "$tmp_stable"
-        ((stable_count++))
+        stable_count=$((stable_count+1))
       else
         echo "$category|$name|${commit_count} $L_REV, ${age}${L_DAYS_AGO} ($last_commit_date)" >> "$tmp_abandoned"
-        ((abandoned_count++))
+        abandoned_count=$((abandoned_count+1))
       fi
     done
 
@@ -2809,7 +2699,7 @@ cmd_audit() {
       word_count=$(echo "$skills_in_group" | wc -w | tr -d ' ')
       if [ "$word_count" -gt 1 ]; then
         echo "- **[$combo]**: $skills_in_group — $L_REVIEW_BOUNDARY"
-        ((overlap_found++))
+        overlap_found=$((overlap_found+1))
       fi
     done < <(cut -d'|' -f1 "$tmp_tags" | sort -u)
     rm -f "$tmp_tags"
@@ -2862,7 +2752,7 @@ cmd_audit() {
           config_status="no CLAUDE.md"
         else
           config_status="**missing**"
-          ((proj_issues++))
+          proj_issues=$((proj_issues+1))
         fi
 
         # --- Permissions check ---
@@ -2881,13 +2771,13 @@ cmd_audit() {
 
           if [ "$oneoff_count" -gt 0 ] || [ "$colon_count" -gt 0 ]; then
             perm_status="**cleanup** (${oneoff_count} one-off, ${colon_count} colon-style)"
-            ((proj_issues++))
+            proj_issues=$((proj_issues+1))
           else
             perm_status="OK ($total_perms rules)"
           fi
         else
           perm_status="**missing**"
-          ((proj_issues++))
+          proj_issues=$((proj_issues+1))
         fi
 
         # --- CI/CD status ---
@@ -3049,9 +2939,18 @@ daily_sessions = {d: 0 for d in dates}
 daily_calls = {d: 0 for d in dates}
 proj_totals = defaultdict(lambda: defaultdict(int))
 
+SKIP_PARENT_DIRS = {'Documents', 'Projects', 'Desktop', 'repos', 'src', 'code', 'dev',
+                    'Company', 'engineering'}
+home_prefix = os.path.expanduser('~').replace('/', '-')
+
 for pdir in glob.glob(os.path.join(base, '*/')):
     dir_name = os.path.basename(pdir.rstrip('/'))
-    proj = dir_name.split('-Users-manibari-Documents-Projects-')[-1] if '-Users-manibari-Documents-Projects-' in dir_name else dir_name
+    proj = dir_name
+    if proj.startswith(home_prefix):
+        parts = proj[len(home_prefix):].lstrip('-').split('-')
+        while parts and parts[0] in SKIP_PARENT_DIRS:
+            parts.pop(0)
+        proj = '-'.join(parts) or dir_name
     proj = proj.rstrip('-')
 
     for f in glob.glob(os.path.join(pdir, '*.jsonl')):
@@ -3212,12 +3111,17 @@ print(f'_{L[\"pricing\"]}_')
 
   } > "$report"
 
-  # Insert summary at top (after ## heading)
-  sed -i '' "/^## $L_SUMMARY$/a\\
-\\
-- **$L_TOTAL:** $total skills\\
-- **$L_ATTENTION:** $needs_attention issue(s)\\
-" "$report"
+  # Insert summary at top (after ## heading). awk, not `sed -i '' …a\`: BSD's
+  # in-place flag and append command both differ from GNU's, and `sed -i ''` on
+  # Linux reads '' as the script and the real script as a filename ("can't read
+  # …"). awk behaves identically on both, and `$0==h` is a string match so the
+  # heading needs no regex escaping.
+  local _summary
+  _summary=$'\n'"- **$L_TOTAL:** $total skills"$'\n'"- **$L_ATTENTION:** $needs_attention issue(s)"
+  awk -v h="## $L_SUMMARY" -v s="$_summary" '
+    { print }
+    $0 == h && !done { print s; done = 1 }
+  ' "$report" > "$report.tmp" && mv "$report.tmp" "$report"
 
   echo -e "${GREEN}Report generated:${NC} $report"
   echo ""
@@ -3273,9 +3177,11 @@ cmd_check_ssot() {
   # not project-scoped agents.
   local conf_pairs=""
   while IFS='|' read -r label project_rel _rest; do
+    # Skip comments/blanks BEFORE xargs — a comment containing an apostrophe
+    # makes xargs abort with "unterminated quote" and kills the whole check.
+    [[ "$label" =~ ^[[:space:]]*# ]] && continue
     label="$(echo "$label" | xargs)"
     project_rel="$(echo "$project_rel" | xargs)"
-    [[ "$label" =~ ^# ]] && continue
     [ -z "$label" ] && continue
     if [[ "$label" =~ ^com\.sk\.agent\.[^.]+\.(.+)$ ]]; then
       # Project = PROJECT_REL_PATH (col 2 — the authoritative repo dir name).
@@ -3364,6 +3270,92 @@ cmd_check_ssot() {
 # `/tmp` write failures and risking agent/report/git breakage.
 # Thresholds: WARN >=90%, CRIT >=95%. Fast — `df` only, never `du`.
 # Exit: 0 ok, 1 warn, 2 crit (mirrors check-ssot's non-zero-on-problem).
+# ─── Portability check (guards the class of bug that broke the 2026-07 move) ───
+#
+# Three failure modes, all found the hard way on a fresh machine, all invisible
+# until something silently stopped working:
+#   1. An absolute /Users/<someone>/ path committed to a tracked file. The
+#      sync-readme hook carried a dead one for months and no-op'd every save.
+#   2. A shell script that only parses under the shell you happened to test in.
+#   3. `var=$(... | grep ...)` under `set -o pipefail`, where a non-match takes
+#      down the whole script with an empty log and no error text.
+cmd_check_portability() {
+  local mode="text" quiet=false
+  for arg in "$@"; do
+    case "$arg" in
+      --json)  mode="json" ;;
+      --quiet) quiet=true ;;
+    esac
+  done
+
+  local hardcoded="" syntax_bad="" pipefail_risk=""
+
+  # 1. Hardcoded home paths in tracked files. reports/ .learnings/ docs/ are
+  #    history — they legitimately record what an old path used to be.
+  hardcoded="$(git -C "$REPO_DIR" grep -nIE '/(Users|home)/[a-zA-Z0-9_.-]+/' -- \
+      ':!reports/*' ':!.learnings/*' ':!docs/*' ':!*.lock' ':!*-lock.json' 2>/dev/null \
+      | grep -vE '\$(HOME|\{HOME\}|\{?PWD)|CLAUDE_PROJECT_DIR|example|e\.g\.' \
+      | grep -vE '/(Users|home)/(\.\.\.|<[^>]+>|you|user|youruser|USERNAME)/' || true)"
+
+  # 2. Every script must at least parse under bash, whatever your login shell is.
+  local f
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    head -1 "$f" 2>/dev/null | grep -q 'bash\|^#!/bin/sh' || continue
+    bash -n "$f" 2>/dev/null || syntax_bad+="$f"$'\n'
+  done < <(git -C "$REPO_DIR" ls-files 'bin/*' 'scripts/*' '*.sh' 2>/dev/null)
+
+  # 3. Assignment from a grep pipeline in a pipefail script, with no `|| true`.
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    grep -q 'set -[a-z]*o pipefail\|set -[a-z]*e[a-z]*o pipefail' "$f" 2>/dev/null || continue
+    local hits
+    # `|| true`, `|| :` and `|| echo …` all neutralise the failing exit status.
+    hits="$(grep -nE '^[^#]*[a-zA-Z_][a-zA-Z0-9_]*=\$\(.*\|[[:space:]]*(grep|rg)[^)]*\)' "$f" 2>/dev/null \
+        | grep -vE '\|\|[[:space:]]*(true|:|echo)' || true)"
+    [ -n "$hits" ] && pipefail_risk+="$(echo "$hits" | sed "s|^|$f:|")"$'\n'
+  done < <(git -C "$REPO_DIR" ls-files 'bin/*' 'scripts/*' '*.sh' 2>/dev/null)
+
+  local n_hard n_syn n_pipe total
+  n_hard="$(echo -n "$hardcoded" | grep -c '^' || true)"
+  n_syn="$(echo -n "$syntax_bad" | grep -c '^' || true)"
+  n_pipe="$(echo -n "$pipefail_risk" | grep -c '^' || true)"
+  total=$((n_hard + n_syn + n_pipe))
+
+  if [ "$mode" = "json" ]; then
+    printf '{"total":%d,"hardcoded_paths":%d,"bash_syntax_errors":%d,"pipefail_risks":%d}\n' \
+      "$total" "$n_hard" "$n_syn" "$n_pipe"
+    [ "$total" -gt 0 ] && return 1 || return 0
+  fi
+
+  if $quiet && [ "$total" -eq 0 ]; then return 0; fi
+
+  echo -e "${CYAN}=== Portability Check ===${NC}\n"
+
+  if [ "$n_hard" -gt 0 ]; then
+    echo -e "${YELLOW}Hardcoded home paths (${n_hard}) — will break on the next machine:${NC}"
+    echo "$hardcoded" | sed 's/^/  /'
+    echo -e "  ${CYAN}fix: \$HOME, \"\$CLAUDE_PROJECT_DIR\", or derive from \$REPO_DIR${NC}\n"
+  fi
+  if [ "$n_syn" -gt 0 ]; then
+    echo -e "${RED}Scripts that do not parse under bash (${n_syn}):${NC}"
+    echo "$syntax_bad" | sed 's/^/  /'
+    echo ""
+  fi
+  if [ "$n_pipe" -gt 0 ]; then
+    echo -e "${YELLOW}pipefail + grep assignment without \`|| true\` (${n_pipe}):${NC}"
+    echo "$pipefail_risk" | sed 's/^/  /'
+    echo -e "  ${CYAN}a non-matching grep exits 1, the assignment inherits it, set -e kills the script${NC}\n"
+  fi
+
+  if [ "$total" -eq 0 ]; then
+    echo -e "${GREEN}Clean — no hardcoded paths, no bash syntax errors, no pipefail traps.${NC}"
+    return 0
+  fi
+  echo -e "${RED}Total issues: $total${NC}"
+  return 1
+}
+
 cmd_check_disk() {
   local mode="text" quiet=false notify=false
   local warn_pct="${SK_DISK_WARN_PCT:-90}" crit_pct="${SK_DISK_CRIT_PCT:-95}"
@@ -3457,17 +3449,16 @@ cmd_check_agents() {
   # Active agent labels declared in agents.conf (skip comments/blanks)
   local conf_labels=""
   while IFS='|' read -r label _rest; do
+    # Comment check must precede xargs — see cmd_check_agents above.
+    [[ "$label" =~ ^[[:space:]]*# ]] && continue
     label="$(echo "$label" | xargs)"
-    [[ "$label" =~ ^# ]] && continue
     [ -z "$label" ] && continue
     [[ "$label" =~ ^com\.sk\.agent\. ]] && conf_labels+="$label"$'\n'
   done < "$AGENTS_CONF_FILE"
 
-  # Labels currently loaded in the user's GUI launchd domain. Modern macOS can
-  # show an empty `launchctl list` even when `launchctl bootstrap gui/$UID ...`
-  # has loaded the service, so query the explicit domain used by sk-setup-agents.
+  # Labels currently registered with the service manager
   local loaded_labels
-  loaded_labels="$(launchctl print "gui/$(id -u)" 2>/dev/null | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
+  loaded_labels="$(svc_list | cut -f1 | grep -oE 'com\.sk\.agent\.[a-zA-Z0-9_.-]+' || true)"
 
   local conf_sorted loaded_sorted
   conf_sorted="$(echo "$conf_labels" | sort -u | grep -v '^$' || true)"
@@ -3721,10 +3712,11 @@ cmd_status() {
 
   echo ""
 
-  # Launchd agents (macOS only)
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${YELLOW}Launchd agents:${NC}"
-    launchctl list 2>/dev/null | grep "com.sk" | while read -r pid status label; do
+  # Registered agents (launchd on macOS, systemd --user elsewhere)
+  if svc_supported; then
+    echo -e "${YELLOW}Agents (${SK_PLATFORM}):${NC}"
+    while IFS=$'\t' read -r label pid status; do
+      [ -z "$label" ] && continue
       if [ "$pid" != "-" ] && [ "$pid" != "0" ]; then
         echo -e "  ${GREEN}running${NC}  $label (pid=$pid)"
       elif [ "$status" = "0" ]; then
@@ -3732,7 +3724,7 @@ cmd_status() {
       else
         echo -e "  ${RED}error${NC}    $label (exit=$status)"
       fi
-    done
+    done < <(svc_list)
   fi
 
   echo ""
@@ -3782,7 +3774,10 @@ cmd_env() {
             [[ "$key" =~ ^[[:space:]]*# ]] && continue
             [ -z "$key" ] && continue
             if grep -q "^${key}=" "$actual"; then
-              sed -i '' "s|^${key}=.*|${key}=${val}|" "$actual"
+              # temp+mv, not `sed -i ''` — GNU sed rejects the BSD empty-suffix
+              # form and the substitution never lands on Linux.
+              _sed_tmp="$(mktemp)"
+              sed "s|^${key}=.*|${key}=${val}|" "$actual" > "$_sed_tmp" && mv "$_sed_tmp" "$actual"
               echo -e "  ${GREEN}shared${NC}  $key (from .env.shared)"
             fi
           done < "$ENV_SHARED_FILE"
@@ -3864,11 +3859,11 @@ cmd_update() {
     cmd_up --profile "$profile_name"
   fi
 
-  # macOS: re-deploy skills
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${CYAN}Re-deploying skills...${NC}"
-    cmd_deploy
-  fi
+  # Skill symlinks are platform-neutral — this used to be gated on Darwin, which
+  # meant a switch on linux/WSL silently left ~/.claude/skills/ pointing at the
+  # previous machine's paths.
+  echo -e "${CYAN}Re-deploying skills...${NC}"
+  cmd_deploy
 }
 
 cmd_bootstrap() {
@@ -3947,24 +3942,23 @@ cmd_bootstrap() {
   fi
   echo ""
 
-  # Step 5: macOS-only (skills + agents)
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e "${YELLOW}[5/7] Skills & agents (macOS)${NC}"
+  # Step 5: skills (every platform) + agents (wherever a service manager exists)
+  if svc_supported; then
+    echo -e "${YELLOW}[5/7] Skills & agents (${SK_PLATFORM})${NC}"
     if ! $dry_run; then
       cmd_deploy
-      # Run agent setup if profile has agents
       local has_agents=false
       parse_profile "$profile_name" | grep -q '^agents|' && has_agents=true
       if $has_agents && [ -x "$REPO_DIR/bin/sk-setup-agents" ]; then
         echo ""
-        echo -e "  Setting up launchd agents..."
+        echo -e "  Setting up agents..."
         "$REPO_DIR/bin/sk-setup-agents" 2>&1 | sed 's/^/  /'
       fi
     else
       echo "  (dry-run: would deploy skills + setup agents)"
     fi
   else
-    echo -e "${YELLOW}[5/7] Skills (Linux — no launchd)${NC}"
+    echo -e "${YELLOW}[5/7] Skills only — $(svc_unsupported_reason)${NC}"
     if ! $dry_run; then
       cmd_deploy
     fi
@@ -4116,6 +4110,7 @@ case "${1:-help}" in
       ssot)   shift; cmd_check_ssot "$@" ;;
       disk)   shift; cmd_check_disk "$@" ;;
       agents) shift; cmd_check_agents "$@" ;;
+      portability) shift; cmd_check_portability "$@" ;;
       *)    cmd_check "${1:-}" ;;
     esac
     ;;

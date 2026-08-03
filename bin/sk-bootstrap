@@ -8,7 +8,17 @@
 #   2. Delegates to ./bin/sk bootstrap <profile>
 set -euo pipefail
 
-PROJECTS_DIR="$HOME/Documents/Projects"
+# Where to put the clone. Do NOT hardcode a layout: this repo has already
+# lived under ~/Documents/Projects, ~/code, and ~/Company/engineering/repos,
+# and every hardcoded assumption broke on the next move. If a checkout already
+# exists anywhere sensible, reuse it; otherwise fall back to ~/code.
+PROJECTS_DIR="${SK_PROJECTS_DIR:-}"
+if [ -z "$PROJECTS_DIR" ]; then
+  for candidate in "$HOME/Company/engineering/repos" "$HOME/code" "$HOME/Documents/Projects"; do
+    if [ -d "$candidate/rivendell/.git" ]; then PROJECTS_DIR="$candidate"; break; fi
+  done
+fi
+PROJECTS_DIR="${PROJECTS_DIR:-$HOME/code}"
 RIVENDELL_DIR="$PROJECTS_DIR/rivendell"
 RIVENDELL_REPO="https://github.com/manibari/rivendell.git"
 
@@ -28,13 +38,15 @@ if [ -z "$PROFILE" ]; then
   exit 1
 fi
 
-# Pre-flight: git + docker
-for cmd in git docker; do
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "Error: $cmd is not installed."
-    exit 1
-  fi
-done
+# Pre-flight: git only, because that is all this script itself needs. The real
+# toolchain gate is bin/sk-preflight, run below against the fresh checkout —
+# it knows the versions rivendell actually requires (Python >= 3.10 for PEP 604
+# in dashboard/lib, Node >= 20 for Next). Checking `docker` here was actively
+# misleading: agents run natively under launchd/systemd, docker is optional.
+if ! command -v git &>/dev/null; then
+  echo "Error: git is not installed."
+  exit 1
+fi
 
 # Ensure projects directory exists
 mkdir -p "$PROJECTS_DIR"
@@ -46,6 +58,15 @@ if [ -d "$RIVENDELL_DIR/.git" ]; then
 else
   echo "Cloning rivendell..."
   git clone "$RIVENDELL_REPO" "$RIVENDELL_DIR"
+fi
+
+# Gate on the toolchain BEFORE installing anything. Half-installing and then
+# discovering Node is missing leaves registered services that cannot start.
+if ! "$RIVENDELL_DIR/bin/sk-preflight"; then
+  echo ""
+  echo "Aborting: install the tools listed above, then re-run this command."
+  echo "Nothing has been installed or registered."
+  exit 1
 fi
 
 # Delegate to sk bootstrap
