@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# sk-todo — one page answering "what is still outstanding", assembled from the
+# sources that already exist, plus the ones it can just fix.
+#
+# Why: answering that question used to mean reading ROADMAP.md, git status,
+# launchd, docker, and reports/ by hand and reconstructing the picture in prose —
+# which is stale the moment it is written. Every input below is already
+# machine-readable; nothing new is stored.
+#
+# It also keeps ROADMAP.md alive. The files in this repo that survive are the
+# ones a program reads (registry, projects.json, knowledge INDEX); the ones only
+# a human reads rot — Vault/Peter/PROJECTS.md died in three months. A reader is
+# what keeps a file honest.
+#
+# Usage:
+#   ./bin/sk-todo             Report only
+#   ./bin/sk-todo --fix       Also apply the fixes marked AUTO
+#   ./bin/sk-todo --notify    Push to Telegram when anything is RED
+#   ./bin/sk-todo --quiet     Print nothing unless something is RED (for cron)
+set -uo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_DIR"
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'
+CYAN='\033[0;36m'; DIM='\033[2m'; NC='\033[0m'
+
+DO_FIX=false; DO_NOTIFY=false; QUIET=false
+for a in "$@"; do
+  case "$a" in
+    --fix) DO_FIX=true ;;
+    --notify) DO_NOTIFY=true ;;
+    --quiet) QUIET=true ;;
+    --help|-h) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    *) echo "unknown flag: $a" >&2; exit 1 ;;
+  esac
+done
+
+OUT=""       # human report
+RED_LINES="" # only the things that need a person
+AUTO=()      # label|command pairs that sk can fix itself
+
+say() { OUT+="$1"$'\n'; }
+red() { RED_LINES+="$1"$'\n'; }
+
+# ── 1. Services that should be up and are not ──────────────────────────────
+say "${CYAN}服務${NC}"
+down=0
+while IFS= read -r plist; do
+  label="$(basename "$plist" .plist)"
+  case "$label" in *.bak-*) continue ;; esac
+  ka="$(/usr/libexec/PlistBuddy -c "Print :KeepAlive" "$plist" 2>/dev/null | head -1)"
+  [ "$ka" = "true" ] || continue
+  pid="$(launchctl list 2>/dev/null | awk -v l="$label" '$3==l && $1 ~ /^[0-9]+$/ {print $1}')"
+  [ -n "$pid" ] && continue
+  code="$(launchctl print "gui/$(id -u)/$label" 2>/dev/null | awk -F'= ' '/last exit code/ {print $2; exit}')"
+  say "  ${RED}✗${NC} $label  ${DIM}not running, last exit ${code:-?}${NC}"
+  red "✗ $label 掛了 (exit ${code:-?})"
+  down=$((down+1))
+done < <(find "$HOME/Library/LaunchAgents" -maxdepth 1 -name '*.plist' 2>/dev/null | sort)
+
+while IFS=$'\t' read -r name status; do
+  [ -z "$name" ] && continue
+  say "  ${RED}✗${NC} $name  ${DIM}$status${NC}"
+  red "✗ container $name — $status"
+  down=$((down+1))
+done < <(docker ps -a --filter "status=restarting" --format '{{.Names}}\t{{.Status}}' 2>/dev/null)
+
+[ "$down" -eq 0 ] && say "  ${GREEN}✓${NC} 全部正常"
+
+# ── 2. Things sk can fix without asking ────────────────────────────────────
+say ""
+say "${CYAN}可自動處理${NC}"
+undeployed="$(./bin/sk check 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep -oE '[0-9]+ skill\(s\) not deployed' | grep -oE '^[0-9]+')"
+if [ -n "${undeployed:-}" ] && [ "$undeployed" -gt 0 ]; then
+  say "  ${YELLOW}AUTO${NC} $undeployed 個 skill 未部署        ${DIM}→ sk deploy${NC}"
+  AUTO+=("部署 skill|./bin/sk deploy")
+fi
+if ! git diff --quiet --exit-code README.md 2>/dev/null; then :; fi
+before="$(md5 -q README.md 2>/dev/null)"
+./bin/sk readme >/dev/null 2>&1
+after="$(md5 -q README.md 2>/dev/null)"
+if [ "$before" != "$after" ]; then
+  say "  ${YELLOW}AUTO${NC} README 目錄與 SKILL.md 不同步      ${DIM}→ sk readme（已重生）${NC}"
+fi
+regfail="$(python3 bin/sk-registry-gen validate 2>&1 | grep -oE '[0-9]+ FAIL' | grep -oE '^[0-9]+')"
+if [ -n "${regfail:-}" ] && [ "$regfail" -gt 0 ]; then
+  say "  ${RED}!${NC}    registry 驗證失敗 $regfail 項          ${DIM}→ 要人看${NC}"
+  red "! registry 驗證失敗 $regfail 項"
+fi
+[ ${#AUTO[@]} -eq 0 ] && say "  ${GREEN}✓${NC} 沒有待自動處理的"
+
+# ── 3. Uncommitted / unpushed work ─────────────────────────────────────────
+say ""
+say "${CYAN}未收工${NC}"
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+dirty="$(git status --porcelain 2>/dev/null | grep -vc '^.. reports/')"
+ab="$(git rev-list --left-right --count "@{u}...HEAD" 2>/dev/null)"
+behind="$(echo "$ab" | cut -f1)"; ahead="$(echo "$ab" | cut -f2)"
+say "  分支 $branch  ${DIM}ahead ${ahead:-0} / behind ${behind:-0}${NC}"
+[ "${dirty:-0}" -gt 0 ] && say "  ${YELLOW}$dirty${NC} 個未 commit 的檔案 ${DIM}(reports/ 不算)${NC}"
+[ "${ahead:-0}" -gt 0 ] && say "  ${YELLOW}$ahead${NC} 個 commit 未 push"
+
+# ── 4. ROADMAP — the human backlog, grouped by its own Waves ───────────────
+say ""
+say "${CYAN}ROADMAP${NC}"
+if [ -f ROADMAP.md ]; then
+  # Python, not awk: awk's substr counts bytes, which slices CJK mid-character.
+  say "$(python3 - <<'PY'
+import re, sys
+wave, order, items = None, [], {}
+for line in open("ROADMAP.md", encoding="utf-8"):
+    if line.startswith("## "):
+        wave = line[3:].split("(")[0].split("(")[0].strip()
+    elif line.startswith("- [ ]") and wave:
+        if wave not in items:
+            items[wave] = []; order.append(wave)
+        t = re.sub(r"\*\*", "", line[6:]).replace(chr(96), "").strip()
+        items[wave].append(t)
+for w in order:
+    n = len(items[w])
+    print(f"  {w[:30]:<32}{n} 項")
+    for t in items[w][:2]:
+        print(f"      · {t[:52]}")
+PY
+)"
+  total="$(grep -c '^- \[ \]' ROADMAP.md)"
+  say "  ${DIM}共 $total 項未完成${NC}"
+fi
+
+# ── Output ─────────────────────────────────────────────────────────────────
+if [ -n "$RED_LINES" ] || ! $QUIET; then
+  echo -e "${CYAN}sk todo${NC} — $(date '+%Y-%m-%d %H:%M')"
+  echo "─────────────────────────────"
+  echo -e "$OUT"
+fi
+
+if $DO_FIX && [ ${#AUTO[@]} -gt 0 ]; then
+  echo -e "${CYAN}--fix${NC}"
+  for entry in "${AUTO[@]}"; do
+    label="${entry%%|*}"; cmd="${entry#*|}"
+    printf "  %s… " "$label"
+    if eval "$cmd" >/dev/null 2>&1; then echo -e "${GREEN}done${NC}"; else echo -e "${RED}failed${NC}"; fi
+  done
+  echo ""
+fi
+
+if $DO_NOTIFY && [ -n "$RED_LINES" ]; then
+  # Token SoT: ~/.config/claude-telegram/env, shared with the session notifier,
+  # ops-bot, and `sk check disk --notify`. Read it, never copy the token.
+  env_file="$HOME/.config/claude-telegram/env"
+  if [ -f "$env_file" ]; then
+    # shellcheck disable=SC1090
+    source "$env_file"
+    if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+      curl -s --max-time 8 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        -d chat_id="${TELEGRAM_CHAT_ID}" \
+        --data-urlencode text="🔴 rivendell 有事要看：
+$RED_LINES
+（sk todo 完整報告）" >/dev/null 2>&1 || true
+    fi
+  fi
+fi
+
+[ -n "$RED_LINES" ] && exit 1
+exit 0

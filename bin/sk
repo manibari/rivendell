@@ -63,6 +63,9 @@ Deploy & Infrastructure:
   update [--rebuild]  Pull all repos + optional Docker rebuild
   reboot [--check]    Reboot so services return without a manual FileVault unlock
                       (fdesetup authrestart). --check = pre-flight report only.
+  todo [--fix]        One page of what is still outstanding: down services,
+                      uncommitted work, ROADMAP backlog. --fix applies the AUTO
+                      items, --notify pushes to Telegram when anything is RED.
   help                Show this help message
 
 Categories: meta, workflow, quality, git, frontend, backend, docs
@@ -4132,6 +4135,7 @@ case "${1:-help}" in
   env)        cmd_env "${2:-}" ;;
   update)     cmd_update "${2:-}" ;;
   reboot)     shift; exec "$REPO_DIR/bin/sk-reboot" "$@" ;;
+  todo)       shift; exec "$REPO_DIR/bin/sk-todo" "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo -e "${RED}Unknown command:${NC} $1"
