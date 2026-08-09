@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
-"""Parse a podcast RSS/Atom feed into a list of episodes with direct audio URLs.
+"""Parse an RSS/Atom feed into a list of items — podcast episodes (direct audio
+URL) or channel uploads (video page URL).
 
-Why this exists: a podcast feed already publishes a direct link to the audio file
-(the <enclosure>). Capturing the audio by playing the episode is bound by playback
-duration — a 60-minute show costs at least 60 minutes of wall clock, and speeding
-playback up does not escape it. Reading the enclosure URL instead turns the same
-episode into a download, which ffmpeg does in seconds. Every paid podcast-to-text
-tool works this way; there is no cleverness here, only the right input.
+Why this exists, part 1 — podcasts: a podcast feed already publishes a direct
+link to the audio file (the <enclosure>). Capturing the audio by playing the
+episode is bound by playback duration — a 60-minute show costs at least 60
+minutes of wall clock, and speeding playback up does not escape it. Reading the
+enclosure URL instead turns the same episode into a download, which ffmpeg does
+in seconds. Every paid podcast-to-text tool works this way; there is no
+cleverness here, only the right input.
+
+Why this exists, part 2 — channels: a YouTube channel publishes an Atom feed at
+youtube.com/feeds/videos.xml?channel_id=UC… listing its ~15 newest uploads. That
+is a plain XML GET: no API key, no quota, and none of the 429 grief that polling
+via yt-dlp invites. Those entries carry no enclosure — the payload is a link to
+the watch page — so an item here has an audio_url OR a page_url, and callers say
+which one they need. `get` still demands audio (that is the podcast path);
+`list` takes either.
 
 Usage:
-    podcast_feed.py list <feed-url> [--json] [--limit N]
-    podcast_feed.py get  <feed-url> <index>      # 1-based, prints the audio URL
+    feed_items.py list <feed-url> [--json] [--limit N]
+    feed_items.py get  <feed-url> <index>      # 1-based, prints the audio URL
 
 Stdlib only — no new dependency for the media family.
 """
@@ -27,6 +37,8 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) podcast-transcript/1.0"
 NS = {
     "atom": "http://www.w3.org/2005/Atom",
     "itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd",
+    "media": "http://search.yahoo.com/mrss/",
+    "yt": "http://www.youtube.com/xml/schemas/2015",
 }
 AUDIO_EXT = (".mp3", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".mp4", ".m4b")
 
@@ -103,39 +115,57 @@ def parse(raw: bytes, feed_url: str) -> tuple[str, list[dict]]:
             sys.exit("error: <rss> without <channel>")
         show = (channel.findtext("title") or "").strip()
         for item in channel.findall("item"):
+            audio = None
             enc = item.find("enclosure")
-            if enc is None:
-                continue
-            url = (enc.get("url") or "").strip()
-            if not url or not _looks_like_audio(url, enc.get("type")):
+            if enc is not None:
+                url = (enc.get("url") or "").strip()
+                if url and _looks_like_audio(url, enc.get("type")):
+                    audio = url
+            page = (item.findtext("link") or "").strip() or None
+            if not audio and not page:
                 continue
             episodes.append({
                 "title": (item.findtext("title") or "(untitled)").strip(),
                 "date": _date_iso(item.findtext("pubDate")),
                 "duration_sec": _duration_seconds(item.findtext("itunes:duration", namespaces=NS)),
-                "audio_url": url,
+                "audio_url": audio,
+                "page_url": page,
+                "guid": (item.findtext("guid") or "").strip() or audio or page,
             })
-    else:  # Atom
+    else:  # Atom — podcast feeds and YouTube channel feeds both land here
         show = (root.findtext("atom:title", namespaces=NS) or "").strip()
         for entry in root.findall("atom:entry", NS):
-            url = None
-            mime = None
+            audio = page = None
             for link in entry.findall("atom:link", NS):
-                if link.get("rel") == "enclosure":
-                    url, mime = (link.get("href") or "").strip(), link.get("type")
-                    break
-            if not url or not _looks_like_audio(url, mime):
+                href = (link.get("href") or "").strip()
+                if not href:
+                    continue
+                rel = link.get("rel") or "alternate"
+                if rel == "enclosure" and _looks_like_audio(href, link.get("type")):
+                    audio = href
+                elif rel == "alternate" and page is None:
+                    page = href
+            if not audio and not page:
                 continue
+            # YouTube puts the real title under media:group on some entries; the
+            # plain atom:title is present too, so prefer it and fall back.
+            title = (entry.findtext("atom:title", namespaces=NS)
+                     or entry.findtext("media:group/media:title", namespaces=NS)
+                     or "(untitled)").strip()
             episodes.append({
-                "title": (entry.findtext("atom:title", namespaces=NS) or "(untitled)").strip(),
+                "title": title,
                 "date": _date_iso(entry.findtext("atom:published", namespaces=NS)
                                   or entry.findtext("atom:updated", namespaces=NS)),
                 "duration_sec": _duration_seconds(entry.findtext("itunes:duration", namespaces=NS)),
-                "audio_url": url,
+                "audio_url": audio,
+                "page_url": page,
+                "guid": (entry.findtext("yt:videoId", namespaces=NS)
+                         or entry.findtext("atom:id", namespaces=NS)
+                         or audio or page or "").strip(),
             })
 
     if not episodes:
-        sys.exit("error: feed parsed, but no episode carried an audio enclosure")
+        sys.exit("error: feed parsed, but no entry carried an audio enclosure or a link")
     return show, episodes
 
 
@@ -158,11 +188,15 @@ def main() -> None:
 
     if cmd == "get":
         if not rest or not rest[0].isdigit():
-            sys.exit("usage: podcast_feed.py get <feed-url> <index>   # 1-based")
+            sys.exit("usage: feed_items.py get <feed-url> <index>   # 1-based")
         idx = int(rest[0])
         if not 1 <= idx <= len(episodes):
             sys.exit(f"error: index {idx} out of range (1..{len(episodes)})")
         ep = episodes[idx - 1]
+        if not ep["audio_url"]:
+            sys.exit(f"error: item {idx} has no audio enclosure — it is a page link "
+                     f"({ep['page_url']}). `get` is the podcast path; for a video feed "
+                     f"use `list --json` and hand the page_url to media_fetch.sh.")
         print(ep["audio_url"])
         print(f"# {ep['date']}  {ep['title']}  ({_hms(ep['duration_sec'])})", file=sys.stderr)
         return
@@ -181,9 +215,11 @@ def main() -> None:
         print(json.dumps({"show": show, "episodes": episodes}, ensure_ascii=False, indent=2))
         return
 
-    print(f"{show}  ({len(episodes)} episodes)\n")
+    print(f"{show}  ({len(episodes)} items)\n")
     for n, ep in enumerate(episodes, 1):
-        print(f"{n:>3}. {ep['date']}  {_hms(ep['duration_sec']):>8}  {ep['title']}")
+        dur = f"  {_hms(ep['duration_sec']):>8}" if ep["duration_sec"] else ""
+        print(f"{n:>3}. {ep['date']}{dur}  {ep['title']}")
+        print(f"     {ep['audio_url'] or ep['page_url']}")
 
 
 if __name__ == "__main__":

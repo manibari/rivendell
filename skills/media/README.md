@@ -8,13 +8,15 @@
 | **local-media-transcribe** | **本機**影音檔 (.mov/.mp4/.m4a/.mp3) | **文字**（逐字稿／摘要／文章／翻譯）+ 螢幕錄影畫面說明 | 本機螢幕錄影／會議錄影／錄音聽寫並說明（離線 mlx-whisper）|
 | **video-clip-extract** | 影片 URL + 時間範圍/主題 | **影片**片段 (.mp4) | 想剪一段精華 |
 | **subtitle-file** | 影片 URL | **字幕檔** (.srt/.vtt，保留時間軸，可譯) | 想要能重新上傳/翻譯的字幕檔 |
+| **channel-scraper** | **訂閱清單**（頻道／UP 主／podcast） | **知識庫新筆記**（新片自動摘要存檔） | 想長期追蹤來源，而不是每次貼一條連結 |
 
 判準：輸出型態不同 → 各自 skill；只是文字產物不同（摘要 vs 逐字稿）→ 同一 skill 的模式。
 線上 URL vs 本機檔是**不同輸入源**（真字幕 vs ASR）→ video-transcript 與 local-media-transcribe 分立。
+channel-scraper 的輸入是**訂閱清單而非單一 URL**，它呼叫 video-transcript 的同一條管線做每一支片。
 
 ## 共用引擎：`_shared/scripts/`
 
-抓取的難處（metadata 探測、挑最佳字幕軌、429 退避重試、瀏覽器 impersonation）只寫一次，三個 skill 共用：
+抓取的難處（metadata 探測、挑最佳字幕軌、429 退避重試、瀏覽器 impersonation）只寫一次，各 skill 共用：
 
 | 檔案 | 作用 |
 |------|------|
@@ -26,6 +28,9 @@
 | `local_transcribe.sh` | **本機檔案轉錄**（local-media-transcribe 用）：ffmpeg 抽音 → 16kHz wav → **mlx-whisper**（Apple Silicon 原生、快、離線）。無音軌會明確報錯（螢幕錄影可能無聲）。`FORMAT=both` 另出 .srt 時間軸 |
 | `save_note.sh` | **歸檔**：把 transcript + 摘要存進 `knowledge/videos/YYYY-MM-DD-<標題>/`（git-tracked 知識庫），note.md 帶 frontmatter，並自動重生 INDEX。根治「只讀不存」 |
 | `build_index.py` | 掃 `knowledge/videos/*/note.md` frontmatter → 重生 `INDEX.md`（可瀏覽表格，按日期排序、標可信度）。save_note 每次自動呼叫，也可手動重跑 |
+| `feed_items.py` | RSS/Atom → items。podcast 取 `<enclosure>` 音檔直連（不必播完整集）；YouTube 頻道 Atom 沒有 enclosure，取 watch 頁連結。給 channel-scraper 用 |
+
+channel-scraper 自己的 `scripts/feed_scan.py` **不放 `_shared/`**——只有它一個消費者，放共用區會讓「共用」失去意義。它 import 上面的 `feed_items.py`。
 
 ### 為什麼 `_shared/` 用相對路徑能 work
 

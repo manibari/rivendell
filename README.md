@@ -63,7 +63,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (121 skills)
+## Skills Catalog (122 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -211,6 +211,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **channel-scraper** | 自動 | Subscribe to YouTube channels, Bilibili UP 主, and podcast shows |
 | **local-media-transcribe** | 自動 | Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture |
 | **subtitle-file** | 自動 | Produce a subtitle FILE (.srt / . |
 | **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
