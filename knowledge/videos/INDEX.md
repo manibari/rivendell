@@ -1,9 +1,10 @@
 # 影片知識庫索引
 
-9 篇筆記。可信度：✅ 人工字幕 · ⚠️ 自動字幕（粗略）· 🤖 whisper ASR（術語以原片為準）。
+10 篇筆記。可信度：✅ 人工字幕 · ⚠️ 自動字幕（粗略）· 🤖 whisper ASR（術語以原片為準）。
 
 | 日期 | 標題 | 來源 | 可信度 | 一句話 |
 |------|------|------|--------|--------|
+| 2026-08-03 | [700 萬人下載的 /grill-me，Matt Pocock 到底寫了什麼？](2026-08-03-700-萬人下載的-grill-me，Matt-Pocock-到底寫了什麼？/note.md) | [youtube](https://www.youtube.com/watch?v=aR97E7aKEgg) | ✅ manual subs | Matt Pocock 開源了他馴服 AI 的整套 skill（16 萬星、700 萬下載），核心不是那個爆紅的 `/grill-me`，而是一個相反於大框架的主張——**skill 要小、要能拼裝、要用專業術語當壓縮指令**，而能寫出這種 skill 的前提是你本身是該領域專家。 |
 | 2026-07-27 | [Apple 真正的大計畫，可能不是 iPhone Ultra](2026-07-27-Apple-真正的大計畫，可能不是-iPhone-Ultra/note.md) | [youtube](https://www.youtube.com/watch?v=kUvEumN2-og) | ✅ manual subs | 作者推測 Apple 的佈局是把 AI「思考核心」從 iPhone 搬到 Mac——因為跑強 AI 靠記憶體，只有 Mac 上得了 128GB，所以當家近二十年的 iPhone 這次要讓位成「終端」，Mac 才是背後大腦。 |
 | 2026-07-27 | [《幼女戰記》第5話 (繁中字幕 ／ 日語原聲)【Ani-One】](2026-07-27-《幼女戰記》第5話-%28繁中字幕-日語原聲%29【Ani-One】/note.md) | [youtube](https://www.youtube.com/watch?v=Ld44bCG0tEQ) | ✅ manual subs | 外表小女孩、內心冷酷功利主義的譚雅少校，用地獄式訓練速成一支航空魔導大隊，然後在生日這天把入侵的達基亞 60 萬大軍當「實彈演習標靶」單方面屠殺——點出這場世界大戰裡還沒人搞懂空中魔導戰力多可怕。 |
 | 2026-07-27 | [三星 Exynos 2600 2nm 晶片深度解析](2026-07-27-三星-Exynos-2600-2nm-晶片深度解析/note.md) | [youtube](https://www.youtube.com/watch?v=7m4FJm-VPlg) | ✅ manual subs | 三星 2nm 製程終於追上台積電 N3（能效不再拖後腿），但這顆晶片的設計問題一堆——极客湾頒它「年度最抽象晶片獎」：帳面能效漂亮、實際遊戲/續航打不過高通。 |
