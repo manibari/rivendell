@@ -1,9 +1,12 @@
 # 影片知識庫索引
 
-10 篇筆記。可信度：✅ 人工字幕 · ⚠️ 自動字幕（粗略）· 🤖 whisper ASR（術語以原片為準）。
+13 篇筆記。可信度：✅ 人工字幕 · ⚠️ 自動字幕（粗略）· 🤖 whisper ASR（術語以原片為準）。
 
 | 日期 | 標題 | 來源 | 可信度 | 一句話 |
 |------|------|------|--------|--------|
+| 2026-08-09 | [Anthropic 工程師為什麼拋棄 Markdown 改用 HTML 跟 AI 工作？](2026-08-09-Anthropic-工程師為什麼拋棄-Markdown-改用-HTML-跟-AI-工作？/note.md) | [youtube](https://www.youtube.com/watch?v=BhHMGRcbPkQ) | ✅ manual subs | AI 把「產出」壓到趨近免費之後，瓶頸從「誰來做」變成「誰來看、誰來判斷」——所以真正的槓桿不是逼 AI 多生一點，而是**改變 AI 交回給你時的格式**：文字整理留給 Markdown，要「快速看懂狀態、比較方案、做決定」就換成一頁能開、能比、能拖的 HTML 工作頁。 |
+| 2026-08-09 | [什么是图工程 ／ Graph Engineering ／ 循环工程 ／ Loop Engineering ／ 多智能体 ／ LangGraph ／ ReAct ／ 提示词工程 ／ 工作流编排 ／验证器](2026-08-09-什么是图工程-Graph-Engineering-循环工程-Loop-Engineering-多智能体-LangGraph-ReAct-提示词工程-工作流编排-/note.md) | [youtube](https://www.youtube.com/watch?v=8RedSkw1UjE) | ✅ manual subs | 圖工程是繼提示詞→上下文→Harness→循環工程之後**再往外疊的第五層**——不管單一 agent 內部怎麼跑迴圈，而是管多個節點之間的組織關係；名詞是行銷新詞（節點/邊/狀態玩了幾十年，LangGraph 已做兩年多），但「工程重心從編一個 agent 的行為上移到編一群 agent 的組織」這個視角轉移是真的。 |
+| 2026-08-09 | [聊聊M4 Mac mini上文生图应用的体验 flux模型简单测试 drawthings Comfyui在m4 16g上实测推理｜074](2026-08-09-聊聊M4-Mac-mini上文生图应用的体验-flux模型简单测试-drawthings-Comfyui在m4-16g上实测推理｜074/note.md) | [youtube](https://www.youtube.com/watch?v=1SH4p0QYFvs) | ✅ manual subs | 16GB 的 M4 Mac mini **跑得動最新的 Flux**（1024×1024、4 步、約 110 秒出圖，字也清楚），靠的是 Draw Things 作者提供的 8-bit 量化模型＋對 M 系列的優化；但比作者入門級的 4060Ti 16G（同參數 100 秒內）還是慢一截——**「說它是生產力真的提不上，至少它比大玩具稍微大一點點」**。 |
 | 2026-08-03 | [700 萬人下載的 /grill-me，Matt Pocock 到底寫了什麼？](2026-08-03-700-萬人下載的-grill-me，Matt-Pocock-到底寫了什麼？/note.md) | [youtube](https://www.youtube.com/watch?v=aR97E7aKEgg) | ✅ manual subs | Matt Pocock 開源了他馴服 AI 的整套 skill（16 萬星、700 萬下載），核心不是那個爆紅的 `/grill-me`，而是一個相反於大框架的主張——**skill 要小、要能拼裝、要用專業術語當壓縮指令**，而能寫出這種 skill 的前提是你本身是該領域專家。 |
 | 2026-07-27 | [Apple 真正的大計畫，可能不是 iPhone Ultra](2026-07-27-Apple-真正的大計畫，可能不是-iPhone-Ultra/note.md) | [youtube](https://www.youtube.com/watch?v=kUvEumN2-og) | ✅ manual subs | 作者推測 Apple 的佈局是把 AI「思考核心」從 iPhone 搬到 Mac——因為跑強 AI 靠記憶體，只有 Mac 上得了 128GB，所以當家近二十年的 iPhone 這次要讓位成「終端」，Mac 才是背後大腦。 |
 | 2026-07-27 | [《幼女戰記》第5話 (繁中字幕 ／ 日語原聲)【Ani-One】](2026-07-27-《幼女戰記》第5話-%28繁中字幕-日語原聲%29【Ani-One】/note.md) | [youtube](https://www.youtube.com/watch?v=Ld44bCG0tEQ) | ✅ manual subs | 外表小女孩、內心冷酷功利主義的譚雅少校，用地獄式訓練速成一支航空魔導大隊，然後在生日這天把入侵的達基亞 60 萬大軍當「實彈演習標靶」單方面屠殺——點出這場世界大戰裡還沒人搞懂空中魔導戰力多可怕。 |
