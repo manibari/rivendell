@@ -32,6 +32,22 @@ def parse_frontmatter(text: str) -> dict:
     return fm
 
 
+def strip_frontmatter(text: str) -> str:
+    """Everything after the closing --- fence.
+
+    Must cut at the FIRST closing fence, not split on every '\\n---': a summary
+    is free to use a --- horizontal rule, and splitting blindly would hand back
+    only the tail after that rule. That is how a note whose body opened with
+    '**一句話**：…' ended up indexed by its closing paragraph instead.
+    """
+    if not text.startswith("---"):
+        return text
+    end = text.find("\n---", 3)
+    if end == -1:
+        return text
+    return text[end + 4:]
+
+
 def one_liner(body: str) -> str:
     """Pull the BLUF — the '一句話' line if present, else first prose line."""
     for line in body.splitlines():
@@ -67,7 +83,7 @@ def main() -> int:
     for note in sorted(videos_dir.glob("*/note.md")):
         text = note.read_text(encoding="utf-8")
         fm = parse_frontmatter(text)
-        body = text.split("\n---", 2)[-1] if text.startswith("---") else text
+        body = strip_frontmatter(text)
         rel = fm.get("reliability", "")
         icon = RELIABILITY_ICON.get(rel, "🤖" if "asr" in rel else "")
         rows.append({
