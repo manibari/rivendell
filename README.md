@@ -63,7 +63,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (122 skills)
+## Skills Catalog (123 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -82,6 +82,7 @@ as release notes.
 | **session-harvest** | `/session-harvest` | 工作告一段落時，自動審查 session 內容，找出可重複使用的模式並建議建立新 skill |
 | **session-wrap** | 自動 | End-of-session cleanup: auto-commit uncommitted changes, archive learnings |
 | **setup-permissions** | 自動 | 偵測專案工具鏈，自動設定 permission allowlists，減少手動核准 |
+| **skill-apply** | `/skill-apply` 或自動 | Turn a skill you have imported but not installed into a review of your own |
 | **skill-creator** | 自動 | 建立、修改、評測 skills，含 eval 和 benchmark 工具 |
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
