@@ -175,3 +175,102 @@ domain-reference 容許 n=1 codebase；design-rubric 需第 2 架構驗證）：
 - PPTX 週報(n=1)｜IC SPC/yield(9% 資料覆蓋,太早,2 sprint 後再看)｜DFM rule framework(eng-review locked,未穩)｜前端 viz(UI 迭代無 domain)。
 
 **Trigger to revisit**：ML 群等第 2 個 ML 專案;ChimesFlow rubric 群等第 2 架構;IC-SPC/DFM-framework 等資料/設計穩定。
+
+## 2026-07-06 — session-harvest（9 sessions：新北案 demo / 演講備料 / SOW / 新專案）
+
+本輪無 Strong 候選；多數 session 為正確觸發既有 skill（sow-writer、requirement、
+subsidy-scraper、context-recovery、office-pptx）。兩個 Moderate 候選 hold 待第 2 實例：
+
+- **`demo-walkthrough-pages`**（提案用互動 demo 頁管線）— 情境腳本 → 多畫面
+  walkthrough HTML（假資料、build script 產版）→ headless Chrome 截圖鏈自檢 →
+  PNG 餵 office-pptx。新北案兩輪（YouBike 動線、訴願填寫/預評估）形狀一致，但
+  **n=1 客戶專案**。與 mockup / gstack-design-html 重疊大，delta 只有「情境
+  walkthrough + 截圖鏈 + 餵 deck」黏合層。→ 第 2 個客戶/專案出現同需求時再抽，
+  屆時優先評估併入 mockup 當一個 mode。
+- **`gdrive-deck-miner`**（舊 deck 內容開採）— Google Drive 歷史簡報當素材庫：
+  getGoogleSlidesContent 抽每頁文字/講者備註 → 主題歸併 → 新演講 outline +
+  可重用頁清單。與 gdrive-to-skills（轉知識）、slide-template-extractor（抽樣式）
+  角度不同，零覆蓋；但 **n=1 session**（數位孿生演講）。→ 再出現一次「舊 deck
+  開採」即升 Strong。
+
+**Trigger to revisit**：demo 頁遇第 2 個客戶；deck 開採遇第 2 場演講。
+詳見 reports/harvest-2026-07-06.md。
+
+## 2026-07-07 — session-harvest（11 sessions：9 個為排程 headless）
+
+本輪無 Strong 候選；9/11 sessions 是排程自動化在跑（台股新聞情緒 ×7、token 日報、
+crm-projection），可收割的人工模式極少。一個 Moderate hold：
+
+- **`personal-info-vault`**（個人資訊 SoT → 官方表單自動填寫）— 使用者主動提議
+  「放一個資料夾收集我的個人資訊」，本輪走 office-docx 填提名表（fill_form.py +
+  掃描頁對照）。設計方向：個人資料 markdown SoT（基本資料/學經歷/證照/公司資訊）
+  → 表單欄位對映 → 路由 office-docx/office-pdf，缺欄回問並回寫 SoT。
+  **n=1 表單** → 等第 2 份不同官方表單出現、確認 SoT schema 可重用再抽
+  （薄 orchestrator + data files 原則）。
+
+**Trigger to revisit**：第 2 份表單填寫需求。詳見 reports/harvest-2026-07-07.md。
+
+## 2026-07-23 — slide-office-hours: channel-enablement 缺 profile cell
+
+**Context**: 詠鋐通用 channel enablement deck（給通路 SI 業務的動能+產品地圖簡報）跑
+/slide-office-hours 壓測，frontmatter 的 `profile` 四值（傳產中小/大型科技廠/公部門/新創）
+全是「終端客戶」畫像，通路夥伴聽眾無格可對；`stage` 亦然（audience 是 channel sales，
+非客戶決策者）。本次 review 以 Layer 1 全跑 + Layer 2/3 就近類比（operator_guesses ≈
+認客戶 checklist；differentiation_target ≈ 「channel 為何帶我們而非其他供應商」）。
+
+**Request**: 新增 profile: `通路SI`（或獨立 checklist）：必查 (a) 認客戶 checklist ≥3/端
+且 operator-level；(b) differentiation vs channel 自家 AI 團隊/其他被代理供應商；
+(c) channel mix 敏感性（案例來源集中於單一 channel 時，通用版如何呈現）。
+**n=1** — 等第 2 份 channel/partner deck 需求出現再抽。
+**Refinement (同日壓測討論)**：通路 deck 要先分兩型——recruitment（招親，differentiation
+必查）vs enablement（打法/playbook，合作已存在，differentiation 降級為「業務省力濾鏡」：
+每頁檢查是否讓 channel 業務更容易推）。上面 (b) 的 differentiation 必查僅適用 recruitment 型。
+
+## 2026-08-06 — session-harvest（7 sessions：ChimesFlow / PTI-ARES 家族拆 repo）
+
+一個 Moderate hold：
+
+- **`repo-contract-brief`**（sibling repo 契約優先 + 直接查證取代假設）— PTI-ARES 功能
+  拆到 3 個 sibling repo（Transcribe=寫入 PG／Translate=讀取渲染／Main=顯示），3 個獨立
+  session（Converter/Transcribe、Main、Translate）各自都先用直接查證（`psql`/`docker exec`/
+  重新解析原始檔）確認上游真實現狀，才寫 `api-contract.md`（消費者視角、先於 requirement），
+  再進 `requirement.md`/`schema.md`。順序一致、被同一條架構決策（PG 必須自足、不依賴外部檔）
+  逼出來。**但 3 次集中在同一天、同一個 fleet、同一功能的拆解**，比較像一個計畫分派到 3 個
+  repo 各跑一次，而非不相關情境各自獨立重新發現——只到 Moderate。
+  → 等下一個不同 fleet 產品（如 tukey-* 或 ic-yms）出現「功能跨 sibling repo 拆分、需要
+  契約優先」的情境再抽，可参考 spine-* 系列「先驗證多產品收斂、再定 canonical + divergent
+  兩層」的寫法。
+
+**Trigger to revisit**：第 2 個不同 fleet 產品出現同款 repo 拆分。詳見 reports/harvest-2026-08-06.md。
+
+## 2026-08-14 — 8 月 harvest 候選盤點（補追蹤斷鏈）
+
+8 月出了三個 🟢 Strong 候選，全都停在 `reports/` 沒有進到這裡——報告寫得勤，但
+「報告 → 追蹤檔 → 動手」這條鏈是斷的。補記如下，並定一條規矩：**harvest 報告出現
+Strong 候選時，同一輪就在這裡開一條**，否則下一份報告蓋過去就沒人記得。
+
+| 候選 | 來源 | 狀態 |
+|---|---|---|
+| `skill-apply` | harvest 08-03 🟡 → 08-05 🟢 | ✅ 已建（`skills/meta/skill-apply`, 2026-08-13） |
+| `subsidy-review-deck` | harvest 08-07 🟢 | ✅ 已併入 `subsidy-writer` Phase 8 + `references/review-rebuttal.md`（2026-08-14），未獨立成 skill |
+| `site-survey-transcription` | harvest 08-01 🟢 | ⬜ **未動，仍開放** |
+
+### ⬜ `site-survey-transcription`（唯一還沒處理的）
+
+harvest 08-01 標 Strong。尚未回頭核對原始 session 的產物與形狀——動手前先做一次，
+比照 `skill-apply` 的做法（去磁碟上找當時的實際交付物，別只信報告的描述；08-07 那次
+報告寫的 `architecture-review-chimesflow.html` 就已經不存在了）。
+詳見 `reports/harvest-2026-08-01.md`。
+
+### 為什麼 subsidy-review-deck 選擇併入而非獨立
+
+08-07 報告已建議優先評估併入，實際看過產物後確認：那次的交付物**包含一份修正版計畫書
+docx**，而那正是 subsidy-writer 的核心產物。拆成獨立 skill 等於要重抄一整套 docx build、
+figures 規格、紅字▲、writing-rules HARD GATE。入口狀態不同（手上有意見表而非申請須知），
+但機器完全共用，且是同一個案子資料夾的下一站——按 sequence 而非按 invocation 切。
+
+### 仍在 hold 的 Moderate（沿用既有條目，未變動）
+
+`demo-walkthrough-pages`（07-06）、`gdrive-deck-miner`（07-06）、`personal-info-vault`
+（07-07）、`repo-contract-brief`（08-06）、光泉配給預測（05-18 條目，08-05 有進展）。
+另 08-11 兩個 Weak 觀察等第 2 實例：多來源 ETL 合併、跨專案 port registry。
