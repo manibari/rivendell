@@ -8,10 +8,13 @@ description: >
   user is applying for a government grant/subsidy and needs the proposal document
   written — "投補助案", "寫計畫書", "補助申請書", "SBIR", "數產署補助", "AI 創新補助",
   even if they only paste the 申請須知 and say "我要投這個".
+  ALSO covers the stage after submission (Phase 8): 收到書面審查意見表要準備審查會議
+  簡報 — "審查意見回來了", "要上台報告補助案", "書面審查意見表", "照官方簡報格式做".
   SKIP: finding subsidies to apply for (subsidy-scraper); RFQ/tender responses
-  (rfq-writer); consulting contracts (sow-writer).
+  (rfq-writer); consulting contracts (sow-writer); customer-facing sales decks
+  (sales-deck-design — 那是對客戶提案，不是對審查委員).
 tags: [docs, business, government]
-version: 1.2.0
+version: 1.3.0
 source: manual
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
@@ -168,6 +171,27 @@ exactly the 「宣稱」 reviewers strike down.
    be screenshot-verified (headless Chrome) before it counts as done.
 3. Deliver: open the docx for the user, report page count, and hand over the
    `待補清單.md` (Phase 6) so the user sees what is blocked on whom.
+
+## Phase 8 — 書面審查意見 → 審查會議簡報 (after submission)
+
+送件不是終點。台灣補助案的標準流程是 **送件 → 書面審查意見 → 審查會議簡報**，所以
+每個走完 Phase 7 的案子都會再回來一次。入口狀態不同（你手上有委員意見表、送審版
+計畫書、官方簡報範本），但機器是同一套：官方格式先行、逐題拍板、紅字▲、md-SoT →
+輸出。
+
+**Read `references/review-rebuttal.md` before planning the deck.** 那裡有意見的
+四類分類法（決定每條要不要佔版面、要不要動計畫書）、頁次骨架、逐頁素材盤點的
+✅🟡🔴 表，以及素材露出的敏感決策清單。
+
+三件在這個階段最容易錯的事，先知道再去讀細節：
+
+1. **交付物是兩份，不是一份。** 指出「正文與表格對不起來」的意見沒有回答空間，只有
+   修正——簡報之外還要交一份改過的計畫書 docx。只做簡報等於當場承認錯誤卻交不出改正。
+2. **逐頁素材盤點要在寫內容之前做。** 標完 ✅🟡🔴 才知道哪幾頁根本沒料。那次 33 頁
+   有 6 頁是硬缺料，而且全是委員問得最兇的幾條；先盤點，它們在第一小時就變成問使用者
+   的題目，而不是寫到第 20 頁才卡住。
+3. **官方大綱不可動。** 深答頁塞進第一章之內，不要為了回應意見新增章節——與 Phase 1
+   的 目錄先行 同一條規矩。
 
 ## Project conventions
 
