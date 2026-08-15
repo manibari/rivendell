@@ -10,7 +10,8 @@ skills/
 ├── agents/     # 自動化 Agent：排程、觀測、persona (5)
 ├── planning/   # 需求與規劃：requirement → user-flow → mockup → plans (7)
 ├── workflow/   # 工作流程與 Session 維運 (8)
-├── quality/    # 程式品質、審查、除錯、測試 (9)
+├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
+├── quality/    # 程式品質、審查、文字打磨 (5)
 ├── git/        # Git/GitHub 操作 (3)
 ├── frontend/   # 前端設計、iOS、測試 (5)
 ├── backend/    # 後端服務 (24)
@@ -63,7 +64,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (123 skills)
+## Skills Catalog (124 skills)
 
 ### meta/ — Claude Code 管理
 
@@ -125,6 +126,16 @@ as release notes.
 | **repro-exam** | 自動 | 依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → |
 | **settings-audit** | 自動 | 審查清理 .claude/settings.local.json — 移除無效 permissions、修正 JSON 語法、偵測一次性指令誤存為永久權限 |
 
+### qa/ — QA 與驗收（測試、旅程、資料流稽核）
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
+| **qa-dataflow** | 自動 | 驗證一條資料流「實際上」是不是照宣稱在跑 —— 接手他人／AI 生成的程式碼、或要驗收交付時用。 三段骨幹：(1) 靜態地圖 —— 從程式碼推出 actual |
+| **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
+| **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
+| **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
+
 ### quality/ — 程式品質
 
 | Skill | 觸發方式 | 說明 |
@@ -133,10 +144,6 @@ as release notes.
 | **github-repo-audit** | 自動 | Audit a GitHub repository for structure quality, documentation coverage |
 | **large-file-refactor** | 自動 | Systematically split large single-file components (500+ lines) into modular |
 | **protect-secrets** | Hook (PreToolUse) | 攔截讀取/修改 .env、private keys、credentials 等敏感檔案 |
-| **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
-| **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
-| **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
-| **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
 | **say-it-plain** | `/say-it-plain` 或自動 | 把「講不清、抓不到重點、要人一問再問」的中文重寫成人能秒懂的版本——結論先行 |
 
 ### git/ — Git/GitHub

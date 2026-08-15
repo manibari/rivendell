@@ -540,3 +540,18 @@ category: best_practice
 - **根因**: `scripts/generate-readme-catalog.py` 的 `CATEGORY_ORDER` / `CATEGORY_NAMES` 是**硬編碼白名單**（原本 7 類 meta/workflow/quality/git/frontend/backend/docs），`scan_skills()` 只 iterate 這份清單 → 不在清單裡的分類目錄整個被忽略、skill 不計數。
 - **How to apply**: 新增分類目錄時，除了建 `skills/<cat>/` 還必須：(1) 在 `generate-readme-catalog.py` 的 `CATEGORY_ORDER` 加該 key、`CATEGORY_NAMES` 加中文名；(2) 手改 README「Structure」樹（那段是**手維護**、`sk readme` 不會動它——改分類計數/新增列都要手動）；(3) 若分類含 `_shared/`（無 SKILL.md 的共用 script 目錄），確認 scan 只抓 `*/SKILL.md` 不會誤收。驗證：`sk readme` 印出的「N skills in M categories」M 要對。
 - **Related**: 全域 learnings 2026-07-23 的 yt-dlp/bash 三連坑（同一次建 media skill 群踩到的）。`_shared` script 靠 `cd -P` 實體路徑穿透 symlink 定位（rivendell deploy 是 `ln -s`）。
+
+## 2026-08-14 — 用真 repo 試打 skill 時，別滑進「順手把那個 repo 修一修」
+- category: correction
+- **情境**: 建 `qa-dataflow` skill，拿 Verdandi-AutoML 當靶跑完整流程。查出「重訓同步跑在請求執行緒」後，我問「要不要我實際動手改」。Peter：「你這邊是針對 skills 做優化的，不是開發的」。
+- **Learning**: 試打的目的是**逼出 skill 的缺口**，不是交付那個 repo 的修復。發現愈精彩愈容易越界 —— 但改別的 repo 的程式碼會把一個 skill session 變成兩件工作，而且那個 repo 的 owner 沒有同意過。
+- **How to apply**: 靶 repo 只允許**唯讀 + 產出稽核文件**（寫進它自己的 `docs/` 慣例位置即可）；反證階段要跑起服務／翻旗標時，做完立刻復原並在報告寫明。發現的問題一律轉成 **skill 的檢查項**（這次轉成 SKILL.md 的「治理欄位有沒有牙齒」）＋報告的「接手要先決定的事」，程式碼修不修是 repo owner 的決定。
+- **Related**: 同一次還學到 `rg` 在 Claude Code 是 shell function（見全域 LEARNINGS 2026-08-14），以及圖種選擇（見 memory `dataflow-diagram-preference`）。
+
+## 2026-08-15 — 搬 skill 換分類：`sk deploy` 會把斷掉的 symlink 當成「已連結」跳過
+- category: errors / gotcha
+- **情境**: 把 4 支 qa-* 從 `skills/quality/` 搬到新的 `skills/qa/`，跑 `./bin/sk deploy` 顯示成功，但 `~/.claude/skills/qa-auto` 等 4 條 symlink 全部指向已不存在的舊路徑 —— **skill 在 Claude Code 裡直接消失，沒有任何錯誤訊息**。
+- **根因**: `bin/sk` 的 `link_skill_to_target()` 用 `[ -L "$target" ]` 判斷「已連結」。`-L` 對**斷掉的** symlink 也是 true，所以搬家後永遠走 skip 分支。
+- **已修**: 改成比對 `readlink` 是否等於目標目錄**且** `[ -e ]` 解析得到，否則 `rm -f` 後重建並印 `relink ... (was: 舊路徑)`。已用「故意指向舊路徑 → 跑 deploy → 驗證修正」實測過。
+- **How to apply**: 換分類的完整清單是 (1) `git mv`；(2) 改 `scripts/generate-readme-catalog.py` 的 `CATEGORY_ORDER` + `CATEGORY_NAMES`（硬編碼白名單，漏改會靜默漏算，見 2026-07-23 條）；(3) `sk deploy`；(4) **逐條驗證 symlink 解析得到**（`for s in ...; do [ -e "$s" ] || echo BROKEN; done`）；(5) 手改 README Structure 樹（`sk readme` 不會動它）；(6) 改名的話另外掃 repo 外參照：`~/.claude/CLAUDE.md`、memory 檔、其他 repo 的文件。
+- **Related**: 這次同時把 `dataflow-audit` 併入 qa-* 前綴系列改名 `qa-dataflow`；`sk rename` 不支援跨分類（給 `qa/qa-dataflow` 仍解析成 `quality/qa-dataflow`），跨分類要手動 `git mv`。

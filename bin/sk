@@ -100,7 +100,22 @@ link_skill_to_target() {
   name="$(basename "$skill_dir")"
   local target="$deploy_target/$name"
   if [ -L "$target" ]; then
-    echo -e "${YELLOW}skip${NC}  $(deploy_label "$deploy_target")/$name (already linked)"
+    # A symlink can exist and still be wrong: moving a skill between categories
+    # leaves it dangling, and `-L` alone reports that as "already linked" — the
+    # skill then silently disappears from Claude Code. Re-point unless it already
+    # resolves to this exact directory.
+    local current
+    current="$(readlink "$target")"
+    if [ "$current" = "$skill_dir" ] && [ -e "$target" ]; then
+      echo -e "${YELLOW}skip${NC}  $(deploy_label "$deploy_target")/$name (already linked)"
+      return 1
+    fi
+    rm -f "$target"
+    if ln -s "$skill_dir" "$target"; then
+      echo -e "${GREEN}relink${NC}  $(deploy_label "$deploy_target")/$name → $skill_dir (was: $current)"
+      return 0
+    fi
+    echo -e "${RED}fail${NC}  $(deploy_label "$deploy_target")/$name → $target"
     return 1
   elif [ -e "$target" ]; then
     echo -e "${RED}skip${NC}  $(deploy_label "$deploy_target")/$name (non-symlink exists at target)"
