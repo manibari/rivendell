@@ -18,7 +18,7 @@
   .ft { font-size: 12px; fill: #7a848e; }
   .mono { font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; }
 </style>
-<svg width="1900" height="1420" viewBox="0 0 1900 1420" xmlns="http://www.w3.org/2000/svg">
+<svg width="1900" height="1740" viewBox="0 0 1900 1740" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="a" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#3d474f"/></marker>
     <marker id="al" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#c99a3a"/></marker>
@@ -91,21 +91,47 @@
   <path class="flow" d="M990 371 L990 566 L410 566 L410 641" marker-end="url(#a)"/>
   <text class="e" x="600" y="558">&lt;出口條件 → 傳遞的東西&gt;</text>
 
-  <!-- ================= 圖例（照抄，只改括號內的例子）================= -->
-  <rect x="30" y="1248" width="1840" height="62" rx="10" fill="#f7f8f9" stroke="#ccd3d9" stroke-width="1.5"/>
-  <rect x="52" y="1268" width="22" height="22" rx="4" fill="#fff" stroke="#5b7f9e" stroke-width="2"/>
-  <text class="lg" x="84" y="1284">實作與文件一致</text>
-  <rect x="232" y="1268" width="22" height="22" rx="4" fill="#fffaf1" stroke="#e0a63c" stroke-width="2"/>
-  <text class="lg" x="264" y="1284">文件標「未建」但其實已完成（&lt;列出來&gt;）</text>
-  <rect x="742" y="1268" width="22" height="22" rx="4" fill="#fdf5f5" stroke="#b34a4a" stroke-width="2" stroke-dasharray="4 3"/>
-  <text class="lg" x="774" y="1284">真的還沒做（&lt;列出來&gt;）</text>
-  <line x1="1130" y1="1279" x2="1180" y2="1279" stroke="#3d474f" stroke-width="2.2"/>
-  <text class="lg" x="1190" y="1284">必要前置</text>
-  <line x1="1290" y1="1279" x2="1340" y2="1279" stroke="#7d93a8" stroke-width="2" stroke-dasharray="6 4"/>
-  <text class="lg" x="1350" y="1284">可選 / 唯讀</text>
-  <line x1="1470" y1="1279" x2="1520" y2="1279" stroke="#c99a3a" stroke-width="2.2"/>
-  <text class="lg" x="1530" y="1284">回頭路（退回修正 · 重訓）</text>
+  <!-- ================= 最後一帶：關卡實況 =================
+       主表上每個看起來像閘門的格子，實測後填一列。四欄缺一不可，
+       第四欄「怎麼被跨過去」是重點（不是是非題，是問答題）。
+       一定要留一列「真的有擋」當對照組。 -->
+  <rect x="30" y="1330" width="1840" height="200" rx="12" fill="#fffaf1" stroke="#e0a63c" stroke-width="1.5"/>
+  <text class="bandlab" x="48" y="1358" fill="#7d5a12">關卡實況 —— 圖上看起來要通過的，實際上哪些跨得過去</text>
+  <text class="bandsub" x="640" y="1358">規劃新功能時：要在某一關加東西，先看它現在到底擋不擋得住</text>
 
-  <line x1="30" y1="1348" x2="1870" y2="1348" stroke="#dfe4e8" stroke-width="1"/>
-  <text class="ft" x="30" y="1370">依 &lt;日期&gt; 逐一比對 &lt;端點來源&gt; 與 &lt;前端呼叫&gt;；前置關係取自程式碼的參數依賴。</text>
+  <text class="e" x="60"  y="1392">關卡</text>
+  <text class="e" x="330" y="1392">圖上看起來</text>
+  <text class="e" x="600" y="1392">實際</text>
+  <text class="e" x="880" y="1392">怎麼被跨過去</text>
+  <line x1="52" y1="1402" x2="1848" y2="1402" stroke="#e0a63c" stroke-width="1"/>
+
+  <text class="lg" x="60"  y="1428">&lt;關卡名&gt;</text>
+  <text class="lg" x="330" y="1428">&lt;圖上的角色，例如「全流程的閘門」&gt;</text>
+  <text class="lg" x="600" y="1428">&lt;純標籤 / 只擋一半 / 自動跨過&gt;</text>
+  <text class="lg" x="880" y="1428">&lt;從哪條路繞過去 —— 另一個端點走舊路？自動流程代替人工？只擋 UI？&gt;</text>
+
+  <text class="lg" x="60"  y="1458">&lt;對照組關卡&gt;</text>
+  <text class="lg" x="330" y="1458">&lt;預設停用&gt;</text>
+  <text class="lg" x="600" y="1458" font-weight="700">真的有擋</text>
+  <text class="lg" x="880" y="1458">&lt;那一行查詢條件／條件式&gt; —— 對照組</text>
+
+  <!-- ================= 圖例（照抄，只改括號內的例子）================= -->
+  <rect x="30" y="1566" width="1840" height="62" rx="10" fill="#f7f8f9" stroke="#ccd3d9" stroke-width="1.5"/>
+  <rect x="52" y="1586" width="22" height="22" rx="4" fill="#fff" stroke="#5b7f9e" stroke-width="2"/>
+  <text class="lg" x="84" y="1602">實作與文件一致</text>
+  <rect x="232" y="1586" width="22" height="22" rx="4" fill="#fffaf1" stroke="#e0a63c" stroke-width="2"/>
+  <text class="lg" x="264" y="1602">文件標「未建」但其實已完成（&lt;列出來&gt;）</text>
+  <rect x="980" y="1586" width="22" height="22" rx="4" fill="#f4f9ff" stroke="#a9c4dd" stroke-width="2"/>
+  <text class="lg" x="1012" y="1602">規劃中</text>
+  <rect x="742" y="1586" width="22" height="22" rx="4" fill="#fdf5f5" stroke="#b34a4a" stroke-width="2" stroke-dasharray="4 3"/>
+  <text class="lg" x="774" y="1602">真的還沒做（&lt;列出來&gt;）</text>
+  <line x1="1130" y1="1597" x2="1180" y2="1597" stroke="#3d474f" stroke-width="2.2"/>
+  <text class="lg" x="1190" y="1602">必要前置</text>
+  <line x1="1290" y1="1597" x2="1340" y2="1597" stroke="#7d93a8" stroke-width="2" stroke-dasharray="6 4"/>
+  <text class="lg" x="1350" y="1602">可選 / 唯讀</text>
+  <line x1="1470" y1="1597" x2="1520" y2="1597" stroke="#c99a3a" stroke-width="2.2"/>
+  <text class="lg" x="1530" y="1602">回頭路（退回修正 · 重訓）</text>
+
+  <line x1="30" y1="1666" x2="1870" y2="1666" stroke="#dfe4e8" stroke-width="1"/>
+  <text class="ft" x="30" y="1688">依 &lt;日期&gt; 逐一比對 &lt;端點來源&gt; 與 &lt;前端呼叫&gt;；前置關係取自程式碼的參數依賴。</text>
 </svg>
