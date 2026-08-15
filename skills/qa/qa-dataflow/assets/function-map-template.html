@@ -1,0 +1,111 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Verdandi-AutoML 功能關係圖</title>
+<style>
+  * { margin: 0; padding: 0; }
+  body { background: #fff; font-family: "PingFang TC", "Helvetica Neue", sans-serif; }
+  svg { display: block; }
+  .t1 { font-size: 34px; font-weight: 700; fill: #14171a; }
+  .t2 { font-size: 16.5px; fill: #5a6470; }
+  .bandlab { font-size: 17px; font-weight: 700; }
+  .bandsub { font-size: 13px; fill: #6b7680; }
+  .n  { font-size: 16px; font-weight: 600; fill: #14171a; }
+  .ns { font-size: 12px; fill: #6b7680; }
+  .e  { font-size: 12.5px; fill: #7d5a12; font-weight: 600; }
+  .er { font-size: 12.5px; fill: #a33; font-weight: 600; }
+  .ed { font-size: 12.5px; fill: #5a7f9e; font-weight: 600; }
+  .lg { font-size: 13.5px; fill: #454d55; }
+  .ft { font-size: 12px; fill: #7a848e; }
+  .mono { font-family: "SF Mono", Menlo, monospace; font-size: 11.5px; }
+</style>
+<svg width="1900" height="1420" viewBox="0 0 1900 1420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#3d474f"/></marker>
+    <marker id="al" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#c99a3a"/></marker>
+    <marker id="ad" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#7d93a8"/></marker>
+    <marker id="ax" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#b34a4a"/></marker>
+  </defs>
+  <style>
+    .box  { fill:#fff; stroke:#5b7f9e; stroke-width:2; rx:9; }
+    .stale{ fill:#fffaf1; stroke:#e0a63c; stroke-width:2.5; rx:9; }
+    .gapb { fill:#fdf5f5; stroke:#b34a4a; stroke-width:2; stroke-dasharray:6 4; rx:9; }
+    .hng  { fill:#fffaf1; stroke:#c98a3a; stroke-width:3; rx:9; }
+    .sideb{ fill:#f4f9ff; stroke:#a9c4dd; stroke-width:2; rx:8; }
+    .flow { stroke:#3d474f; stroke-width:2.2; fill:none; }
+    .loopl{ stroke:#c99a3a; stroke-width:2.2; fill:none; }
+    .dash { stroke:#7d93a8; stroke-width:2; fill:none; stroke-dasharray:6 4; }
+    .xdash{ stroke:#b34a4a; stroke-width:2; fill:none; stroke-dasharray:6 4; }
+  </style>
+
+  <text class="t1" x="30" y="46">&lt;產品名&gt; — 功能關係圖：誰是誰的前置，交出去的是什麼</text>
+  <text class="t2" x="30" y="76">每條線上都標「這個功能交給下一個功能的東西」。實線＝必要前置，虛線＝可選或唯讀。依 &lt;YYYY-MM-DD&gt; 程式碼實查</text>
+  <line x1="30" y1="94" x2="1870" y2="94" stroke="#14171a" stroke-width="3"/>
+
+  <!-- ================= BAND 1 =================
+       一個 band 一列。列高 410 適合三排節點（主線 + 上下分支），
+       只有主線時用 230。節點列的 y 中心：227 / 332 / 437 -->
+  <rect x="30" y="118" width="1840" height="410" rx="12" fill="#f7fafc" stroke="#c3d2dd" stroke-width="1.5"/>
+  <text class="bandlab" x="48" y="146" fill="#2b5a7e">&lt;band 名&gt; —— &lt;這個 band 做完會得到什麼&gt;</text>
+  <text class="bandsub" x="660" y="146">&lt;這個 band 的出口條件；band 標題與副標至少隔 600px，否則會疊&gt;</text>
+
+  <!-- 節點：w=185 h=64。同一列的 x 用 60 / 310 / 575 / 825，間距 65 給箭頭 -->
+  <rect class="box" x="60" y="300" width="185" height="64"/>
+  <text class="n" x="78" y="326">&lt;功能名&gt;</text><text class="ns" x="78" y="346">&lt;副標，勿超過框寬-30&gt;</text>
+
+  <rect class="box" x="310" y="300" width="200" height="64"/>
+  <text class="n" x="328" y="326">&lt;功能名&gt;</text><text class="ns" x="328" y="346">&lt;副標&gt;</text>
+
+  <rect class="stale" x="575" y="195" width="185" height="64"/>
+  <text class="n" x="593" y="221">&lt;文件說沒做、其實做完的功能&gt;</text><text class="ns" x="593" y="241">&lt;證據&gt;</text>
+
+  <rect class="gapb" x="60" y="405" width="185" height="64"/>
+  <text class="n" x="78" y="431" fill="#a33">&lt;真的沒做的功能&gt;</text><text class="ns" x="78" y="451" fill="#a33">&lt;怎麼知道沒做&gt;</text>
+
+  <!-- 唯讀分析群組：讀同一份資料但不推進流程的，集中在一個虛線框裡 -->
+  <rect class="sideb" x="1090" y="190" width="760" height="200"/>
+  <text class="bandlab" x="1108" y="216" fill="#2b5a7e">唯讀 —— 讀同一份資料，不產生新東西、不推進流程</text>
+
+  <!-- ==== 邊 ====
+       1) 直線：同列相鄰
+       2) 肘形：跨列，先水平再垂直（轉折留 32px）
+       3) 回頭路 .loopl：走節點下方或外側，不要穿過節點
+       每條邊都要有標籤，標籤內容是「傳遞的識別碼」，不是動作名稱 -->
+  <path class="flow" d="M245 332 L303 332" marker-end="url(#a)"/>
+  <g><rect x="234" y="319" width="80" height="22" rx="5" fill="#fff" stroke="#dfe4e8" stroke-width="1"/>
+     <text class="e" x="274" y="335" text-anchor="middle" fill="#7d5a12">&lt;xxx_id&gt;</text></g>
+
+  <path class="flow" d="M510 316 L542 316 L542 227 L568 227" marker-end="url(#a)"/>
+  <g><rect x="524" y="214" width="64" height="22" rx="5" fill="#fff" stroke="#dfe4e8" stroke-width="1"/>
+     <text class="e" x="556" y="230" text-anchor="middle" fill="#7d5a12">&lt;標籤&gt;</text></g>
+
+  <path class="loopl" d="M825 348 L792 348 L792 437 L767 437" marker-end="url(#al)"/>
+  <g><rect x="753" y="397" width="78" height="22" rx="5" fill="#fff" stroke="#dfe4e8" stroke-width="1"/>
+     <text class="e" x="792" y="413" text-anchor="middle" fill="#7d5a12">&lt;退回條件&gt;</text></g>
+
+  <path class="xdash" d="M245 437 L277 437 L277 348 L303 348" marker-end="url(#ax)"/>
+  <path class="dash" d="M1025 300 L1058 300 L1058 262 L1083 262" marker-end="url(#ad)"/>
+
+  <!-- ================= 跨 band 的邊 =================
+       走 band 與 band 之間的水平通道（band 底 +38 / 下一個 band 頂 -30），
+       不要穿過任何 band 內部 -->
+  <path class="flow" d="M990 371 L990 566 L410 566 L410 641" marker-end="url(#a)"/>
+  <text class="e" x="600" y="558">&lt;出口條件 → 傳遞的東西&gt;</text>
+
+  <!-- ================= 圖例（照抄，只改括號內的例子）================= -->
+  <rect x="30" y="1248" width="1840" height="62" rx="10" fill="#f7f8f9" stroke="#ccd3d9" stroke-width="1.5"/>
+  <rect x="52" y="1268" width="22" height="22" rx="4" fill="#fff" stroke="#5b7f9e" stroke-width="2"/>
+  <text class="lg" x="84" y="1284">實作與文件一致</text>
+  <rect x="232" y="1268" width="22" height="22" rx="4" fill="#fffaf1" stroke="#e0a63c" stroke-width="2"/>
+  <text class="lg" x="264" y="1284">文件標「未建」但其實已完成（&lt;列出來&gt;）</text>
+  <rect x="742" y="1268" width="22" height="22" rx="4" fill="#fdf5f5" stroke="#b34a4a" stroke-width="2" stroke-dasharray="4 3"/>
+  <text class="lg" x="774" y="1284">真的還沒做（&lt;列出來&gt;）</text>
+  <line x1="1130" y1="1279" x2="1180" y2="1279" stroke="#3d474f" stroke-width="2.2"/>
+  <text class="lg" x="1190" y="1284">必要前置</text>
+  <line x1="1290" y1="1279" x2="1340" y2="1279" stroke="#7d93a8" stroke-width="2" stroke-dasharray="6 4"/>
+  <text class="lg" x="1350" y="1284">可選 / 唯讀</text>
+  <line x1="1470" y1="1279" x2="1520" y2="1279" stroke="#c99a3a" stroke-width="2.2"/>
+  <text class="lg" x="1530" y="1284">回頭路（退回修正 · 重訓）</text>
+
+  <line x1="30" y1="1348" x2="1870" y2="1348" stroke="#dfe4e8" stroke-width="1"/>
+  <text class="ft" x="30" y="1370">依 &lt;日期&gt; 逐一比對 &lt;端點來源&gt; 與 &lt;前端呼叫&gt;；前置關係取自程式碼的參數依賴。</text>
+</svg>
