@@ -27,22 +27,16 @@ Generate `.excalidraw` JSON files that **argue visually**, not just display info
 
 **Setup:** If the user asks you to set up this skill (renderer, dependencies, etc.), see `README.md` for instructions.
 
-> **Known issue (2026-05-16):** the bundled `references/render_template.html`
-> imports `@excalidraw/excalidraw` from `esm.sh`, whose transitive dep
-> `@braintree/sanitize-url@6.0.2/dist/constants.mjs` currently 404s. The
-> ESM graph fails to resolve and Playwright times out at `__moduleReady`.
-> Workarounds:
+> **RESOLVED (2026-08-09):** `render_template.html` now pins
+> `https://esm.sh/@excalidraw/excalidraw@0.17.6?bundle` and imports the
+> **default export** (`import mod from ...; const { exportToSvg } = mod;`) —
+> the pinned bundle resolves fine but exposes all APIs under `default`.
+> Note: jsdelivr `+esm` is NOT a viable workaround (its bundle ships a
+> syntax error, `Unexpected token ':'`).
 >
-> 1. Switch the import in `render_template.html` to a different CDN
->    (`https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17/+esm` or
->    `https://unpkg.com/...`), OR
-> 2. Self-host the bundle locally (clone @excalidraw/excalidraw, build,
->    serve from a local file://), OR
-> 3. Wait for esm.sh to republish the missing constants.mjs.
->
-> JSON generation (the main authoring task) still works regardless of
-> renderer state — you can produce the `.excalidraw` file and render
-> later when CDN heals.
+> Original issue (2026-05-16, for context): esm.sh latest had a transitive
+> dep 404 (`@braintree/sanitize-url@6.0.2/dist/constants.mjs`), so the ESM
+> graph failed and Playwright timed out at `__moduleReady`.
 
 ## Customization
 
