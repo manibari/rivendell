@@ -8,6 +8,10 @@ For each scrape source, fetch the listing page and extract program entries.
 
 ### grants.nat.gov.tw (政府補助一站通)
 
+> ⚠️ DNS unresolvable since 2026-07-23 (confirmed 07-27, 08-10). Fall back to
+> WebSearch across the upstream agency sites already recorded in program files
+> (eii.nat.gov.tw/tiip, sme.gov.tw, ida.gov.tw). Remove this note if the domain returns.
+
 ```
 1. WebFetch https://grants.nat.gov.tw/Portal/SiteMap
 2. Look for active grant listings in the response
@@ -18,15 +22,21 @@ For each scrape source, fetch the listing page and extract program entries.
    - URL (reference_url)
 ```
 
-### SBIR (www.sbir.org.tw)
+### SBIR (sbir.org.tw)
 
 ```
-1. WebFetch https://www.sbir.org.tw/information/show/1
+1. Fetch https://sbir.org.tw/news/main (計畫公告) and https://sbir.org.tw/cross/notice (跨域研發公告)
+   - Use no-www host: www.sbir.org.tw 301-redirects to sbir.org.tw
+   - WebFetch fails cert verification on this host → use `curl -sk` instead
 2. Extract active call-for-proposals
 3. Fields: name, agency (經濟部中小及新創企業署), deadline, eligibility, funding_amount
 ```
 
 ### SIIR (www.siir.org.tw)
+
+> ⚠️ Domain NXDOMAIN since 2026-07-23 (confirmed 08-10). Fall back to WebSearch
+> "SIIR 服務業創新研發計畫 <ROC year>年度"; the program is annual with typically one
+> batch (115年度 closed 2026-01-30).
 
 ```
 1. WebFetch https://www.siir.org.tw/information/show/1
