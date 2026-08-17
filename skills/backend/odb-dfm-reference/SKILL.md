@@ -14,7 +14,7 @@ description: >
   IoT/SCADA sensor time-series (iot-factory-report); a generic CSV/xlsx job
   (office-xlsx). This is physical/manufacturing EDA = computational geometry.
 tags: [backend, dfm, odb, pcb, cam, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -48,9 +48,49 @@ ODB++'s native hierarchy, and the spine of any CAM tool:
 
 ## Gotchas (highest-signal — each cost real debugging)
 
-- **Units: ODB++ coords are INCH; normalize to mm early** (`INCH_TO_MM = 25.4`).
-  UNITS can be **per-layer**, not global (PTI-ARES `0a254c2`) — read each layer's
-  UNITS, don't assume the job-level one.
+- **Units are per-FILE and sometimes UNDECLARED — never assume, always判定.**
+  Four distinct traps, all seen in one job (PB0009, PTI-ARES-Transcribe 2026-08-06):
+  1. **`features` declares its own `U MM` / `U INCH` per layer** — not global, not
+     even job-consistent (PTI-ARES `0a254c2`).
+  2. **`components` has NO units declaration at all, and is INCH** even when the
+     sibling `features` files say `U MM`. Verify by geometry: components must land
+     *inside* the profile. Read as mm, all 1,653 parts collapse into a 3.7×5.2 mm
+     corner — and **nothing errors**, you just get silently wrong data.
+  3. **`UNITS=` governs coordinates only, NOT size fields.** Symbol names and
+     `tools` sizes are **µm** regardless: `tools` says `UNITS=MM` yet
+     `FINISH_SIZE=254` means 254 µm. Cross-check: µm values come out as whole mils
+     (`r25.4`=1mil, `r152.4`=6mil, `r203.2`=8mil, `r254`=10mil, `r1270`=50mil).
+  4. **Valor's UI shows inch** (`X = -2.1119655"`) no matter what the files hold.
+  Store one canonical integer unit internally (picometers survive both mm-9dp and
+  inch-7dp exactly); keep the source unit + original string if you need round-trip.
+- **Netlist references layers that have no geometry — this is NORMAL, not corruption.**
+  Customers **mask inner-layer routing** (traces = their circuit IP) but keep the full
+  netlist so the fab still knows connectivity. PB0009: `eda/data`'s `LYR` line names
+  **27** layers while `matrix/matrix` has **23** — and they are *not* a subset
+  relation (LYR adds s1–s6/p1–p6; matrix adds comp/asm/fab/outline layers). FID
+  layer indices point into the **LYR** list, not matrix ROW. Result: **231,412 of
+  350,476 FID records (66%) reference layers with no directory.** Therefore: keep the
+  two namespaces in separate tables, **do not FK feature references** (every real job
+  would fail to import), **do not warn** (every board would warn), render such layers
+  as **empty**, and never back-derive the hidden traces — that defeats the customer's
+  IP protection on purpose.
+- **A copper layer's contents are not all copper — filter the drawing furniture.**
+  PB0009's `top` carries 4,046 line records (6.0% of the layer) *outside* the board
+  profile: the fab drawing's **title block**, drawn as text strokes with a zero-width
+  aperture (`r0.1`) and tagged `.nomenclature` / `.string`. Resolving the strings
+  proves it — `DOCUMENT NUMBER`, `CLASS CODE`, `CONFIDENTIAL`, `SIZE`, `FAB0`,
+  `PRELIM`, a street address. It sits below the board, off-screen at Valor's default
+  zoom, so nobody notices. **Filter `.nomenclature`/`.string` before any envelope,
+  DFM, or connectivity pass**, or the board grows by 129 mm; and never index on the
+  assumption that features lie inside the profile.
+- **Feature attribute values have two meanings — don't blanket-treat them as indices.**
+  In `;3=64` the `64` indexes the `&` text table (`&64 FAB0`); in `;5=0.000000` the
+  number is a literal (`.string_angle` degrees). Decide by attribute type. Reading
+  everything as an index silently turns a zero angle into text-table entry 0.
+- **`.sum` files are a free bit-exact oracle.** Every ODB++ file has a sibling
+  `.<name>.sum` holding `SIZE` (byte count) and `SUM` = **plain arithmetic sum of all
+  bytes** (no modulo). Verified across all 70 `.sum` files in PB0009, zero mismatches.
+  Use it to prove a regenerated file is byte-identical without keeping the original.
 - **Symbols**: `r<n>` = **diameter in µm** (not radius); `oval` = **obround**
   (stadium), not an ellipse; **rect rotation** is encoded via paired swapped
   symbols, not an angle; the `orient` field is a useless constant — derive
