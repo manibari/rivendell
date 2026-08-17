@@ -3134,12 +3134,16 @@ print(f'_{L[\"pricing\"]}_')
   # Linux reads '' as the script and the real script as a filename ("can't read
   # …"). awk behaves identically on both, and `$0==h` is a string match so the
   # heading needs no regex escaping.
-  local _summary
-  _summary=$'\n'"- **$L_TOTAL:** $total skills"$'\n'"- **$L_ATTENTION:** $needs_attention issue(s)"
-  awk -v h="## $L_SUMMARY" -v s="$_summary" '
+  #
+  # One line per -v: BSD awk rejects a literal newline inside a -v assignment
+  # ("awk: newline in string", exit 2), so a single multi-line $_summary made
+  # every run silently skip the insert and strand a 0-byte .tmp.
+  awk -v h="## $L_SUMMARY" \
+      -v a="- **$L_TOTAL:** $total skills" \
+      -v b="- **$L_ATTENTION:** $needs_attention issue(s)" '
     { print }
-    $0 == h && !done { print s; done = 1 }
-  ' "$report" > "$report.tmp" && mv "$report.tmp" "$report"
+    $0 == h && !done { print ""; print a; print b; done = 1 }
+  ' "$report" > "$report.tmp" && mv "$report.tmp" "$report" || rm -f "$report.tmp"
 
   echo -e "${GREEN}Report generated:${NC} $report"
   echo ""
