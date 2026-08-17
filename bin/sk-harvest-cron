@@ -98,15 +98,21 @@ Write the report in Traditional Chinese (繁體中文)."
 # --- Run Claude in headless mode ---
 start_epoch=$(date +%s)
 
-# Use timestamped report name to avoid overwriting previous runs
-REPORT_FILE="$REPORT_DIR/harvest-${TODAY}.md"
+# Tag the report with this machine. Two machines harvesting the same day used
+# to write the same filename and silently clobber each other — 2026-07-13,
+# 07-23 and 08-03 each ended up with one report where two runs had happened.
+# The janitor takes the date from the first YYYY-MM-DD in the name, so a
+# trailing tag doesn't affect archiving.
+HOST_TAG=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | sed 's/-\{1,\}$//')
+[ -z "$HOST_TAG" ] && HOST_TAG="unknown"
+REPORT_FILE="$REPORT_DIR/harvest-${TODAY}-${HOST_TAG}.md"
 
 claude -p "$PROMPT" \
     --model sonnet \
     --output-format text \
     < /dev/null \
     > "$REPORT_FILE" \
-    2> "$REPORT_DIR/harvest-${TODAY}-error.log" \
+    2> "$REPORT_DIR/harvest-${TODAY}-${HOST_TAG}-error.log" \
     && run_exit=0 || run_exit=$?
 
 end_epoch=$(date +%s)
