@@ -161,6 +161,34 @@ actual 圖的價值在於它**帶結論**，不是單純描述。用三個符號
 
 每個符號後面接一句「為什麼」，不要只放符號。
 
+## 參考實例（照這兩套畫，不要重新發明版面）
+
+本規格是從這兩個專案的實作反推出來的。動筆前先開 PNG 看一眼，比讀規格快：
+
+**PTI-ARES —— actual / target 對照，手寫 HTML 16:9**
+
+- `~/code/PTI-ARES/docs/architecture/dataflow-actual-2026-08.html`
+- `~/code/PTI-ARES/docs/architecture/dataflow-target-2026-08.{html,png,excalidraw}`
+- 落差報告：`~/code/PTI-ARES/docs/architecture/pg-as-sor-gap-2026-08.md`
+
+看點：actual 圖上直接標 `✗ / △ / ✅` 判讀＋一句為什麼；target 另出一張，不用虛線暗示。
+
+**Verdandi-AutoML —— 一題一張的四圖分工，最完整的一套**
+
+- 功能關係圖（主表，多 band 手工正交排版）：`dataflow-functions-2026-08.{html,png,mmd}`
+- 資料實體流：`dataflow-entities-2026-08.{html,png}`
+- 模組全景（清單，無邊）：`dataflow-modules-2026-08.{html,png}`
+- store rail actual / target：`dataflow-stores-{actual,target}-2026-08.{html,png}`
+- 節點下鑽（單一節點放大成獨立一張）：`node-應用-最佳化內部-2026-08.html`、
+  `node-應用-兩套實作-2026-08.html`
+- 落差報告＋INDEX：`dataflow-audit-2026-08-14.md`、`INDEX.md`
+
+全部在 `~/code/Verdandi-AutoML/docs/verification/`。
+
+看點：(a) 四張圖各答一個問題，不合併；(b) 主表的邊全部標了傳遞的識別碼；
+(c) 主表最後一帶是「關卡實況」四欄表；(d) 一個節點講不完就下鑽成獨立一張，
+不要把主表塞爆；(e) 有 INDEX 讓這批圖是可維護的成品，不是一次性報告。
+
 ## 產生方式
 
 擇一，不要三種都做：
