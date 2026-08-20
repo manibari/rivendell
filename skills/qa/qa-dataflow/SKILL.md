@@ -1,19 +1,23 @@
 ---
 name: qa-dataflow
 description: >
-  驗證一條資料流「實際上」是不是照宣稱在跑 —— 接手他人／AI 生成的程式碼、或要驗收交付時用。
-  三段骨幹：(1) 靜態地圖 —— 從程式碼推出 actual dataflow，與宣稱的 target 對帳，每條落差附 file:line；
-  (2) 反證 —— 拔依賴、翻旗標預設值、餵壞資料、盤點被吞掉的失敗，因為讀碼只看得到「可能的路徑」，
-  跑起來才知道真的走哪條；(3) 釘測試 —— 只在反證確認重要的接縫上加 tracer bullet／雙路徑 parity／
-  外部真值 baseline／筆數守恆。產出落差報告 + actual／target 兩張圖。
+  驗證一條資料流「實際上」是不是照宣稱在跑，以及路上那些關卡到底擋不擋得住 ——
+  接手他人／AI 生成的程式碼、驗收交付時用。三段：(1) 畫地圖 —— 從程式碼推出功能關係
+  （誰是誰的前置、交出去什麼、哪裡會退回），每條落差附 file:line；(2) 反證 —— 甲組問
+  「資料實際走哪條路」（拔依賴、翻旗標預設值、餵壞資料），乙組問「這個檢查擋不擋得住」
+  （治理欄位是不是只有寫沒人讀、畫成閘門的會不會被繞過、基準是不是每次現算所以永不報警、
+  失敗是不是被吞掉）—— 這類失敗全都不會報錯，測試綠燈、log 乾淨，只能主動去問；
+  (3) 釘測試 —— 只釘反證確認重要的接縫。產出功能關係主表 + INDEX + 落差報告，
+  主表之後拿來規劃新功能。
   TRIGGER when: 「確認資料流對不對」「這流程是不是真的這樣跑」「接手這包 code 想確認整條流程」
-  「AI 寫的這段有沒有真的存到 DB」「architecture 跟實作有沒有走鐘」「畫一張實際資料流圖」
-  「這個表到底有沒有人在讀」，或驗收外包／交接他人程式碼、懷疑某個 store 是側掛的。
+  「AI 寫的有沒有真的存到 DB」「architecture 跟實作有沒有走鐘」「這個表到底有沒有人在讀」
+  「這個欄位是不是只是個標籤」「退役／沒上線的還能不能被呼叫」「這個閘門真的擋得住嗎」
+  「畫一張實際資料流圖」，或驗收外包／交接他人程式碼、懷疑某個 store 是側掛的。
   DO NOT TRIGGER when: 追單一 bug 的根因（gstack-investigate）；UI 旅程測試（qa-journey / qa-testing）；
   PR diff 審查（gstack-review）；repo 健康度總評（github-repo-audit）；
   安全稽核（gstack-cso）；只是要畫流程圖、沒有要驗證（mermaid-diagram / user-flow）。
-tags: [quality, architecture, verification]
-version: 1.0.0
+tags: [qa, architecture, verification]
+version: 2.0.0
 user-invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---

@@ -555,3 +555,10 @@ category: best_practice
 - **已修**: 改成比對 `readlink` 是否等於目標目錄**且** `[ -e ]` 解析得到，否則 `rm -f` 後重建並印 `relink ... (was: 舊路徑)`。已用「故意指向舊路徑 → 跑 deploy → 驗證修正」實測過。
 - **How to apply**: 換分類的完整清單是 (1) `git mv`；(2) 改 `scripts/generate-readme-catalog.py` 的 `CATEGORY_ORDER` + `CATEGORY_NAMES`（硬編碼白名單，漏改會靜默漏算，見 2026-07-23 條）；(3) `sk deploy`；(4) **逐條驗證 symlink 解析得到**（`for s in ...; do [ -e "$s" ] || echo BROKEN; done`）；(5) 手改 README Structure 樹（`sk readme` 不會動它）；(6) 改名的話另外掃 repo 外參照：`~/.claude/CLAUDE.md`、memory 檔、其他 repo 的文件。
 - **Related**: 這次同時把 `dataflow-audit` 併入 qa-* 前綴系列改名 `qa-dataflow`；`sk rename` 不支援跨分類（給 `qa/qa-dataflow` 仍解析成 `quality/qa-dataflow`），跨分類要手動 `git mv`。
+
+## 2026-08-17 — 改了 SKILL.md 的 description，README 目錄不會跟著更新（刻意設計）
+- category: gotcha
+- **情境**: qa-dataflow 內容長大後改寫 frontmatter 的 description，跑 `./bin/sk readme` 顯示「README.md updated」、exit 0，但 README 那一列還是舊描述，`git status` 也看不到改動 —— 一度以為生成器壞了。
+- **根因**: **不是 bug，是刻意的。** `scripts/generate-readme-catalog.py:231-241` 註解寫得很清楚：`trigger` 與 `description` 兩欄都優先沿用 README 現有內容，因為那張表被手工修正過（「自動 + hook」「/claude-to-im setup」這類），自動抽取是粗略啟發式，重生會蓋掉修正。**生成器只補「尚未列出」的 skill，改既有列是手動的事**。而且沒有 `--force`。
+- **How to apply**: 改 skill 的 description／觸發方式之後，**README 那一列要手動編**（`sk readme` 只保證新 skill 會被加進去、計數與分類正確）。同理，「`sk readme` 顯示 updated」不代表你的改動有進去 —— 它是無條件訊息，要 `git diff README.md` 才算驗證。
+- **Related**: 同一支腳本的 `CATEGORY_ORDER` 硬編碼白名單坑見 2026-07-23 條；`sk deploy` 把斷掉 symlink 當「已連結」見 2026-08-15 條。三個都屬於「工具回報成功但沒做事」。

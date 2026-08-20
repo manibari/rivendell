@@ -131,7 +131,7 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
-| **qa-dataflow** | 自動 | 驗證一條資料流「實際上」是不是照宣稱在跑 —— 接手他人／AI 生成的程式碼、或要驗收交付時用。 三段骨幹：(1) 靜態地圖 —— 從程式碼推出 actual |
+| **qa-dataflow** | `/qa-dataflow` 或自動 | 驗證資料流是否照宣稱在跑，以及路上的關卡到底擋不擋得住（寫了沒人讀、閘門不擋、基準永不報警）；產出功能關係主表 + 落差報告 |
 | **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
 | **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
 | **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
