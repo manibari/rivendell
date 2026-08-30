@@ -31,3 +31,5 @@ node_modules/
 # Disk usage snapshot (regenerated daily by sk-disk-snapshot)
 dashboard/data/disk-tree.json
 dashboard-next/public/avatar/models/*.vrm
+gateway/.venv/
+dashboard-next/api/.venv/
