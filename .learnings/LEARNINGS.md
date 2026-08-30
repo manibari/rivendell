@@ -532,3 +532,12 @@
 - **Category**: best_practice
 - **Context**: Dashboard `/live` and `/files` only searched `reports/` but sales agents log to `materials/tenders/`, `materials/subsidies/`, etc.
 - **Learning**: Read plist `StandardOutPath` to find correct log location. Added plist-based log discovery to `/live`, `/files`, `/file` endpoints.
+
+## 2026-08-29 — docker-compose 掛載會把 `logs/` 建成 root-owned，害 sk_exec 寫 log 直接 Permission denied
+
+- **Category**: bug（可攜性/權限）
+- **Seen in**: `sk dispatch` 派 agent_task 時 sk-exec-lib:187 寫 `logs/dispatch-*.log` 失敗；
+  `logs/` 是 root:root 755（docker-compose 某次以 root 建立的 volume 掛載點），使用者寫不進去。
+- **Root cause**: compose 在目錄不存在時以 daemon 身分建立掛載點；之後所有非 root 工具都炸。
+- **Rule**: 遇到 repo 內 root-owned 空目錄，`rmdir + mkdir` 即可換回使用者所有（父目錄可寫就行，
+  不用 sudo）。預防：docker-compose 用到的 host 目錄先在 bootstrap/preflight 以使用者身分 mkdir。

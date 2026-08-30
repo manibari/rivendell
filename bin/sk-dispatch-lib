@@ -1,0 +1,219 @@
+#!/usr/bin/env bash
+# sk-dispatch-lib — shared proposal pipeline for `sk dispatch`.
+# Sourced by bin/sk and bin/sk-mail-triage-cron (after sk-exec-lib).
+#
+#   sk_dispatch_propose [--source user|mail] [--context <event.json>] \
+#                       [--auto-internal] "<描述>"
+#
+# Pipeline: id → kg recall → claude -p (JSON only, no tools) → validate
+# (retry once with validator errors) → render → optionally auto-execute
+# internal/draft tasks → record run. Echoes the dispatch id on success.
+# Any future event channel calls this same function — the confirmation
+# machinery downstream never forks per channel.
+
+[ -n "${_SK_DISPATCH_LIB_LOADED:-}" ] && return 0
+_SK_DISPATCH_LIB_LOADED=1
+
+SK_DISPATCH_REPO_DIR="${SK_DISPATCH_REPO_DIR:-${REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"
+
+# Active persona helpers — data/persona.conf is the registry (flat dotted keys)
+sk_persona_slug() {
+  grep -E '^active *=' "$SK_DISPATCH_REPO_DIR/data/persona.conf" 2>/dev/null \
+    | head -1 | cut -d= -f2 | tr -d ' ' || true
+}
+sk_persona_name() {
+  local slug; slug="$(sk_persona_slug)"
+  local name
+  name=$(grep -E "^${slug}\.display_name *=" "$SK_DISPATCH_REPO_DIR/data/persona.conf" 2>/dev/null \
+    | head -1 | cut -d= -f2 | sed 's/^ *//;s/ *$//')
+  echo "${name:-助理}"
+}
+sk_persona_file() {
+  local slug; slug="$(sk_persona_slug)"
+  local f
+  f=$(grep -E "^${slug}\.file *=" "$SK_DISPATCH_REPO_DIR/data/persona.conf" 2>/dev/null \
+    | head -1 | cut -d= -f2 | tr -d ' ')
+  echo "$SK_DISPATCH_REPO_DIR/${f:-profiles/personas/lindir.md}"
+}
+
+sk_dispatch_propose() {
+  local repo="$SK_DISPATCH_REPO_DIR"
+  local dl="python3 $repo/scripts/dispatch-lib.py"
+  local source_channel="user" context_file="" auto_internal=0 request=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --source) source_channel="$2"; shift 2 ;;
+      --context) context_file="$2"; shift 2 ;;
+      --auto-internal) auto_internal=1; shift ;;
+      *) request="$*"; break ;;
+    esac
+  done
+  if [ -z "$request" ]; then
+    echo "sk_dispatch_propose: empty request" >&2
+    return 1
+  fi
+
+  local id
+  id=$($dl new-id)
+  local ddir="$repo/dispatch/$id"
+  mkdir -p "$ddir/results"
+  printf '%s\n' "$request" > "$ddir/request.txt"
+
+  local context_json="{}"
+  [ -n "$context_file" ] && [ -f "$context_file" ] && context_json="$(cat "$context_file")"
+
+  local kg_facts
+  kg_facts=$(python3 "$repo/scripts/kg.py" dump --active-only 2>/dev/null | head -c 20000)
+  [ -z "$kg_facts" ] && kg_facts="(知識庫目前是空的)"
+
+  local crm_status="unreachable"
+  curl -sm2 -o /dev/null "http://localhost:8100/openapi.json" 2>/dev/null && crm_status="reachable"
+
+  local persona="" pname pfile
+  pname="$(sk_persona_name)"
+  pfile="$(sk_persona_file)"
+  [ -f "$pfile" ] && persona="$(cat "$pfile")
+
+---
+
+"
+  local prompt
+  prompt="${persona}你是${pname}，Peter 的個人助理。把模糊指令/事件變成結構化提案 JSON（summary/rationale/clarifications 用上面人格檔的語氣寫，像幕僚彙報）。你只產 JSON，不執行任何動作——執行由確定性程式在人工確認後進行。
+
+## 指令/事件（來源：${source_channel}）
+${request}
+
+## 事件脈絡（若有）
+${context_json}
+
+## 知識庫 active facts（消歧義用；rationale 需引用依據）
+${kg_facts}
+
+## 輸出格式：單一 JSON 物件（不要 code fence 以外的任何文字）
+{\"schema\":1,\"dispatch_id\":\"${id}\",\"request\":\"原文\",\"created\":\"$(date -Iseconds)\",\"revision\":1,
+ \"source\":{\"channel\":\"${source_channel}\",\"context\":${context_json}},
+ \"summary\":\"一句話理解\",\"clarifications\":[\"真的無法推斷才問，可空\"],
+ \"conflicts\":[{\"index\":1,\"fact_id\":\"..\",\"entity_type\":\"people|companies|projects\",\"entity_slug\":\"..\",\"old_fact\":\"..\",\"new_direction\":\"..\",\"explanation\":\"..\",\"replacement_fact\":\"..\",\"category\":\"decision\"}],
+ \"tasks\":[{\"id\":\"t1\",\"title\":\"..\",\"type\":\"..\",\"risk\":\"internal|draft|external\",\"rationale\":\"引用哪些 facts\",\"blocked_by_conflict\":null,\"payload\":{}}]}
+
+## task type 與 payload（逐型必填）
+- todo: {\"text\",\"due\":\"YYYY-MM-DD 或 null\"} — 記待辦
+- agent_task: {\"prompt\",\"tools_profile\":\"readonly|standard\",\"project_dir\":null} — 派 headless agent（查資料/讀信/寫報告用 readonly）
+- email: {\"to\":[],\"cc\":[],\"subject\",\"body\"} — 寄信給真人（永遠需人工逐件確認，body 寫完整可寄版本）
+- calendar_event: {\"summary\",\"start\":\"ISO8601\",\"end\",\"timezone\":\"Asia/Taipei\",\"attendees\":[],\"location\":\"\",\"description\":\"\"} — 有 attendees 即視同真人邀請
+- crm: {\"brief\":\"業務行為摘要\",\"client_slug\":\"kg companies slug 或 null\",\"event_context\":{}} — 客戶信件/報價/合約/成交/客戶會議等業務行為一律用此型交接 CRM（目前 Rightek-CRM ${crm_status}），禁止自行用 email/calendar_event 處理業務事項
+
+## 規則
+1. 涉及真人/會議/金錢：只產提案（email/calendar_event/crm），內容具體完整（收件人、時間、金額），由人確認
+2. 與知識庫 active facts 矛盾：寫進 conflicts 攤開，相關 task 設 blocked_by_conflict，不要悄悄照辦
+3. 最多 ${MAX_DISPATCH_TASKS:-8} 個 tasks；不確定就進 clarifications，寧缺勿濫
+4. rationale 必須引用知識庫依據（或註明知識庫無相關資料）
+5. 全部繁體中文"
+
+  local raw="$ddir/.raw-output.txt"
+  claude -p "$prompt" --output-format text < /dev/null > "$raw" 2> "$ddir/.claude-error.log" || {
+    echo "sk_dispatch_propose: claude failed (see $ddir/.claude-error.log)" >&2
+    return 1
+  }
+
+  local verrs
+  if ! verrs=$($dl validate --out "$ddir/proposal.json" < "$raw" 2>&1); then
+    # retry once with the validator errors attached
+    claude -p "$prompt
+
+## 你上一次的輸出未通過 schema 驗證，錯誤如下，請修正後重新輸出完整 JSON：
+$verrs" --output-format text < /dev/null > "$raw" 2>> "$ddir/.claude-error.log" || true
+    if ! verrs=$($dl validate --out "$ddir/proposal.json" < "$raw" 2>&1); then
+      echo "sk_dispatch_propose: proposal invalid after retry: $verrs (raw: $raw)" >&2
+      return 1
+    fi
+  fi
+
+  $dl init-decisions "$id" > /dev/null
+  $dl render "$id" > /dev/null
+
+  # auto-execute reversible internal/draft work (todo, mail_label, readonly agent_task)
+  if [ "$auto_internal" -eq 1 ]; then
+    local t
+    for t in $(python3 -c "
+import json
+p = json.load(open('$ddir/proposal.json'))
+for t in p['tasks']:
+    if t['risk'] in ('internal', 'draft') and t['type'] in ('todo', 'mail_label', 'agent_task') \
+            and not t.get('blocked_by_conflict'):
+        print(t['id'])"); do
+      $dl decide "$id" --task "$t" --action approve --confirm auto > /dev/null 2>&1 || continue
+      sk_dispatch_execute_task "$id" "$t" || true
+    done
+  fi
+
+  echo "$id"
+}
+
+# Execute one approved task, driving the sk_exec handoff for agent_task/crm.
+sk_dispatch_execute_task() {
+  local repo="$SK_DISPATCH_REPO_DIR"
+  local dl="python3 $repo/scripts/dispatch-lib.py"
+  local id="$1" task="$2"
+  local out rc
+  # exit 5 is the sk_exec handoff signal — must not trip the caller's set -e
+  out=$($dl execute "$id" --task "$task") && rc=0 || rc=$?
+  if [ "$rc" -ne 5 ]; then
+    [ -n "$out" ] && echo "$out"
+    return "$rc"
+  fi
+
+  # exit 5: agent_task / crm — run sk_exec here, then mark
+  local ddir="$repo/dispatch/$id"
+  local ttype prompt profile
+  ttype=$(echo "$out" | python3 -c "import json,sys; print(json.load(sys.stdin)['type'])")
+  prompt=$(echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['payload'].get('prompt') or d['payload'].get('brief',''))")
+  profile=$(echo "$out" | python3 -c "import json,sys; print(json.load(sys.stdin)['payload'].get('tools_profile','readonly'))")
+
+  if [ "$ttype" = "crm" ]; then
+    if ! curl -sm2 -o /dev/null "http://localhost:8100/openapi.json" 2>/dev/null; then
+      $dl mark "$id" --task "$task" --status failed \
+        --error "Rightek-CRM 未啟動（localhost:8100 不可達）— 啟動後 sk dispatch retry" > /dev/null
+      echo "crm task blocked: Rightek-CRM 未啟動，可 retry" >&2
+      return 1
+    fi
+    prompt="你要把一件業務行為記錄進 Rightek-CRM（本機 FastAPI）。先 WebFetch http://localhost:8100/openapi.json 了解接口，照其 schema 用 Bash curl 寫入。業務事件：${prompt}。完成後輸出寫入結果摘要。"
+    profile="standard"
+  fi
+
+  local tools="Read Glob Grep"
+  if [ "$profile" = "readonly" ]; then
+    tools="Read Glob Grep Bash(python3 $repo/scripts/fetch-mail.py*) Bash(python3 $repo/scripts/kg.py dump*)"
+  else
+    tools="Read Write Edit Bash Glob Grep WebFetch"
+  fi
+
+  local result_file="$ddir/results/${task}-agent.md"
+  if SK_EXEC_PROJECT_DIR="$repo" \
+     SK_EXEC_LOG_PREFIX="dispatch" \
+     SK_EXEC_TOOLS="$tools" \
+     SK_EXEC_BUDGET="${SK_DISPATCH_BUDGET:-2}" \
+     SK_EXEC_SKIP_NET_CHECK=1 \
+     sk_exec "$prompt" > "$result_file" 2>&1; then
+    $dl mark "$id" --task "$task" --status executed \
+      --result "results/${task}-agent.md" > /dev/null
+    echo "agent done: $result_file"
+    # crm 成功且有 client_slug → 知識庫留輕量指標 fact
+    if [ "$ttype" = "crm" ]; then
+      local slug title
+      slug=$(echo "$out" | python3 -c "import json,sys; print(json.load(sys.stdin)['payload'].get('client_slug') or '')")
+      title=$(echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['payload'].get('brief','')[:80])")
+      if [ -n "$slug" ]; then
+        python3 "$repo/scripts/kg.py" add companies "$slug" \
+          --fact "業務事件：${title}（詳見 Rightek-CRM，dispatch ${id}）" \
+          --category context --source inference > /dev/null 2>&1 || true
+      fi
+    fi
+    return 0
+  else
+    $dl mark "$id" --task "$task" --status failed \
+      --error "sk_exec failed (see results/${task}-agent.md)" > /dev/null
+    return 1
+  fi
+}

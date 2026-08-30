@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+# Scheduled durable-fact extraction — mine recent Claude Code sessions for
+# entity facts (people/companies/projects) and write them to the knowledge
+# graph at ~/.claude/knowledge via scripts/kg.py (the only allowed write path).
+# Daily at 21:30 (before 22:00 maintain). Pattern mirrors sk-harvest-cron.
+# The knowledge repo's own git is the transaction boundary: salvage before the
+# run, verify + cap before commit, full rollback otherwise.
+# Records execution to dashboard DB via sk-exec-lib
+set -euo pipefail
+
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+PROJECT_NAME="$(basename "$REPO_DIR")"
+REPORT_DIR="$REPO_DIR/reports"
+NOW="$(date '+%Y-%m-%d_%H%M')"
+TODAY="$(date '+%Y-%m-%d')"
+PROJECTS_DIR="$HOME/.claude/projects"
+STATE_FILE="$REPORT_DIR/.facts-state"
+DONE_FILE="$REPORT_DIR/.facts-done"  # tracks already-processed session paths
+MIN_SESSIONS=1
+MAX_NEW_FACTS=20  # hard cap per run; above this = extraction ran wild, roll back
+KG_ROOT="${KG_ROOT:-$HOME/.claude/knowledge}"
+KG="python3 $REPO_DIR/scripts/kg.py"
+
+mkdir -p "$REPORT_DIR"
+touch "$DONE_FILE"
+
+# Source exec lib for _sk_exec_record_run
+set +e; source "$REPO_DIR/bin/sk-exec-lib" 2>/dev/null || true; set -e
+
+# --- Bootstrap knowledge repo (idempotent) ---
+$KG init >/dev/null
+
+# --- Salvage: previous run may have died mid-write ---
+if [ -n "$(git -C "$KG_ROOT" status --porcelain)" ]; then
+    if $KG verify >/dev/null 2>&1; then
+        git -C "$KG_ROOT" add -A
+        git -C "$KG_ROOT" commit -q -m "salvage: uncommitted state from previous run"
+        echo "[$NOW] Salvaged uncommitted (valid) state from previous run."
+    else
+        git -C "$KG_ROOT" checkout -q -- . 2>/dev/null || true
+        git -C "$KG_ROOT" clean -qfd
+        echo "[$NOW] Discarded corrupt uncommitted state from previous run."
+    fi
+fi
+
+# --- Find new sessions (not yet processed) ---
+if [ -f "$STATE_FILE" ]; then
+    candidates=$(find "$PROJECTS_DIR" -name "*.jsonl" -newer "$STATE_FILE" \
+        -not -path "*/subagents/*" 2>/dev/null | sort -t/ -k6 || true)
+else
+    candidates=$(find "$PROJECTS_DIR" -name "*.jsonl" -mtime -1 \
+        -not -path "*/subagents/*" 2>/dev/null | sort -t/ -k6 || true)
+fi
+
+recent_sessions=""
+session_count=0
+while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    if ! grep -qFx "$f" "$DONE_FILE" 2>/dev/null; then
+        recent_sessions+="$f"$'\n'
+        session_count=$((session_count + 1))
+    fi
+    [ "$session_count" -ge 30 ] && break
+done <<< "$candidates"
+
+recent_sessions=$(echo "$recent_sessions" | sed '/^$/d')
+
+if [ "$session_count" -lt "$MIN_SESSIONS" ]; then
+    echo "[$NOW] No new session since last run. Skipping."
+    exit 0
+fi
+
+# --- Digest sessions + dump existing facts for the prompt ---
+DIGEST=$(echo "$recent_sessions" | xargs python3 "$REPO_DIR/bin/sk-facts-digest" 2>/dev/null) || DIGEST=""
+if [ -z "$DIGEST" ]; then
+    echo "[$NOW] $session_count session(s) but no usable user text. Skipping."
+    echo "$recent_sessions" >> "$DONE_FILE"
+    date '+%Y-%m-%d %H:%M:%S' > "$STATE_FILE"
+    exit 0
+fi
+EXISTING=$($KG dump --active-only | head -c 20000)
+[ -z "$EXISTING" ] && EXISTING="(知識庫目前是空的)"
+
+echo "[$NOW] Found $session_count new session(s). Running fact extraction..."
+
+# --- Network pre-check (wait up to 120s for API) ---
+if ! curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null; then
+  echo "[$NOW] Waiting for network..."
+  for i in $(seq 1 24); do
+    sleep 5
+    curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null && break
+  done
+  if ! curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null; then
+    echo "[$NOW] Network unavailable after 120s — aborting."
+    exit 1
+  fi
+fi
+
+# --- Build prompt ---
+PROMPT="你在為個人助理維護一個實體知識庫（人物/公司/專案的持久事實）。以下是最近 ${session_count} 個 Claude Code session 的使用者訊息摘要：
+
+${DIGEST}
+
+知識庫中既有的 active facts（比對用，勿重複記錄）：
+
+${EXISTING}
+
+任務：從摘要中抽取「持久事實」寫入知識庫。
+
+抽取標準（符合才記）：
+- 關係變化（新工作、新團隊、升遷）、人生里程碑（搬家、開新專案）
+- 狀態變化（離職、開始接案）、明確偏好（「我偏好 X 勝過 Y」）
+- 關鍵決策（「後端決定用 Rust」）、重要脈絡（客戶背景、合作對象）
+
+跳過（寧缺勿濫，不確定就跳過）：
+- 玩笑、寒暄、暫時狀態（「今天很累」）
+- 既有 facts 已涵蓋的（含同義改寫）、模糊或推測性的資訊
+- 純技術操作指令（部署、除錯、跑測試這類工作內容不是實體事實）
+
+寫入規則（嚴格遵守）：
+1. 唯一允許的寫入方式是執行以下指令，嚴禁用 Edit/Write 工具直接碰 ${KG_ROOT} 下的任何檔案：
+   python3 ${REPO_DIR}/scripts/kg.py add <people|companies|projects> <slug> --fact '事實一句話' --category <relationship|milestone|status|preference|context|decision>
+   （slug 用小寫英數與連字號；id 由腳本自動指派，不要自己編）
+2. 與既有 fact 矛盾時，加 --supersedes <old-id>
+3. 本次最多新增 10 筆
+4. 有新增 fact 的 entity，用以下方式重生 summary（3-8 行，只根據 active facts）：
+   python3 ${REPO_DIR}/scripts/kg.py summary <type> <slug> <<'EOF'
+   （summary 內容）
+   EOF
+
+輸出（繁體中文）：
+- 若有新增：每筆一行「entity | 新 id | fact | （若有）superseded 舊 id」，前面加一段兩三句的摘要
+- 若無任何值得記錄的事實：整個輸出只印 NO_NEW_FACTS"
+
+# --- Run Claude in headless mode ---
+start_epoch=$(date +%s)
+
+PARTIAL_FILE="$REPORT_DIR/.facts-${TODAY}.partial"
+ERROR_LOG="$REPORT_DIR/facts-${TODAY}-error.log"
+
+claude -p "$PROMPT" \
+    --output-format text \
+    < /dev/null \
+    > "$PARTIAL_FILE" \
+    2> "$ERROR_LOG" \
+    && run_exit=0 || run_exit=$?
+
+end_epoch=$(date +%s)
+
+# --- Verify + hard cap, then commit or roll back (deterministic signals only) ---
+# Stage first so untracked facts.jsonl of brand-new entities are counted too.
+git -C "$KG_ROOT" add -A
+new_facts=$(git -C "$KG_ROOT" diff --cached -- '*facts.jsonl' | grep -c '^+{' || true)
+if [ "$run_exit" -eq 0 ] && $KG verify >/dev/null 2>&1 && [ "$new_facts" -le "$MAX_NEW_FACTS" ]; then
+    if [ -n "$(git -C "$KG_ROOT" status --porcelain)" ]; then
+        git -C "$KG_ROOT" commit -q -m "facts-cron ${TODAY}: +${new_facts} facts"
+    fi
+else
+    reason="claude exit=$run_exit"
+    $KG verify >/dev/null 2>&1 || reason="$reason; kg verify failed"
+    [ "$new_facts" -gt "$MAX_NEW_FACTS" ] && reason="$reason; $new_facts facts > cap $MAX_NEW_FACTS"
+    echo "[$NOW] Rolling back knowledge repo: $reason" >> "$ERROR_LOG"
+    git -C "$KG_ROOT" reset -q
+    git -C "$KG_ROOT" checkout -q -- . 2>/dev/null || true
+    git -C "$KG_ROOT" clean -qfd
+    run_exit=1
+fi
+
+# --- Finalize report (silent on healthy: no facts -> no report file) ---
+if [ "$run_exit" -eq 0 ] && [ "$new_facts" -gt 0 ]; then
+    mv "$PARTIAL_FILE" "$REPORT_DIR/facts-${TODAY}.md"
+    echo "[$NOW] Recorded $new_facts new fact(s). Report: $REPORT_DIR/facts-${TODAY}.md"
+else
+    rm -f "$PARTIAL_FILE"
+    [ "$run_exit" -eq 0 ] && echo "[$NOW] No new facts."
+fi
+[ -s "$ERROR_LOG" ] || rm -f "$ERROR_LOG"
+
+# --- Record run to dashboard DB ---
+_sk_exec_record_run "$PROJECT_NAME" "facts" "$start_epoch" "$end_epoch" \
+  "$run_exit" "" "" "" "" "" ""
+
+# --- Mark sessions as processed (only on success) ---
+if [ "$run_exit" -eq 0 ]; then
+    echo "$recent_sessions" >> "$DONE_FILE"
+fi
+
+# --- Update state timestamp ---
+date '+%Y-%m-%d %H:%M:%S' > "$STATE_FILE"
+
+exit "$run_exit"

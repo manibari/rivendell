@@ -166,3 +166,4 @@ check_and_restart() {
 
 check_and_restart "api" "http://localhost:8000/api/agents" "com.sk.dashboard.api"
 check_and_restart "web" "http://localhost:3000" "com.sk.dashboard.web"
+check_and_restart "gateway" "http://localhost:8310/health" "com.sk.gateway"

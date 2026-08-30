@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Digest Claude Code sessions for durable-fact extraction (sk-facts-cron).
+
+Unlike sk-harvest-summarize (5 intents x 120 chars — enough for skill
+candidates, far too lossy for personal facts), this keeps the actual user
+text messages: facts about people/companies/projects live in conversation
+prose, not in tool-call statistics.
+
+Usage:
+    sk-facts-digest <session1.jsonl> [session2.jsonl ...]
+
+Per session: project, date, then user text messages (each truncated to
+~400 chars, max 25 per session). Skips messages starting with "<"
+(system-reminder / command-wrapper noise), tool_result blocks, and all
+assistant output. Global budget ~60KB — oldest sessions dropped first.
+"""
+
+import json
+import os
+import sys
+from datetime import date
+from pathlib import Path
+
+MAX_MSG_CHARS = 400
+MAX_MSGS_PER_SESSION = 25
+GLOBAL_BUDGET = 60_000
+
+
+def user_texts(path: str) -> list:
+    texts = []
+    try:
+        with open(path) as f:
+            for line in f:
+                try:
+                    e = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                msg = e.get("message", {})
+                if msg.get("role") != "user":
+                    continue
+                content = msg.get("content", "")
+                blocks = [content] if isinstance(content, str) else content
+                for block in blocks:
+                    if isinstance(block, dict):
+                        if block.get("type") != "text":
+                            continue  # skip tool_result etc.
+                        text = block.get("text", "")
+                    elif isinstance(block, str):
+                        text = block
+                    else:
+                        continue
+                    text = text.strip()
+                    if len(text) < 10 or text.startswith(("<", "[")):
+                        continue
+                    # harness-injected payloads (skill instructions, plan-mode
+                    # scaffolding) arrive as user-role text: big or known-prefix
+                    if len(text) > 1500 or text.startswith("Base directory for this skill"):
+                        continue
+                    texts.append(text[:MAX_MSG_CHARS])
+                    if len(texts) >= MAX_MSGS_PER_SESSION:
+                        return texts
+    except Exception:
+        pass
+    return texts
+
+
+def digest_session(path: str) -> str:
+    texts = user_texts(path)
+    if not texts:
+        return ""
+    try:
+        day = date.fromtimestamp(os.path.getmtime(path)).isoformat()
+    except OSError:
+        day = "?"
+    header = f"## {Path(path).parent.name} — {day} ({len(texts)} user msgs)"
+    body = "\n".join(f"- {t}" for t in texts)
+    return f"{header}\n{body}\n"
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: sk-facts-digest <session1.jsonl> [...]", file=sys.stderr)
+        sys.exit(1)
+
+    # newest first so the oldest get dropped when over budget
+    paths = sorted(sys.argv[1:], key=lambda p: os.path.getmtime(p) if os.path.exists(p) else 0,
+                   reverse=True)
+    sections, used = [], 0
+    for p in paths:
+        s = digest_session(p)
+        if not s:
+            continue
+        if used + len(s) > GLOBAL_BUDGET:
+            sections.append(f"(budget hit — {len(paths) - len(sections)} older session(s) dropped)")
+            break
+        sections.append(s)
+        used += len(s)
+
+    print("\n".join(sections))

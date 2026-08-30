@@ -19,8 +19,23 @@
 
 ## Next
 
-- **Retire `knowledge-graph` skill** — 0 triggers, flagged 3+ retros running
-  (workflow-retro W22 action 1).
+- ~~Retire `knowledge-graph` skill~~ → **翻案 (2026-08-29)**: 0 triggers 的根因是
+  零資料 + recall 未啟用，非 skill 無用。已啟用：`scripts/kg.py` 寫入 API +
+  `bin/sk-facts-cron`（daily 21:30，從 session 抽 durable facts）+
+  `~/.claude/CLAUDE.md` recall 區塊。知識庫定位：個人助理三角（skills 能力 /
+  知識庫記憶 / SaaS 資料進出）的記憶層。
+- **知識庫投影層：行事曆 + to-do list** — facts.jsonl 是機器記憶，人看的介面
+  是行事曆與待辦（「這樣比較像是人的理解」）。投影 agent 讀知識庫 →
+  Google Calendar / Tasks（走 SaaS OAuth）或 dashboard 頁面；Telegram
+  ops-bridge（見 Now）作提醒通道。依賴：知識庫先累積資料。
+- **Avatar 後續** (2026-08-30)：神經語音 TTS（demo 給客戶前必換，瀏覽器內建太機器）；
+  gateway 對外前先加 auth（現綁 127.0.0.1 不可 tunnel）；avatar 對話 transcript
+  落地供 facts-cron 抽取；VRM 模型質感升級（自製/購入）。
+- **訊息軟體整合** — Telegram 讀取（正式 API，併 ops-bridge 一起做，含建議回覆）；
+  Slack user token 可讀；LINE/WhatsApp 無個人 API 且有封號風險 → 只做半手動
+  （貼對話/截圖 → 知識庫輔助建議回覆）。(2026-08-29)
+- **Rightek-CRM 實際寫入** — dispatch 的 `crm` 路由已就緒（graceful fail 留 retry）；
+  等 Rightek-CRM 服務啟動（FastAPI :8100，agent 讀 openapi.json 即知接口）。(2026-08-29)
 - **Root-cause agent exit-1 dual-state** — `harvest` / `material-health` report
   failure while producing output (W22 action 2).
 - **`doe-ml-analysis` skill** — DOE/process ML EDA (heatmap→PCA→regression R²);

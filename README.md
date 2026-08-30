@@ -59,7 +59,7 @@ cd ~/any-project && claude
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
 | **doc-drift-sync** | 自動 | Keep a project's living docs aligned when version or state moves — detect and |
 | **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
-| **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：追蹤人物、公司、專案的持久事實，寫入 JSONL + 摘要 |
+| **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：人物/公司/專案持久事實，經 scripts/kg.py 寫入 JSONL + 摘要；sk-facts-cron 每日自動抽取 |
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
 | **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
 | **self-improving-agent** | 自動 + hook | 捕捉學習與錯誤修正，記錄至 .learnings/，提升有價值見解到 CLAUDE.md |

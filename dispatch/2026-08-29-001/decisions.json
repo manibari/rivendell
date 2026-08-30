@@ -1,0 +1,26 @@
+{
+ "schema": 1,
+ "tasks": {
+  "t1": {
+   "status": "pending",
+   "confirm": null,
+   "payload_sha256": null,
+   "decided_at": null,
+   "executed_at": null,
+   "result": null,
+   "error": null,
+   "blocked_reason": null
+  },
+  "t2": {
+   "status": "executed",
+   "confirm": "simple",
+   "payload_sha256": "a3bfbbdacddbca17474cf071ff0e30c80910c749cea3d7a211b9e59fc535a409",
+   "decided_at": "2026-08-29T19:08:38",
+   "executed_at": "2026-08-29T19:10:51",
+   "result": "results/t2-agent.md",
+   "error": null,
+   "blocked_reason": null
+  }
+ },
+ "conflicts": {}
+}

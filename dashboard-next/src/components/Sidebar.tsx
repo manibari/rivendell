@@ -21,6 +21,7 @@ import {
   GitBranch,
   ChevronRight,
   ChevronDown,
+  UserRound,
 } from "lucide-react";
 import { apiFetch, type ProjectsData, type AgentsData } from "@/lib/api";
 import Logo from "./Logo";
@@ -42,6 +43,7 @@ type NavNode =
 
 const NAV: NavNode[] = [
   { kind: "link", href: "/", label: "總覽", icon: LayoutDashboard },
+  { kind: "link", href: "/avatar", label: "助理", icon: UserRound },
   {
     kind: "link",
     href: "/projects",

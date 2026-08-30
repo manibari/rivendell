@@ -46,6 +46,7 @@ Standalone tools (bin/):
   sk-preflight        Verify this machine can run rivendell (run before bootstrap)
   sk-relocate <path>  Move the repo and rebuild every artifact that stored the old path
   run <task>          Run a task as single-shot agent (claude -p)
+  dispatch "<指令>"    模糊指令 → 具體化提案 → 分級確認 → 執行 (new/list/show/approve/reject/answer/resolve/retry)
   audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
   maintain            Nightly maintenance: permissions sync, deploy check, agent health, audit
@@ -1903,6 +1904,200 @@ cmd_maintain() {
   #    that, because a hook only sees this agent's own tool calls.
   echo -e "${CYAN}[6/6] Port Drift${NC}"
   cmd_check_ports || true
+}
+
+# ─── sk dispatch — 模糊指令/事件 → 提案 → 分級確認 → 執行 ───────────────
+
+_dispatch_field() {  # _dispatch_field <id> <task> <pyexpr over t>
+  python3 -c "
+import json
+p = json.load(open('$REPO_DIR/dispatch/$1/proposal.json'))
+t = next((x for x in p['tasks'] if x['id'] == '$2'), None)
+print($3 if t else '')"
+}
+
+cmd_dispatch() {
+  local sub="${1:-help}"
+  case "$sub" in
+    new|list|show|approve|reject|answer|resolve|retry|help)
+      shift || true
+      "cmd_dispatch_${sub}" "$@"
+      ;;
+    *)
+      # 非保留字 → 視為 new 的簡寫：sk dispatch "指令"
+      cmd_dispatch_new "$@"
+      ;;
+  esac
+}
+
+cmd_dispatch_help() {
+  cat <<'EOF'
+Usage: sk dispatch <subcommand>
+
+  sk dispatch "指令"                     建立提案（new 簡寫）
+  new [--source user|mail] [--context f] [--auto-internal] "指令"
+  list                                  列出所有 dispatch 與狀態
+  show <id>                             顯示提案內容
+  approve <id> [--task tN]              核准：email/calendar 逐件 typed-yes、
+                                        mail_trash 批次清單+yes、crm 放行、
+                                        整包只過 internal/draft
+  reject <id> --task tN                 拒絕單一任務
+  answer <id> "回答"                     回覆 clarifications 後重生提案
+  resolve <id> --conflict N --keep-new|--keep-old
+                                        裁決方向衝突（keep-new 會 supersede
+                                        舊 fact 並整篇重寫 summary）
+  retry <id> --task tN                  重跑 failed 任務（重新 approve）
+
+真人/會議/金錢類永遠逐件確認；金錢不經此系統執行。
+EOF
+}
+
+cmd_dispatch_new() {
+  source "$REPO_DIR/bin/sk-dispatch-lib"
+  local start_epoch end_epoch id rc=0
+  start_epoch=$(date +%s)
+  if id=$(sk_dispatch_propose "$@"); then
+    end_epoch=$(date +%s)
+    echo -e "${GREEN}提案完成：${NC}$id\n"
+    cat "$REPO_DIR/dispatch/$id/proposal.md"
+    echo -e "\n下一步：${YELLOW}sk dispatch approve $id --task <tN>${NC}（或 reject / answer / resolve）"
+    bash "$REPO_DIR/scripts/tg-notify.sh" "$(sk_persona_name)：提案擬好了（$id）——$(head -1 "$REPO_DIR/dispatch/$id/request.txt")，等你過目。" || true
+  else
+    rc=1; end_epoch=$(date +%s)
+  fi
+  _sk_exec_record_run "$(basename "$REPO_DIR")" "dispatch" "$start_epoch" "$end_epoch" \
+    "$rc" "" "" "" "" "" "" 2>/dev/null || true
+  return "$rc"
+}
+
+cmd_dispatch_list() { python3 "$REPO_DIR/scripts/dispatch-lib.py" list; }
+
+cmd_dispatch_show() {
+  local id="${1:?usage: sk dispatch show <id>}"
+  cat "$REPO_DIR/dispatch/$id/proposal.md"
+  echo -e "\n狀態：$(python3 "$REPO_DIR/scripts/dispatch-lib.py" status "$id")"
+}
+
+_dispatch_approve_one() {  # <id> <task>
+  local id="$1" task="$2" dl="python3 $REPO_DIR/scripts/dispatch-lib.py"
+  local ttype title
+  ttype=$(_dispatch_field "$id" "$task" "t['type']")
+  title=$(_dispatch_field "$id" "$task" "t['title']")
+  [ -z "$ttype" ] && { echo -e "${RED}task $task 不存在${NC}"; return 1; }
+  source "$REPO_DIR/bin/sk-dispatch-lib"
+
+  case "$ttype" in
+    email|calendar_event)
+      echo -e "${YELLOW}── $task $title（$ttype，對外，逐件確認）──${NC}"
+      _dispatch_field "$id" "$task" "json.dumps(t['payload'], ensure_ascii=False, indent=1)"
+      local ans; read -r -p "以上內容將實際送出。輸入 yes 確認: " ans
+      [ "$ans" = "yes" ] || { echo "未確認，略過。"; return 1; }
+      $dl decide "$id" --task "$task" --action approve --confirm typed-yes || return 1
+      ;;
+    mail_trash)
+      echo -e "${YELLOW}── $task $title（批次移垃圾桶，30 天可救回）──${NC}"
+      _dispatch_field "$id" "$task" "chr(10).join(f\"{m['from']} | {m['subject']}\" for m in t['payload']['messages'])"
+      local ans; read -r -p "共 $(_dispatch_field "$id" "$task" "len(t['payload']['uids'])") 封。輸入 yes 確認: " ans
+      [ "$ans" = "yes" ] || { echo "未確認，略過。"; return 1; }
+      $dl decide "$id" --task "$task" --action approve --confirm batch-yes || return 1
+      ;;
+    crm)
+      echo -e "${YELLOW}── $task $title（交接 Rightek-CRM）──${NC}"
+      _dispatch_field "$id" "$task" "t['payload']['brief']"
+      local ans; read -r -p "放行交接？[y/N] " ans
+      [[ "$ans" =~ ^[Yy]$ ]] || { echo "未放行，略過。"; return 1; }
+      $dl decide "$id" --task "$task" --action approve --confirm simple || return 1
+      ;;
+    *)
+      $dl decide "$id" --task "$task" --action approve --confirm simple || return 1
+      ;;
+  esac
+  sk_dispatch_execute_task "$id" "$task"
+}
+
+cmd_dispatch_approve() {
+  local id="${1:?usage: sk dispatch approve <id> [--task tN]}"; shift
+  local task=""
+  [ "${1:-}" = "--task" ] && task="$2"
+  if [ -n "$task" ]; then
+    _dispatch_approve_one "$id" "$task"
+    return $?
+  fi
+  # 整包：只過非對外類，對外類逐件列出提示
+  local t ttype pending
+  pending=$(python3 -c "
+import json
+p = json.load(open('$REPO_DIR/dispatch/$id/proposal.json'))
+d = json.load(open('$REPO_DIR/dispatch/$id/decisions.json'))
+for t in p['tasks']:
+    if d['tasks'][t['id']]['status'] == 'pending':
+        print(t['id'], t['type'])")
+  while read -r t ttype; do
+    [ -z "$t" ] && continue
+    case "$ttype" in
+      email|calendar_event|mail_trash)
+        echo -e "${YELLOW}$t（$ttype）需個別確認：sk dispatch approve $id --task $t${NC}" ;;
+      *) _dispatch_approve_one "$id" "$t" || true ;;
+    esac
+  done <<< "$pending"
+}
+
+cmd_dispatch_reject() {
+  local id="${1:?}"; shift
+  [ "${1:-}" = "--task" ] || { echo "usage: sk dispatch reject <id> --task tN"; return 1; }
+  python3 "$REPO_DIR/scripts/dispatch-lib.py" decide "$id" --task "$2" --action reject
+}
+
+cmd_dispatch_retry() { cmd_dispatch_approve "$@"; }
+
+cmd_dispatch_answer() {
+  local id="${1:?}"; shift
+  local answer="$*"
+  [ -n "$answer" ] || { echo "usage: sk dispatch answer <id> \"回答\""; return 1; }
+  source "$REPO_DIR/bin/sk-dispatch-lib"
+  local request
+  request="$(cat "$REPO_DIR/dispatch/$id/request.txt")
+
+## 使用者對前次提案（$id）待釐清問題的回答
+$answer"
+  local new_id
+  new_id=$(sk_dispatch_propose "$request") || return 1
+  echo -e "${GREEN}已依回答重生提案：${NC}$new_id（原 $id 保留）"
+  cat "$REPO_DIR/dispatch/$new_id/proposal.md"
+}
+
+cmd_dispatch_resolve() {
+  local id="${1:?}"; shift
+  local conflict="" keep=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --conflict) conflict="$2"; shift 2 ;;
+      --keep-new) keep="new"; shift ;;
+      --keep-old) keep="old"; shift ;;
+      *) shift ;;
+    esac
+  done
+  [ -n "$conflict" ] && [ -n "$keep" ] || {
+    echo "usage: sk dispatch resolve <id> --conflict N --keep-new|--keep-old"; return 1; }
+  local out
+  out=$(python3 "$REPO_DIR/scripts/dispatch-lib.py" resolve-conflict "$id" \
+        --conflict "$conflict" --keep "$keep") || return 1
+  echo "$out"
+  if [ "$keep" = "new" ]; then
+    # 敘事整篇重寫：模型只產 prose，寫入路徑確定性（kg.py summary）
+    local etype eslug facts summary
+    etype=$(echo "$out" | python3 -c "import json,sys; print(json.load(sys.stdin)['entity_type'])")
+    eslug=$(echo "$out" | python3 -c "import json,sys; print(json.load(sys.stdin)['entity_slug'])")
+    facts=$(python3 "$REPO_DIR/scripts/kg.py" dump --active-only | grep "^${etype}/${eslug} ")
+    summary=$(claude -p "根據以下 active facts，為 ${etype}/${eslug} 寫一份全新 summary（3-8 行純文字，繁體中文，不要標題符號以外的 markdown，不要提到舊方向）：
+
+$facts" --output-format text < /dev/null) || true
+    if [ -n "$summary" ]; then
+      echo "$summary" | python3 "$REPO_DIR/scripts/kg.py" summary "$etype" "$eslug" \
+        && echo -e "${GREEN}summary 已整篇重寫${NC}"
+    fi
+  fi
+  echo "衝突已裁決；被 block 的任務現在可 approve。"
 }
 
 cmd_run() {
@@ -3948,6 +4143,7 @@ case "${1:-help}" in
     esac
     ;;
   run)        shift; cmd_run "$@" ;;
+  dispatch)   shift; cmd_dispatch "$@" ;;
   audit)      shift; cmd_audit "$@" ;;
   permissions) cmd_permissions "${2:-.}" ;;
   maintain)   cmd_maintain ;;

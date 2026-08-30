@@ -1,0 +1,16 @@
+{
+ "schema": 1,
+ "tasks": {
+  "t1": {
+   "status": "pending",
+   "confirm": null,
+   "payload_sha256": null,
+   "decided_at": null,
+   "executed_at": null,
+   "result": null,
+   "error": null,
+   "blocked_reason": null
+  }
+ },
+ "conflicts": {}
+}

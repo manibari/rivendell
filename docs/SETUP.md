@@ -213,3 +213,53 @@ Short version:
 > 5. Open http://localhost:3000
 >
 > Full setup notes: `docs/SETUP.md`. The dashboard's "Built-in" category at the bottom is for skills compiled into the `claude` binary itself — they're not in this repo but you can use them like any other skill (`/update-config`, `/fewer-permission-prompts`, etc.).
+
+---
+
+## Personal assistant channels (`sk dispatch` / mail-triage)
+
+一次性設定，全部憑證放 repo 外的 `~/.config/rivendell/`（勿 commit）：
+
+```bash
+cp ~/.config/rivendell/secrets.env.example ~/.config/rivendell/secrets.env
+chmod 600 ~/.config/rivendell/secrets.env
+```
+
+### Gmail（寄信 + 讀信共用一組）
+1. Google 帳戶 → 安全性 → 兩步驟驗證 → 應用程式密碼 → 產生一組
+2. 填入 `RIVENDELL_GMAIL_USER` / `RIVENDELL_GMAIL_APP_PASSWORD`
+3. 驗證：`python3 scripts/fetch-mail.py --max 3`（唯讀）；
+   `echo '{"to":["自己"],"subject":"test","body":"hi"}' | python3 scripts/send-mail.py --payload -`
+
+### Telegram 推播
+1. @BotFather 建 bot 拿 token → 填 `RIVENDELL_TG_BOT_TOKEN`
+2. 跟 bot 說句話，開 `https://api.telegram.org/bot<token>/getUpdates` 找 chat id → 填 `RIVENDELL_TG_CHAT_ID`
+3. 驗證：`bash scripts/tg-notify.sh "hello"`
+
+### Google Calendar（OAuth，一次性授權）
+1. GCP Console → 建 OAuth client（類型 **Desktop app**）→ 把 client_id/client_secret 存成
+   `~/.config/rivendell/gcal-credentials.json`：`{"client_id":"...","client_secret":"..."}`
+2. `python3 scripts/gcal.py auth` → 瀏覽器授權 → token 自動存檔
+3. 驗證：`echo '{"summary":"test","start":"2026-09-01T10:00:00","end":"2026-09-01T11:00:00"}' | python3 scripts/gcal.py create-event --payload -`
+
+### 隱私注意
+mail-triage 報告（`reports/mail-triage-*.md`）與 dispatch 的 email payload 含信件內容，
+會進 git。repo 若推遠端請先確認你能接受，或把 remote 保持 private。
+
+### 安全模型（速記）
+- 模型只產提案 JSON；寄信/建事件由確定性 actuator 在你逐件確認後執行
+- email/calendar 逐件 typed-yes；垃圾信移 Trash 批次 yes（30 天可救回）；永久刪除程式碼不存在
+- 業務行為（客戶信件/報價/會議）一律 `crm` 型交接 Rightek-CRM，dispatch 不自行處理
+- 憑證只有 actuator 進程讀得到；headless agent 的 readonly 工具組摸不到 `~/.config/rivendell/`
+
+---
+
+## 助理 Avatar（/avatar 頁 + gateway）
+
+- `localhost:3000/avatar`：選人格（林迪/米瑞爾）→ VRM 對話視窗（麥克風要允許，瀏覽器 STT/TTS 繁中）
+- 大腦：`com.sk.gateway`（:8310，127.0.0.1 only，**不可 tunnel 對外**）。引擎預設 codex
+  （ChatGPT OAuth 額度），可在畫面切 claude / openai-api / anthropic-api；API 金鑰在畫面輸入，
+  存 `~/.config/rivendell/gateway-keys.env`（chmod 600）
+- 對話模型零工具；要辦事只會開 `sk dispatch` 提案（--source avatar），確認分級照舊
+- VRM 模型是佔位樣本（見 `dashboard-next/public/avatar/models/README.md`，.vrm 不進 git，
+  換機重抓或換自製模型）；神經語音（正式 TTS）列後續

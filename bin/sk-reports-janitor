@@ -87,11 +87,38 @@ done < <(find "$REPORT_DIR" -maxdepth 1 -type f \( \
     -name 'test-*.md' -o \
     -name 'skill-audit-*.md' -o \
     -name 'workflow-retro-*.md' -o \
-    -name 'workflow-retro-*-error.log' \
+    -name 'workflow-retro-*-error.log' -o \
+    -name 'facts-*.md' -o \
+    -name 'facts-*-error.log' -o \
+    -name 'mail-triage-*.md' -o \
+    -name 'mail-triage-*-error.log' \
     \) 2>/dev/null)
 
 if [ -n "$log_buffer" ]; then
     printf '%s' "$log_buffer" >> "$LOG_FILE"
+fi
+
+# --- dispatch/ archive: fully-terminal cases older than RETAIN_DAYS ---
+DISPATCH_DIR="$REPO_DIR/dispatch"
+if [ -d "$DISPATCH_DIR" ]; then
+    cutoff="$(date -d "-${RETAIN_DAYS} days" '+%Y-%m-%d')"
+    for d in "$DISPATCH_DIR"/*/; do
+        [ -d "$d" ] || continue
+        base="$(basename "$d")"
+        [ "$base" = "archive" ] && continue
+        # id starts with YYYY-MM-DD; keep anything newer than cutoff
+        [ "${base:0:10}" \< "$cutoff" ] || continue
+        status="$(python3 "$REPO_DIR/scripts/dispatch-lib.py" status "$base" 2>/dev/null || echo unknown)"
+        case "$status" in
+            done|failed)
+                yyyymm="${base:0:7}"
+                mkdir -p "$DISPATCH_DIR/archive/$yyyymm"
+                mv "$d" "$DISPATCH_DIR/archive/$yyyymm/"
+                printf '[%s] ARCHIVED dispatch/%s -> dispatch/archive/%s/\n' \
+                    "$(date '+%Y-%m-%d %H:%M:%S')" "$base" "$yyyymm" >> "$LOG_FILE"
+                ;;
+        esac
+    done
 fi
 
 # Stay quiet on healthy / nothing-to-do

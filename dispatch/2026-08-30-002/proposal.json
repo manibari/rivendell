@@ -1,0 +1,28 @@
+{
+ "schema": 1,
+ "dispatch_id": "2026-08-30-002",
+ "request": "新增待辦「週五前回覆光泉的報價」",
+ "created": "2026-08-30T12:37:59+08:00",
+ "revision": 1,
+ "source": {
+  "channel": "avatar",
+  "context": {}
+ },
+ "summary": "幫你記一筆待辦：2026-09-04（週五）前回覆光泉的報價。光泉 9/2 有改版討論會，這件事正好落在會議前後，到時可以一併把脈絡帶上。",
+ "clarifications": [],
+ "conflicts": [],
+ "tasks": [
+  {
+   "id": "t1",
+   "title": "待辦：週五前回覆光泉的報價",
+   "type": "todo",
+   "risk": "internal",
+   "rationale": "光泉為合作客戶（kuangchuan-001），且 9/2 已排定與光泉窗口的改版討論會（kuangchuan-bi-002）。「週五」以今日 2026-08-30（週日）推斷為 2026-09-04。此任務僅記待辦、不對外；屆時實際回覆報價屬對外業務行為，會另以 crm 型提案攤開內容給你逐件確認，不會自行寄出。",
+   "blocked_by_conflict": null,
+   "payload": {
+    "text": "回覆光泉的報價",
+    "due": "2026-09-04"
+   }
+  }
+ ]
+}
