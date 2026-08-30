@@ -114,12 +114,21 @@ def build_prompt(slug: str, messages: list) -> str:
 {kg}
 
 ## 你的處境
-你正透過語音/文字視窗跟 Peter 對話。回覆規則：
-1. 口語、精簡（會被唸出來，兩三句為上限，約 100 字內）
-2. Peter 要你「做」某件事（寄信、排程、查資料、記待辦…）時：口頭回應你會去辦，
-   並在回覆最後附一行標記 [[dispatch: 一句話描述要辦的事]] ——系統會據此開提案給
-   Peter 確認。你自己沒有任何工具，不要假裝已經做完。
-3. 純聊天/問答就正常回答，不加標記。
+你正透過語音/文字視窗跟 Peter 對話（回覆會被唸出來）。
+
+## 說話鐵則——像個真人，不是客服機器人
+1. 像同事傳訊息：短句、口語、可以省略主詞。閒聊一兩句就好，正事才多說
+2. 禁止對仗排比句（「若A則B；若C則D」這種一看就是 AI）、禁止條列、禁止 emoji
+3. 不重述 Peter 剛說的話，不每句都用敬語開頭，不硬加結尾問句
+4. 意見和常識儘管給：吃什麼、怎麼安排、值不值得——直接給一個明確建議，
+   不要「都可以」也不要推說查不了（給建議不需要工具）
+5. 但【動作】不能瞎承諾：你沒有工具，查外送、看網頁、讀檔案這類「現在去查」
+   的事做不到就別說會去做——要嘛開提案（見下），要嘛老實講
+
+## 辦事
+Peter 要你做事（寄信、排程、記待辦、查客戶資料…）時：自然地說你來處理，
+回覆最後附 [[dispatch: 一句話描述]] ——系統會開提案給 Peter 確認。
+純聊天不加標記。不要假裝已經做完任何事。
 
 ## 對話
 {transcript}
@@ -220,12 +229,71 @@ def chat_completions(req: ChatRequest):
             stderr=subprocess.DEVNULL, start_new_session=True)
         reply += "（提案我開好了，等你確認再動手。）"
 
+    # 對話歷史落地（之後 facts-cron 也能來抽）
+    last_user = next((m.get("content", "") for m in reversed(req.messages)
+                      if m.get("role") == "user"), "")
+    log_dir = REPO_DIR / "data" / "chat-log"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    with (log_dir / f"{time.strftime('%Y-%m-%d')}.jsonl").open("a", encoding="utf-8") as f:
+        f.write(json.dumps({"ts": time.strftime("%H:%M:%S"), "persona": slug,
+                            "engine": used, "user": last_user, "reply": reply,
+                            "dispatch": bool(m)}, ensure_ascii=False) + "\n")
+
     return {"id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
             "object": "chat.completion",
             "created": int(time.time()),
             "model": f"{slug}@{used}",
             "choices": [{"index": 0, "finish_reason": "stop",
                          "message": {"role": "assistant", "content": reply}}]}
+
+
+@app.get("/history")
+def history(date: str = "", limit: int = 50):
+    day = date or time.strftime("%Y-%m-%d")
+    path = REPO_DIR / "data" / "chat-log" / f"{day}.jsonl"
+    if not path.exists():
+        return {"date": day, "entries": []}
+    lines = path.read_text().splitlines()[-limit:]
+    entries = []
+    for line in lines:
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return {"date": day, "entries": entries}
+
+
+# ── TTS（widget 的 data-api 契約：POST {voice,text} → binary MP3）────────
+# OPENAI_API_KEY 已設時走 OpenAI TTS（自然人聲）；未設回 404，widget 自動
+# fallback 瀏覽器內建語音。ChatGPT app 的進階語音是產品功能、OAuth 借不到，
+# 這是拿得到的最接近替代。
+
+OPENAI_VOICE = {"m": "onyx", "f": "nova"}
+
+
+class TTSRequest(BaseModel):
+    voice: str = ""
+    text: str = ""
+
+
+@app.post("/api/tts")
+def tts(req: TTSRequest):
+    from fastapi.responses import Response
+    key = load_keys().get("OPENAI_API_KEY", "")
+    if not key or not req.text:
+        raise HTTPException(404, "tts not configured")
+    conf = read_conf()
+    active = conf.get("active", "lindir")
+    gender = conf.get(f"{active}.gender", "f")
+    r = requests.post("https://api.openai.com/v1/audio/speech",
+                      headers={"Authorization": f"Bearer {key}"},
+                      json={"model": "gpt-4o-mini-tts",
+                            "voice": OPENAI_VOICE.get(gender, "nova"),
+                            "input": req.text[:600], "response_format": "mp3"},
+                      timeout=30)
+    if r.status_code != 200:
+        raise HTTPException(502, "tts upstream failed")
+    return Response(content=r.content, media_type="audio/mpeg")
 
 
 @app.get("/health")

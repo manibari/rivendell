@@ -22,6 +22,14 @@ type HealthData = {
   engines: Record<string, boolean>;
 };
 type KeysData = Record<string, { set: boolean; masked: string | null }>;
+type HistoryEntry = {
+  ts: string;
+  persona: string;
+  engine: string;
+  user: string;
+  reply: string;
+  dispatch: boolean;
+};
 
 const ENGINE_LABEL: Record<string, string> = {
   codex: "Codex（ChatGPT 訂閱額度）",
@@ -46,6 +54,22 @@ export default function AvatarPage() {
   const [chosen, setChosen] = useState<string>("");
   const [keyInput, setKeyInput] = useState<Record<string, string>>({});
   const [err, setErr] = useState<string>("");
+  const [log, setLog] = useState<HistoryEntry[]>([]);
+
+  const refreshLog = useCallback(async () => {
+    try {
+      const h = await gw<{ entries: HistoryEntry[] }>("/history?limit=30");
+      setLog(h.entries);
+    } catch {
+      /* gateway down — err banner已處理 */
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshLog();
+    const t = setInterval(refreshLog, 10000);
+    return () => clearInterval(t);
+  }, [refreshLog]);
 
   const refresh = useCallback(async () => {
     try {
@@ -96,6 +120,7 @@ export default function AvatarPage() {
   const persona = data?.personas.find((p) => p.slug === chosen);
   const iframeSrc = persona
     ? `/avatar/widget.html?ollama=${encodeURIComponent(`${GATEWAY}/v1`)}` +
+      `&api=${encodeURIComponent(`${GATEWAY}/api/tts`)}` +
       `&llmmodel=${persona.slug}&vrm=${encodeURIComponent(persona.vrm)}` +
       `&voice=${persona.voice}&name=${encodeURIComponent(persona.display_name)}` +
       `&lang=zh-TW&engine=3d&open=true`
@@ -273,7 +298,43 @@ export default function AvatarPage() {
         )}
         <p style={{ fontSize: 11, color: "var(--text-subtle)", marginTop: 10 }}>
           金鑰存在本機 ~/.config/rivendell/gateway-keys.env（chmod 600），僅 gateway 讀取，畫面只顯示末四碼。
+          設定 OPENAI_API_KEY 後語音自動升級為自然人聲（OpenAI TTS）。
         </p>
+      </div>
+
+      <div
+        style={{
+          marginTop: 20,
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          padding: "16px 18px",
+        }}
+      >
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>
+          今日對話紀錄
+          <span style={{ color: "var(--text-subtle)", fontWeight: 400, fontSize: 12, marginLeft: 8 }}>
+            data/chat-log/（每 10 秒更新）
+          </span>
+        </div>
+        {log.length === 0 ? (
+          <p style={{ fontSize: 13, color: "var(--text-subtle)" }}>今天還沒有對話。</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 360, overflowY: "auto" }}>
+            {[...log].reverse().map((e, i) => (
+              <div key={i} style={{ fontSize: 13, borderBottom: "1px solid var(--border)", paddingBottom: 8 }}>
+                <div style={{ color: "var(--text-subtle)", fontSize: 11, marginBottom: 2 }}>
+                  {e.ts} · {e.persona}@{e.engine}
+                  {e.dispatch && (
+                    <span style={{ color: "var(--accent)", marginLeft: 6 }}>開了提案</span>
+                  )}
+                </div>
+                <div style={{ color: "var(--text-muted)" }}>Peter：{e.user}</div>
+                <div style={{ color: "var(--text)" }}>{e.reply}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
