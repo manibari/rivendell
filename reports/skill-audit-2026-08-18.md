@@ -1,4 +1,4 @@
-# Skills 稽核報告 — 2026-08-17
+# Skills 稽核報告 — 2026-08-18
 
 ## 摘要
 
@@ -17,187 +17,183 @@
 | 階段 | 數量 | 說明 |
 |-------|-------|---------|
 | 🆕 新建 | 0 | 已建立但尚未 commit |
-| 🔧 開發中 | 6 | 14 天內有多次修訂 |
-| ✅ 穩定 | 68 | 正常運作，近期無需修改 |
+| 🔧 開發中 | 4 | 14 天內有多次修訂 |
+| ✅ 穩定 | 70 | 正常運作，近期無需修改 |
 | ❓ 可能棄用 | 50 | 超過 90 天未更動 |
 
 ### 🔧 開發中
 
 **backend/**
-- odb-dfm-reference — 2 次修訂, 0天前
+- odb-dfm-reference — 2 次修訂, 1天前
 
 **docs/**
-- excalidraw-diagram — 3 次修訂, 0天前
-- subsidy-writer — 4 次修訂, 3天前
-
-**media/**
-- local-media-transcribe — 2 次修訂, 14天前
-
-**meta/**
-- doc-drift-sync — 2 次修訂, 14天前
+- excalidraw-diagram — 3 次修訂, 1天前
+- subsidy-writer — 4 次修訂, 4天前
 
 **qa/**
-- qa-dataflow — 4 次修訂, 0天前
+- qa-dataflow — 4 次修訂, 1天前
 
 ### ❓ 可能棄用
 
 **backend/**
-- audio-transcription-flow — 1 次, 132天前 (2026-04-07)
-- db-migration — 1 次, 158天前 (2026-03-12)
-- doc-to-structured-data — 1 次, 144天前 (2026-03-26)
-- docker-compose-setup — 2 次, 122天前 (2026-04-17)
-- firebase-backend — 3 次, 101天前 (2026-05-08)
-- rbac-permissions — 1 次, 132天前 (2026-04-07)
-- sqlite-to-postgres — 2 次, 101天前 (2026-05-08)
-- vector-search-setup — 1 次, 140天前 (2026-03-30)
+- audio-transcription-flow — 1 次, 133天前 (2026-04-07)
+- db-migration — 1 次, 159天前 (2026-03-12)
+- doc-to-structured-data — 1 次, 145天前 (2026-03-26)
+- docker-compose-setup — 2 次, 123天前 (2026-04-17)
+- firebase-backend — 3 次, 102天前 (2026-05-08)
+- rbac-permissions — 1 次, 133天前 (2026-04-07)
+- sqlite-to-postgres — 2 次, 102天前 (2026-05-08)
+- vector-search-setup — 1 次, 141天前 (2026-03-30)
 
 **docs/**
-- chart-design — 1 次, 91天前 (2026-05-18)
-- discovery-interview — 1 次, 132天前 (2026-04-07)
-- doc-coauthoring — 2 次, 101天前 (2026-05-08)
-- gdoc-report-builder — 2 次, 101天前 (2026-05-08)
-- internal-comms — 2 次, 101天前 (2026-05-08)
-- iot-factory-report — 2 次, 101天前 (2026-05-08)
-- mermaid-diagram — 1 次, 94天前 (2026-05-15)
-- metadata-workshop — 2 次, 101天前 (2026-05-08)
-- office-docx — 4 次, 131天前 (2026-04-08)
-- office-pdf — 3 次, 160天前 (2026-03-10)
-- office-xlsx — 3 次, 160天前 (2026-03-10)
-- rfq-writer — 1 次, 131天前 (2026-04-08)
-- slide-office-hours — 2 次, 101天前 (2026-05-08)
-- slide-template-extractor — 2 次, 101天前 (2026-05-08)
-- sow-writer — 2 次, 101天前 (2026-05-08)
+- chart-design — 1 次, 92天前 (2026-05-18)
+- discovery-interview — 1 次, 133天前 (2026-04-07)
+- doc-coauthoring — 2 次, 102天前 (2026-05-08)
+- gdoc-report-builder — 2 次, 102天前 (2026-05-08)
+- internal-comms — 2 次, 102天前 (2026-05-08)
+- iot-factory-report — 2 次, 102天前 (2026-05-08)
+- mermaid-diagram — 1 次, 95天前 (2026-05-15)
+- metadata-workshop — 2 次, 102天前 (2026-05-08)
+- office-docx — 4 次, 132天前 (2026-04-08)
+- office-pdf — 3 次, 161天前 (2026-03-10)
+- office-xlsx — 3 次, 161天前 (2026-03-10)
+- rfq-writer — 1 次, 132天前 (2026-04-08)
+- slide-office-hours — 2 次, 102天前 (2026-05-08)
+- slide-template-extractor — 2 次, 102天前 (2026-05-08)
+- sow-writer — 2 次, 102天前 (2026-05-08)
 
 **frontend/**
-- frontend-design — 2 次, 161天前 (2026-03-09)
-- ios-integration — 1 次, 162天前 (2026-03-08)
-- swiftui-patterns — 1 次, 162天前 (2026-03-08)
-- ui-ux-pro-max — 3 次, 160天前 (2026-03-10)
+- frontend-design — 2 次, 162天前 (2026-03-09)
+- ios-integration — 1 次, 163天前 (2026-03-08)
+- swiftui-patterns — 1 次, 163天前 (2026-03-08)
+- ui-ux-pro-max — 3 次, 161天前 (2026-03-10)
 
 **git/**
-- auto-stage — 3 次, 101天前 (2026-05-08)
-- repo-rename — 1 次, 144天前 (2026-03-26)
+- auto-stage — 3 次, 102天前 (2026-05-08)
+- repo-rename — 1 次, 145天前 (2026-03-26)
 
 **meta/**
-- audit-fix — 1 次, 158天前 (2026-03-12)
-- ci-pipeline — 1 次, 158天前 (2026-03-12)
-- deploy — 1 次, 158天前 (2026-03-12)
-- dev-process-gate — 4 次, 132天前 (2026-04-07)
-- init-project — 2 次, 161天前 (2026-03-09)
-- knowledge-graph — 1 次, 155天前 (2026-03-15)
-- learnings-promotion-sprint — 1 次, 94天前 (2026-05-15)
-- plan-check-style — 3 次, 158天前 (2026-03-12)
-- self-improving-agent — 3 次, 93天前 (2026-05-16)
-- session-harvest — 3 次, 101天前 (2026-05-08)
-- session-wrap — 1 次, 125天前 (2026-04-14)
-- skill-creator — 4 次, 122天前 (2026-04-17)
-- skill-scout — 2 次, 110天前 (2026-04-29)
-- sync-readme — 1 次, 139天前 (2026-03-31)
-- workflow-retro — 2 次, 101天前 (2026-05-08)
+- audit-fix — 1 次, 159天前 (2026-03-12)
+- ci-pipeline — 1 次, 159天前 (2026-03-12)
+- deploy — 1 次, 159天前 (2026-03-12)
+- dev-process-gate — 4 次, 133天前 (2026-04-07)
+- init-project — 2 次, 162天前 (2026-03-09)
+- knowledge-graph — 1 次, 156天前 (2026-03-15)
+- learnings-promotion-sprint — 1 次, 95天前 (2026-05-15)
+- plan-check-style — 3 次, 159天前 (2026-03-12)
+- self-improving-agent — 3 次, 94天前 (2026-05-16)
+- session-harvest — 3 次, 102天前 (2026-05-08)
+- session-wrap — 1 次, 126天前 (2026-04-14)
+- skill-creator — 4 次, 123天前 (2026-04-17)
+- skill-scout — 2 次, 111天前 (2026-04-29)
+- sync-readme — 1 次, 140天前 (2026-03-31)
+- workflow-retro — 2 次, 102天前 (2026-05-08)
 
 **quality/**
-- github-repo-audit — 1 次, 126天前 (2026-04-13)
-- large-file-refactor — 1 次, 140天前 (2026-03-30)
-- protect-secrets — 3 次, 101天前 (2026-05-08)
+- github-repo-audit — 1 次, 127天前 (2026-04-13)
+- large-file-refactor — 1 次, 141天前 (2026-03-30)
+- protect-secrets — 3 次, 102天前 (2026-05-08)
 
 **workflow/**
-- claude-to-telegram — 1 次, 155天前 (2026-03-15)
-- context-recovery — 1 次, 155天前 (2026-03-15)
-- settings-audit — 1 次, 145天前 (2026-03-25)
+- claude-to-telegram — 1 次, 156天前 (2026-03-15)
+- context-recovery — 1 次, 156天前 (2026-03-15)
+- settings-audit — 1 次, 146天前 (2026-03-25)
 
-<details><summary>✅ 穩定 (68)</summary>
+<details><summary>✅ 穩定 (70)</summary>
 
 **agents/**
-- agent-dispatch — 1 次, 25天前
-- agent-headless — 1 次, 25天前
-- agent-launchd — 1 次, 25天前
-- agent-observability — 2 次, 22天前
-- agent-persona — 2 次, 22天前
+- agent-dispatch — 1 次, 26天前
+- agent-headless — 1 次, 26天前
+- agent-launchd — 1 次, 26天前
+- agent-observability — 2 次, 23天前
+- agent-persona — 2 次, 23天前
 
 **backend/**
-- ai-vision-extract — 1 次, 49天前
-- backend-async-jobs — 3 次, 35天前
-- cloudflare-tunnel-ops — 1 次, 31天前
-- cloudflare-tunnel-provision — 1 次, 31天前
-- ic-lot-normalization — 1 次, 54天前
-- imap-smtp-integration — 2 次, 22天前
-- markdown-file-ssot — 2 次, 22天前
-- mcp-builder — 1 次, 25天前
-- ml-eval-quality — 2 次, 35天前
-- ml-model-registry — 2 次, 35天前
-- oauth-token-vault — 2 次, 22天前
-- spine-auth — 2 次, 28天前
-- spine-rbac — 1 次, 50天前
-- spine-schema-sync — 1 次, 50天前
-- spine-versioning — 1 次, 49天前
-- telegram-bot — 1 次, 25天前
-- tunnel-proxy-deploy — 2 次, 31天前
+- ai-vision-extract — 1 次, 50天前
+- backend-async-jobs — 3 次, 36天前
+- cloudflare-tunnel-ops — 1 次, 32天前
+- cloudflare-tunnel-provision — 1 次, 32天前
+- ic-lot-normalization — 1 次, 55天前
+- imap-smtp-integration — 2 次, 23天前
+- markdown-file-ssot — 2 次, 23天前
+- mcp-builder — 1 次, 26天前
+- ml-eval-quality — 2 次, 36天前
+- ml-model-registry — 2 次, 36天前
+- oauth-token-vault — 2 次, 23天前
+- spine-auth — 2 次, 29天前
+- spine-rbac — 1 次, 51天前
+- spine-schema-sync — 1 次, 51天前
+- spine-versioning — 1 次, 50天前
+- telegram-bot — 1 次, 26天前
+- tunnel-proxy-deploy — 2 次, 32天前
 
 **business/**
-- candidate-analysis — 1 次, 25天前
-- client-kickoff-docs — 1 次, 25天前
-- crm-projection — 1 次, 25天前
-- customer-intel — 2 次, 22天前
-- investment-research — 2 次, 22天前
-- jd-writer — 1 次, 25天前
-- keyword-discovery — 1 次, 25天前
-- material-health — 1 次, 25天前
-- mops-financial-scraper — 1 次, 25天前
-- presales-pipeline — 1 次, 25天前
-- sales-material — 1 次, 25天前
-- subsidy-scraper — 1 次, 25天前
-- tender-scraper — 1 次, 25天前
-- tw-company-lookup — 1 次, 25天前
+- candidate-analysis — 1 次, 26天前
+- client-kickoff-docs — 1 次, 26天前
+- crm-projection — 1 次, 26天前
+- customer-intel — 2 次, 23天前
+- investment-research — 2 次, 23天前
+- jd-writer — 1 次, 26天前
+- keyword-discovery — 1 次, 26天前
+- material-health — 1 次, 26天前
+- mops-financial-scraper — 1 次, 26天前
+- presales-pipeline — 1 次, 26天前
+- sales-material — 1 次, 26天前
+- subsidy-scraper — 1 次, 26天前
+- tender-scraper — 1 次, 26天前
+- tw-company-lookup — 1 次, 26天前
 
 **docs/**
-- office-pptx — 4 次, 21天前
-- pitch-deck — 5 次, 15天前
-- slide-workflow — 5 次, 21天前
+- office-pptx — 4 次, 22天前
+- pitch-deck — 5 次, 16天前
+- slide-workflow — 5 次, 22天前
 
 **frontend/**
-- chimesflow-design — 1 次, 67天前
+- chimesflow-design — 1 次, 68天前
 
 **git/**
-- concurrent-session-git — 2 次, 22天前
-- resolving-merge-conflicts — 1 次, 14天前
+- concurrent-session-git — 2 次, 23天前
+- resolving-merge-conflicts — 1 次, 15天前
 
 **media/**
-- channel-scraper — 1 次, 8天前
-- subtitle-file — 1 次, 25天前
-- video-clip-extract — 1 次, 25天前
-- video-transcript — 5 次, 25天前
+- channel-scraper — 1 次, 9天前
+- local-media-transcribe — 2 次, 15天前
+- subtitle-file — 1 次, 26天前
+- video-clip-extract — 1 次, 26天前
+- video-transcript — 5 次, 26天前
 
 **meta/**
-- setup-permissions — 4 次, 15天前
-- skill-apply — 1 次, 4天前
-- task-brief — 1 次, 62天前
-- writing-great-skills — 1 次, 14天前
+- doc-drift-sync — 2 次, 15天前
+- setup-permissions — 4 次, 16天前
+- skill-apply — 1 次, 5天前
+- task-brief — 1 次, 63天前
+- writing-great-skills — 1 次, 15天前
 
 **planning/**
-- app-ops-baseline — 1 次, 25天前
-- executing-plans — 1 次, 25天前
-- mockup — 1 次, 25天前
-- planning-with-files — 1 次, 25天前
-- requirement — 1 次, 25天前
-- user-flow — 1 次, 25天前
-- writing-plans — 1 次, 25天前
+- app-ops-baseline — 1 次, 26天前
+- executing-plans — 1 次, 26天前
+- mockup — 1 次, 26天前
+- planning-with-files — 1 次, 26天前
+- requirement — 1 次, 26天前
+- user-flow — 1 次, 26天前
+- writing-plans — 1 次, 26天前
 
 **qa/**
-- qa-auto — 1 次, 2天前
-- qa-journey — 1 次, 2天前
-- qa-planner — 1 次, 2天前
-- qa-testing — 1 次, 2天前
+- qa-auto — 1 次, 3天前
+- qa-journey — 1 次, 3天前
+- qa-planner — 1 次, 3天前
+- qa-testing — 1 次, 3天前
 
 **quality/**
-- de-slopify — 5 次, 15天前
-- say-it-plain — 2 次, 28天前
+- de-slopify — 5 次, 16天前
+- say-it-plain — 2 次, 29天前
 
 **workflow/**
-- autoresearch — 3 次, 22天前
-- context-journal — 1 次, 28天前
-- env-doctor — 3 次, 62天前
-- gdrive-to-skills — 3 次, 22天前
-- repro-exam — 3 次, 62天前
+- autoresearch — 3 次, 23天前
+- context-journal — 1 次, 29天前
+- env-doctor — 3 次, 63天前
+- gdrive-to-skills — 3 次, 23天前
+- repro-exam — 3 次, 63天前
 
 </details>
 
@@ -596,9 +592,9 @@
 
 | | |
 |---|---|
-| **狀態** | 🔥 活躍 — 19 個 commit（本週）, 26 個（本月） |
+| **狀態** | 🔥 活躍 — 13 個 commit（本週）, 26 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `feat/post-sale-handoff-console` (6 total) |
+| **分支** | `feat/post-sale-handoff-console` (6 total) | 1 個 open PR |
 | **Git** | 2 dirty |
 | **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
 | **Config** | **missing** | **權限** | OK (0 rules) |
@@ -620,7 +616,7 @@ df39349 chore(roadmap): v1.34.1 release note for the document pagination fix
 |---|---|
 | **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
 | **技術棧** |  Docker Python |
-| **分支** | `main` (1 total) |
+| **分支** | `main` (1 total) | 9 個 open PR |
 | **Git** | 1 unpushed |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | **missing** | **權限** | OK (9 rules) |
@@ -739,7 +735,7 @@ c0845bc Update CLAUDE.md with v2 P0+P1 feature docs
 
 | | |
 |---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 89 個（本月） |
+| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 88 個（本月） |
 | **技術棧** |  Python |
 | **分支** | `main` (4 total) |
 | **Git** | 103 unpushed |
@@ -871,7 +867,7 @@ e668f6c feat: close the pipeline — query, expand, encode, end to end on a real
 
 | | |
 |---|---|
-| **狀態** | 🔥 活躍 — 72 個 commit（本週）, 205 個（本月） |
+| **狀態** | 🔥 活躍 — 51 個 commit（本週）, 193 個（本月） |
 | **技術棧** |  Node.js Python |
 | **分支** | `next-wave-2026-05` (8 total) |
 | **Git** | clean |
@@ -994,7 +990,7 @@ dbd5915 chore: add learnings log for Upwork RSS deprecation
 |---|---|
 | **狀態** | 💤 沉寂 — 0 個 commit（本週）, 2 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
+| **分支** | `main` (1 total) | 10 個 open PR |
 | **Git** | 53 dirty |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | no CLAUDE.md | **權限** | OK (9 rules) |
@@ -1102,9 +1098,9 @@ fde4cd5 feat(batch-grill-me): granular fact-finding, don't block the round
 
 | | |
 |---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 57 個（本月） |
+| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 54 個（本月） |
 | **技術棧** |  Make |
-| **分支** | `main` (3 total) |
+| **分支** | `main` (3 total) | 1 個 open PR |
 | **Git** | 1 dirty |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | **missing** | **權限** | OK (4 rules) |
@@ -1126,7 +1122,7 @@ cd52fe6 fix(analytics): Screener 指標 N/A 改破折號，區分資料不足 vs
 |---|---|
 | **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
 | **技術棧** |  Docker Node.js Python |
-| **分支** | `feat/entry-allocation-tradingview-ui` (5 total) |
+| **分支** | `feat/entry-allocation-tradingview-ui` (5 total) | 1 個 open PR |
 | **Git** | 23 dirty, 1 unpushed |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | OK | **權限** | OK (25 rules) |
@@ -1164,10 +1160,10 @@ c35ad9e feat(portfolio): reconciliation engine + momentum target producer
 
 | | |
 |---|---|
-| **狀態** | ✅ 近期有動 — 3 個 commit（本週）, 18 個（本月） |
+| **狀態** | ✅ 近期有動 — 2 個 commit（本週）, 17 個（本月） |
 | **技術棧** |  Docker Node.js Python |
 | **分支** | `main` (2 total) |
-| **Git** | 4472 dirty |
+| **Git** | 4523 dirty |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ✅ |
 | **Config** | OK | **權限** | OK (35 rules) |
 
@@ -1253,37 +1249,36 @@ ad473ad Layout editing round-trip: drag furniture in 3D, write back to DXF layer
 ~~~mermaid
 xychart-beta
     title "每日花費（USD）"
-    x-axis ["08-11", "08-12", "08-13", "08-14", "08-15", "08-16", "08-17"]
+    x-axis ["08-12", "08-13", "08-14", "08-15", "08-16", "08-17", "08-18"]
     y-axis "USD" 0 --> 2050
-    bar [1687, 1955, 323, 1367, 798, 1711, 759]
+    bar [1955, 323, 1367, 798, 1711, 759, 0]
 ~~~
 
 | 日期 | Sessions | API 呼叫 | Tokens | 預估花費 |
 |------|----------|-----------|--------|-----------|
-| 2026-08-11 (Tue) | 13 | 2,137 | 838.9M | $1686.89 |
 | 2026-08-12 (Wed) | 10 | 2,151 | 893.2M | $1954.55 |
 | 2026-08-13 (Thu) | 12 | 490 | 123.5M | $323.17 |
 | 2026-08-14 (Fri) | 15 | 2,064 | 623.0M | $1367.20 |
 | 2026-08-15 (Sat) | 7 | 601 | 331.0M | $797.82 |
 | 2026-08-16 (Sun) | 19 | 1,716 | 686.4M | $1711.43 |
-| 2026-08-17 (Mon) | 13 | 1,296 | 290.7M | $758.90 |
-| **Total** | | | **3786.8M** | **$8599.97** |
+| 2026-08-17 (Mon) | 16 | 1,299 | 290.7M | $758.90 |
+| 2026-08-18 (Tue) | 4 | 4 | 0 | $0.00 |
+| **Total** | | | **2947.9M** | **$6913.08** |
 
 ### 各專案花費（7 日）
 
 | 專案 | API 呼叫 | Tokens | 預估花費 |
 |---------|-----------|--------|-----------|
-| PTI-ARES | 3,039 | 1557.5M | $3182.93 |
-| Verdandi-AutoML | 1,560 | 743.2M | $1621.42 |
-| ChimesFlow | 2,149 | 507.4M | $1194.72 |
-| Vault-Peter-Work | 1,232 | 436.2M | $1130.29 |
-| rivendell | 1,176 | 282.7M | $849.21 |
+| PTI-ARES | 1,679 | 812.8M | $1782.17 |
+| Verdandi-AutoML | 1,483 | 737.8M | $1604.83 |
+| Vault-Peter-Work | 1,158 | 427.7M | $1097.30 |
+| ChimesFlow | 1,714 | 442.8M | $1005.18 |
+| rivendell | 1,157 | 281.1M | $842.04 |
 | Urd-ETL | 514 | 176.2M | $405.81 |
 | Norns-Skuld-CAD | 303 | 49.2M | $103.38 |
-| sales-assistant | 260 | 16.5M | $50.22 |
+| sales-assistant | 235 | 15.0M | $45.30 |
 | news_stock | 28 | 603K | $40.77 |
-| vantage-3dgs | 62 | 5.0M | $26.88 |
-| Marketing-Pal | 110 | 9.8M | $22.65 |
+| vantage-3dgs | 32 | 2.1M | $14.61 |
 | Verdandi-OR | 50 | 3.1M | $12.46 |
 
 _計價: Opus input $15/M, output $75/M, cache create $18.75/M, cache read $1.50/M_
@@ -1291,4 +1286,4 @@ _計價: Opus input $15/M, output $75/M, cache create $18.75/M, cache read $1.50
 
 ---
 
-*由以下工具產生 `./bin/sk audit` — 2026-08-17 — 124 skills, 82 issue(s)*
+*由以下工具產生 `./bin/sk audit` — 2026-08-18 — 124 skills, 82 issue(s)*
