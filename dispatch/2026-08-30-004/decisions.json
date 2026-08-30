@@ -1,0 +1,16 @@
+{
+ "schema": 1,
+ "tasks": {
+  "t1": {
+   "status": "executed",
+   "confirm": "simple",
+   "payload_sha256": "9e999f97d1a7b79a65dc2cde66094bc934273f9570f8c64599b8d7ef09a858f2",
+   "decided_at": "2026-08-30T12:54:36",
+   "executed_at": "2026-08-30T12:57:11",
+   "result": "results/t1-agent.md",
+   "error": null,
+   "blocked_reason": null
+  }
+ },
+ "conflicts": {}
+}

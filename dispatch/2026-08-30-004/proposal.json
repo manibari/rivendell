@@ -1,0 +1,29 @@
+{
+ "schema": 1,
+ "dispatch_id": "2026-08-30-004",
+ "request": "把這個 Threads 美食連結的內容存進收藏，分類放 travel-japan（旅遊-日本）：https://www.threads.com/share/_yhEzgvjS/",
+ "created": "2026-08-30T12:54:12+08:00",
+ "revision": 1,
+ "source": {
+  "channel": "user",
+  "context": {}
+ },
+ "summary": "您想把這則 Threads 美食貼文收進收藏，並指定歸入 travel-japan（旅遊-日本）主題檔。",
+ "clarifications": [],
+ "conflicts": [],
+ "tasks": [
+  {
+   "id": "t1",
+   "title": "抓取 Threads 貼文內容並收藏至 travel-japan 主題檔",
+   "type": "agent_task",
+   "risk": "internal",
+   "rationale": "知識庫 active facts 無與此收藏相關的資料；依收藏類指令標準流程處理，分類依您指定的 travel-japan，不另行判斷。",
+   "blocked_by_conflict": null,
+   "payload": {
+    "prompt": "請用 WebFetch 抓取這個 Threads 連結的內容：https://www.threads.com/share/_yhEzgvjS/ 。若抓不到內容（Threads 分享連結可能需登入或轉址失敗），請改記下原始連結與使用者的描述「Threads 美食連結」。接著摘要重點：店名、地點、推薦項目、來源（Threads 貼文連結與作者，若可得）。最後將摘要 append 到 ~/.claude/knowledge/collections/travel-japan.md——使用者已指定此分類，請勿改判其他主題檔。若該檔不存在，先建立並在開頭加一行說明（例如「# travel-japan — 旅遊-日本收藏：店家、景點、行程參考」）。條目請附上收藏日期 2026-08-30 與原始連結，全文用繁體中文。",
+    "tools_profile": "standard",
+    "project_dir": null
+   }
+  }
+ ]
+}

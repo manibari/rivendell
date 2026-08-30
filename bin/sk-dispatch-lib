@@ -105,6 +105,12 @@ ${kg_facts}
 - crm: {\"brief\":\"業務行為摘要\",\"client_slug\":\"kg companies slug 或 null\",\"event_context\":{}} — 客戶信件/報價/合約/成交/客戶會議等業務行為一律用此型交接 CRM（目前 Rightek-CRM ${crm_status}），禁止自行用 email/calendar_event 處理業務事項
 
 ## 規則
+0. 「收藏/存連結」類（美食、文章、店家）：產一個 agent_task（tools_profile=standard），
+   prompt 指示：WebFetch 該網址（抓不到內容就記下連結與使用者描述）→ 摘要重點
+   （店名/地點/推薦項目/來源）→ **依內容自動判斷主題分類** append 到
+   ~/.claude/knowledge/collections/<主題>.md（英文小寫 kebab，如 food.md、
+   travel-japan.md、articles.md；使用者有指定分類就照指定；檔案不存在就建立，
+   開頭一行說明用途；既有主題檔優先沿用，不要同義開新檔）
 1. 涉及真人/會議/金錢：只產提案（email/calendar_event/crm），內容具體完整（收件人、時間、金額），由人確認
 2. 與知識庫 active facts 矛盾：寫進 conflicts 攤開，相關 task 設 blocked_by_conflict，不要悄悄照辦
 3. 最多 ${MAX_DISPATCH_TASKS:-8} 個 tasks；不確定就進 clarifications，寧缺勿濫

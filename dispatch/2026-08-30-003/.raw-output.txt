@@ -1,0 +1,6 @@
+{"schema":1,"dispatch_id":"2026-08-30-003","request":"把這個美食連結的內容存進收藏 https://www.threads.com/share/_yhEzgvjS/","created":"2026-08-30T12:53:31+08:00","revision":1,
+ "source":{"channel":"avatar","context":{}},
+ "summary":"您傳了一則 Threads 的美食連結，我會把內容抓下來、整理成重點後收進美食收藏檔。",
+ "clarifications":[],
+ "conflicts":[],
+ "tasks":[{"id":"t1","title":"抓取 Threads 美食連結並收進 collections/food.md","type":"agent_task","risk":"internal","rationale":"知識庫 active facts 無與此連結相關的資料；屬「收藏/存連結」類，依規則 0 以 agent_task 處理，僅寫入收藏檔、不動知識庫事實層。","blocked_by_conflict":null,"payload":{"prompt":"用 WebFetch 抓取 https://www.threads.com/share/_yhEzgvjS/ 的內容（Threads 分享連結可能會轉址或擋爬；若抓不到完整內容，就記下原始連結並註明「使用者描述：美食連結，內容待補」，不要編造）。從抓到的內容整理重點：店名、地點、推薦品項、貼文來源帳號與日期。然後 append 一筆到 ~/.claude/knowledge/collections/food.md：若檔案不存在先建立，開頭加一行「# Food collections — 美食收藏，來源多為社群分享連結」；每筆條目含日期（2026-08-30）、店名/主題、重點摘要、原始連結。只寫入這個收藏檔，不呼叫 kg.py、不寫入知識庫事實層。","tools_profile":"standard","project_dir":null}}]}
