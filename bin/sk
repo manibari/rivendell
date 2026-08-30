@@ -52,7 +52,7 @@ Standalone tools (bin/):
   sk-relocate <path>  Move the repo and rebuild every artifact that stored the old path
   run <task>          Run a task as single-shot agent (claude -p)
   dispatch "<指令>"    模糊指令 → 具體化提案 → 分級確認 → 執行 (new/list/show/approve/reject/answer/resolve/retry)
-  audit               Generate audit report → reports/skill-audit-YYYY-MM-DD.md
+  audit               Generate audit report → reports/skill-audit-YYYY-MM-DD-<host>.md
   permissions [dir]   Scan project tooling and update .claude/settings.local.json
   maintain            Nightly maintenance: permissions sync, deploy check, agent health, audit, disk alert
   clean               Reclaim disk from regenerable caches (npm/pip/uv/brew, docker build cache, stale .next)
@@ -2433,7 +2433,12 @@ cmd_audit() {
   local today
   today="$(date '+%Y-%m-%d')"
   local report_dir="$REPO_DIR/reports"
-  local report="$report_dir/skill-audit-${today}.md"
+  # Per-machine filename — avoids same-day clobber across machines (see
+  # sk-harvest-cron / LEARNINGS 2026-08-30).
+  local host_tag
+  host_tag=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | sed 's/-\{1,\}$//')
+  [ -z "$host_tag" ] && host_tag="unknown"
+  local report="$report_dir/skill-audit-${today}-${host_tag}.md"
   mkdir -p "$report_dir"
 
   local total=0 healthy=0 needs_attention=0

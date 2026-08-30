@@ -11,7 +11,12 @@ REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 PROJECT_NAME="$(basename "$REPO_DIR")"
 REPORT_DIR="$REPO_DIR/reports"
 TODAY="$(date '+%Y-%m-%d')"
-REPORT_FILE="$REPORT_DIR/ssot-drift-$TODAY.md"
+# Per-machine filename — two machines running the same day used to clobber
+# each other (see sk-harvest-cron / LEARNINGS 2026-08-30). Janitor reads the
+# date from the first YYYY-MM-DD in the name, so the tag doesn't affect it.
+HOST_TAG=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | sed 's/-\{1,\}$//')
+[ -z "$HOST_TAG" ] && HOST_TAG="unknown"
+REPORT_FILE="$REPORT_DIR/ssot-drift-$TODAY-$HOST_TAG.md"
 
 mkdir -p "$REPORT_DIR"
 
