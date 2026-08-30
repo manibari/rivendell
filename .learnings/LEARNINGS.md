@@ -590,3 +590,20 @@ category: best_practice
 - **Root cause**: compose 在目錄不存在時以 daemon 身分建立掛載點；之後所有非 root 工具都炸。
 - **Rule**: 遇到 repo 內 root-owned 空目錄，`rmdir + mkdir` 即可換回使用者所有（父目錄可寫就行，
   不用 sudo）。預防：docker-compose 用到的 host 目錄先在 bootstrap/preflight 以使用者身分 mkdir。
+
+## 2026-08-30 — 兩機分岔 merge：70 個衝突裡 64 個是「日期命名的 agent report」
+
+- category: best_practice / multi-machine
+- **情境**: `chore/skill-quality`(本機 127 commits)合 `origin/main`(另一機 7 commits)。
+  衝突 70 檔：64 個是 `reports/{skill-audit,ssot-drift,test,workflow-retro,harvest}-<日期>.md`
+  ——兩台機器的排程 agent 各自產出同名檔；只有 6 個是真正的程式/文件衝突。
+- **根因**: report 檔名只帶日期不帶機器名。`sk-harvest-cron` 已修（068a131 加 hostname 後綴），
+  但其他 report-writing cron（skill-audit / ssot-drift / test / workflow-retro / token-analysis）
+  還是 date-only，每天都在製造未來的 add/add 衝突。
+- **解法（本次）**: 照 aee5dc5 先例——main 版留原名，本機版改名 `*-manibaris-macbook-air-1213.md`，
+  兩份都留（內容是不同機器的真實狀態，誰都不是誰的 stale copy）。
+- **How to apply**: (1) **根治**：把 harvest 的 per-machine 檔名修法推廣到所有 report cron
+  （機械收尾靠 gate 不靠記憶——ROADMAP 硬 invariant 3）。(2) 真正難整合的不是 skill 命名
+  （merge 中 skill 名零衝突，naming series 規範有效），是「兩台機器同時重寫同一個檔」
+  （server.py /api/ports、ROADMAP.md 兩邊各自全文重寫）——這要靠縮短合流週期
+  （R1a：勤合 main）+ 每個區域單一寫者，不是靠命名規範。
