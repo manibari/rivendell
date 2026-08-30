@@ -17,11 +17,26 @@
 ## Wave 0 — 止血(先於一切;每項獨立 commit + CHANGELOG + bump)
 
 - [ ] **R1a** 收斂 git split-brain:port-map 平行 session WIP 落地(**Peter**)→
-      `chore/skill-quality` 合 main → WSL 改追 main。
+      `chore/skill-quality` 合 main(2026-08-30 本 merge 執行中)→ WSL 改追 main。
 - [ ] **R1b** FlowView Suspense 修復 byte-exact 單獨 commit(防 `checkout --` 滅失 → build 再炸)。
 - [ ] **R3** family-fiscal prod 回灌 fail-loud SECRET_KEY(骨架 config 模式 backport)+
       prod 換真金鑰。**財務資料 + 公網 tunnel,最高優先。**
 - [ ] **R5** chimesflow-db / spms 容器從 `~/code` context 重建(volume 保留)。
+
+## 個人助理線(main 2026-08-29/30 併入;knowledge base + dispatch + avatar)
+
+- **知識庫投影層:行事曆 + to-do list** — facts.jsonl 是機器記憶,人看的介面
+  是行事曆與待辦(「這樣比較像是人的理解」)。投影 agent 讀知識庫 →
+  Google Calendar / Tasks(走 SaaS OAuth)或 dashboard 頁面;Telegram
+  ops-bridge 作提醒通道。依賴:知識庫先累積資料。
+- **Avatar 後續** (2026-08-30):神經語音 TTS(demo 給客戶前必換,瀏覽器內建太機器);
+  gateway 對外前先加 auth(現綁 127.0.0.1 不可 tunnel);avatar 對話 transcript
+  落地供 facts-cron 抽取;VRM 模型質感升級(自製/購入)。
+- **訊息軟體整合** — Telegram 讀取(正式 API,併 ops-bridge 一起做,含建議回覆);
+  Slack user token 可讀;LINE/WhatsApp 無個人 API 且有封號風險 → 只做半手動
+  (貼對話/截圖 → 知識庫輔助建議回覆)。(2026-08-29)
+- **Rightek-CRM 實際寫入** — dispatch 的 `crm` 路由已就緒(graceful fail 留 retry);
+  等 Rightek-CRM 服務啟動(FastAPI :8100,agent 讀 openapi.json 即知接口)。(2026-08-29)
 
 ## Wave 1 — 可觀測(monitoring 0 → 1)
 
@@ -62,7 +77,8 @@
 - [ ] **W4-4** 淘汰機制:改用**刪除測試**(取自 mattpocock `improve-codebase-architecture`)
       ——「把這個 skill 拿掉,事情會變糟嗎?」變糟=真的在隱藏複雜度;反而更清爽=空殼。
       比原本「N 個月 0 觸發就標記」好在它是語意判準、不用等 N 個月。現況是
-      `knowledge-graph` 靠 retro 人工點名 3 次才退,不是機制。
+      `knowledge-graph` 靠 retro 人工點名 3 次、又於 2026-08-29 翻案復活——
+      來回都是人工判斷,不是機制。
 - [ ] **W4-5** invocation 分流:**已量測 = 121 個 skill 的 description 合計
       58,731 字元 ≈ 16.8K tokens,每個 session 都載入**(對上 FR 2026-05-08 的估算)。
       Claude Code 原生支援 `disable-model-invocation: true`——description 完全不進
@@ -86,7 +102,11 @@
 
 ## Skill pipeline(每週 retro 管理;與 Wave 並行的常態產線)
 
-- **Retire `knowledge-graph`** — 0 triggers,3+ retros 連續點名(W22 action 1)。
+- ~~Retire `knowledge-graph`~~ → **翻案 (2026-08-29)**:0 triggers 的根因是
+  零資料 + recall 未啟用,非 skill 無用。已啟用:`scripts/kg.py` 寫入 API +
+  `bin/sk-facts-cron`(daily 21:30,從 session 抽 durable facts)+
+  `~/.claude/CLAUDE.md` recall 區塊。知識庫定位:個人助理三角(skills 能力 /
+  知識庫記憶 / SaaS 資料進出)的記憶層。
 - **`doe-ml-analysis`** — DOE/製程 ML EDA(heatmap→PCA→regression R²);harvest Strong,
   補製造運營 domain gap。
 - **`bin/sk index`** — INDEX-first 分層 skill 檢索,砍 per-session token(FR 2026-05-08)。

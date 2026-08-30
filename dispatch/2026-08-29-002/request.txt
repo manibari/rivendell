@@ -1,0 +1,1 @@
+決定了：rivendell 不掛 codex oauth，維持 claude 單引擎就好

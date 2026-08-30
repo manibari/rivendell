@@ -1921,13 +1921,26 @@ def _listening_tcp_ports() -> tuple[dict[int, dict[str, str]], str | None]:
     - declared + not listening => drift
     - listening + not declared => wild
     """
+    # Do NOT rely on PATH. On macOS lsof lives in /usr/sbin, which is absent
+    # from the PATH the launchd plist sets — so this worked in an interactive
+    # shell and silently returned nothing under the service, making every port
+    # look idle.
+    import shutil
+
+    lsof = next(
+        (b for b in (shutil.which("lsof"), "/usr/sbin/lsof", "/usr/bin/lsof")
+         if b and Path(b).exists()),
+        None,
+    )
+    if lsof is None:
+        return {}, "lsof not found (PATH, /usr/sbin, /usr/bin)"
     try:
         proc = subprocess.run(
-            ["lsof", "-nP", "-iTCP", "-sTCP:LISTEN"],
+            [lsof, "-nP", "-iTCP", "-sTCP:LISTEN"],
             check=False,
             capture_output=True,
             text=True,
-            timeout=2,
+            timeout=8,
         )
     except Exception as exc:
         return {}, str(exc)

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "dispatch_id": "2026-08-29-002",
+ "request": "決定了：rivendell 不掛 codex oauth，維持 claude 單引擎就好",
+ "created": "2026-08-29T19:06:30+08:00",
+ "revision": 2,
+ "source": {
+  "channel": "user",
+  "context": {}
+ },
+ "summary": "Peter 拍板：Rivendell 不掛接 codex oauth，維持 Claude 單引擎架構，需推翻知識庫中「評估掛接 codex oauth」的舊方向並同步相關文件。",
+ "clarifications": [],
+ "conflicts": [
+  {
+   "index": 1,
+   "fact_id": "rivendell-001",
+   "entity_type": "projects",
+   "entity_slug": "rivendell",
+   "old_fact": "Rivendell 的定位方向：透過 skills 搭配知識庫與 SaaS 服務運作成個人助理，並評估掛接 codex oauth",
+   "new_direction": "不掛接 codex oauth，維持 Claude 單引擎",
+   "explanation": "rivendell-001 記載「評估掛接 codex oauth」為進行中方向，本次指令明確終止該評估，屬決策更新而非新增事實，應以 supersede 方式取代舊 fact。",
+   "replacement_fact": "Rivendell 的定位方向：透過 skills 搭配知識庫與 SaaS 服務運作成個人助理；已決定不掛接 codex oauth，維持 Claude 單引擎架構",
+   "category": "decision"
+  }
+ ],
+ "tasks": [
+  {
+   "id": "t1",
+   "title": "清查 Rivendell 文件中 codex oauth 相關規劃並改為已否決",
+   "type": "agent_task",
+   "risk": "internal",
+   "rationale": "依據 rivendell-001，掛接 codex oauth 曾是評估中方向，可能已寫入 ROADMAP.md、CHANGELOG.md 或 docs/；決策翻案後需同步文件避免漂移。",
+   "blocked_by_conflict": null,
+   "payload": {
+    "prompt": "在 rivendell repo 全庫搜尋 codex、oauth、多引擎/單引擎相關規劃內容（ROADMAP.md、README.md、docs/、.claude/、skills/）。凡是把「掛接 codex oauth」列為待辦或評估中的段落，改為標註該方向已於 2026-08-29 否決、維持 Claude 單引擎；不要刪除歷史紀錄（CHANGELOG 既有條目保留）。輸出一份修改摘要列出每個改動的檔案與段落。",
+    "tools_profile": "standard",
+    "project_dir": "/home/manibari/projects/rivendell"
+   }
+  },
+  {
+   "id": "t2",
+   "title": "待辦：確認未來 SaaS 掛接需求一律走 Claude 單引擎前提",
+   "type": "todo",
+   "risk": "internal",
+   "rationale": "rivendell-001 顯示定位仍含 SaaS 服務掛接，決策後續評估任何外部引擎/服務時需以單引擎為前提，記一條待辦供下次 roadmap 檢視時參照。",
+   "blocked_by_conflict": null,
+   "payload": {
+    "text": "Rivendell 後續 SaaS/工具掛接評估一律以 Claude 單引擎為前提，不再考慮 codex oauth（2026-08-29 決策）",
+    "due": null
+   }
+  }
+ ]
+}

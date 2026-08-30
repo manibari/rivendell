@@ -1,0 +1,26 @@
+```json
+{"schema":1,"dispatch_id":"2026-08-30-001","request":"光泉的會前資料幫我看一下還缺什麼","created":"2026-08-30T12:04:46+08:00","revision":1,
+ "source":{"channel":"user","context":{}},
+ "summary":"你是要我在 9/2 光泉改版討論會之前，把會前資料盤點一遍，對照會議議題找出還缺什麼。",
+ "clarifications":[],
+ "conflicts":[],
+ "tasks":[
+  {"id":"t1",
+   "title":"盤點光泉會前資料，對照 9/2 議題找缺口",
+   "type":"agent_task",
+   "risk":"internal",
+   "rationale":"依據 kuangchuan-bi-002：9/2 與光泉窗口的改版討論會，議題有四項——看板功能、銷售預測模型、auto-deploy poller、技術債改善方向。會前資料完不完整，就該拿這四項當檢核清單逐一比對。資料位置依 kuangchuan-001 與 kuangchuan-bi-001，最可能在 kuangchuan-bi 專案（repo: manibari/kuangchuan-bi）與本機客戶資料目錄，讓 agent 自行搜尋定位。",
+   "blocked_by_conflict":null,
+   "payload":{
+     "prompt":"你在替 Peter 準備 2026-09-02 與光泉（合作客戶）的改版討論會。任務：找出並檢視現有會前資料，對照四項會議議題逐一盤點——(1) 看板功能、(2) 銷售預測模型、(3) auto-deploy poller、(4) 技術債改善方向。步驟：先在本機 projects 目錄找 kuangchuan-bi 專案與 materials/clients 下的光泉相關資料（簡報、議程、報告、README、ROADMAP、CHANGELOG 等）；再逐項判斷：這個議題有沒有對應的現況說明、數據或提案材料？最後輸出一份繁體中文缺口報告：每項議題標「齊了／缺什麼／建議補什麼」，只讀不改任何檔案。",
+     "tools_profile":"readonly",
+     "project_dir":null}},
+  {"id":"t2",
+   "title":"9/1 前確認缺口已補齊",
+   "type":"todo",
+   "risk":"internal",
+   "rationale":"kuangchuan-bi-002 記的會議日期是 2026-09-02；缺口報告出來後，得留一天緩衝把該補的補上，所以待辦定在 9/1。",
+   "blocked_by_conflict":null,
+   "payload":{"text":"檢視光泉會前資料缺口報告，確認 9/2 會議四項議題的材料都補齊","due":"2026-09-01"}}
+ ]}
+```

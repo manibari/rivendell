@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "tasks": {
+  "t1": {
+   "status": "rejected",
+   "confirm": null,
+   "payload_sha256": null,
+   "decided_at": "2026-08-29T19:08:21",
+   "executed_at": null,
+   "result": null,
+   "error": null,
+   "blocked_reason": null
+  },
+  "t2": {
+   "status": "rejected",
+   "confirm": null,
+   "payload_sha256": null,
+   "decided_at": "2026-08-29T19:08:21",
+   "executed_at": null,
+   "result": null,
+   "error": null,
+   "blocked_reason": null
+  }
+ },
+ "conflicts": {
+  "1": {
+   "resolution": "keep-old",
+   "resolved_at": "2026-08-29T19:08:21",
+   "new_fact_id": null
+  }
+ }
+}

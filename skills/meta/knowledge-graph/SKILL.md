@@ -1,8 +1,8 @@
 ---
 name: Knowledge Graph
-description: Three-Layer Memory System for structured entity tracking. Extracts durable facts about people, companies, and projects into atomic JSONL entries with living summaries.
+description: Three-Layer Memory System for structured entity tracking — durable facts about people, companies, and projects as atomic JSONL entries with living summaries, written via scripts/kg.py. TRIGGER when encountering durable facts (job change, decision, preference, milestone) during conversation, or user says "remember", "recall", "what do we know about", "/knowledge-graph". SKIP for engineering learnings (self-improving-agent), session workflow patterns (session-harvest), or project-scoped memory (auto memory).
 when_to_use: when encountering durable facts about people, companies, or projects during conversation, or when user asks to remember/recall/look up entity information
-version: 1.0.0
+version: 2.0.0
 tags: [memory, knowledge, entities]
 languages: all
 user_invocable: true
@@ -88,18 +88,45 @@ Skip:
 - Already-known facts (check existing facts first)
 - Vague or uncertain information
 
+## Write API — scripts/kg.py (the only write path)
+
+All writes go through `<rivendell>/scripts/kg.py`. Never hand-edit facts.jsonl —
+the script owns id assignment, append-only enforcement, the surgical supersede
+edit, dedup backstop, and structural validation.
+
+```bash
+# Add a fact (id auto-assigned; prints it)
+python3 <rivendell>/scripts/kg.py add people alice \
+  --fact "Moved to backend team at Acme" --category status [--supersedes alice-001]
+
+# Regenerate a summary (3-8 lines from stdin; last-updated line auto-appended)
+python3 <rivendell>/scripts/kg.py summary people alice <<'EOF'
+Alice
+Backend engineer at Acme Corp.
+Recently moved from frontend.
+EOF
+
+python3 <rivendell>/scripts/kg.py init           # bootstrap dirs + git repo (idempotent)
+python3 <rivendell>/scripts/kg.py dump --active-only   # compact dump for prompts
+python3 <rivendell>/scripts/kg.py verify         # structural check, exit 0/1
+```
+
+`KG_ROOT` env var overrides the storage root (default `~/.claude/knowledge`) —
+use it to isolate tests. The knowledge dir is its own git repo (created by
+`init`); `bin/sk-facts-cron` uses that git as a transaction boundary.
+
 ## Inline Fact Extraction (During Conversation)
 
-Since Claude Code does not have cron jobs, fact extraction happens **during conversation** when durable facts are encountered.
+Automated extraction is handled by `bin/sk-facts-cron` (daily 21:30, mines
+recent session transcripts). Inline extraction remains for interactive
+sessions, when a durable fact surfaces in conversation:
 
 ```
 1. Notice a durable fact in the conversation (see "What Qualifies" above)
 2. Determine entity type (person/company/project) and slug
-3. Create entity folder if new: mkdir -p ~/.claude/knowledge/<type>/<slug>
-4. Check existing facts.jsonl -- skip if already known
-5. If fact contradicts existing: supersede the old one
-6. Append new fact to facts.jsonl
-7. Briefly confirm to user: "Noted: <fact summary> for <entity>"
+3. Check existing facts (kg.py dump) -- skip if already known
+4. Add via kg.py add (use --supersedes <old-id> if it contradicts an existing fact)
+5. Briefly confirm to user: "Noted: <fact summary> for <entity>"
 ```
 
 Do NOT extract facts silently in the background. Always inform the user when a fact is recorded.
@@ -163,18 +190,15 @@ To minimize token usage, recall should be **triggered**, not automatic.
 When you encounter a new person/company/project worth tracking:
 
 ```bash
-# Create structure
-mkdir -p ~/.claude/knowledge/people/alice
+# First fact creates the entity folder automatically
+python3 <rivendell>/scripts/kg.py add people alice \
+  --fact "Frontend engineer at Acme Corp, works on the design system" --category context
 
-# Write initial fact
-echo '{"id":"alice-001","fact":"Frontend engineer at Acme Corp, works on the design system","category":"context","ts":"2026-01-15","source":"conversation","status":"active"}' > ~/.claude/knowledge/people/alice/facts.jsonl
-
-# Write initial summary
-cat > ~/.claude/knowledge/people/alice/summary.md << 'EOF'
+# Initial summary
+python3 <rivendell>/scripts/kg.py summary people alice <<'EOF'
 # Alice
 Frontend engineer at Acme Corp.
 Works on the design system team.
-_Last updated: 2026-01-15_
 EOF
 ```
 
@@ -193,9 +217,7 @@ When user says `/knowledge-graph`:
 ### 1. Create Directory Structure
 
 ```bash
-mkdir -p ~/.claude/knowledge/people
-mkdir -p ~/.claude/knowledge/companies
-mkdir -p ~/.claude/knowledge/projects
+python3 <rivendell>/scripts/kg.py init   # dirs + git repo, idempotent
 ```
 
 ### 2. Add to CLAUDE.md or Project Instructions

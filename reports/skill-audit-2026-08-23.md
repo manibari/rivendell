@@ -2,14 +2,15 @@
 
 ## 摘要
 
-- **總計:** 124 skills
-- **待處理:** 86 issue(s)
+- **總計:** 99 skills
+- **待處理:** 112 issue(s)
 
 ## 結構健康度
 
 - Symlinks: OK
-- 部署: OK (全部 124 個已部署)
-- Frontmatter: OK
+- 部署: OK (全部 99 個已部署)
+- Frontmatter: **3 missing tags**
+- Frontmatter: **4 missing version**
 - 檔案完整性: OK — 所有引用檔案皆存在。
 
 ## Skill 生命週期
@@ -17,24 +18,9 @@
 | 階段 | 數量 | 說明 |
 |-------|-------|---------|
 | 🆕 新建 | 0 | 已建立但尚未 commit |
-| 🔧 開發中 | 5 | 14 天內有多次修訂 |
-| ✅ 穩定 | 69 | 正常運作，近期無需修改 |
-| ❓ 可能棄用 | 50 | 超過 90 天未更動 |
-
-### 🔧 開發中
-
-**backend/**
-- odb-dfm-reference — 2 次修訂, 6天前
-
-**docs/**
-- excalidraw-diagram — 3 次修訂, 6天前
-- subsidy-writer — 4 次修訂, 9天前
-
-**qa/**
-- qa-dataflow — 5 次修訂, 3天前
-
-**quality/**
-- say-it-plain — 3 次修訂, 2天前
+| 🔧 開發中 | 0 | 14 天內有多次修訂 |
+| ✅ 穩定 | 6 | 正常運作，近期無需修改 |
+| ❓ 可能棄用 | 93 | 超過 90 天未更動 |
 
 ### ❓ 可能棄用
 
@@ -44,26 +30,36 @@
 - doc-to-structured-data — 1 次, 150天前 (2026-03-26)
 - docker-compose-setup — 2 次, 128天前 (2026-04-17)
 - firebase-backend — 3 次, 107天前 (2026-05-08)
+- imap-smtp-integration — 1 次, 152天前 (2026-03-24)
+- markdown-file-ssot — 1 次, 152天前 (2026-03-24)
+- oauth-token-vault — 1 次, 152天前 (2026-03-24)
 - rbac-permissions — 1 次, 138天前 (2026-04-07)
 - sqlite-to-postgres — 2 次, 107天前 (2026-05-08)
+- tw-company-lookup — 2 次, 160天前 (2026-03-16)
 - vector-search-setup — 1 次, 146天前 (2026-03-30)
 
 **docs/**
 - chart-design — 1 次, 97天前 (2026-05-18)
 - discovery-interview — 1 次, 138天前 (2026-04-07)
 - doc-coauthoring — 2 次, 107天前 (2026-05-08)
+- excalidraw-diagram — 2 次, 99天前 (2026-05-16)
 - gdoc-report-builder — 2 次, 107天前 (2026-05-08)
 - internal-comms — 2 次, 107天前 (2026-05-08)
 - iot-factory-report — 2 次, 107天前 (2026-05-08)
+- mcp-builder — 3 次, 166天前 (2026-03-10)
 - mermaid-diagram — 1 次, 100天前 (2026-05-15)
 - metadata-workshop — 2 次, 107天前 (2026-05-08)
 - office-docx — 4 次, 137天前 (2026-04-08)
 - office-pdf — 3 次, 166天前 (2026-03-10)
+- office-pptx — 3 次, 166天前 (2026-03-10)
 - office-xlsx — 3 次, 166天前 (2026-03-10)
+- pitch-deck — 3 次, 107天前 (2026-05-08)
 - rfq-writer — 1 次, 137天前 (2026-04-08)
 - slide-office-hours — 2 次, 107天前 (2026-05-08)
 - slide-template-extractor — 2 次, 107天前 (2026-05-08)
+- slide-workflow — 4 次, 107天前 (2026-05-08)
 - sow-writer — 2 次, 107天前 (2026-05-08)
+- telegram-bot — 1 次, 161天前 (2026-03-15)
 
 **frontend/**
 - frontend-design — 2 次, 167天前 (2026-03-09)
@@ -76,6 +72,7 @@
 - repo-rename — 1 次, 150天前 (2026-03-26)
 
 **meta/**
+- agent-persona — 1 次, 132天前 (2026-04-13)
 - audit-fix — 1 次, 164天前 (2026-03-12)
 - ci-pipeline — 1 次, 164天前 (2026-03-12)
 - deploy — 1 次, 164天前 (2026-03-12)
@@ -87,115 +84,68 @@
 - self-improving-agent — 3 次, 99天前 (2026-05-16)
 - session-harvest — 3 次, 107天前 (2026-05-08)
 - session-wrap — 1 次, 131天前 (2026-04-14)
+- setup-permissions — 3 次, 164天前 (2026-03-12)
 - skill-creator — 4 次, 128天前 (2026-04-17)
 - skill-scout — 2 次, 116天前 (2026-04-29)
 - sync-readme — 1 次, 145天前 (2026-03-31)
 - workflow-retro — 2 次, 107天前 (2026-05-08)
 
 **quality/**
+- de-slopify — 2 次, 128天前 (2026-04-17)
 - github-repo-audit — 1 次, 132天前 (2026-04-13)
 - large-file-refactor — 1 次, 146天前 (2026-03-30)
 - protect-secrets — 3 次, 107天前 (2026-05-08)
+- qa-auto — 1 次, 161天前 (2026-03-15)
+- qa-planner — 1 次, 161天前 (2026-03-15)
+- qa-testing — 1 次, 166天前 (2026-03-10)
 
 **workflow/**
+- agent-observability — 2 次, 138天前 (2026-04-07)
+- autoresearch — 2 次, 107天前 (2026-05-08)
+- candidate-analysis — 1 次, 150天前 (2026-03-26)
 - claude-to-telegram — 1 次, 161天前 (2026-03-15)
+- client-kickoff-docs — 1 次, 123天前 (2026-04-22)
 - context-recovery — 1 次, 161天前 (2026-03-15)
+- crm-projection — 1 次, 160天前 (2026-03-16)
+- customer-intel — 5 次, 107天前 (2026-05-08)
+- dispatching-parallel-agents — 4 次, 128天前 (2026-04-17)
+- env-doctor — 1 次, 123天前 (2026-04-22)
+- executing-plans — 3 次, 166天前 (2026-03-10)
+- gdrive-to-skills — 2 次, 167天前 (2026-03-09)
+- headless-agent — 6 次, 152天前 (2026-03-24)
+- investment-research — 4 次, 107天前 (2026-05-08)
+- jd-writer — 1 次, 132天前 (2026-04-13)
+- keyword-discovery — 1 次, 152天前 (2026-03-24)
+- launchd-agent — 6 次, 107天前 (2026-05-08)
+- material-health — 1 次, 160天前 (2026-03-16)
+- mockup — 1 次, 168天前 (2026-03-08)
+- mops-financial-scraper — 1 次, 123天前 (2026-04-22)
+- planning-with-files — 5 次, 138天前 (2026-04-07)
+- presales-pipeline — 1 次, 123天前 (2026-04-22)
+- repro-exam — 1 次, 123天前 (2026-04-22)
+- requirement — 2 次, 138天前 (2026-04-07)
+- sales-material — 3 次, 124天前 (2026-04-21)
 - settings-audit — 1 次, 151天前 (2026-03-25)
+- subsidy-scraper — 1 次, 160天前 (2026-03-16)
+- tender-scraper — 3 次, 152天前 (2026-03-24)
+- user-flow — 2 次, 100天前 (2026-05-15)
+- writing-plans — 3 次, 166天前 (2026-03-10)
 
-<details><summary>✅ 穩定 (69)</summary>
-
-**agents/**
-- agent-dispatch — 1 次, 31天前
-- agent-headless — 1 次, 31天前
-- agent-launchd — 1 次, 31天前
-- agent-observability — 2 次, 28天前
-- agent-persona — 2 次, 28天前
+<details><summary>✅ 穩定 (6)</summary>
 
 **backend/**
-- ai-vision-extract — 1 次, 55天前
-- backend-async-jobs — 3 次, 41天前
 - cloudflare-tunnel-ops — 1 次, 37天前
 - cloudflare-tunnel-provision — 1 次, 37天前
-- ic-lot-normalization — 1 次, 60天前
-- imap-smtp-integration — 2 次, 28天前
-- markdown-file-ssot — 2 次, 28天前
-- mcp-builder — 1 次, 31天前
-- ml-eval-quality — 2 次, 41天前
-- ml-model-registry — 2 次, 41天前
-- oauth-token-vault — 2 次, 28天前
-- spine-auth — 2 次, 34天前
-- spine-rbac — 1 次, 56天前
-- spine-schema-sync — 1 次, 56天前
-- spine-versioning — 1 次, 55天前
-- telegram-bot — 1 次, 31天前
 - tunnel-proxy-deploy — 2 次, 37天前
 
-**business/**
-- candidate-analysis — 1 次, 31天前
-- client-kickoff-docs — 1 次, 31天前
-- crm-projection — 1 次, 31天前
-- customer-intel — 2 次, 28天前
-- investment-research — 2 次, 28天前
-- jd-writer — 1 次, 31天前
-- keyword-discovery — 1 次, 31天前
-- material-health — 1 次, 31天前
-- mops-financial-scraper — 1 次, 31天前
-- presales-pipeline — 1 次, 31天前
-- sales-material — 1 次, 31天前
-- subsidy-scraper — 1 次, 31天前
-- tender-scraper — 1 次, 31天前
-- tw-company-lookup — 1 次, 31天前
-
-**docs/**
-- office-pptx — 4 次, 27天前
-- pitch-deck — 5 次, 21天前
-- slide-workflow — 5 次, 27天前
-
 **frontend/**
-- chimesflow-design — 1 次, 73天前
-
-**git/**
-- concurrent-session-git — 2 次, 28天前
-- resolving-merge-conflicts — 1 次, 20天前
-
-**media/**
-- channel-scraper — 1 次, 14天前
-- local-media-transcribe — 2 次, 20天前
-- subtitle-file — 1 次, 31天前
-- video-clip-extract — 1 次, 31天前
-- video-transcript — 5 次, 31天前
+- chimesflow-design — 1 次, 71天前
 
 **meta/**
-- doc-drift-sync — 2 次, 20天前
-- setup-permissions — 4 次, 21天前
-- skill-apply — 1 次, 10天前
-- task-brief — 1 次, 68天前
-- writing-great-skills — 1 次, 20天前
-
-**planning/**
-- app-ops-baseline — 1 次, 31天前
-- executing-plans — 1 次, 31天前
-- mockup — 1 次, 31天前
-- planning-with-files — 1 次, 31天前
-- requirement — 1 次, 31天前
-- user-flow — 1 次, 31天前
-- writing-plans — 1 次, 31天前
-
-**qa/**
-- qa-auto — 1 次, 8天前
-- qa-journey — 1 次, 8天前
-- qa-planner — 1 次, 8天前
-- qa-testing — 1 次, 8天前
-
-**quality/**
-- de-slopify — 5 次, 21天前
+- doc-drift-sync — 1 次, 71天前
 
 **workflow/**
-- autoresearch — 3 次, 28天前
-- context-journal — 1 次, 34天前
-- env-doctor — 3 次, 68天前
-- gdrive-to-skills — 3 次, 28天前
-- repro-exam — 3 次, 68天前
+- app-ops-baseline — 1 次, 71天前
 
 </details>
 
@@ -205,15 +155,15 @@
 
 | Skill | 功能 |
 |-------|------|
-| agent-headless | Headless agent 模式範本：排程、structured logging、output 管理 |
-| agent-launchd | macOS launchd 排程管理：plist 產生、StartCalendarInterval、launchctl 生命週期 |
 | agent-observability | Agent 可觀測性：exec-lib 整合、執行歷史、即時 log 串流、timeline 事件 |
 | agent-persona | Headless agent 角色 prompt 產生器（tester/maintainer/reviewer/developer/researcher）：自動注入專案結構、工具權限與輸出格式 |
 | audit-fix | 分析 sk audit 報告，自動修復專案權限問題 |
 | ci-pipeline | 偵測專案技術棧，自動產生 GitHub Actions CI 工作流 |
 | deploy | 推薦部署平台，產生 Dockerfile / fly.toml / vercel.json 等配置 |
 | dev-process-gate | 攔截跳過設計直接寫 code 的行為，引導走完整開發流程 |
+| headless-agent | Headless agent 模式範本：排程、structured logging、output 管理 |
 | init-project | 初始化 AGENTS.md + .claude/CLAUDE.md 專案配置 |
+| launchd-agent | macOS launchd 排程管理：plist 產生、StartCalendarInterval、launchctl 生命週期 |
 | plan-check-style | Plan mode 進入 UI 任務時，掃描並載入對應的設計風格 |
 | repo-rename | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
 | self-improving-agent | 記錄錯誤/修正/最佳實踐到 .learnings/，持續學習改進 |
@@ -230,9 +180,9 @@
 
 | Skill | 功能 |
 |-------|------|
-| agent-dispatch | 派遣多個 agent 平行處理 3+ 個獨立問題 |
 | autoresearch | 自主迭代迴圈：定義目標 + 指標 + 驗證指令，agent 自動 modify → verify → keep/discard |
 | context-recovery | Session compaction 後自動恢復上下文（git/檔案/memory） |
+| dispatching-parallel-agents | 派遣多個 agent 平行處理 3+ 個獨立問題 |
 | executing-plans | 分批執行實作計畫，每批完成後 review checkpoint |
 | keyword-discovery | 自動關鍵字探索：分析未匹配項目、寫入候選 YAML、高信心自動晉升 |
 | planning-with-files | Manus 風格檔案式規劃（task_plan.md / findings.md / progress.md） |
@@ -287,10 +237,10 @@
 | mcp-builder | MCP Server 開發指南：FastMCP、工具設計、外部 API 整合 |
 | office-docx | Word 文件處理：建立（docx-js）、編輯（redlining）、追蹤修訂、批註 |
 | office-pdf | PDF 處理：擷取文字/表格、合併拆分、建立、表單填寫、OCR |
-| office-pptx | PowerPoint 處理：建立（html2pptx）、投影片設計、講者備註、Codex 圖片資產 placement、縮圖 QA |
+| office-pptx | PowerPoint 處理：建立（html2pptx）、投影片設計、講者備註、縮圖 |
 | office-xlsx | 試算表處理：公式計算（openpyxl）、財務模型色彩規範、pandas 分析 |
 | slide-template-extractor | 從既有 PPTX/Google Slides 萃取設計系統，產出鎖定的 HTML slide template（CSS 變數：色彩、字型、版面） |
-| slide-workflow | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
+| slide-workflow | 簡報製作七階段 gate：目的 → 風格鎖定 → 大綱 → 內容 → 生成 → 審查 → 匯出 |
 
 ### Git
 
@@ -313,181 +263,31 @@
 
 | Skill | 功能 |
 |-------|------|
-| ai-vision-extract | Headless agent 角色 prompt 產生器（tester/maintainer/reviewer/developer/researcher）：自動注入專案結構、工具權限與輸出格式 |
-| backend-async-jobs | 音檔上傳 → speech-to-text → 逐字稿顯示 的完整 web 流程（Whisper 整合） |
 | cloudflare-tunnel-ops | 音檔上傳 → speech-to-text → 逐字稿顯示 的完整 web 流程（Whisper 整合） |
 | cloudflare-tunnel-provision | 音檔上傳 → speech-to-text → 逐字稿顯示 的完整 web 流程（Whisper 整合） |
-| ic-lot-normalization | Firebase 架構設計：Firestore schema、Security Rules、Cloud Functions v2、FCM 推播 |
-| ml-eval-quality | MCP Server 開發指南：FastMCP、工具設計、外部 API 整合 |
-| ml-model-registry | MCP Server 開發指南：FastMCP、工具設計、外部 API 整合 |
-| odb-dfm-reference | OAuth 2.0 flow + Fernet 加密 token 儲存（FastAPI + PostgreSQL） |
-| spine-auth | 全端 RBAC 權限設計：角色階層、FastAPI decorator 保護、React AuthContext + AuthGuard |
-| spine-rbac | 全端 RBAC 權限設計：角色階層、FastAPI decorator 保護、React AuthContext + AuthGuard |
-| spine-schema-sync | 全端 RBAC 權限設計：角色階層、FastAPI decorator 保護、React AuthContext + AuthGuard |
-| spine-versioning | 全端 RBAC 權限設計：角色階層、FastAPI decorator 保護、React AuthContext + AuthGuard |
-
-### business
-
-| Skill | 功能 |
-|-------|------|
-| client-kickoff-docs | 面試候選人管理：PDF 履歷結構化、GitHub 程式碼品質分析、候選人檔案產生 |
-| mops-financial-scraper | 銷售素材庫健康檢查：frontmatter 缺漏、過期補助、陳舊資訊偵測 |
-| presales-pipeline | 銷售素材庫健康檢查：frontmatter 缺漏、過期補助、陳舊資訊偵測 |
 
 ### docs
 
 | Skill | 功能 |
 |-------|------|
-| chart-design | 台灣公司登記查詢：findbiz.nat.gov.tw 基本資料、董監事、變更紀錄 |
+| chart-design | FastAPI 向量搜尋知識庫建置：embedding 套件選型、資料模型、語意搜尋 API、索引管理 |
 | doc-coauthoring | 結構化客戶 Discovery 訪談：找最痛的手動流程，產出 discovery-summary.md（接 sow-writer） |
 | excalidraw-diagram | 結構化客戶 Discovery 訪談：找最痛的手動流程，產出 discovery-summary.md（接 sow-writer） |
 | internal-comms | 經 MCP 建 Google Docs/Slides 結構化報告：批次編表、段落樣式、find-and-replace、多媒體插入 |
-| mermaid-diagram | 廠務 IoT/SCADA 時序資料分析（UPW/RO/壓縮機/冷凍機）：cycle detection、異常標記、趨勢分析、PPTX 匯出 |
+| mermaid-diagram | MCP Server 開發指南：FastMCP、工具設計、外部 API 整合 |
 | slide-office-hours | RFQ 報價單：pre-contract 議價、範圍選項、版本控制（合約前輕量版） |
-| subsidy-writer | 台灣格式 SOW 工作說明書：12+ 標準章節、Mermaid Gantt、人天計費 |
 
 ### frontend
 
 | Skill | 功能 |
 |-------|------|
-| chimesflow-design | 台灣格式 SOW 工作說明書：12+ 標準章節、Mermaid Gantt、人天計費 |
-
-### git
-
-| Skill | 功能 |
-|-------|------|
-| concurrent-session-git | PostToolUse hook，Claude 編輯/寫入檔案後自動 git stage |
-| resolving-merge-conflicts | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
+| chimesflow-design | Telegram bot 開發指南：grammY (TS) / python-telegram-bot (Python) |
 
 ### local
 
 | Skill | 功能 |
 |-------|------|
-| _gstack-command | Router for the gstack skill suite. (gstack) |
-| first-call-bd-deck | Create or revise first-call B2B / BD / sales discovery decks, especially AI adoption, system integration, manufacturi... |
-| gstack | Router for the gstack skill suite. (gstack) |
 | gstack |  |
-| gstack-autoplan | Auto-review pipeline — reads the full CEO, design, eng, and DX review skills from disk and runs them sequentially w... |
-| gstack-autoplan |  |
-| gstack-benchmark | Performance regression detection using the browse daemon. (gstack) |
-| gstack-benchmark |  |
-| gstack-benchmark-models | Cross-model benchmark for gstack skills. (gstack) |
-| gstack-benchmark-models |  |
-| gstack-browse | Fast headless browser for QA testing and site dogfooding. (gstack) |
-| gstack-browse |  |
-| gstack-canary | Post-deploy canary monitoring. (gstack) |
-| gstack-canary |  |
-| gstack-careful | Safety guardrails for destructive commands. (gstack) |
-| gstack-careful |  |
-| gstack-checkpoint |  |
-| gstack-claude |  |
-| gstack-codex | OpenAI Codex CLI wrapper — three modes. (gstack) |
-| gstack-connect-chrome | Launch GStack Browser — AI-controlled Chromium with the sidebar extension baked in. |
-| gstack-connect-chrome |  |
-| gstack-context-restore | Restore working context saved earlier by /context-save. (gstack) |
-| gstack-context-restore |  |
-| gstack-context-save | Save working context. (gstack) |
-| gstack-context-save |  |
-| gstack-cso | Chief Security Officer mode. (gstack) |
-| gstack-cso |  |
-| gstack-design-consultation | Design consultation: understands your product, researches the landscape, proposes a complete design system (aesthetic... |
-| gstack-design-consultation |  |
-| gstack-design-html | Design finalization: generates production-quality Pretext-native HTML/CSS. (gstack) |
-| gstack-design-html |  |
-| gstack-design-review | Designers eye QA: finds visual inconsistency, spacing issues, hierarchy problems, AI slop patterns, and slow interact... |
-| gstack-design-review |  |
-| gstack-design-shotgun | Design shotgun: generate multiple AI design variants, open a comparison board, collect structured feedback, and iterate. |
-| gstack-design-shotgun |  |
-| gstack-devex-review | Live developer experience audit. (gstack) |
-| gstack-devex-review |  |
-| gstack-diagram | Turn an English description (or mermaid source) into a diagram triplet: the source, an editable .excalidraw file you ... |
-| gstack-document-generate | Generate missing documentation from scratch for a feature, module, or entire project. (gstack) |
-| gstack-document-generate |  |
-| gstack-document-release | Post-ship documentation update. (gstack) |
-| gstack-document-release |  |
-| gstack-freeze | Restrict file edits to a specific directory for the session. (gstack) |
-| gstack-freeze |  |
-| gstack-guard | Full safety mode: destructive command warnings + directory-scoped edits. (gstack) |
-| gstack-guard |  |
-| gstack-health | Code quality dashboard. (gstack) |
-| gstack-health |  |
-| gstack-investigate | Systematic debugging with root cause investigation. (gstack) |
-| gstack-investigate |  |
-| gstack-ios-clean | Remove the DebugBridge SPM package and all #if DEBUG wiring from an iOS app. (gstack) |
-| gstack-ios-clean |  |
-| gstack-ios-design-review | Visual design audit for iOS apps on real hardware. (gstack) |
-| gstack-ios-design-review |  |
-| gstack-ios-fix | Autonomous iOS bug fixer. (gstack) |
-| gstack-ios-fix |  |
-| gstack-ios-qa | Live-device iOS QA for SwiftUI apps. (gstack) |
-| gstack-ios-qa |  |
-| gstack-ios-sync | Regenerate the iOS debug bridge against the latest upstream gstack templates. (gstack) |
-| gstack-ios-sync |  |
-| gstack-land-and-deploy | Land and deploy workflow. (gstack) |
-| gstack-land-and-deploy |  |
-| gstack-landing-report | Read-only queue dashboard for workspace-aware ship. (gstack) |
-| gstack-landing-report |  |
-| gstack-learn | Manage project learnings. |
-| gstack-learn |  |
-| gstack-make-pdf | Turn any markdown file into a publication-quality PDF. (gstack) |
-| gstack-make-pdf |  |
-| gstack-office-hours | YC Office Hours — two modes. (gstack) |
-| gstack-office-hours |  |
-| gstack-open-gstack-browser | Launch GStack Browser — AI-controlled Chromium with the sidebar extension baked in. |
-| gstack-open-gstack-browser |  |
-| gstack-pair-agent | Pair a remote AI agent with your browser. (gstack) |
-| gstack-pair-agent |  |
-| gstack-plan-ceo-review | CEO/founder-mode plan review. (gstack) |
-| gstack-plan-ceo-review |  |
-| gstack-plan-design-review | Designers eye plan review — interactive, like CEO and Eng review. (gstack) |
-| gstack-plan-design-review |  |
-| gstack-plan-devex-review | Interactive developer experience plan review. (gstack) |
-| gstack-plan-devex-review |  |
-| gstack-plan-eng-review | Eng manager-mode plan review. (gstack) |
-| gstack-plan-eng-review |  |
-| gstack-plan-tune | Self-tuning question sensitivity + developer psychographic for gstack (v1: observational). (gstack) |
-| gstack-plan-tune |  |
-| gstack-qa | Systematically QA test a web application and fix bugs found. (gstack) |
-| gstack-qa |  |
-| gstack-qa-only | Report-only QA testing. (gstack) |
-| gstack-qa-only |  |
-| gstack-retro | Weekly engineering retrospective. (gstack) |
-| gstack-retro |  |
-| gstack-review | Pre-landing PR review. (gstack) |
-| gstack-review |  |
-| gstack-scrape | Pull data from a web page. (gstack) |
-| gstack-scrape |  |
-| gstack-setup-browser-cookies | Import cookies from your real Chromium browser into the headless browse session. (gstack) |
-| gstack-setup-browser-cookies |  |
-| gstack-setup-deploy | Configure deployment settings for /land-and-deploy. |
-| gstack-setup-deploy |  |
-| gstack-setup-gbrain | Set up gbrain for this coding agent: install the CLI, initialize a local PGLite or Supabase brain, register MCP, capt... |
-| gstack-setup-gbrain |  |
-| gstack-ship | Ship workflow: detect + merge base branch, run tests, review diff, bump VERSION, update CHANGELOG, commit, push, crea... |
-| gstack-ship |  |
-| gstack-skillify | Codify the most recent successful /scrape flow into a permanent browser-skill on disk. (gstack) |
-| gstack-skillify |  |
-| gstack-spec | Turn vague intent into a precise, executable spec in five phases. (gstack) |
-| gstack-spec |  |
-| gstack-sync-gbrain | Keep gbrain current with this repos code and refresh agent search guidance in CLAUDE.md. |
-| gstack-sync-gbrain |  |
-| gstack-unfreeze | Clear the freeze boundary set by /freeze, allowing edits to all directories again. (gstack) |
-| gstack-unfreeze |  |
-| gstack-upgrade | Upgrade gstack to the latest version. |
-| gstack-upgrade |  |
-| gstack.bak |  |
-| pre-ship-review | Commit / push / merge 前的最後一道檢查:讀 diff、只報有 code 佐證的問題、 機械式的直接修。�... |
-| sales-deck-design | Design system + structure for B2B **sales / 提案型** decks that look like a real enterprise proposal (not "AI slop... |
-
-### media
-
-| Skill | 功能 |
-|-------|------|
-| channel-scraper | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
-| local-media-transcribe | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
-| subtitle-file | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
-| video-clip-extract | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
-| video-transcript | Git repo 改名：系統性掃描所有跨位置引用，產生遷移 checklist |
 
 ### meta
 
@@ -495,37 +295,18 @@
 |-------|------|
 | doc-drift-sync | 攔截跳過設計直接寫 code 的行為，引導走完整開發流程 |
 | learnings-promotion-sprint | 三層記憶系統：Entity JSONL + Auto Memory + MEMORY.md |
-| skill-apply | 偵測專案工具鏈，自動配置 settings.local.json 權限白名單 |
-| task-brief | 跨 repo 同步 README.md 的 Skills Catalog / 參考章節（SKILL.md 修改時 hook 自動觸發） |
 | workflow-retro | 跨 repo 同步 README.md 的 Skills Catalog / 參考章節（SKILL.md 修改時 hook 自動觸發） |
-| writing-great-skills | 跨 repo 同步 README.md 的 Skills Catalog / 參考章節（SKILL.md 修改時 hook 自動觸發） |
-
-### planning
-
-| Skill | 功能 |
-|-------|------|
-| app-ops-baseline | 跨 repo 同步 README.md 的 Skills Catalog / 參考章節（SKILL.md 修改時 hook 自動觸發） |
-
-### qa
-
-| Skill | 功能 |
-|-------|------|
-| qa-dataflow | 根據 QA 計畫自動產生測試程式碼、執行測試、回報覆蓋率缺口 |
-| qa-journey | 根據 QA 計畫自動產生測試程式碼、執行測試、回報覆蓋率缺口 |
-
-### quality
-
-| Skill | 功能 |
-|-------|------|
-| say-it-plain | PreToolUse hook，阻擋讀寫 .env、私鑰、credentials 等機密檔案 |
 
 ### workflow
 
 | Skill | 功能 |
 |-------|------|
-| context-journal | 設定 Telegram bridge 遠端控制 Claude Code（兩種方案比較） |
-| env-doctor | Session compaction 後自動恢復上下文（git/檔案/memory） |
-| repro-exam | 讀取 Google Drive 文件（MCP），分類後建立 knowledge skills |
+| app-ops-baseline | Agent 可觀測性：exec-lib 整合、執行歷史、即時 log 串流、timeline 事件 |
+| client-kickoff-docs | 設定 Telegram bridge 遠端控制 Claude Code（兩種方案比較） |
+| env-doctor | 派遣多個 agent 平行處理 3+ 個獨立問題 |
+| mops-financial-scraper | 三階段 UI mockup：ASCII → 靜態 HTML → 互動 HTML，可匯出 Figma |
+| presales-pipeline | Manus 風格檔案式規劃（task_plan.md / findings.md / progress.md） |
+| repro-exam | Manus 風格檔案式規劃（task_plan.md / findings.md / progress.md） |
 
 ### 人資
 
@@ -543,7 +324,7 @@
 | discovery-interview | 結構化客戶 Discovery 訪談：找最痛的手動流程，產出 discovery-summary.md（接 sow-writer） |
 | material-health | 銷售素材庫健康檢查：frontmatter 缺漏、過期補助、陳舊資訊偵測 |
 | metadata-workshop | 客戶 Metadata Workshop：商業知識轉 YAML schema（廠務 PI/SCADA/MES、ERP、travel）— AI 顧問的 moat |
-| pitch-deck | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
+| pitch-deck | 投資人/BP pitch deck 製作：discovery → narrative → HTML slides → PPTX 匯出 |
 | rfq-writer | RFQ 報價單：pre-contract 議價、範圍選項、版本控制（合約前輕量版） |
 | sales-material | 客製化銷售簡報：匹配情蒐、案例、方案、補助，產生 PPTX |
 | sow-writer | 台灣格式 SOW 工作說明書：12+ 標準章節、Mermaid Gantt、人天計費 |
@@ -552,9 +333,8 @@
 
 ## 描述品質
 
-### 缺少 TRIGGER / DO NOT TRIGGER (3)
+### 缺少 TRIGGER / DO NOT TRIGGER (2)
 
-- subsidy-writer
 - auto-stage
 - protect-secrets
 
@@ -564,84 +344,29 @@
 - **[docs]**: gdoc-report-builder office-docx office-pdf office-pptx office-xlsx — 建議檢查邊界是否清楚
 - **[docs,workflow]**: chart-design iot-factory-report pitch-deck slide-template-extractor slide-workflow — 建議檢查邊界是否清楚
 - **[meta]**: agent-persona audit-fix ci-pipeline deploy dev-process-gate init-project plan-check-style setup-permissions skill-creator sync-readme — 建議檢查邊界是否清楚
-- **[workflow]**: agent-dispatch jd-writer executing-plans planning-with-files requirement user-flow writing-plans — 建議檢查邊界是否清楚
+- **[workflow]**: client-kickoff-docs dispatching-parallel-agents executing-plans jd-writer planning-with-files requirement user-flow writing-plans — 建議檢查邊界是否清楚
 
 ## 專案儀表板
-
-### ChimesFlow-contract
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | **missing** | **權限** | **missing** |
-
-### ChimesFlow-devmerge
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | **missing** | **權限** | **missing** |
-
-### ChimesFlow-reissue
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | **missing** | **權限** | **missing** |
 
 ### ChimesFlow
 
 | | |
 |---|---|
-| **狀態** | ✅ 近期有動 — 4 個 commit（本週）, 26 個（本月） |
+| **狀態** | ✅ 近期有動 — 4 個 commit（本週）, 27 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `feat/post-sale-handoff-console` (7 total) | 1 個 open PR |
-| **Git** | 2 dirty |
+| **分支** | `main` (1 total) |
+| **Git** | 1 dirty |
 | **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (0 rules) |
+| **Config** | **missing** | **權限** | **missing** |
 
 <details><summary>近期 commits</summary>
 
 ```
-13f4bc3 feat(templates): labels for update_notice / price_guarantee fields
-ce859dc fix(documents): let a template place the seal with a <!--seal--> slot
-c1e6385 feat(templates): certificate-style distributor/end-customer license letters
-4ae9e80 feat(templates): merge-field labels for subscription / SLA templates — v1.34.2
+d737095 Merge pull request #133 from Chimes-AI-Projects/feat/invoice-reminders-acceptance-merge
+2ccc7d6 fix(review): 併入 main 前的修正 — alembic 多頭、驗收後無法回退、金額格式 — v1.35.0
+834f67c 待開發票提醒、驗收流程整併、輔助業務欄位與可見範圍修正
+fc30ff8 Merge pull request #132 from Chimes-AI-Projects/feat/post-sale-handoff-console
 df39349 chore(roadmap): v1.34.1 release note for the document pagination fix
-```
-</details>
-
-### Edict
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Docker Python |
-| **分支** | `main` (1 total) | 9 個 open PR |
-| **Git** | 1 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (9 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-fc10c4c feat: Traditional Chinese UI + NTD currency conversion
-65c09cb chore: remove unrelated tracked files and update .gitignore
-e9aea53 feat: 添加 QQ 机器人通知渠道 (#244)
-c3c4e2a fix: CWE-22 path traversal in file:// URL handling (#258)
-4e51e34 fix: 修复任务卡死三大问题
 ```
 </details>
 
@@ -651,272 +376,19 @@ c3c4e2a fix: CWE-22 path traversal in file:// URL handling (#258)
 |---|---|
 | **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `feat/health-status-endpoint` (2 total) |
-| **Git** | 8 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (0 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-a4e0d13 docs(ia): master-data IA requirement + flows (option B)
-5b92ab8 feat(facility): absorb endpoint + loan-to-facility migration script
-38fdddc feat(facility-ui): 額度合約 tab with person-first perspective
-8df04ba fix(ui): local-timezone date defaults, ledger columns fit viewport, dedup contract labels
-6b23e8b docs: loan-facility requirement (IFRS), loan-grid requirement/flow/mockup, learnings
-```
-</details>
-
-### IC-YMS
-
-| | |
-|---|---|
-| **狀態** | 🔥 活躍 — 22 個 commit（本週）, 36 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `master` (1 total) |
-| **Git** | 4 dirty, 42 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (0 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-c0061f3 release: 0.10.0
-1e0345b docs: 0730 立積 meeting, the backlog it produced, and the 08-20 dataflow redraw
-01c3439 feat(wafer): product is a lens on the wafer stage, not a key
-b17fcdb feat(account): ship the half-committed 個人資料 / 意見回饋 / 使用手冊
-63e90df feat(data-browse): make it a catalog, not a list of table names
-```
-</details>
-
-### Marketing-Pal
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js Xcode |
 | **分支** | `main` (1 total) |
 | **Git** | clean |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (12 rules) |
+| **Config** | no CLAUDE.md | **權限** | **missing** |
 
 <details><summary>近期 commits</summary>
 
 ```
-d38d2bb Merge pull request #9 from manibari/feature/v3-line-share-order-link
-25807c1 Add Next.js web app MVP: content creation, shop, style management
-ab67bef Implement v3: LINE share, order link integration, direct reach optimization
-4fdaf1e Merge pull request #8 from manibari/chore/update-claude-md
-c0845bc Update CLAUDE.md with v2 P0+P1 feature docs
-```
-</details>
-
-### MingOS-art
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Python |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (9 rules) |
-
-### MingOS-engine
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Python |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (9 rules) |
-
-### MingOS-ui
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Python |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (9 rules) |
-
-### MingOS
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 18 個（本月） |
-| **技術棧** |  Python |
-| **分支** | `main` (4 total) |
-| **Git** | 103 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (12 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-56b65cc Merge client/ui: campaign character cards (step 1 legibility)
-6d72b53 feat(ui): campaign board character cards — ruler+minister portraits, traits, 任官 toggle
-928989f Merge branch 'main' into client/ui
-cd83991 feat(ui): player war/diplomacy commands on the campaign board
-78dd02f Merge engine/sim: 誘因裁決核心 — utility-based agency (anti-rhetoric-exploit)
-```
-</details>
-
-### Norns-ERP
-
-| | |
-|---|---|
-| **狀態** | 🔥 活躍 — 13 個 commit（本週）, 13 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `feat/m7-packaging-fifo` (2 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (0 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-0a35fd4 fix(m7): seed RBAC on boot; record failed label-detection attempt
-e3f6037 feat(m7): packaging issue and receiving screens; fix ten missing tables
-fdfdc67 feat(m7): packaging receiving, issuing and FIFO enforcement
-3415ed0 feat(m7): inventory items, lots and packaging usage records
-394ecfc fix(schema): make alembic the single schema mechanism
-```
-</details>
-
-### Norns-Skuld-CAD
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Python |
-| **分支** | `main` (1 total) |
-| **Git** | 19 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no AGENTS.md | **權限** | OK (8 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-20fda25 plan(eng-review): codex findings 納入+垂直切片優先修正 · v0.16.6
-2ded803 docs: 清除 SQLite/辦公室殘字
-c552fea docs: PostgreSQL 定案+主打「圖紙→數位資產」 · v0.16.5
-bd87054 plan: 平台 v1 六階段實作計畫(planning-with-files) · v0.16.4
-616cba5 docs: 第二 domain=機房定案 · v0.16.3
-```
-</details>
-
-### PTI-ARES-Main
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 29 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (10 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-eb07503 feat(P4+P5): intake form, upload endpoint with envelope validation, status polling
-c9ed7ec feat(P3): project list — LEFT JOIN latest revision/queue, shared status map
-80b54ab feat(P2): main_dev role, pg pool, and the raw-boundary proof
-97c24d0 feat(P1): Next.js shell with four-layer skeleton and the geometry lint fence
-c904e76 docs: eng review — 15 findings folded into the M1 plan
-```
-</details>
-
-### PTI-ARES-Transcribe
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 52 個（本月） |
-| **技術棧** |  Rust |
-| **分支** | `main` (1 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (4 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-9a1cfea Main writes lib directly; the guarantees move into the schema
-a3be3ff Load the in-house component library into its own schema
-4c3d502 Reframe per-job variation: it is the normal case, not an anomaly
-c099ed8 Tidy DEVELOPMENT.md: it had become a log rather than a document
-a9041fc T25: revision lifecycle -- which one to use, and how one goes away
-```
-</details>
-
-### PTI-ARES-Translate
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 18 個（本月） |
-| **技術棧** |  Rust |
-| **分支** | `main` (1 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (3 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-09e4fed feat: components, and the library key that actually lands
-6502bda feat: draw the board, and find the four pads that were silently missing
-71cf625 test: prove the two repos agree, across every layer of a real board
-f73b2cb docs: an overview of the whole chain, in plain language
-e668f6c feat: close the pipeline — query, expand, encode, end to end on a real layer
-```
-</details>
-
-### PTI-ARES
-
-| | |
-|---|---|
-| **狀態** | ✅ 近期有動 — 3 個 commit（本週）, 178 個（本月） |
-| **技術棧** |  Node.js Python |
-| **分支** | `next-wave-2026-05` (8 total) |
-| **Git** | 2 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (11 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-8feaa1e fix(rules): CP0011 量測線起點改落在 pad 邊 — 值對線錯，差距正好一個 r（0.38.67）
-596aa65 fix(ir): eda/data 屬性尾巴（;ID=n）切除 — enrich 現場 crash＋footprint 靜默歸零（pti_ir 0.38.2）
-4391eec docs(security): SBOM 全交付範圍化 — 引擎+後端+前端三層 220 組件（0.38.66）
-a525d02 Merge pull request #6 from manibari/osv_pyjwt_0814
-431b564 fix(security): raise PyJWT floor to 2.13.0 (0.38.65)
-```
-</details>
-
-### RTK
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | 3 dirty, 1 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (8 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-3fff6b8 feat(3dgs): add Gaussian Splatting viewer POC at /3dgs
-4d1cbb4 fix: update StrategicMap component
-c709193 balance: raise capturedCityLoyalty and lower foreignDecayPerTick
-687b4c0 fix: add capturedAtTick.clear() to reset()
-3579114 feat: monthly calendar system (1 tick = 1 month) and loyalty decay fix
+a15a4e4 docs(learnings): summary-aggregation bug + host-side password revert
+aa93cf4 fix(summary): overview loan totals undercounted + mixed currencies
+9571c97 docs(progress): version+roadmap shipped & verified on prod
+b1c1a68 feat(roadmap): frontend roadmap kanban + changelog timeline
+158de7b feat(roadmap): backend for release_items (roadmap + changelog)
 ```
 </details>
 
@@ -924,64 +396,9 @@ c709193 balance: raise capturedCityLoyalty and lower foreignDecayPerTick
 
 | | |
 |---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
+| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 7 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | 6 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (5 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-f1d854d docs: 更新 mops 串接契約為正確現狀（facts 走 apps/api:8200）
-fcf808c fix(frontend): vite 綁所有介面 + proxy 走 IPv4
-4c98444 fix(frontend): root pnpm workspace 解決模組前端依賴解析
-8c81266 feat: webapp.db 種子腳本（modular 結構版）
-b86c7d2 docs: 新增 mops 資料服務 API 契約（apps/api 實作規格）
-```
-</details>
-
-### TailTrack
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js Xcode |
-| **分支** | `main` (1 total) |
-| **Git** | 2 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (11 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-4e50252 feat: tutorial system, expanded preview data, fullscreen map mockup
-c7d2f76 feat: add Smart Search with Google Places + business hours check
-fa6d1dc fix: use text-based matching for onboarding UI tests
-126bea3 test: update UI tests for 2-tab MVP and single-screen onboarding
-d452c9f refactor: simplify onboarding, remove ProfileView, drop scheduledDate
-```
-</details>
-
-### Tukey-8D-Report
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `` (0 total) |
-| **Git** | no git |
-| **CI/CD** | CI ❌ · 部署 ✅ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (8 rules) |
-
-### Urd-WMS
-
-| | |
-|---|---|
-| **狀態** | 🔥 活躍 — 27 個 commit（本週）, 27 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
+| **分支** | `feat/signals-wiring-and-deploy` (2 total) |
 | **Git** | clean |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | **missing** | **權限** | **missing** |
@@ -989,55 +406,11 @@ d452c9f refactor: simplify onboarding, remove ProfileView, drop scheduledDate
 <details><summary>近期 commits</summary>
 
 ```
-d8231f7 Photo first: the box gets scanned, not announced
-3e7ef63 Give the overview charts, and a type scale you can read standing up
-344c259 Put the FIFO badge on the manufacture date
-0ca0f91 FIFO now sorts by manufacture date, not receipt date
-3945225 feat: TCP/IP camera source, system settings, and a measured recognition model
-```
-</details>
-
-### curia
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | 9 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (8 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-a3a6e85 docs: QA plan for Phase 2 + Phase 3 (13/13 tests passed)
-7529255 feat: Phase 3 — company research, editable proposals, clients API
-d98b744 feat: Phase 2 — Azure OpenAI scoring + proposal generation
-dbd5915 chore: add learnings log for Upwork RSS deprecation
-1807900 feat: Curia project skeleton + RSS fetch pipeline + dashboard UI
-```
-</details>
-
-### gstack
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 2 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) | 10 個 open PR |
-| **Git** | 53 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (9 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-94993f74 v1.61.0.0 fix wave: guards failing open / silent failures (9 fixes, 4 community PRs absorbed) (#2472)
-960c3a8d v1.60.2.0 fix: free-suite drift on dev machines (eval-list cwd, gemini regex, observability floor) (#2470)
-a3259400 Merge pull request #2264 from time-attack/time-attack/wave-test-infra-isolated-review
-4ad55e2e Merge remote-tracking branch 'origin/main' into time-attack/wave-test-infra-isolated-review
-2beb636f Merge pull request #2234 from time-attack/time-attack/issue-2194-pglite-lock
+a51628d feat(deploy): 容器化並經 Cloudflare Tunnel 對外（tw-invest.phyra.uk）
+931766e fix(ui): 公司明細表欄寬重配，走勢加上數值 tooltip
+b0bf574 fix(month): 申報期內避開資料不齊的月份，修正月初各頁全空
+3ca3dfc feat(indicators): 六大指標改讀 mops_signals，本地公式降級為測試 oracle
+1895653 feat(settings): 新增 API 金鑰頁，憑證改由 webapp.db 覆寫 .env
 ```
 </details>
 
@@ -1047,85 +420,19 @@ a3259400 Merge pull request #2264 from time-attack/time-attack/wave-test-infra-i
 |---|---|
 | **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
 | **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | 5 unpushed |
+| **分支** | `main` (2 total) |
+| **Git** | clean |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | **missing** | **權限** | **missing** |
 
 <details><summary>近期 commits</summary>
 
 ```
-0433113 feat(web): 婚模組主線 Slice 2 — 婚事籌備清單（提前期回推）
-9771833 feat(web): 婚模組主線 Slice 1 — 選日訂場工作台 + 婚錨點
-315870c feat(web): 今日運勢 — 純好玩翻牌 おみくじ
-1a6f4f0 feat(web): 婚模組吉日頁 — 農民曆宜嫁娶好日子
-8a7d74b feat(web): 婚模組起步 — 婚宴會館資料集 + 台北頂級 5 家 seed
-```
-</details>
-
-### interiordesign
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 2 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `master` (1 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (4 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-c18221e Real-time save + re-editable project file
-ddfdb3e Smart drawing snaps + clean-cm endpoint placement
-2ab844e 合併「選取」與「平移」為單一工具
-0e69ce7 Ghost preview for doors/windows in 3D
-169b8f8 Place doors/windows on walls in the 3D view
-```
-</details>
-
-### lorien
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `fix/secret-key-fail-fast` (2 total) |
-| **Git** | 1 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no AGENTS.md | **權限** | OK (13 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-9c57e44 fix(config): fail loud in prod on missing/placeholder secret_key
-2657775 docs: make metadata schema format-neutral across templates
-0de7552 fix: load .env via dotenv + pin openai>=1.54.4
-a174d8a feat: switch runtime to Azure OpenAI + integrate SerpAPI travel data
-574d20d feat: client portal agents view — Sabre can see their own agents
-```
-</details>
-
-### matt-skills
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 2 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | clean |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | no CLAUDE.md | **權限** | OK (4 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-2ab9580 Merge pull request #681 from mattpocock/docs/install-instructions-split
-369c264 docs: split install instructions by audience
-ed37663 refactor(to-tickets): remove redundant instructions for ticket implementation
-9603c1c Merge pull request #586 from mattpocock/batch-grill-me-granular-facts
-fde4cd5 feat(batch-grill-me): granular fact-finding, don't block the round
+437f7f1 docs: README 加版本 gate 安裝說明
+52250c0 chore: 裝版本 bump gate(pre-push hook)— 動 code 沒 bump changelog 就擋
+3d6df87 refactor(web): 首頁精簡 — 移除 hero 贅述句 + 收緊咖啡因說明(留資訊少字)
+970a843 feat(web): 全站字級放大(預設 1.1)+ 我的加「字級大小」拖曳滑桿(1.0-1.4, 存 localStorage)
+f1660b4 feat: codex 存活監控 — ai /codex-health + 系統狀態顯示 + 寫進系統日誌
 ```
 </details>
 
@@ -1133,149 +440,74 @@ fde4cd5 feat(batch-grill-me): granular fact-finding, don't block the round
 
 | | |
 |---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 16 個（本月） |
+| **狀態** | ✅ 近期有動 — 1 個 commit（本週）, 23 個（本月） |
 | **技術棧** |  Make |
-| **分支** | `main` (3 total) | 1 個 open PR |
-| **Git** | 1 dirty |
+| **分支** | `main` (1 total) |
+| **Git** | 11 dirty |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
 | **Config** | **missing** | **權限** | OK (4 rules) |
 
 <details><summary>近期 commits</summary>
 
 ```
-0426cc2 docs(runbook): mops_rev 深歷史回補（解鎖財測情境1）
-5196ea6 feat(monitor): 資料閱覽新增「財測」tab（營收三情境預測，接引擎）v0.18.25
-e93b48f feat(analytics): 財測引擎 v1 — 重現 Excel 財模三情境（情境1逐格命中）v0.18.24
-0597921 feat(analytics): Screener 排除無月營收（KY/控股型不上榜）v0.18.23
-cd52fe6 fix(analytics): Screener 指標 N/A 改破折號，區分資料不足 vs 低存貨豁免 v0.18.22
+2dad80f fix(crawl): 批次 skip 改期別層級 — FY26Q2 全市場漏爬根因 v0.18.35
+52b3256 feat(monitor): 財測 tab 一圖呈現三情境所有線 + monitor 補 mops_forecast 依賴 v0.18.34
+7f0df1b feat(monitor): 財測 tab 加營收趨勢折線圖 v0.18.34
+8ea5c6f docs(blueprint): 補登本 session 8 筆 SEED + 修 4 筆 planned→shipped 漂移
+d68d00a feat(coverage): expected grid — 回補進度升級成每家每季齊不齊（Q3 自動反映缺口）
 ```
 </details>
 
-### news_stock
+### pti-ares
 
 | | |
 |---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Docker Node.js Python |
-| **分支** | `feat/entry-allocation-tradingview-ui` (5 total) | 1 個 open PR |
-| **Git** | 23 dirty, 1 unpushed |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | OK | **權限** | OK (25 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-c537379 fix(web): upgrade nuxt 3.21.7 → 4.4.8 to fix SPA dev server
-2908b86 fix(security): apply pnpm overrides for vuln remediation (56 → 6 advisories)
-450d0ca chore(security): SBOM + vulnerability scan reports (2026-06-04)
-c35ad9e feat(portfolio): reconciliation engine + momentum target producer
-114f628 docs(portfolio): requirement + eng-reviewed design for strategy-allocation loop
-```
-</details>
-
-### rakucamp
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Node.js |
-| **分支** | `main` (1 total) |
-| **Git** | 15 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (7 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-63b3cd1 chore: scaffold Next.js app and interactive multi-section mockup
-```
-</details>
-
-### sales-assistant
-
-| | |
-|---|---|
-| **狀態** | ✅ 近期有動 — 2 個 commit（本週）, 15 個（本月） |
-| **技術棧** |  Docker Node.js Python |
-| **分支** | `main` (2 total) |
-| **Git** | 4786 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ✅ |
-| **Config** | OK | **權限** | OK (35 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-ae375e2 chore(materials): crm-projection refresh 2026-08-22
-c62c1dd chore(materials): crm-projection refresh 2026-08-17
-bafa5ad chore(materials): crm-projection refresh 2026-08-12
-b61fa88 chore(materials): crm-projection refresh 2026-08-11
-de5fb6f chore(materials): subsidy-scraper refresh 2026-08-10
-```
-</details>
-
-### taiwan-company
-
-| | |
-|---|---|
-| **狀態** | ⏸️ 暫停 — 0 個 commit（本週）, 0 個（本月） |
-| **技術棧** |  Docker Make Python |
-| **分支** | `refactor/p0-data-safety` (2 total) |
-| **Git** | 1 dirty |
-| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (13 rules) |
-
-<details><summary>近期 commits</summary>
-
-```
-5257df0 chore: gitignore refactor planning files (task_plan/findings/progress)
-2a47fa1 refactor(data): crash-safe atomic writes + race-safe locking for JSON store
-2294508 feat: 簡報摘要功能（上傳簡報 → Opus 4.7 生成 → 逐段審核套用公司簡介）
-36ce0f4 feat: 標籤自動歸攏群組、GCIS 重試區分、自動補抓每股金額
-c46fe17 fix(mops): 接軌 mops_notes（port 8085）、investee-holders 去重、法人溯源列 CSS 修正
-```
-</details>
-
-### vantage-floor-plan
-
-| | |
-|---|---|
-| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 10 個（本月） |
+| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 163 個（本月） |
 | **技術棧** |  Node.js Python |
-| **分支** | `main` (1 total) |
+| **分支** | `next-wave-2026-05` (2 total) |
+| **Git** | 2 dirty |
+| **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
+| **Config** | no CLAUDE.md | **權限** | OK (110 rules) |
+
+<details><summary>近期 commits</summary>
+
+```
+d6fccc2 docs(learnings): catch-all 分類先排除無標記已知家族（極性點誤判文字案）
+bf5b286 fix(viewer): 防焊 hatch 圖形文字不再誤判極性點（0.38.57）
+788a68a feat(rules): 六型執行器補齊 — presence/size/count 宣告即執行（0.38.56）
+c40805a fix(library): /rulecheck 500 — TYPINGS 漏補 versions 端點 local import（0.38.55）
+7be70bd feat(rules): ALE-CAP 家族定案 — 孔環分型查表＋異網 clearance＋spoke 上限（0.38.54）
+```
+</details>
+
+### railsim
+
+| | |
+|---|---|
+| **狀態** | 💤 沉寂 — 0 個 commit（本週）, 1 個（本月） |
+| **技術棧** |  Rust |
+| **分支** | `master` (1 total) |
 | **Git** | clean |
 | **CI/CD** | CI ❌ · 部署 ❌ · Hooks ❌ |
-| **Config** | **missing** | **權限** | OK (4 rules) |
+| **Config** | **missing** | **權限** | OK (2 rules) |
 
 <details><summary>近期 commits</summary>
 
 ```
-285523c Tenancy zone (屋內) detection: fit-out geometry raster -> largest component
-3c01df5 Detect stair tread combs, stop pairing them as walls, render stair platforms
-5aaaec0 Dedupe stacked furniture INSERTs (same item + footprint within 5cm)
-ad473ad Layout editing round-trip: drag furniture in 3D, write back to DXF layer
-8c4aecb Egress: extract exits from drawing text, click-to-path fire escape routing
+e0e19f0 feat: railsim M0-M2 縱切片 — Rust 模擬核心 + 裸 wasm + MapLibre
 ```
 </details>
 
-**22 個專案問題待處理。**
+**9 個專案問題待處理。**
 ## Agent 健康狀態
 
 | 專案 | Agent | 排程 | 狀態 | 最近 Exit |
 |---------|-------|----------|--------|-----------|
-| news_stock | research-agent | daily 7:30 | ● loaded | 256 |
-| news_stock | research-agent-weekly | weekly 10:00 | ● loaded | 256 |
-| news_stock | maintainer | daily 4:00 | ○ unloaded | — |
-| news_stock | tester | daily 5:00 | ○ unloaded | — |
-| news_stock | developer | weekly 3:00 | ○ unloaded | — |
 | rivendell | maintain | daily 22:00 | ● loaded | 0 |
-| rivendell | harvest | interval :00 | ● loaded | 256 |
-| rivendell | tester | daily 6:00 | ● loaded | 256 |
-| sales-assistant | crm-projection | daily 7:00 | ○ unloaded | — |
-| sales-assistant | subsidy-scraper | calendar 8:00 | ○ unloaded | — |
-| sales-assistant | material-health | weekly 9:00 | ○ unloaded | — |
-| sales-assistant | tender-scraper | daily 8:30 | ○ unloaded | — |
+| rivendell | harvest | interval :00 | ● loaded | 0 |
+| rivendell | tester | daily 6:00 | ○ unloaded | — |
 
-**11 個 agent 問題待處理。**
+**1 個 agent 問題待處理。**
 
 ## Token 用量
 
@@ -1285,43 +517,30 @@ ad473ad Layout editing round-trip: drag furniture in 3D, write back to DXF layer
 xychart-beta
     title "每日花費（USD）"
     x-axis ["08-17", "08-18", "08-19", "08-20", "08-21", "08-22", "08-23"]
-    y-axis "USD" 0 --> 1700
-    bar [759, 182, 680, 1608, 1458, 48, 70]
+    y-axis "USD" 0 --> 150
+    bar [0, 0, 0, 0, 52, 14, 27]
 ~~~
 
 | 日期 | Sessions | API 呼叫 | Tokens | 預估花費 |
 |------|----------|-----------|--------|-----------|
-| 2026-08-17 (Mon) | 16 | 1,299 | 290.7M | $758.90 |
-| 2026-08-18 (Tue) | 18 | 499 | 83.4M | $182.22 |
-| 2026-08-19 (Wed) | 9 | 1,358 | 350.1M | $680.21 |
-| 2026-08-20 (Thu) | 19 | 2,742 | 762.6M | $1608.41 |
-| 2026-08-21 (Fri) | 7 | 1,679 | 793.8M | $1457.99 |
-| 2026-08-22 (Sat) | 4 | 43 | 6.4M | $48.43 |
-| 2026-08-23 (Sun) | 3 | 217 | 29.9M | $69.65 |
-| **Total** | | | **2317.0M** | **$4805.81** |
+| 2026-08-17 (Mon) | 0 | 0 | 0 | $0.00 |
+| 2026-08-18 (Tue) | 0 | 0 | 0 | $0.00 |
+| 2026-08-19 (Wed) | 0 | 0 | 0 | $0.00 |
+| 2026-08-20 (Thu) | 0 | 0 | 0 | $0.00 |
+| 2026-08-21 (Fri) | 1 | 178 | 18.9M | $51.63 |
+| 2026-08-22 (Sat) | 1 | 16 | 2.6M | $13.85 |
+| 2026-08-23 (Sun) | 1 | 48 | 8.9M | $26.80 |
+| **Total** | | | **30.5M** | **$92.28** |
 
 ### 各專案花費（7 日）
 
 | 專案 | API 呼叫 | Tokens | 預估花費 |
 |---------|-----------|--------|-----------|
-| IC-YMS | 1,764 | 581.2M | $1106.97 |
-| -Users-manibari-code | 1,179 | 592.3M | $1085.49 |
-| Vault-Peter-Work | 1,451 | 385.5M | $791.14 |
-| Norns-ERP | 648 | 267.7M | $561.33 |
-| Verdandi-AutoML | 637 | 165.2M | $357.84 |
-| rivendell | 552 | 86.0M | $288.79 |
-| ChimesFlow | 538 | 92.4M | $211.98 |
-| PTI-ARES | 376 | 69.6M | $211.51 |
-| Norns-Skuld-CAD | 303 | 49.2M | $103.38 |
-| sales-assistant | 285 | 20.6M | $59.10 |
-| news_stock | 28 | 603K | $40.77 |
-| TailTrack | 72 | 5.6M | $17.75 |
-| vantage-3dgs | 16 | 1.0M | $5.56 |
-| Verdandi-OR | 16 | 949K | $4.96 |
+| -home-manibari-projects-mops-dbs | 242 | 30.5M | $92.28 |
 
 _計價: Opus input $15/M, output $75/M, cache create $18.75/M, cache read $1.50/M_
 
 
 ---
 
-*由以下工具產生 `./bin/sk audit` — 2026-08-23 — 124 skills, 86 issue(s)*
+*由以下工具產生 `./bin/sk audit` — 2026-08-23 — 99 skills, 112 issue(s)*

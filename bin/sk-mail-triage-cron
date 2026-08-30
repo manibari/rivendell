@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+# Scheduled mail triage — daily 7:45. Reads today's inbox (READ-ONLY fetch),
+# classifies with knowledge-base context, then:
+#   1. important mail  -> Telegram summary + report
+#   2. junk suspects   -> junk-guard filter -> auto-label sk-junk (reversible)
+#                         -> dispatch proposal with pending mail_trash (batch confirm)
+#   3. actionable events -> one dispatch proposal each (same state machine as
+#                          user commands; MAX_EVENT_PROPOSALS fuse)
+# Anti-loop: skips mail sent by ourselves (X-Rivendell-Dispatch header / own From).
+# Pattern mirrors sk-facts-cron. Records execution via sk-exec-lib.
+set -euo pipefail
+
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+PROJECT_NAME="$(basename "$REPO_DIR")"
+REPORT_DIR="$REPO_DIR/reports"
+NOW="$(date '+%Y-%m-%d_%H%M')"
+TODAY="$(date '+%Y-%m-%d')"
+EVENTS_DONE="$REPORT_DIR/.mail-events-done"   # uid list — one proposal per mail ever
+MAX_EVENT_PROPOSALS=5                          # per-run fuse against event storms
+ERROR_LOG="$REPORT_DIR/mail-triage-${TODAY}-error.log"
+
+mkdir -p "$REPORT_DIR"
+touch "$EVENTS_DONE"
+
+set +e; source "$REPO_DIR/bin/sk-exec-lib" 2>/dev/null || true; set -e
+source "$REPO_DIR/bin/sk-dispatch-lib"
+
+# --- Fetch (read-only; exit 4 = not configured -> quiet no-op) ---
+MAIL_JSON=$(python3 "$REPO_DIR/scripts/fetch-mail.py" --since "$TODAY" 2>>"$ERROR_LOG") || {
+    rc=$?
+    if [ "$rc" -eq 4 ]; then
+        echo "[$NOW] mail not configured — skipping."
+        rm -f "$ERROR_LOG"
+        exit 0
+    fi
+    echo "[$NOW] fetch-mail failed ($rc)"; exit 1
+}
+
+# --- Deterministic pre-filter: drop our own outbound + self-sent (anti-loop) ---
+OWN_ADDR=$(grep -E '^RIVENDELL_GMAIL_USER=' "$HOME/.config/rivendell/secrets.env" 2>/dev/null | cut -d= -f2- || true)
+MAIL_JSON=$(echo "$MAIL_JSON" | python3 -c "
+import json, sys
+own = '''$OWN_ADDR'''.strip().lower()
+mails = json.load(sys.stdin)
+keep = [m for m in mails
+        if not m.get('self_dispatch')
+        and (not own or own not in m.get('from', '').lower())]
+print(json.dumps(keep, ensure_ascii=False))")
+
+COUNT=$(echo "$MAIL_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
+if [ "$COUNT" -eq 0 ]; then
+    echo "[$NOW] no new mail today. Skipping."
+    [ -s "$ERROR_LOG" ] || rm -f "$ERROR_LOG"
+    exit 0
+fi
+
+KG_DUMP_FILE="$REPORT_DIR/.mail-triage-kg.tmp"
+python3 "$REPO_DIR/scripts/kg.py" dump --active-only > "$KG_DUMP_FILE" 2>/dev/null || : > "$KG_DUMP_FILE"
+KG_FACTS=$(head -c 20000 "$KG_DUMP_FILE")
+[ -z "$KG_FACTS" ] && KG_FACTS="(知識庫目前是空的)"
+
+echo "[$NOW] Triaging $COUNT mail(s)..."
+
+# --- Network pre-check (wait up to 120s) ---
+if ! curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null; then
+  for i in $(seq 1 24); do
+    sleep 5
+    curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null && break
+  done
+  if ! curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null; then
+    echo "[$NOW] Network unavailable — aborting."
+    exit 1
+  fi
+fi
+
+PNAME="$(sk_persona_name)"
+PFILE="$(sk_persona_file)"
+PERSONA=""
+[ -f "$PFILE" ] && PERSONA="$(cat "$PFILE")
+
+---
+
+"
+PROMPT="${PERSONA}你是${PNAME}，Peter 的個人助理，正在做每日信件分級。報告用人格檔的語氣寫（像早晨彙報，不像系統輸出）。根據知識庫判斷重要性：寄件人與知識庫中的人物/公司/專案相關 = 高優先。
+
+## 今日信件（JSON）
+${MAIL_JSON}
+
+## 知識庫 active facts
+${KG_FACTS}
+
+輸出一份繁體中文 markdown 報告：
+1. **重要信件**：每封一行（寄件人 | 主旨 | 為何重要，需引用知識庫依據）；無則寫「今日無重要信件」
+2. **一般信件**：一行帶過數量與大類
+3. 報告末尾附兩個 fenced json 區塊（各自獨立、無其他文字），格式：
+\`\`\`json
+{\"junk_candidates\": [{\"uid\": \"..\", \"from\": \"..\", \"subject\": \"..\", \"reason\": \"..\"}]}
+\`\`\`
+\`\`\`json
+{\"actionable_events\": [{\"uid\": \"..\", \"from\": \"..\", \"subject\": \"..\", \"deadline\": \"YYYY-MM-DD 或 null\", \"description\": \"事件一句話（含該做什麼）\", \"route\": \"dispatch 或 crm\"}]}
+\`\`\`
+判斷標準：junk = 明顯行銷/詐騙/無關緊要（不確定就不列）；actionable = 信裡有明確待辦/期限/邀約/需回覆事項；route=crm 當事件屬業務行為（客戶信件、報價、合約、會議）。"
+
+start_epoch=$(date +%s)
+REPORT_FILE="$REPORT_DIR/mail-triage-${TODAY}.md"
+
+claude -p "$PROMPT" \
+    --output-format text \
+    < /dev/null \
+    > "$REPORT_FILE" \
+    2>> "$ERROR_LOG" \
+    && run_exit=0 || run_exit=$?
+
+if [ "$run_exit" -ne 0 ]; then
+    end_epoch=$(date +%s)
+    _sk_exec_record_run "$PROJECT_NAME" "mail-triage" "$start_epoch" "$end_epoch" \
+      "$run_exit" "" "" "" "" "" ""
+    exit "$run_exit"
+fi
+
+# --- Extract the two fenced JSON blocks (deterministic; failure = empty) ---
+extract_block() {  # <key>
+    python3 - "$REPORT_FILE" "$1" <<'PY'
+import json, re, sys
+text = open(sys.argv[1]).read()
+key = sys.argv[2]
+for m in re.finditer(r"```json\s*\n(.*?)```", text, re.S):
+    try:
+        obj = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        continue
+    if key in obj:
+        print(json.dumps(obj[key], ensure_ascii=False))
+        sys.exit(0)
+print("[]")
+PY
+}
+
+JUNK=$(extract_block junk_candidates)
+EVENTS=$(extract_block actionable_events)
+
+# --- Junk flow: guard -> auto-label -> dispatch proposal with pending mail_trash ---
+GUARDED=$(echo "$JUNK" | python3 "$REPO_DIR/scripts/dispatch-lib.py" junk-guard \
+          --kg-dump "$KG_DUMP_FILE")
+JUNK_N=$(echo "$GUARDED" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['candidates']))")
+EXCL_N=$(echo "$GUARDED" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['excluded']))")
+
+JUNK_DISPATCH=""
+if [ "$JUNK_N" -gt 0 ]; then
+    # layer 1: reversible label, applied now
+    echo "$GUARDED" | python3 -c "
+import json, sys
+g = json.load(sys.stdin)
+print(json.dumps({'uids': [c['uid'] for c in g['candidates']]}))" | \
+        python3 "$REPO_DIR/scripts/mail-actions.py" label --label sk-junk --payload - \
+        >> "$ERROR_LOG" 2>&1 || true
+    # layer 2: pending batch-confirm proposal (hand-built, no model call)
+    JUNK_DISPATCH=$(python3 "$REPO_DIR/scripts/dispatch-lib.py" new-id)
+    JD="$REPO_DIR/dispatch/$JUNK_DISPATCH"
+    mkdir -p "$JD/results"
+    printf 'mail-triage %s auto-junk\n' "$TODAY" > "$JD/request.txt"
+    echo "$GUARDED" | python3 - "$JUNK_DISPATCH" "$TODAY" > "$JD/proposal.json" <<'PY'
+import json, sys
+g = json.load(sys.stdin)
+cands = g["candidates"]
+msgs = [{"uid": c["uid"], "from": c["from"], "subject": c["subject"]} for c in cands]
+print(json.dumps({
+    "schema": 1, "dispatch_id": sys.argv[1],
+    "request": f"mail-triage {sys.argv[2]} auto-junk",
+    "created": sys.argv[2], "revision": 1,
+    "source": {"channel": "mail", "context": {"excluded": g["excluded"]}},
+    "summary": f"疑似垃圾 {len(cands)} 封已貼標 sk-junk，待批次確認移垃圾桶",
+    "clarifications": [], "conflicts": [],
+    "tasks": [{"id": "t1", "title": f"移 {len(cands)} 封至垃圾桶（30 天可救回）",
+               "type": "mail_trash", "risk": "external",
+               "rationale": "; ".join(c.get("reason", "") for c in cands[:5]),
+               "blocked_by_conflict": None,
+               "payload": {"uids": [m["uid"] for m in msgs], "messages": msgs}}]
+}, ensure_ascii=False, indent=1))
+PY
+    python3 "$REPO_DIR/scripts/dispatch-lib.py" init-decisions "$JUNK_DISPATCH" > /dev/null
+    python3 "$REPO_DIR/scripts/dispatch-lib.py" render "$JUNK_DISPATCH" > /dev/null
+fi
+
+# --- Event flow: one dispatch proposal per unseen actionable event (fused) ---
+EVENT_IDS=""
+proposed=0
+while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    uid=$(echo "$line" | python3 -c "import json,sys; print(json.load(sys.stdin)['uid'])")
+    grep -qFx "$uid" "$EVENTS_DONE" && continue
+    [ "$proposed" -ge "$MAX_EVENT_PROPOSALS" ] && {
+        echo "[$NOW] event fuse hit ($MAX_EVENT_PROPOSALS) — remaining events deferred"; break; }
+    desc=$(echo "$line" | python3 -c "import json,sys; print(json.load(sys.stdin)['description'])")
+    ctx_file="$REPORT_DIR/.mail-event-ctx.tmp"
+    echo "$line" > "$ctx_file"
+    if eid=$(sk_dispatch_propose --source mail --context "$ctx_file" --auto-internal "$desc"); then
+        EVENT_IDS+="$eid "
+        echo "$uid" >> "$EVENTS_DONE"
+        proposed=$((proposed + 1))
+    fi
+    rm -f "$ctx_file"
+done < <(echo "$EVENTS" | python3 -c "
+import json, sys
+for e in json.load(sys.stdin):
+    print(json.dumps(e, ensure_ascii=False))")
+
+end_epoch=$(date +%s)
+_sk_exec_record_run "$PROJECT_NAME" "mail-triage" "$start_epoch" "$end_epoch" \
+  "0" "" "" "" "" "" ""
+
+# --- Telegram push ---
+SUMMARY=$(python3 - "$REPORT_FILE" <<'PY'
+import re, sys
+text = open(sys.argv[1]).read()
+text = re.sub(r"```json.*?```", "", text, flags=re.S)
+print(text.strip()[:800])
+PY
+)
+MSG="早安，我是${PNAME}。今天 $COUNT 封信，重點如下：
+$SUMMARY"
+[ -n "$JUNK_DISPATCH" ] && MSG+="
+
+疑似垃圾 $JUNK_N 封我先貼了標（$EXCL_N 封是認識的寄件人，我擋著沒動）。要清的話：
+sk dispatch approve $JUNK_DISPATCH --task t1"
+[ -n "$EVENT_IDS" ] && MSG+="
+
+另外信裡有事要辦，我擬了提案等你看：$EVENT_IDS（sk dispatch show <id>）"
+bash "$REPO_DIR/scripts/tg-notify.sh" "$MSG" || true
+
+rm -f "$KG_DUMP_FILE"
+[ -s "$ERROR_LOG" ] || rm -f "$ERROR_LOG"
+echo "[$NOW] Triage done: $COUNT mails, junk=$JUNK_N (excluded=$EXCL_N), events=$proposed. Report: $REPORT_FILE"
+exit 0

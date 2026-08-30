@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+# sk-relocate — Move this repo to a new path and rebuild everything that
+# hardcoded the old one.
+#
+# WHY THIS EXISTS
+#
+# Absolute paths cannot be designed away. launchd plists, symlinks and Python
+# venv shebangs all store absolute paths by specification — no config file can
+# change that, because none of those things read config. What CAN be fixed is
+# making the rebuild one idempotent command instead of nine manual steps.
+#
+# This repo has moved three times (~/Documents/Projects -> ~/code ->
+# ~/Company/engineering/repos -> ~/Code). Every move broke something that was
+# only discovered days later, and .learnings has three separate entries about
+# it. The 2026-08-03 move was done by hand and still hit two fresh traps, both
+# encoded below:
+#
+#   * ORDER: `sk undeploy` only unlinks symlinks pointing at the CURRENT
+#     $REPO_DIR. Move first and it no longer recognises its own links, so they
+#     become orphans that `sk deploy` then skips as "already present". Undeploy
+#     MUST happen before the move.
+#   * CASE: on a case-insensitive filesystem `~/code` and `~/Code` both work at
+#     the shell but produce different STRINGS, and sk compares paths as strings.
+#     Deploying via the wrong casing silently creates links sk cannot match
+#     later. Everything below goes through `pwd -P` so one canonical spelling
+#     is used throughout.
+#
+# Usage:
+#   sk-relocate <new-parent-dir-or-full-path> [--dry-run]
+#
+#   sk-relocate ~/Code              # -> ~/Code/<current-basename>
+#   sk-relocate ~/Code/rivendell    # explicit destination
+set -uo pipefail   # NOT -e: we want to report a failed step, not vanish
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; NC='\033[0m'
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd -P)"
+REPO_NAME="$(basename "$REPO_DIR")"
+DRY_RUN=false
+DEST_ARG=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --help|-h) sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) [ -z "$DEST_ARG" ] && DEST_ARG="$arg" ;;
+  esac
+done
+
+if [ -z "$DEST_ARG" ]; then
+  echo "Usage: sk-relocate <new-parent-dir-or-full-path> [--dry-run]" >&2
+  exit 1
+fi
+
+# Resolve destination to a canonical absolute path.
+DEST_ARG="${DEST_ARG/#\~/$HOME}"
+if [ -d "$DEST_ARG" ] && [ "$(basename "$DEST_ARG")" != "$REPO_NAME" ]; then
+  DEST_PARENT="$(cd "$DEST_ARG" && pwd -P)"
+  NEW_DIR="$DEST_PARENT/$REPO_NAME"
+else
+  DEST_PARENT="$(dirname "$DEST_ARG")"
+  [ -d "$DEST_PARENT" ] || { echo -e "${RED}Parent does not exist: $DEST_PARENT${NC}" >&2; exit 1; }
+  DEST_PARENT="$(cd "$DEST_PARENT" && pwd -P)"
+  NEW_DIR="$DEST_PARENT/$(basename "$DEST_ARG")"
+fi
+
+echo -e "${CYAN}=== sk-relocate ===${NC}"
+echo "  from: $REPO_DIR"
+echo "  to:   $NEW_DIR"
+echo ""
+
+# Identity is decided by device+inode, never by string comparison.
+# On a case-insensitive filesystem ~/code and ~/Code are the same directory but
+# different strings, and `pwd -P` only folds the case under zsh — under bash
+# (this script's shebang) it does not. Comparing strings here reported "already
+# exists" for the directory we are standing in. stat is immune to casing,
+# symlinks and trailing slashes alike.
+same_dir() {
+  [ -e "$1" ] && [ -e "$2" ] || return 1
+  local a b
+  a="$(stat -f '%d:%i' "$1" 2>/dev/null || stat -c '%d:%i' "$1" 2>/dev/null)"
+  b="$(stat -f '%d:%i' "$2" 2>/dev/null || stat -c '%d:%i' "$2" 2>/dev/null)"
+  [ -n "$a" ] && [ "$a" = "$b" ]
+}
+
+if [ "$REPO_DIR" = "$NEW_DIR" ] || same_dir "$REPO_DIR" "$NEW_DIR"; then
+  echo -e "${GREEN}Already there. Nothing to do.${NC}"; exit 0
+fi
+if [ -e "$NEW_DIR" ]; then
+  echo -e "${RED}Destination already exists: $NEW_DIR${NC}" >&2; exit 1
+fi
+
+STEPS=(
+  "stop every com.sk.* service"
+  "sk undeploy (BEFORE the move, or symlinks orphan)"
+  "mv repo"
+  "sk deploy from the canonical new path"
+  "regenerate launchd/systemd units"
+  "rebuild the API venv (shebangs store the old path)"
+  "clear the Next build"
+  "refresh ~/Documents/Projects compatibility symlink"
+  "verify: preflight + portability + ports + doctor"
+)
+if $DRY_RUN; then
+  echo -e "${YELLOW}--dry-run — would perform:${NC}"
+  i=1; for s in "${STEPS[@]}"; do printf "  %d. %s\n" "$i" "$s"; i=$((i+1)); done
+  exit 0
+fi
+
+FAILED=0
+step() { echo -e "\n${CYAN}[$1/9] $2${NC}"; }
+
+# ── 1. stop services ──
+step 1 "Stopping services"
+shopt -s nullglob
+for p in "$HOME"/Library/LaunchAgents/com.sk.*.plist; do
+  launchctl bootout "gui/$(id -u)" "$p" 2>/dev/null && echo "  stopped $(basename "$p" .plist)"
+done
+for u in "$HOME"/.config/systemd/user/com.sk.*.service; do
+  systemctl --user stop "$(basename "$u")" 2>/dev/null && echo "  stopped $(basename "$u")"
+done
+shopt -u nullglob
+
+# ── 2. undeploy BEFORE moving ──
+step 2 "Undeploying skills (must precede the move)"
+"$REPO_DIR/bin/sk" undeploy 2>&1 | tail -2
+
+# Belt and braces: drop any symlink still pointing into this repo under any
+# casing, since sk only matches the exact current spelling.
+removed=0
+for l in "$HOME"/.claude/skills/*; do
+  [ -L "$l" ] || continue
+  d="$(readlink "$l")"
+  lower_d="$(echo "$d" | tr '[:upper:]' '[:lower:]')"
+  lower_repo="$(echo "$REPO_DIR" | tr '[:upper:]' '[:lower:]')"
+  case "$lower_d" in "$lower_repo"/*) rm "$l"; removed=$((removed+1)) ;; esac
+done
+[ "$removed" -gt 0 ] && echo "  removed $removed residual symlink(s)"
+
+# ── 3. move ──
+step 3 "Moving repo"
+if ! mv "$REPO_DIR" "$NEW_DIR"; then
+  echo -e "${RED}Move failed. Services are stopped and skills undeployed —${NC}"
+  echo -e "${RED}re-run sk deploy from $REPO_DIR to restore.${NC}"
+  exit 1
+fi
+NEW_DIR="$(cd "$NEW_DIR" && pwd -P)"   # canonical casing from here on
+echo "  now at: $NEW_DIR"
+
+# ── 4. deploy ──
+step 4 "Deploying skills from the new path"
+(cd "$NEW_DIR" && ./bin/sk deploy 2>&1 | tail -2)
+dangling="$(find -L "$HOME/.claude/skills" -maxdepth 1 -type l 2>/dev/null | wc -l | tr -d ' ')"
+[ "$dangling" != "0" ] && { echo -e "  ${RED}$dangling dangling symlink(s)${NC}"; FAILED=$((FAILED+1)); }
+
+# ── 5. service units ──
+step 5 "Regenerating service units"
+(cd "$NEW_DIR" && ./bin/sk-setup-agents 2>&1 | tail -3)
+
+# ── 6. venv ──
+step 6 "Rebuilding the API venv"
+VENV="$NEW_DIR/dashboard-next/api/.venv"
+if [ -d "$VENV" ] || [ -f "$NEW_DIR/dashboard-next/api/requirements.txt" ]; then
+  rm -rf "$VENV"
+  PY=""
+  for c in python3.13 python3.12 python3.11 python3.10 python3; do
+    command -v "$c" >/dev/null 2>&1 && { PY="$c"; break; }
+  done
+  if [ -n "$PY" ]; then
+    "$PY" -m venv "$VENV" \
+      && "$VENV/bin/pip" install -q -r "$NEW_DIR/dashboard-next/api/requirements.txt" \
+      && echo "  rebuilt with $PY"
+  else
+    echo -e "  ${RED}no python3 found${NC}"; FAILED=$((FAILED+1))
+  fi
+fi
+
+# ── 7. build artifacts ──
+step 7 "Clearing the Next build"
+rm -rf "$NEW_DIR/dashboard-next/.next" && echo "  .next cleared (rebuilds on next start)"
+
+# ── 8. compatibility symlink ──
+step 8 "Refreshing compatibility symlink"
+COMPAT="$HOME/Documents/Projects/$REPO_NAME"
+if [ -L "$COMPAT" ] || [ -d "$(dirname "$COMPAT")" ]; then
+  ln -snf "$NEW_DIR" "$COMPAT" && echo "  $COMPAT -> $(readlink "$COMPAT")"
+fi
+
+# ── 9. verify ──
+step 9 "Verifying"
+cd "$NEW_DIR" || exit 1
+./bin/sk-preflight --quiet          || { echo -e "  ${RED}preflight failed${NC}";   FAILED=$((FAILED+1)); }
+./bin/sk check portability --quiet  || { echo -e "  ${RED}portability drift${NC}";  FAILED=$((FAILED+1)); }
+./bin/sk check agents --quiet       || { echo -e "  ${RED}agents not all loaded${NC}"; FAILED=$((FAILED+1)); }
+
+echo ""
+if [ "$FAILED" -gt 0 ]; then
+  echo -e "${RED}Relocated to $NEW_DIR, but $FAILED check(s) failed — see above.${NC}"
+  exit 1
+fi
+echo -e "${GREEN}Relocated to $NEW_DIR. All checks pass.${NC}"
+echo -e "${YELLOW}Note:${NC} services restart on their own schedule; the web build"
+echo "runs on first start, so :3000 may take a few minutes."
+echo "Your shell is still in the old directory — cd $NEW_DIR"
