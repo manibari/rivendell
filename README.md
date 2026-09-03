@@ -218,14 +218,19 @@ as release notes.
 | **gov-subsidy-writer** | `/gov-subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
 | **gov-tender-scraper** | `/gov-tender-scraper` | Automated government tender scraper — fetches public tender listings from |
 
-### business/ — 商業開發（情蒐、sales、招募、財務研究）
+### invest/ — 投資研究
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **candidate-analysis** | `/candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
-| **investment-research** | `/investment-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
-| **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
+| **invest-research** | `/invest-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
 | **mops-financial-scraper** | 自動 | Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站, mopsov.twse. |
+
+### hr/ — 人資
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **hr-candidate-analysis** | `/hr-candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
+| **hr-jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
 
 ### media/ — 影音抓讀
 
@@ -266,6 +271,8 @@ as release notes.
 |------|------|----|-------|-----|
 | sales | 2 | 3 | 1 | 1 |
 | gov | 2 | 2 | — | — |
+| invest | 1 | 1 | — | — |
+| hr | — | 1 | 1 | — |
 | shared | 1 | — | — | — |
 
 

@@ -10,7 +10,7 @@ description: >
   TRIGGER when: user asks to look up a Taiwan company, check company registration,
   verify 負責人/董監事, or says "查公司" / "公司登記" / "統編查詢".
   DO NOT TRIGGER when: researching international companies, stock research
-  (use investment-research), or general web scraping (use web-scraper).
+  (use invest-research), or general web scraping (use web-scraper).
 tags: [backend, taiwan]
 version: 2
 source: manual

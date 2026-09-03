@@ -1,5 +1,7 @@
 ---
 name: mops-financial-scraper
+loop: invest
+pdca: plan
 description: >
   Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站,
   mopsov.twse.com.tw) — historical 財務三表, 月營收, 季/年度合併營收 — and
@@ -10,7 +12,7 @@ description: >
   time-series database.
   SKIP: company-registration / 負責人 / 董監事 lookup (use tw-company-lookup);
   B2B sales research (sales-customer-intel); non-TW or stock-picking research
-  (investment-research); a one-off CSV/xlsx transform (office-xlsx).
+  (invest-research); a one-off CSV/xlsx transform (office-xlsx).
 tags: [workflow, finance, scraping, taiwan, data-pipeline]
 version: 1.1.0
 source: manual

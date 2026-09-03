@@ -4,7 +4,7 @@ description: >
   Three-stage doc co-authoring workflow (Context → Refinement →
   Reader Testing with a fresh Claude). For substantial multi-stakeholder docs.
   TRIGGER: "write a doc / proposal / spec / PRD / RFC", "技術文件", "決策文件".
-  SKIP: domain-specific docs — use sow-writer / gov-rfq-writer / jd-writer / sales-customer-intel / pitch-deck.
+  SKIP: domain-specific docs — use sow-writer / gov-rfq-writer / hr-jd-writer / sales-customer-intel / pitch-deck.
 version: 1.0.0
 tags: [docs, workflow, writing, coauthoring]
 languages: all

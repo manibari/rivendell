@@ -1,12 +1,14 @@
 ---
-name: jd-writer
+name: hr-jd-writer
+loop: hr
+pdca: do
 description: >
   Generate structured Job Descriptions (JD / 職缺描述) from organizational context.
   Produces work responsibilities, required skills, nice-to-haves, career path,
   and optionally salary range. Understands org hierarchy to write accurate JDs.
   TRIGGER when: user says "寫 JD", "補 JD", "職缺描述", "job description",
   "write a JD for", "招募文", "徵才", or wants to create/refine a job posting.
-  DO NOT TRIGGER when: user wants to analyze a candidate resume (use candidate-analysis).
+  DO NOT TRIGGER when: user wants to analyze a candidate resume (use hr-candidate-analysis).
 tags: [workflow]
 version: 1.0.0
 user-invocable: true
@@ -76,5 +78,5 @@ Before writing, gather:
 
 ## Cross-Reference
 
-- Pair with `candidate-analysis` for the full hiring pipeline
+- Pair with `hr-candidate-analysis` for the full hiring pipeline
 - If the JD needs to go into a presentation, use `office-docx` or `gdoc-report-builder`

@@ -1,5 +1,7 @@
 ---
-name: candidate-analysis
+name: hr-candidate-analysis
+loop: hr
+pdca: check
 description: Interview candidate management — extract structured data from PDF resumes, analyze GitHub repos for code quality, and generate candidate profile markdown with YAML frontmatter.
 tags: [workflow, hiring, recruitment]
 version: 1
@@ -7,10 +9,10 @@ source: harvest-2026-03-25
 user_invocable: true
 ---
 
-# candidate-analysis
+# hr-candidate-analysis
 
-TRIGGER when: user says "分析履歷", "建立候選人", "evaluate candidate", "看一下這個 GitHub" (hiring context), or `/candidate-analysis`.
-DO NOT TRIGGER when: researching companies (use sales-customer-intel), general PDF reading (use office-pdf), or stock research (use investment-research).
+TRIGGER when: user says "分析履歷", "建立候選人", "evaluate candidate", "看一下這個 GitHub" (hiring context), or `/hr-candidate-analysis`.
+DO NOT TRIGGER when: researching companies (use sales-customer-intel), general PDF reading (use office-pdf), or stock research (use invest-research).
 
 ## Workflow
 

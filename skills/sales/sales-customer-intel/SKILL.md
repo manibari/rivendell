@@ -7,7 +7,7 @@ description: >
   WebSearch + Playwright (findbiz.nat.gov.tw + 104 job postings for TW). Markdown
   SSOT auto-synced to Nexus.
   TRIGGER: "客戶調查", "公司調查", "會前準備", "情蒐", "更新[公司名]報告".
-  SKIP: stocks (investment-research); code review (code-reviewer).
+  SKIP: stocks (invest-research); code review (code-reviewer).
 tags: [workflow, sales]
 version: 4
 source: manual

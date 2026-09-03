@@ -462,7 +462,7 @@ export const skillDetails: Record<string, SkillDetail> = {
   "sales-customer-intel": {
     desc: "B2B customer intelligence：公司名 → web research → 可執行 sales report。WebSearch + Playwright (findbiz.nat.gov.tw 查台灣公司)。",
     trigger: "'客戶調查' / '公司調查' / '會前準備' / '情蒐' / '更新[公司名]報告'",
-    skip: "stocks（用 investment-research）",
+    skip: "stocks（用 invest-research）",
   },
   "metadata-workshop": {
     desc: "Metadata 萃取 + 整理 workshop — 客戶情境的 operator-level 製程 / 業務流程猜測比公開資料推測更有效。",
