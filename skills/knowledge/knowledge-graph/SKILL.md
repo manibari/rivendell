@@ -1,5 +1,7 @@
 ---
 name: Knowledge Graph
+loop: knowledge
+pdca: act
 description: Three-Layer Memory System for structured entity tracking — durable facts about people, companies, and projects as atomic JSONL entries with living summaries, written via scripts/kg.py. TRIGGER when encountering durable facts (job change, decision, preference, milestone) during conversation, or user says "remember", "recall", "what do we know about", "/knowledge-graph". SKIP for engineering learnings (self-improving-agent), session workflow patterns (session-harvest), or project-scoped memory (auto memory).
 when_to_use: when encountering durable facts about people, companies, or projects during conversation, or when user asks to remember/recall/look up entity information
 version: 2.0.0

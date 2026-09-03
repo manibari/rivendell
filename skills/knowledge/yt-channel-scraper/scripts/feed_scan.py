@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Find what's NEW across subscribed channels — the discovery half of channel-scraper.
+"""Find what's NEW across subscribed channels — the discovery half of yt-channel-scraper.
 
 This script does everything that must be deterministic (who am I following, what
 did they publish, have I already archived it) and nothing that needs judgement.
@@ -53,7 +53,7 @@ from pathlib import Path
 import os
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-# scripts → channel-scraper → media → skills → repo
+# scripts → yt-yt-channel-scraper → knowledge → skills → repo
 REPO = SCRIPT_DIR.parents[3]
 SHARED = (SCRIPT_DIR.parents[1] / "_shared" / "scripts").resolve()
 sys.path.insert(0, str(SHARED))
@@ -69,7 +69,7 @@ FEED_WINDOW = 20           # how far back to look in a feed before giving up
 CHANNEL_ID_RE = re.compile(r"^UC[\w-]{22}$")
 
 CONF_HEADER = """\
-# 訂閱清單 — channel-scraper 讀這份檔
+# 訂閱清單 — yt-channel-scraper 讀這份檔
 # 格式: NAME | KIND | SOURCE | LIMIT
 #   KIND   youtube | podcast | bilibili
 #   SOURCE youtube  → UCxxxx… 頻道 ID、@handle 或頻道網址

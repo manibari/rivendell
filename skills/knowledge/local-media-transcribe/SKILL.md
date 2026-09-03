@@ -1,5 +1,7 @@
 ---
 name: local-media-transcribe
+loop: knowledge
+pdca: do
 description: >
   Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture, voice memo,
   .mov/.mp4/.m4a/.mp3/.wav) into text, then explain it — verbatim 逐字稿, 重點摘要/TL;DR, a readable
@@ -27,7 +29,7 @@ recordings) sampled frames so the *explanation* reflects what was on screen. Off
 ## Locate scripts
 
 ```bash
-SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/media/local-media-transcribe}" 2>/dev/null && pwd -P)"
+SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/knowledge/local-media-transcribe}" 2>/dev/null && pwd -P)"
 SHARED="$SKILL_DIR/../_shared/scripts"
 TX="$SHARED/local_transcribe.sh"          # local file → mlx-whisper → text
 # reuse: $SHARED/save_note.sh (archive to knowledge base), build_index.py (rebuild index)

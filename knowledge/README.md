@@ -19,7 +19,7 @@ knowledge/
 
 ## 怎麼寫入
 
-`skills/media/_shared/scripts/save_note.sh <transcript> <meta|-> <summary.md|->` 會自動存到這裡（預設路徑從 script 位置推回 repo root）。`video-transcript` skill 抓完+摘要後呼叫它歸檔。
+`skills/knowledge/_shared/scripts/save_note.sh <transcript> <meta|-> <summary.md|->` 會自動存到這裡（預設路徑從 script 位置推回 repo root）。`video-transcript` skill 抓完+摘要後呼叫它歸檔。
 
 ## frontmatter 欄位
 

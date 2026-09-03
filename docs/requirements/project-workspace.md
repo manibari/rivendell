@@ -186,7 +186,7 @@ product-skeleton 出生」，且「骨架前端半邊（Next.js + 同源 proxy�
 
 | 功能 | 既有 |
 |---|---|
-| 轉錄 | `skills/media/_shared/scripts/local_transcribe.sh`（2026-08-03 修過） |
+| 轉錄 | `skills/knowledge/_shared/scripts/local_transcribe.sh`（2026-08-03 修過） |
 | Word 匯出 | `office-docx` |
 | excalidraw | `excalidraw-diagram` |
 | 信箱 | `imap-smtp-integration` · `oauth-token-vault` |

@@ -1,5 +1,7 @@
 ---
 name: subtitle-file
+loop: knowledge
+pdca: do
 description: >
   Produce a subtitle FILE (.srt / .vtt) from an online video — keeping the timing — for re-upload,
   archiving, or translation-in-sync. Fetches the original subtitles and converts to clean SRT; can
@@ -25,7 +27,7 @@ discards timing to make prose), the whole point here is that each line stays in 
 ## Locate scripts
 
 ```bash
-SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/media/subtitle-file}" 2>/dev/null && pwd -P)"
+SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/knowledge/subtitle-file}" 2>/dev/null && pwd -P)"
 SHARED="$SKILL_DIR/../_shared/scripts"   # media_fetch.sh (RAW mode) + vtt_to_srt.py
 ```
 

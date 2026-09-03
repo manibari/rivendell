@@ -19,7 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 # Default vault = rivendell's own knowledge base (git-tracked, greppable). The
-# script lives at <repo>/skills/media/_shared/scripts/, so four levels up is the
+# script lives at <repo>/skills/knowledge/_shared/scripts/, so four levels up is the
 # repo root; resolving physically means a symlinked install still lands in the
 # repo. Override with VIDEO_NOTES_DIR (or arg 4) to write elsewhere.
 DEFAULT_DIR="$(cd -P "$SCRIPT_DIR/../../../.." && pwd -P)/knowledge/videos"

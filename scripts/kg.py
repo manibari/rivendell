@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""kg.py — knowledge graph 唯一寫入 API（skills/meta/knowledge-graph 的資料層）。
+"""kg.py — knowledge graph 唯一寫入 API（skills/knowledge/knowledge-graph 的資料層）。
 
 儲存根目錄由 KG_ROOT 覆寫（預設 ~/.claude/knowledge），結構：
     <KG_ROOT>/{people,companies,projects}/<slug>/facts.jsonl + summary.md
@@ -91,7 +91,7 @@ def cmd_init(_args) -> int:
                 "# Knowledge Graph\n\n"
                 "Entity memory for the rivendell personal-assistant stack.\n"
                 "Written ONLY via `rivendell/scripts/kg.py` (add/summary). Do not hand-edit facts.jsonl.\n"
-                "Schema: skills/meta/knowledge-graph/SKILL.md in the rivendell repo.\n",
+                "Schema: skills/knowledge/knowledge-graph/SKILL.md in the rivendell repo.\n",
                 encoding="utf-8",
             )
         name, email = _git_identity()

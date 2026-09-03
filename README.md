@@ -76,7 +76,6 @@ as release notes.
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
 | **doc-drift-sync** | 自動 | Keep a project's living docs aligned when version or state moves — detect and |
 | **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
-| **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：人物/公司/專案持久事實，經 scripts/kg.py 寫入 JSONL + 摘要；sk-facts-cron 每日自動抽取 |
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
 | **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
 | **self-improving-agent** | 自動 + hook | 捕捉學習與錯誤修正，記錄至 .learnings/，提升有價值見解到 CLAUDE.md |
@@ -232,15 +231,16 @@ as release notes.
 | **hr-candidate-analysis** | `/hr-candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
 | **hr-jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
 
-### media/ — 影音抓讀
+### knowledge/ — 內容消化
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **channel-scraper** | 自動 | Subscribe to YouTube channels, Bilibili UP 主, and podcast shows |
+| **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：人物/公司/專案持久事實，經 scripts/kg.py 寫入 JSONL + 摘要；sk-facts-cron 每日自動抽取 |
 | **local-media-transcribe** | 自動 | Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture |
 | **subtitle-file** | 自動 | Produce a subtitle FILE (.srt / . |
 | **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
 | **video-transcript** | 自動 | Read an online video's spoken content (via its subtitles) and transform it into |
+| **yt-channel-scraper** | 自動 | Subscribe to YouTube channels, Bilibili UP 主, and podcast shows |
 
 ### docs/ — 文件處理與簡報
 
@@ -273,6 +273,7 @@ as release notes.
 | gov | 2 | 2 | — | — |
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
+| knowledge | 1 | 4 | — | 1 |
 | shared | 1 | — | — | — |
 
 

@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_DIR = SCRIPT_DIR.parents[3] / "knowledge" / "videos"  # skills/media/_shared/scripts → repo
+DEFAULT_DIR = SCRIPT_DIR.parents[3] / "knowledge" / "videos"  # skills/knowledge/_shared/scripts → repo
 
 
 def parse_frontmatter(text: str) -> dict:

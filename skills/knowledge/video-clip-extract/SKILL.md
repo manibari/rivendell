@@ -1,5 +1,7 @@
 ---
 name: video-clip-extract
+loop: knowledge
+pdca: do
 description: >
   Cut a highlight clip out of an online video and save it as a standalone file — WITHOUT downloading
   the whole thing. Give it a URL and a time range (or a topic to find), and it fetches just that
@@ -25,7 +27,7 @@ Pull one time-range out of an online video and save it as its own file. The valu
 ## Locate scripts
 
 ```bash
-SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/media/video-clip-extract}" 2>/dev/null && pwd -P)"
+SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/knowledge/video-clip-extract}" 2>/dev/null && pwd -P)"
 SHARED="$SKILL_DIR/../_shared/scripts"   # media_fetch.sh, for topic→timestamp lookup
 CUT="$SKILL_DIR/scripts/cut_clip.sh"
 ```

@@ -1,5 +1,7 @@
 ---
 name: video-transcript
+loop: knowledge
+pdca: do
 description: >
   Read an online video's spoken content (via its subtitles) and transform it into one of four
   outputs: (1) 重點摘要 / TL;DR, (2) a rewritten, readable 繁體中文 article, (3) a clean 逐字稿
@@ -29,11 +31,11 @@ effort on the transformation, which is where the value is.
 
 ## Locate the shared fetcher
 
-The fetch/clean scripts live in the media category's `_shared/`, reused by the sibling skills.
+The fetch/clean scripts live in the knowledge category's `_shared/`, reused by the sibling skills.
 This locator resolves them whether you're in the repo or a symlinked install:
 
 ```bash
-SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/media/video-transcript}" 2>/dev/null && pwd -P)"
+SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/knowledge/video-transcript}" 2>/dev/null && pwd -P)"
 SHARED="$SKILL_DIR/../_shared/scripts"
 ```
 

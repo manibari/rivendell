@@ -1,5 +1,7 @@
 ---
-name: channel-scraper
+name: yt-channel-scraper
+loop: knowledge
+pdca: plan
 description: >
   Subscribe to YouTube channels, Bilibili UP 主, and podcast shows, then sweep them for new
   episodes and auto-archive each one into the video knowledge base (transcript + 繁中重點摘要 in
@@ -33,7 +35,7 @@ feeds, de-duplication, state). You own the reading. Never hand-maintain the seen
 ## Locate the scripts
 
 ```bash
-SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/media/channel-scraper}" 2>/dev/null && pwd -P)"
+SKILL_DIR="$(cd -P "${CLAUDE_SKILL_DIR:-skills/knowledge/yt-channel-scraper}" 2>/dev/null && pwd -P)"
 SCAN="$SKILL_DIR/scripts/feed_scan.py"
 SHARED="$SKILL_DIR/../_shared/scripts"
 ```
@@ -218,11 +220,11 @@ other rivendell agents:
 1. Add `bin/sk-channel-scrape-cron` (mirror `bin/sk-harvest-cron`) invoking this skill headless.
 2. Add to `agents/agents.conf`:
    ```
-   com.sk.agent.rivendell.channel-scraper | rivendell | bin/sk-channel-scrape-cron | calendar | 9:00 | reports
+   com.sk.agent.rivendell.yt-channel-scraper | rivendell | bin/sk-channel-scrape-cron | calendar | 9:00 | reports
    ```
-3. `./bin/sk agent start channel-scraper` to generate the plist and load it.
+3. `./bin/sk agent start yt-channel-scraper` to generate the plist and load it.
 
 Two things to settle before that switch: committing the new notes (`./bin/sk agent commit
-channel-scraper` exists for exactly this — an agent that writes to a git-tracked vault and never
+yt-channel-scraper` exists for exactly this — an agent that writes to a git-tracked vault and never
 commits leaves the repo permanently dirty), and a hard per-run item cap so one busy day can't
 produce a 20-video run.
