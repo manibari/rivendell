@@ -13,6 +13,10 @@ PROJECT_NAME="$(basename "$REPO_DIR")"
 REPORT_DIR="$REPO_DIR/reports"
 NOW="$(date '+%Y-%m-%d_%H%M')"
 TODAY="$(date '+%Y-%m-%d')"
+# Per-machine filename — avoids same-day clobber across machines (see
+# sk-harvest-cron / LEARNINGS 2026-08-30).
+HOST_TAG=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | sed 's/-\{1,\}$//')
+[ -z "$HOST_TAG" ] && HOST_TAG="unknown"
 PROJECTS_DIR="$HOME/.claude/projects"
 STATE_FILE="$REPORT_DIR/.facts-state"
 DONE_FILE="$REPORT_DIR/.facts-done"  # tracks already-processed session paths
@@ -168,8 +172,8 @@ fi
 
 # --- Finalize report (silent on healthy: no facts -> no report file) ---
 if [ "$run_exit" -eq 0 ] && [ "$new_facts" -gt 0 ]; then
-    mv "$PARTIAL_FILE" "$REPORT_DIR/facts-${TODAY}.md"
-    echo "[$NOW] Recorded $new_facts new fact(s). Report: $REPORT_DIR/facts-${TODAY}.md"
+    mv "$PARTIAL_FILE" "$REPORT_DIR/facts-${TODAY}-${HOST_TAG}.md"
+    echo "[$NOW] Recorded $new_facts new fact(s). Report: $REPORT_DIR/facts-${TODAY}-${HOST_TAG}.md"
 else
     rm -f "$PARTIAL_FILE"
     [ "$run_exit" -eq 0 ] && echo "[$NOW] No new facts."

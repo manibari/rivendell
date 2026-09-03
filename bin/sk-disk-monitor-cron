@@ -15,7 +15,11 @@ REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 PROJECT_NAME="$(basename "$REPO_DIR")"
 REPORT_DIR="$REPO_DIR/reports"
 TODAY="$(date '+%Y-%m-%d')"
-REPORT_FILE="$REPORT_DIR/disk-capacity-$TODAY.md"
+# Per-machine filename — avoids same-day clobber across machines (see
+# sk-harvest-cron / LEARNINGS 2026-08-30).
+HOST_TAG=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-' | sed 's/-\{1,\}$//')
+[ -z "$HOST_TAG" ] && HOST_TAG="unknown"
+REPORT_FILE="$REPORT_DIR/disk-capacity-$TODAY-$HOST_TAG.md"
 
 mkdir -p "$REPORT_DIR"
 
