@@ -1,11 +1,13 @@
 ---
-name: material-health
+name: sales-material-health
+loop: sales
+pdca: check
 description: "Health check for the sales materials library — detects missing frontmatter, expired subsidies, stale company info, and orphaned files."
 tags: [automation, health-check, sales-enablement, maintenance]
 version: 1
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says /material-health, '素材檢查', 'check materials', or invoked by headless agent on schedule. DO NOT TRIGGER when: user is editing specific materials or building a presentation."
+when_to_use: "TRIGGER when: user says /sales-material-health, '素材檢查', 'check materials', or invoked by headless agent on schedule. DO NOT TRIGGER when: user is editing specific materials or building a presentation."
 allowed-tools:
   - Bash
   - Read
@@ -105,6 +107,6 @@ Generate a report at `materials/HEALTH_REPORT.md`:
 
 ## Headless Execution
 
-LaunchAgent: `com.sk.agent.sales.material-health`
+LaunchAgent: `com.sk.agent.sales.sales-material-health`
 Schedule: Sunday 09:00
-Runner: `scripts/material-health.sh`
+Runner: `scripts/sales-material-health.sh`

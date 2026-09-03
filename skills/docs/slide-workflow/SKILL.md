@@ -174,8 +174,8 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 
 | 來源 | 工具 |
 |------|------|
-| 客戶情報 | `customer-intel` / `tw-company-lookup` |
-| CRM 數據 | `crm-projection` |
+| 客戶情報 | `sales-customer-intel` / `tw-company-lookup` |
+| CRM 數據 | `sales-crm-projection` |
 | 案例庫 | `sales-material` (match case studies) |
 | 補助資料 | `subsidy-scraper` output |
 | 網路研究 | `autoresearch` / `WebSearch` |

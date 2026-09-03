@@ -1,5 +1,7 @@
 ---
 name: tw-company-lookup
+loop: shared
+pdca: plan
 description: >
   Query Taiwan's official business registry (findbiz.nat.gov.tw) using Playwright
   to retrieve company registration data: basic info, directors, managers, factories,

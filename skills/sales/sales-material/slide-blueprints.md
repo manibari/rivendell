@@ -203,4 +203,4 @@ slide.addText("預估投資：{budget_range}（含補助可降至 {budget_after_
 - **Color palette**: Dark navy (#1a1a2e) + white + green accent (#2d6a4f)
 - **Font**: Arial throughout for safety
 - **Contrast**: Dark slides for bookends (cover, next steps, contact), white for content
-- Adjust colors per client brand if known from customer-intel
+- Adjust colors per client brand if known from sales-customer-intel

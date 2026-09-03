@@ -34,7 +34,7 @@
 **Acceptance Criteria:**
 - [ ] CoreTrack（如 UI Feature / Backend / Slide）顯示為頂層節點
 - [ ] 每個 CoreStep 是子節點，展開後顯示 mandatory + optional skills
-- [ ] DomainFlow（presales / customer-intel 等）以另一棵 tree 並列或切換 tab 顯示
+- [ ] DomainFlow（presales / sales-customer-intel 等）以另一棵 tree 並列或切換 tab 顯示
 - [ ] Maintenance / Situational / Orphan 不擠進主 tree —— 用獨立區塊或側欄
 - [ ] 點擊節點可摺疊 / 展開
 - [ ] 在筆電（1440px）一個畫面看得完主流程，不需要橫向捲動

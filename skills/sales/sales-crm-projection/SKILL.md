@@ -1,11 +1,13 @@
 ---
-name: crm-projection
-description: "Project nx_client + nx_deal data to local markdown files at materials/clients/. Cross-references customer-intel reports. Runs daily as headless agent."
+name: sales-crm-projection
+loop: sales
+pdca: act
+description: "Project nx_client + nx_deal data to local markdown files at materials/clients/. Cross-references sales-customer-intel reports. Runs daily as headless agent."
 tags: [automation, crm, sales-enablement, local, projection]
 version: 1
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says /crm-projection, '更新客戶索引', 'sync clients', or invoked by headless agent on schedule. DO NOT TRIGGER when: user is creating/editing a specific client (use Nexus UI or API)."
+when_to_use: "TRIGGER when: user says /sales-crm-projection, '更新客戶索引', 'sync clients', or invoked by headless agent on schedule. DO NOT TRIGGER when: user is creating/editing a specific client (use Nexus UI or API)."
 allowed-tools:
   - Bash
   - Read
@@ -62,6 +64,6 @@ Read [projection.md](projection.md) for the complete workflow.
 
 ## Headless Execution
 
-LaunchAgent: `com.sk.agent.sales.crm-projection`
+LaunchAgent: `com.sk.agent.sales.sales-crm-projection`
 Schedule: Daily 07:00
-Runner: `scripts/crm-projection.sh`
+Runner: `scripts/sales-crm-projection.sh`

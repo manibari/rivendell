@@ -1,5 +1,7 @@
 ---
-name: keyword-discovery
+name: sales-keyword-discovery
+loop: sales
+pdca: plan
 description: >
   Automated keyword discovery for scraper filter systems. Analyzes unmatched items
   to find frequent terms, writes candidates to a YAML config for human review,
@@ -123,7 +125,7 @@ python3 scraper.py
 python3 keyword_analyzer.py \
   --config config/keywords.yml \
   --unmatched data/unmatched.jsonl \
-  --log "logs/keyword-discovery-$(date +%Y-%m-%d).log"
+  --log "logs/sales-keyword-discovery-$(date +%Y-%m-%d).log"
 ```
 
 ### Analyzer Script Outline
@@ -150,7 +152,7 @@ def analyze(config_path: str, unmatched_path: str) -> None:
 
 ### Dashboard Visibility
 
-- Analyzer logs to `logs/keyword-discovery-YYYY-MM-DD.log`
+- Analyzer logs to `logs/sales-keyword-discovery-YYYY-MM-DD.log`
 - Log format: one line per action (NEW_CANDIDATE, COUNT_UPDATE, AUTO_PROMOTED, AUTO_REJECTED)
 - Dashboard reads log files to show discovery activity
 
@@ -158,5 +160,5 @@ def analyze(config_path: str, unmatched_path: str) -> None:
 
 - `config/keywords.yml` — Single source of truth for all keyword state
 - `data/unmatched.jsonl` — Items that didn't match any active keyword (scraper output)
-- `logs/keyword-discovery-*.log` — Dated analyzer logs
+- `logs/sales-keyword-discovery-*.log` — Dated analyzer logs
 - `keyword_analyzer.py` — Analyzer script

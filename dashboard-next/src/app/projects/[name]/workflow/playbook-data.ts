@@ -207,7 +207,7 @@ export const workflows: Workflow[] = [
           {
             num: "B",
             action: "客戶客製提案",
-            detail: "從素材庫組裝，匹配 customer-intel + case studies + solutions + 補助",
+            detail: "從素材庫組裝，匹配 sales-customer-intel + case studies + solutions + 補助",
             chips: [core("sales-material")],
           },
         ],
@@ -233,7 +233,7 @@ export const workflows: Workflow[] = [
             num: "1",
             action: "情蒐",
             detail: "operator-level 猜製程 / 業務流程 > 公開資料推測（B2B first-call 尤甚）",
-            chips: [core("customer-intel"), core("metadata-workshop")],
+            chips: [core("sales-customer-intel"), core("metadata-workshop")],
             optionals: [
               { label: "能與客戶對話:", chips: [core("discovery-interview")] },
             ],
@@ -450,7 +450,7 @@ export const skillDetails: Record<string, SkillDetail> = {
     skip: "技術文件 / 內部 status — 用 /office-pptx",
   },
   "sales-material": {
-    desc: "組裝 client-specific sales presentations — 從本地 materials library 匹配 customer-intel / case studies / solutions / 補助，via html2pptx 產 PPTX。",
+    desc: "組裝 client-specific sales presentations — 從本地 materials library 匹配 sales-customer-intel / case studies / solutions / 補助，via html2pptx 產 PPTX。",
     trigger: "'幫我做客戶提案' / '準備 B2B 提案' / '做 X 公司的銷售簡報' / '客戶提案素材'",
     skip: "投資人 deck（用 pitch-deck）；編 existing PPTX（用 office-pptx）",
   },
@@ -459,14 +459,14 @@ export const skillDetails: Record<string, SkillDetail> = {
     trigger: "'廠務報告' / '設備分析' / 'IoT 資料分析' / 'UPW 分析' / '壓縮機報告'",
     skip: "generic CSV（用 office-xlsx）；無 sensor data 的商業報告",
   },
-  "customer-intel": {
+  "sales-customer-intel": {
     desc: "B2B customer intelligence：公司名 → web research → 可執行 sales report。WebSearch + Playwright (findbiz.nat.gov.tw 查台灣公司)。",
     trigger: "'客戶調查' / '公司調查' / '會前準備' / '情蒐' / '更新[公司名]報告'",
     skip: "stocks（用 investment-research）",
   },
   "metadata-workshop": {
     desc: "Metadata 萃取 + 整理 workshop — 客戶情境的 operator-level 製程 / 業務流程猜測比公開資料推測更有效。",
-    trigger: "情蒐 / customer-intel 後做 metadata 萃取",
+    trigger: "情蒐 / sales-customer-intel 後做 metadata 萃取",
   },
   "discovery-interview": {
     desc: "客戶 discovery interview — 能與客戶實際對話時用。",

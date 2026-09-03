@@ -56,9 +56,9 @@ Write `materials/clients/INDEX.md`:
 ```markdown
 # 客戶索引
 
-> 自動產生 by `crm-projection` — 請勿手動編輯
+> 自動產生 by `sales-crm-projection` — 請勿手動編輯
 >
-> 資料來源: nx_client (DB) + customer-intel 報告 (本地)
+> 資料來源: nx_client (DB) + sales-customer-intel 報告 (本地)
 >
 > 最後更新: {ISO datetime}
 
@@ -77,7 +77,7 @@ Write `materials/clients/INDEX.md`:
 
 ## 缺少 Intel 報告的客戶
 
-以下客戶尚未建立 customer-intel 報告，建議優先調查：
+以下客戶尚未建立 sales-customer-intel 報告，建議優先調查：
 
 | 客戶名稱 | 產業 | Pipeline |
 |----------|------|----------|
@@ -99,5 +99,5 @@ INDEX.md updated: Yes
 ## Error Handling
 
 - If DB connection fails, keep existing INDEX.md and log error
-- If customer-intel INDEX.md doesn't exist, skip cross-reference (mark all as "—")
+- If sales-customer-intel INDEX.md doesn't exist, skip cross-reference (mark all as "—")
 - Always write the timestamp so staleness is visible

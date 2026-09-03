@@ -10,7 +10,7 @@ user_invocable: true
 # candidate-analysis
 
 TRIGGER when: user says "分析履歷", "建立候選人", "evaluate candidate", "看一下這個 GitHub" (hiring context), or `/candidate-analysis`.
-DO NOT TRIGGER when: researching companies (use customer-intel), general PDF reading (use office-pdf), or stock research (use investment-research).
+DO NOT TRIGGER when: researching companies (use sales-customer-intel), general PDF reading (use office-pdf), or stock research (use investment-research).
 
 ## Workflow
 
@@ -106,6 +106,6 @@ Append to `candidates/README.md`:
 
 ## Comparison with Existing Skills
 
-- **customer-intel**: targets companies, produces sales intelligence
+- **sales-customer-intel**: targets companies, produces sales intelligence
 - **office-pdf**: raw PDF operations, no resume-specific extraction
 - **knowledge-graph**: entity tracking in JSONL, not candidate profiles

@@ -1,5 +1,7 @@
 ---
-name: customer-intel
+name: sales-customer-intel
+loop: sales
+pdca: plan
 description: >
   B2B customer intelligence: company name → web research → actionable sales report.
   WebSearch + Playwright (findbiz.nat.gov.tw + 104 job postings for TW). Markdown
@@ -46,7 +48,7 @@ Structured B2B customer research workflow. Input a company name, get an actionab
 ## Lifecycle
 
 ```
-Phase 1: Research     /customer-intel [公司名]
+Phase 1: Research     /sales-customer-intel [公司名]
   → 產出 md 報告 → 解析 parsed_json → POST intel → confirm → materialize
 
 Phase 2: Enrich       使用者對話補充（聯絡人、預算、會議紀錄...）

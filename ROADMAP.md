@@ -43,7 +43,7 @@
 - [ ] **R2a** WSL 三件套(**Peter ~30min**:clone ops + OPS_KEY/HEALTH_KEY env + crontab;
       dashboard A2b systemd)。README 全備好。
 - [ ] **R2b** agent 失敗告警:launchd agent exit≠0 → Telegram(復用 notify 管線)。
-- [ ] **W22-2** doctor / harvest / material-health「exit-1 但有產出」dual-state 歸零。
+- [ ] **W22-2** doctor / harvest / sales-material-health「exit-1 但有產出」dual-state 歸零。
 
 ## Wave 2 — 版本制度(本檔 + CHANGELOG 規則生效)
 
@@ -62,7 +62,7 @@
 ## Wave 4 — 入口(把已有的能力變成看得見、按得下去的東西)
 
 > lever-first。8 個抓取型 workflow 已經在跑(tender-scraper · subsidy-scraper ·
-> mops-financial-scraper · customer-intel · tw-company-lookup · keyword-discovery ·
+> mops-financial-scraper · sales-customer-intel · tw-company-lookup · sales-keyword-discovery ·
 > investment-research · media/*),輸出散在 `materials/` · `knowledge/` · `reports/`,
 > 但**沒有任何地方寫著哪個 workflow 的輸出去哪裡**——要知道就得去讀 SKILL.md。
 > 缺的不是能力,是入口(對映 CLAUDE.md「增量接線 > 重寫」)。

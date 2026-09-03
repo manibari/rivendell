@@ -1,5 +1,7 @@
 ---
-name: client-kickoff-docs
+name: sales-client-kickoff-docs
+loop: sales
+pdca: do
 description: >
   At new-client kickoff (NDA signed, before the first working session), read the
   client's homework files and scaffold the four-piece project starter:
@@ -8,13 +10,13 @@ description: >
   TRIGGER: 「新客戶 kickoff」「NDA 簽完準備討論」「讀 homework 建專案檔」
   「建立客戶專案初始檔」.
   SKIP: dev-only project init (CLAUDE.md/AGENTS.md → init-project); a deck/proposal
-  (sales-material / pitch-deck); deep company research (customer-intel).
+  (sales-material / pitch-deck); deep company research (sales-customer-intel).
 tags: [workflow, client, kickoff, scaffolding]
 version: 1.1.0
 source: manual
 ---
 
-# client-kickoff-docs
+# sales-client-kickoff-docs
 
 Turn a new client's raw homework into a consistent four-piece project skeleton so
 every engagement starts from the same shape.

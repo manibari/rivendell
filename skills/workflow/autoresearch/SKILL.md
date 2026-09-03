@@ -183,7 +183,7 @@ representing success, autoresearch is not the right tool.
 
 ## Example: Tender Keyword Discovery
 
-The existing keyword-discovery flow maps directly to autoresearch:
+The existing sales-keyword-discovery flow maps directly to autoresearch:
 
 ```yaml
 goals:

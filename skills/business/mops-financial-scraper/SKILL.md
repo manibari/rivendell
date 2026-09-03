@@ -9,7 +9,7 @@ description: >
   「公開資訊觀測站下載」「台股財務資料庫」, or building a Taiwan financial
   time-series database.
   SKIP: company-registration / 負責人 / 董監事 lookup (use tw-company-lookup);
-  B2B sales research (customer-intel); non-TW or stock-picking research
+  B2B sales research (sales-customer-intel); non-TW or stock-picking research
   (investment-research); a one-off CSV/xlsx transform (office-xlsx).
 tags: [workflow, finance, scraping, taiwan, data-pipeline]
 version: 1.1.0

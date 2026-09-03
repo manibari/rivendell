@@ -196,24 +196,29 @@ as release notes.
 | **tunnel-proxy-deploy** | 自動 | Deploy FastAPI + Next.js behind Cloudflare Tunnel. |
 | **vector-search-setup** | 自動 | Set up a vector search knowledge base in a FastAPI project from scratch. |
 
+### sales/ — 業務開發
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **presales-pipeline** | 自動 | Manage a B2B presales pipeline on the file system |
+| **sales-client-kickoff-docs** | 自動 | At new-client kickoff (NDA signed, before the first working session) |
+| **sales-crm-projection** | `/sales-crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
+| **sales-customer-intel** | `/sales-customer-intel` | B2B customer intelligence: company name → web research → actionable sales |
+| **sales-keyword-discovery** | 自動 | Automated keyword discovery for scraper filter systems. |
+| **sales-material** | `/sales-material` | Assemble client-specific sales presentations by matching customer intelligence |
+| **sales-material-health** | `/sales-material-health` | Health check for the sales materials library — detects missing frontmatter |
+| **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov. |
+
 ### business/ — 商業開發（情蒐、sales、招募、財務研究）
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **candidate-analysis** | `/candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
-| **client-kickoff-docs** | 自動 | At new-client kickoff (NDA signed, before the first working session) |
-| **crm-projection** | `/crm-projection` | Project nx_client + nx_deal data to local markdown files at materials/clients/. |
-| **customer-intel** | `/customer-intel` | B2B customer intelligence: company name → web research → actionable sales |
 | **investment-research** | `/investment-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
 | **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
-| **keyword-discovery** | 自動 | Automated keyword discovery for scraper filter systems. |
-| **material-health** | `/material-health` | Health check for the sales materials library — detects missing frontmatter |
 | **mops-financial-scraper** | 自動 | Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站, mopsov.twse. |
-| **presales-pipeline** | 自動 | Manage a B2B presales pipeline on the file system |
-| **sales-material** | `/sales-material` | Assemble client-specific sales presentations by matching customer intelligence |
 | **subsidy-scraper** | `/subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
 | **tender-scraper** | `/tender-scraper` | Automated government tender scraper — fetches public tender listings from |
-| **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov. |
 
 ### media/ — 影音抓讀
 
@@ -249,6 +254,13 @@ as release notes.
 | **slide-workflow** | 自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
 | **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
 | **subsidy-writer** | `/subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
+
+### Loop × PDCA 覆蓋表
+
+| Loop | plan | do | check | act |
+|------|------|----|-------|-----|
+| sales | 2 | 3 | 1 | 1 |
+| shared | 1 | — | — | — |
 
 
 ## Built-in Claude Code Skills (not in this repo)

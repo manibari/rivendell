@@ -4,7 +4,7 @@ How to find the best-fit case studies, solutions, and subsidies for a given clie
 
 ## Input
 
-From the customer-intel report, extract:
+From the sales-customer-intel report, extract:
 - `industry` — client's industry
 - `pain_points` — from Section 六
 - `tags` — any technology or domain keywords

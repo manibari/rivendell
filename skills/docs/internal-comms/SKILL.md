@@ -5,7 +5,7 @@ description: >
   incident reports, FAQs, newsletters.
   TRIGGER: "weekly update", "3P update", "status report", "incident report",
   "客戶週報", "進度報告", "事故報告".
-  SKIP: pre-engagement docs (sow-writer / rfq-writer / jd-writer / customer-intel).
+  SKIP: pre-engagement docs (sow-writer / rfq-writer / jd-writer / sales-customer-intel).
 version: 1.0.0
 tags: [docs, communication, status-update, reports]
 languages: all
