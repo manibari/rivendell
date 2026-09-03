@@ -18,9 +18,10 @@ RIVENDELL_ROOT = Path(__file__).parent.parent
 SKILLS_DIR = RIVENDELL_ROOT / "skills"
 README_PATH = RIVENDELL_ROOT / "README.md"
 
-CATEGORY_ORDER = ["meta", "agents", "planning", "workflow", "qa", "quality", "git", "frontend", "backend", "business", "media", "docs"]
+CATEGORY_ORDER = ["meta", "platform", "agents", "planning", "workflow", "qa", "quality", "git", "frontend", "backend", "sales", "gov", "invest", "hr", "business", "knowledge", "media", "docs"]
 CATEGORY_NAMES = {
     "meta": "Claude Code 管理",
+    "platform": "平台自我改善",
     "agents": "自動化 Agent（排程、觀測、persona）",
     "planning": "需求與規劃（requirement → user-flow → mockup → plans）",
     "workflow": "工作流程與 Session 維運",
@@ -29,10 +30,19 @@ CATEGORY_NAMES = {
     "git": "Git/GitHub",
     "frontend": "前端設計、iOS、測試",
     "backend": "後端服務",
+    "sales": "業務開發",
+    "gov": "政府案件",
+    "invest": "投資研究",
+    "hr": "人資",
     "business": "商業開發（情蒐、sales、招募、財務研究）",
+    "knowledge": "內容消化",
     "media": "影音抓讀",
     "docs": "文件處理與簡報",
 }
+
+# Loop × PDCA coverage table (skills tagged with optional `loop:` / `pdca:` frontmatter)
+LOOP_ORDER = ["sales", "gov", "invest", "hr", "knowledge", "platform", "dev", "shared"]
+PDCA_ORDER = ["plan", "do", "check", "act"]
 
 
 # ── Frontmatter parser (no external deps) ────────────────────────────────────
@@ -244,6 +254,46 @@ def generate_catalog_section(categories: dict, existing: dict) -> str:
     return "\n".join(lines)
 
 
+# ── Loop × PDCA coverage table ────────────────────────────────────────────────
+
+def generate_loop_pdca_section(categories: dict) -> str:
+    """
+    Build the Loop × PDCA coverage table from optional `loop:` / `pdca:`
+    frontmatter fields. Skills without a loop tag are excluded (normal during
+    the transition period); returns "" when no skill is tagged, so the section
+    only appears once tagging starts. Emitted as a ### heading so it stays
+    inside the regenerated Skills Catalog block.
+    """
+    counts: dict = {loop: {p: 0 for p in PDCA_ORDER} for loop in LOOP_ORDER}
+    tagged: dict = {loop: 0 for loop in LOOP_ORDER}
+    for skills in categories.values():
+        for _name, fm in skills:
+            loop = fm.get("loop")
+            if not isinstance(loop, str) or loop not in counts:
+                continue
+            tagged[loop] += 1
+            pdca = fm.get("pdca")
+            if isinstance(pdca, str) and pdca in PDCA_ORDER:
+                counts[loop][pdca] += 1
+
+    if not any(tagged.values()):
+        return ""
+
+    lines = [
+        "### Loop × PDCA 覆蓋表",
+        "",
+        "| Loop | plan | do | check | act |",
+        "|------|------|----|-------|-----|",
+    ]
+    for loop in LOOP_ORDER:
+        if tagged[loop] == 0:
+            continue
+        cells = [str(counts[loop][p]) if counts[loop][p] else "—" for p in PDCA_ORDER]
+        lines.append(f"| {loop} | {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} |")
+    lines.append("")
+    return "\n".join(lines)
+
+
 # ── README updater ────────────────────────────────────────────────────────────
 
 def update_readme(new_section: str) -> bool:
@@ -270,6 +320,9 @@ def main() -> int:
     existing = parse_existing_catalog(readme_text)
     categories = scan_skills()
     section = generate_catalog_section(categories, existing)
+    loop_section = generate_loop_pdca_section(categories)
+    if loop_section:
+        section = section + "\n" + loop_section
     if not update_readme(section):
         return 1
     total = sum(len(v) for v in categories.values())

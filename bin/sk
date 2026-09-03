@@ -4410,16 +4410,22 @@ cmd_lint() {
     if [ -n "$single" ] && [ "$name" != "$single" ] && [ "$relname" != "$single" ]; then continue; fi
     total=$((total + 1))
 
-    local tags desc nm out="" had_err=0
+    local tags desc nm loopv pdcav out="" had_err=0
     tags="$(get_frontmatter_field "$dir" tags)"
     desc="$(get_frontmatter_field "$dir" description)"
     nm="$(get_frontmatter_field "$dir" name)"
+    loopv="$(get_frontmatter_field "$dir" loop)"
+    pdcav="$(get_frontmatter_field "$dir" pdca)"
 
     # --- ERRORS (structurally broken: invalid YAML / missing required field) ---
     if printf '%s' "$tags" | grep -qE '[`/()]'; then
       out="${out}  ${RED}E${NC} malformed tags (invalid YAML): ${tags}\n"; n_err=$((n_err+1)); had_err=1; fi
     if [ -z "$nm" ]; then out="${out}  ${RED}E${NC} missing name\n"; n_err=$((n_err+1)); had_err=1; fi
     if [ -z "$desc" ]; then out="${out}  ${RED}E${NC} missing description\n"; n_err=$((n_err+1)); had_err=1; fi
+    if [ -n "$loopv" ] && ! printf '%s' "$loopv" | grep -qxE 'sales|gov|invest|hr|knowledge|platform|dev|shared'; then
+      out="${out}  ${RED}E${NC} invalid loop '${loopv}' (must be sales|gov|invest|hr|knowledge|platform|dev|shared)\n"; n_err=$((n_err+1)); had_err=1; fi
+    if [ -n "$pdcav" ] && ! printf '%s' "$pdcav" | grep -qxE 'plan|do|check|act'; then
+      out="${out}  ${RED}E${NC} invalid pdca '${pdcav}' (must be plan|do|check|act)\n"; n_err=$((n_err+1)); had_err=1; fi
 
     # --- WARNINGS (convention / triggering quality) ---
     if [ -n "$nm" ] && [ "$nm" != "$name" ]; then
