@@ -465,7 +465,7 @@ LLMs writing Chinese text tend to insert excessive emojis. Remove them unless th
 
 A separate pass for **formal documents whose reader is a review committee, government
 agency, or client executive** — 補助計畫書, 標書, SOW, 提案書. Trigger phrases:
-"審查文體", "掃內部盤算", "這要送審", or when invoked by the subsidy-writer skill.
+"審查文體", "掃內部盤算", "這要送審", or when invoked by the gov-subsidy-writer skill.
 
 Regular slop removal makes text sound human. This mode fixes a different failure:
 **the author's internal strategy leaking into the body text**. A proposal drafted

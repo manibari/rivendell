@@ -7,7 +7,7 @@ tags: [sales, presentation, pptx, assembly, workflow]
 version: 1
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says '幫我做客戶提案', '準備 B2B 提案', '做 X 公司的銷售簡報', '客戶提案素材', or /sales-material. DO NOT TRIGGER when: user wants an investor/pitch deck (use pitch-deck), editing an existing PPTX (use office-pptx), researching a company (use sales-customer-intel), or looking up subsidies (use subsidy-scraper)."
+when_to_use: "TRIGGER when: user says '幫我做客戶提案', '準備 B2B 提案', '做 X 公司的銷售簡報', '客戶提案素材', or /sales-material. DO NOT TRIGGER when: user wants an investor/pitch deck (use pitch-deck), editing an existing PPTX (use office-pptx), researching a company (use sales-customer-intel), or looking up subsidies (use gov-subsidy-scraper)."
 allowed-tools:
   - Bash
   - Read

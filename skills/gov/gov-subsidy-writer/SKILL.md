@@ -1,5 +1,7 @@
 ---
-name: subsidy-writer
+name: gov-subsidy-writer
+loop: gov
+pdca: do
 description: >
   Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official
   目錄 framing, A/B/C/D 分項架構 with 經費占比, 逐題拍板 decision loop, 委員白話
@@ -10,8 +12,8 @@ description: >
   even if they only paste the 申請須知 and say "我要投這個".
   ALSO covers the stage after submission (Phase 8): 收到書面審查意見表要準備審查會議
   簡報 — "審查意見回來了", "要上台報告補助案", "書面審查意見表", "照官方簡報格式做".
-  SKIP: finding subsidies to apply for (subsidy-scraper); RFQ/tender responses
-  (rfq-writer); consulting contracts (sow-writer); customer-facing sales decks
+  SKIP: finding subsidies to apply for (gov-subsidy-scraper); RFQ/tender responses
+  (gov-rfq-writer); consulting contracts (sow-writer); customer-facing sales decks
   (sales-deck-design — 那是對客戶提案，不是對審查委員).
 tags: [docs, business, government]
 version: 1.3.0

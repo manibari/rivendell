@@ -1,11 +1,13 @@
 ---
-name: subsidy-scraper
+name: gov-subsidy-scraper
+loop: gov
+pdca: plan
 description: "Automated government subsidy scraper — fetches grant listings from Taiwan government portals, deduplicates against existing markdown files, writes/archives program files, and regenerates INDEX.md. Fully local, no DB dependency."
 tags: [automation, subsidies, scraping, sales-enablement, local]
 version: 1
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says /subsidy-scraper, 'scrape subsidies', '更新補助', '爬補助', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single subsidy (use subsidy-research command instead)."
+when_to_use: "TRIGGER when: user says /gov-subsidy-scraper, 'scrape subsidies', '更新補助', '爬補助', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single subsidy (use subsidy-research command instead)."
 allowed-tools:
   - WebFetch
   - WebSearch
@@ -107,7 +109,7 @@ Taiwan government sites use ROC calendar (民國):
 
 ## Headless Execution
 
-Runs as headless agent via LaunchAgent `com.sk.agent.sales.subsidy-scraper`.
+Runs as headless agent via LaunchAgent `com.sk.agent.sales.gov-subsidy-scraper`.
 Schedule: Monday & Thursday 08:00.
 Runner: `scripts/subsidy-scraper.sh`
 

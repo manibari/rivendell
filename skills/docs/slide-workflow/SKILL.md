@@ -177,7 +177,7 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 | 客戶情報 | `sales-customer-intel` / `tw-company-lookup` |
 | CRM 數據 | `sales-crm-projection` |
 | 案例庫 | `sales-material` (match case studies) |
-| 補助資料 | `subsidy-scraper` output |
+| 補助資料 | `gov-subsidy-scraper` output |
 | 網路研究 | `autoresearch` / `WebSearch` |
 | 既有文件 | Read local files |
 | 需要用戶提供 | 列出清單請用戶補充 |

@@ -1,11 +1,13 @@
 ---
-name: tender-scraper
+name: gov-tender-scraper
+loop: gov
+pdca: plan
 description: "Automated government tender scraper — fetches public tender listings from Taiwan's government procurement portal (via g0v API), filters by data-driven keywords (keywords.yml with auto-discovery), writes/archives case files, and regenerates INDEX.md. Includes network resilience (retry with exponential backoff), keyword analysis for candidate discovery, and dashboard observability. Fully local, no DB dependency."
 tags: [automation, tenders, scraping, sales-enablement, local, sales-keyword-discovery, resilience]
 version: 2.0.0
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says /tender-scraper, 'scrape tenders', '更新標案', '爬標案', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single tender."
+when_to_use: "TRIGGER when: user says /gov-tender-scraper, 'scrape tenders', '更新標案', '爬標案', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single tender."
 allowed-tools:
   - WebFetch
   - WebSearch
@@ -187,7 +189,7 @@ Taiwan government sites use ROC calendar (民國):
 
 ## Headless Execution
 
-Runs as headless agent via LaunchAgent `com.sk.agent.sales.tender-scraper`.
+Runs as headless agent via LaunchAgent `com.sk.agent.sales.gov-tender-scraper`.
 Schedule: Daily 08:30.
 Runner: `scripts/tender-scraper.sh`
 

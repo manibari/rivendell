@@ -1,5 +1,7 @@
 ---
-name: rfq-writer
+name: gov-rfq-writer
+loop: gov
+pdca: do
 description: >
   Generate Request for Quotation (RFQ / 報價單) for consulting projects.
   Lighter than SOW — used for pre-contract negotiation with cost ranges, scope options,

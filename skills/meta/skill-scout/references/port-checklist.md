@@ -62,7 +62,7 @@ user_invocable: true
   delta. rivendell has 89+ skills; ambiguity about which one fires is the
   #1 routing problem. Always enumerate adjacent rivendell skills the
   imported one should defer to. Example: `doc-coauthoring` defers to
-  `sow-writer`, `rfq-writer`, `jd-writer`, `sales-customer-intel`,
+  `sow-writer`, `gov-rfq-writer`, `jd-writer`, `sales-customer-intel`,
   `discovery-interview`, `pitch-deck` because all of those handle specific
   document genres.
 

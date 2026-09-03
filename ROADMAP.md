@@ -61,7 +61,7 @@
 
 ## Wave 4 — 入口(把已有的能力變成看得見、按得下去的東西)
 
-> lever-first。8 個抓取型 workflow 已經在跑(tender-scraper · subsidy-scraper ·
+> lever-first。8 個抓取型 workflow 已經在跑(gov-tender-scraper · gov-subsidy-scraper ·
 > mops-financial-scraper · sales-customer-intel · tw-company-lookup · sales-keyword-discovery ·
 > investment-research · media/*),輸出散在 `materials/` · `knowledge/` · `reports/`,
 > 但**沒有任何地方寫著哪個 workflow 的輸出去哪裡**——要知道就得去讀 SKILL.md。

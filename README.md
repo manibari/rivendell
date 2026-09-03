@@ -209,6 +209,15 @@ as release notes.
 | **sales-material-health** | `/sales-material-health` | Health check for the sales materials library — detects missing frontmatter |
 | **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov. |
 
+### gov/ — 政府案件
+
+| Skill | 觸發方式 | 說明 |
+|-------|---------|------|
+| **gov-rfq-writer** | 自動 | Generate Request for Quotation (RFQ / 報價單) for consulting projects. |
+| **gov-subsidy-scraper** | `/gov-subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
+| **gov-subsidy-writer** | `/gov-subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
+| **gov-tender-scraper** | `/gov-tender-scraper` | Automated government tender scraper — fetches public tender listings from |
+
 ### business/ — 商業開發（情蒐、sales、招募、財務研究）
 
 | Skill | 觸發方式 | 說明 |
@@ -217,8 +226,6 @@ as release notes.
 | **investment-research** | `/investment-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
 | **jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
 | **mops-financial-scraper** | 自動 | Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站, mopsov.twse. |
-| **subsidy-scraper** | `/subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
-| **tender-scraper** | `/tender-scraper` | Automated government tender scraper — fetches public tender listings from |
 
 ### media/ — 影音抓讀
 
@@ -248,18 +255,17 @@ as release notes.
 | **office-pptx** | 自動 | PowerPoint (.pptx) 建立、編輯、分析，支援版面配置、講者備註與 Codex 圖片資產 placement |
 | **office-xlsx** | 自動 | 試算表 (.xlsx/.csv) 建立、編輯、分析，支援公式與資料視覺化 |
 | **pitch-deck** | 自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
-| **rfq-writer** | 自動 | Generate Request for Quotation (RFQ / 報價單) for consulting projects. |
 | **slide-office-hours** | 自動 | Red-team review for a B2B presales deck storyline (storyline. |
 | **slide-template-extractor** | 自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
 | **slide-workflow** | 自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
 | **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
-| **subsidy-writer** | `/subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
 
 ### Loop × PDCA 覆蓋表
 
 | Loop | plan | do | check | act |
 |------|------|----|-------|-----|
 | sales | 2 | 3 | 1 | 1 |
+| gov | 2 | 2 | — | — |
 | shared | 1 | — | — | — |
 
 
