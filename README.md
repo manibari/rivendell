@@ -66,27 +66,20 @@ as release notes.
 
 ## Skills Catalog (124 skills)
 
-### meta/ — Claude Code 管理
+### platform/ — 平台自我改善
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **audit-fix** | 自動 | 分析 `sk audit` 報告，自動清理各專案 permission 白名單（刪 one-off、統一格式、移除全域重複） |
-| **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
-| **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
-| **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
 | **doc-drift-sync** | 自動 | Keep a project's living docs aligned when version or state moves — detect and |
-| **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
-| **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
 | **self-improving-agent** | 自動 + hook | 捕捉學習與錯誤修正，記錄至 .learnings/，提升有價值見解到 CLAUDE.md |
 | **session-harvest** | `/session-harvest` | 工作告一段落時，自動審查 session 內容，找出可重複使用的模式並建議建立新 skill |
 | **session-wrap** | 自動 | End-of-session cleanup: auto-commit uncommitted changes, archive learnings |
-| **setup-permissions** | 自動 | 偵測專案工具鏈，自動設定 permission allowlists，減少手動核准 |
 | **skill-apply** | `/skill-apply` 或自動 | Turn a skill you have imported but not installed into a review of your own |
 | **skill-creator** | 自動 | 建立、修改、評測 skills，含 eval 和 benchmark 工具 |
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
-| **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
 | **writing-great-skills** | `/writing-great-skills` | Reference for writing and editing skills well — the vocabulary and principles |
 
@@ -117,13 +110,20 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
+| **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
 | **context-journal** | `/context-journal` + hook | 每回合自動追加工作日誌到磁碟，讓 /compact 無損：操作/決策紀錄存在 context 之外、compact 後自動注回、context 超過門檻自動提醒壓縮 |
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
+| **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
+| **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
 | **env-doctor** | 自動 | 為專案產生 `doctor.sh`（或 `doctor. |
 | **gdrive-to-skills** | `/gdrive-to-skills` | 讀取 Google Drive 文件，分類並自動建立 knowledge skills |
+| **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
+| **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
 | **repro-exam** | 自動 | 依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → |
 | **settings-audit** | 自動 | 審查清理 .claude/settings.local.json — 移除無效 permissions、修正 JSON 語法、偵測一次性指令誤存為永久權限 |
+| **setup-permissions** | 自動 | 偵測專案工具鏈，自動設定 permission allowlists，減少手動核准 |
+| **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 
 ### qa/ — QA 與驗收（測試、旅程、資料流稽核）
 
@@ -274,6 +274,8 @@ as release notes.
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 4 | — | 1 |
+| platform | — | 5 | 3 | 4 |
+| dev | — | — | — | — |
 | shared | 1 | — | — | — |
 
 

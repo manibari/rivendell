@@ -29,7 +29,7 @@ Usage: ./bin/sk <command> [args]
 Commands:
   deploy              Symlink all skills → ~/.claude/skills/ and ~/.codex/skills/
   undeploy            Remove repo symlinks from ~/.claude/skills/ and ~/.codex/skills/
-  create <cat/name>   Scaffold new skill + auto-deploy (e.g. meta/my-skill)
+  create <cat/name>   Scaffold new skill + auto-deploy (e.g. platform/my-skill)
   rename <old> <new>  Rename a skill: refs checklist (dry-run) / --apply to execute
   import <name>       Import from SkillsMP via agent-skills-cli
   import-gh <url>     Clone skill from GitHub URL
@@ -75,7 +75,7 @@ Deploy & Infrastructure:
                       items, --notify pushes to Telegram when anything is RED.
   help                Show this help message
 
-Categories: meta, workflow, quality, git, frontend, backend, docs
+Categories: platform, workflow, quality, git, frontend, backend, docs
   Total: $(find "$SKILLS_DIR" -name "SKILL.md" -maxdepth 3 2>/dev/null | wc -l | tr -d ' ') skills
 EOF
 }
@@ -204,14 +204,14 @@ cmd_undeploy() {
 }
 
 cmd_create() {
-  local input="${1:?Usage: sk create <category/name> (e.g. meta/my-skill)}"
+  local input="${1:?Usage: sk create <category/name> (e.g. platform/my-skill)}"
 
-  # Support both "category/name" and plain "name" (defaults to meta)
+  # Support both "category/name" and plain "name" (defaults to platform)
   if [[ "$input" == */* ]]; then
     local category="${input%%/*}"
     local name="${input#*/}"
   else
-    local category="meta"
+    local category="platform"
     local name="$input"
   fi
 
@@ -2858,7 +2858,7 @@ cmd_audit() {
     if [ "$lang" = "zh" ]; then
       cat_order="基礎建設 工作流 品質 前端 後端 文件 Git 整合"
     else
-      cat_order="meta workflow quality frontend backend docs git integration local"
+      cat_order="platform workflow quality frontend backend docs git integration local"
     fi
 
     for display_cat in $cat_order; do

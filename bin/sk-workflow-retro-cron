@@ -36,7 +36,7 @@ if ! curl -so /dev/null --max-time 3 "https://api.anthropic.com" 2>/dev/null; th
 fi
 
 # --- Build prompt ---
-PROMPT="Run the workflow-retro skill at $REPO_DIR/skills/meta/workflow-retro/SKILL.md.
+PROMPT="Run the workflow-retro skill at $REPO_DIR/skills/platform/workflow-retro/SKILL.md.
 
 Follow its instructions exactly: pull data from the dashboard API
 (http://localhost:8000/api/skills/usage, /api/agents, /api/tokens), read recent
