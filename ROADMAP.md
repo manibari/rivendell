@@ -124,8 +124,16 @@
 | autoresearch 未釘 model | 跟 CLI 預設飄(現=Fable 5) | Peter 拍板 sonnet 或保留 |
 | auto-stage hook 捲檔 | pathspec 紀律擋著(**已捲 3 次**;2026-08-02 把 pitch-deck 67 行既有 WIP 一起 commit 進 `1537d08`) | 評估 hook 限縮到本 session 檔 |
 | 單機 SPOF(R4) | 接受中 | 規模 justify 第二台 always-on 時 |
+| gov 循環缺 C/A(標案/補助命中率無人檢討) | 登記(2026-09-03 循環制 wave 1 揭示) | 投標 ≥10 件後建 gov-bid-retro |
+| invest 循環缺 C/A(研究建議無回測) | 登記(同上) | invest-research 產出 ≥1 季後重審 |
 
 ## Done(pre-Wave 主線,2026-06→07;細目見 CHANGELOG 0.2.0)
+
+2026-09-03:**循環制 wave 1**(`docs/plans/2026-08-30-skill-loop-taxonomy-wave1.md`)——
+business/media/meta 拆成 sales/gov/invest/hr/knowledge/platform 六條 PDCA 循環,
+命名 v2(主詞-受詞-動作)入 `.claude/CLAUDE.md`,README 增 Loop×PDCA 覆蓋表;
+dev 循環(60+ 支)下一波。
+
 
 Telegram ops-bridge → task-brief gate → skill 品質(`sk lint`+generator 修根)→
 部署管理頁(B/A1/A2a/A2b+proxy)→ port SoT(3/8/5+NN)→ token 三層(30d 視圖/

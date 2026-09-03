@@ -312,6 +312,13 @@ grep -rn "skills/business\|skills/media\|skills/meta" . --include="*" 2>/dev/nul
 
 ---
 
+## 執行紀錄
+
+- Wave 1 executed 2026-09-03, subagent-driven, Tasks 0-9 全數完成。
+- Task 8 repo 外同步已完成 2026-09-03：`~/.claude/CLAUDE.md` 路由表（10 行）、
+  memory 3 檔（sales-assistant-deprecated / MEMORY.md / deck_building_workflow）。
+  規則庫用詞稽核：兩份 CLAUDE.md 全量掃描歸零，media/→knowledge 撞詞已消歧。
+
 ## 風險與回退
 
 - 每個 Task 獨立 commit，出錯 `git revert` 單顆；symlink 壞掉的訊號是「skill 在 Claude Code 消失且無錯誤」——每批的 BROKEN 檢查是硬 gate，不跑完不准 commit。

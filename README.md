@@ -6,18 +6,21 @@ Personal Claude Code and Codex skills library — manage, version control, and d
 
 ```
 skills/
-├── meta/       # Claude Code 自身管理工具 (17)
+├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(12)
 ├── agents/     # 自動化 Agent：排程、觀測、persona (5)
 ├── planning/   # 需求與規劃：requirement → user-flow → mockup → plans (7)
-├── workflow/   # 工作流程與 Session 維運 (8)
+├── workflow/   # dev 循環工具與 Session 維運 (15)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
 ├── quality/    # 程式品質、審查、文字打磨 (5)
-├── git/        # Git/GitHub 操作 (3)
+├── git/        # Git/GitHub 操作 (4)
 ├── frontend/   # 前端設計、iOS、測試 (5)
-├── backend/    # 後端服務 (24)
-├── business/   # 商業開發：情蒐、sales、招募、財務研究 (14)
-├── media/      # 影音抓讀 (3)
-└── docs/       # 文件處理與簡報 (20)
+├── backend/    # 後端服務 (26)
+├── sales/      # sales 循環：情蒐 → 提案 → 素材健檢 → CRM 投影 (8)
+├── gov/        # gov 循環：標案/補助 sourcing → RFQ/計畫書 (4)
+├── invest/     # invest 循環：MOPS 抓取 → 投資研究 (2)
+├── hr/         # hr 循環：JD、履歷分析 (2)
+├── knowledge/  # knowledge 循環：影音抓讀 → 知識庫 (6 + _shared)
+└── docs/       # 文件處理與簡報 (18)
 ```
 
 ## Quick Start
