@@ -607,3 +607,27 @@ category: best_practice
   （merge 中 skill 名零衝突，naming series 規範有效），是「兩台機器同時重寫同一個檔」
   （server.py /api/ports、ROADMAP.md 兩邊各自全文重寫）——這要靠縮短合流週期
   （R1a：勤合 main）+ 每個區域單一寫者，不是靠命名規範。
+
+## 2026-09-06 — archify 試跑：12 節點以內互動架構圖可用，32 節點功能關係圖排不出來
+
+- category: best_practice / tool-evaluation
+- **情境**: 評估 `tt-a1i/archify`（Node CLI + SKILL.md，agent 寫 JSON IR → validate → deliver 單檔 HTML）能否進 rivendell 圖表流程。
+  拿 Verdandi-AutoML 2026-08-14 qa-dataflow 功能關係圖（32 節點／35 邊）+ spine 系列（product-skeleton 架構、RBAC Tier-1→Tier-2 delta）實跑。
+- **結果**: (1) 32 節點 workflow → `workflow/solver-budget-exhausted`，無 supportedFixes，等於直接放棄；縮到 12 節點主線才過 showcase。
+  (2) 11 元件 architecture 過 showcase，但要手工 `pos` + `via` + `labelDy` 調 5 輪；grid layout 跟自動排線在 4×3 就開始互撞。
+  (3) `compare architecture` Before/Delta/After 一次過，2 MB HTML，ADD/DEL/MOD 標記清楚 —— 這是最有價值的功能。
+  (4) `--repo-root` 證據需要 `meta.repository` = **github.com URL + 40 碼 SHA**（schema pattern 寫死），local-only repo 用不了；private GitHub 可以（只驗格式 + 檔案存在），產出每個元件的 `blob/<sha>/path#L..` 連結。
+  (5) `visual-check` 的「首屏不可捲動」invariant 在 1440×900 就 fail（scrollHeight 1244），legend + cards 一定超出；跟我們的 1600×900 slide 規則不同用途。
+- **How to apply**: archify 定位 = 「≤12 元件的互動式架構圖 + 架構變更 diff」，接在 `chart-design` system-architecture 類當第三 renderer，以及 gstack-review / plan-eng-review 的架構前後比對。
+  **不取代** qa-dataflow 的手工功能關係圖（30+ 節點、四種狀態顏色，archify 沒有 status 維度，只有 type/variant/tag）。
+  port 時固定 `ARCHIFY_UPDATE_CHECK_DISABLED=1`；viewer UI 只有 en / zh-CN。
+- **Related**: 產出留在 `~/Downloads/archify-trial-2026-09-06/`（3 份 HTML + JSON 源 + PNG）；clone 在 session scratchpad，未 port。
+
+## 2026-09-06 — headless `claude -p` 排程無 timeout 保護，會靜默卡死留 0 bytes 報告
+
+- **Category**: bug / errors
+- **情境**: 跑 workflow-retro（W36），發現排定 09-06 23:00 執行的 `com.sk.agent.rivendell.workflow-retro` 產出的 stdout 增量、`error.log`、報告檔三個全是 0 bytes，連腳本最後**無條件**執行的 `echo "[$NOW] Retro complete..."` 都沒出現在 log 裡。回查同一支腳本的完整歷史，`bin/sk-workflow-retro-cron` 的網路預檢失敗訊息（`Network unavailable — aborting`）過去已出現 5 次（06-07、06-14、07-12、07-26、08-30），其中 08-30 那次直接讓 W35（08-24~08-30）整週報告消失——沒有人發現，因為沒有任何機制會主動通知「這週沒有 retro」。
+- **根因**: `bin/sk-workflow-retro-cron:63` 的 `claude -p "$PROMPT" ... > "$REPORT_FILE" 2> "$ERR_FILE" && run_exit=0 || run_exit=$?` 沒有 `timeout` 包裹。`>` 會立即建立/清空報告檔，如果 `claude -p` 本身卡住（最可能是 auth/session 刷新卡頓，`< /dev/null` 防不了這種卡法），整個 shell 會無限期停在那一行，直到被外部（launchd 逾時或系統睡眠）強制終止——此時三個檔案都停留在「剛被建立/清空」的 0 bytes 狀態，且因為是被外部殺掉而非正常返回，連 `&&`/`||` 之後的 `_sk_exec_record_run` 和最後的 `echo` 都不會執行。
+- **範圍**: grep 全部 headless cron 腳本，`bin/sk-harvest-cron`、`bin/sk-facts-cron`、`bin/sk-token-analysis-cron` 的 `claude -p` 呼叫**同樣沒有 timeout**——這是這批 headless cron 共同的架構缺口，不是單一腳本的個案。
+- **How to apply**: 幫這 4 支腳本的 `claude -p` 呼叫加 `timeout <N>s`（依歷史執行時間抓一個合理上限，例如 600s），逾時要讓 `run_exit` 明確非 0 並落地至少一行可讀的錯誤訊息到 log，不要留 0 bytes 靜默失敗。長期可以考慮幫 `sk-exec-lib` 加一個「本週某排定 agent 完全沒有產出記錄」的主動告警，而不是靠人工回頭翻 log 才發現整週報告消失。
+- **Related**: 同一次也發現 `dashboard/lib/db.py:6` 的 DB_PATH 錯誤（`/api/agents/{label}/runs` 對所有 agent 回傳 `[]`）已知未修至少 6 個 retro 週期，且 `ROADMAP.md` 文末寫明「登記不修——每項要有去處,不能爛在文件」，但這項和 `bin/sk:489` UTF-8 截斷、tester `_shared` 誤報都沒有進 Known-Gap Register——詳見 `reports/workflow-retro-2026-W36-manibaris-macbook-air-1213.md`。

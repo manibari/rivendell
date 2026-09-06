@@ -1,5 +1,7 @@
 ---
 name: chart-design
+loop: shared
+pdca: do
 description: >
   Chart / table / diagram sub-workflow shared by every report + deck skill.
   Three-class triage (data-analysis / business / system-architecture) routes to
@@ -135,6 +137,35 @@ center_offset    = |chart_center - canvas_center| / canvas_dim  ≤ 0.05
 - [ ] **對比 reference deck** — 同 client 上一頁的色盤、字型、grid 風格、margin 一致
 
 任一項打 ✗ → 修正或砍掉重做，**不要交付半成品**。
+
+### 機械化檢查（HTML 圖檔必跑）
+
+R1 和「沒切版／沒 wrap／字級夠大」三題不靠肉眼估，跑腳本拿診斷：
+
+```bash
+node skills/docs/chart-design/references/check-html-figure.mjs <fig.html> \
+  --width 1600 --height 900 --screenshot /tmp/check.png
+# 直式捲動報告圖（如 qa-dataflow 功能關係圖）用 --height auto
+```
+
+每條診斷有 `code / subject / evidence / suggestion`，照 suggestion 修，改完再跑。
+**兩輪沒讓錯誤數創新低就停**，把未解的診斷照實列出，不要第三輪 +1px 微調（重複 feedback = 方向錯）。
+PNG / matplotlib 類圖表沒有 DOM，跳過這步，只做下面的肉眼審視。
+
+### 交付收據（三種宣稱分開寫）
+
+交付訊息附這段，欄位不准互相冒充：機械檢查過 ≠ 看過截圖，看過截圖 ≠ 機械檢查過。
+
+```text
+output: <絕對路徑>
+mechanical_check: 0 errors, N warnings @1600×900 | skipped（非 HTML）
+screenshot: <png 路徑> | skipped
+visual_review: passed | failed（寫出看到的缺陷） | skipped（沒有影像讀取能力）
+correction_rounds: 0 | 1 | 2
+```
+
+`visual_review: passed` 只能在 **Read 過截圖之後**寫；沒 Read 就寫 `skipped`。
+`correction_rounds` 上限 2，超過代表 layout 選錯，回 Triage 重選圖型。
 
 ---
 

@@ -1,5 +1,7 @@
 ---
 name: Mermaid Diagram
+loop: shared
+pdca: do
 description: >
   Generate Mermaid `.mmd` files that argue visually (flowcharts, sequence,
   state, ER, class, mindmap, C4, timeline, sankey) and render to PNG via
@@ -226,6 +228,22 @@ First run downloads mmdc via npx — may take ~30s.
 - **Hidden lines**: Consider whether invisible edges would help constrain node placement.
 
 **When to stop**: syntax valid, layout communicates the concept, line crossings minimized, no overlapping labels, eye flows correctly through the diagram.
+
+**Artifact first**: write the `.mmd` and render once *before* reasoning about layout. Do not plan node placement in prose — the first PNG is the only reliable evidence of where things land.
+
+**Two-round stop**: after the first render, allow at most two focused layout corrections (reorder / `rankDir` / subgraph). If the second round does not reduce crossings or overlaps compared with the best so far, stop and report what is still wrong instead of a third round of tweaks. Repeated tweaking is the signal the diagram type or the split is wrong, not the spacing.
+
+**Handoff receipt** (keep the three claims separate — a green `mmdc` exit is not a visual review):
+
+```text
+source: <path.mmd>
+output: <path.png>
+render: mmdc exit 0 | failed (<error>)
+visual_review: passed | failed (<defect seen>) | skipped (image reader unavailable)
+correction_rounds: 0 | 1 | 2
+```
+
+Write `visual_review: passed` only after you have actually Read the PNG.
 
 ---
 

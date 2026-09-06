@@ -1,5 +1,7 @@
 ---
 name: qa-dataflow
+loop: dev
+pdca: check
 description: >
   驗證一條資料流「實際上」是不是照宣稱在跑，以及路上那些關卡到底擋不擋得住 ——
   接手他人／AI 生成的程式碼、驗收交付時用。三段：(1) 畫地圖 —— 從程式碼推出功能關係
@@ -280,6 +282,10 @@ bash <skill-dir>/scripts/seam-scan.sh [repo-path]
 - [ ] 多表寫入有沒有包在同一個 transaction
 - [ ] 產出了但沒人讀的檔案／表（孤兒產物）
 - [ ] ADR／決策紀錄與現況的 drift，有沒有回頭更新文件
+- [ ] 功能關係圖 HTML 跑過機械檢查（`node skills/docs/chart-design/references/check-html-figure.mjs <圖.html> --width 1900 --height auto --screenshot <圖.png>`），
+      文字重疊／wrap／字級的診斷修完，**兩輪不進步就停**並在報告列出未解項
+- [ ] 報告末尾附交付收據，三欄分開：`mechanical_check`（腳本結果）／`screenshot`（PNG 路徑）／`visual_review`（Read 過截圖才寫 passed）。
+      腳本過不等於看過，看過不等於腳本過
 
 ## 常見的自我欺騙
 
