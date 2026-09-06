@@ -1203,9 +1203,25 @@ def api_skills() -> list[dict[str, Any]]:
             "line_count": s.line_count,
             "invocable": s.invocable,
             "lifecycle": s.lifecycle,
+            "source": s.source,
+            "folder": s.folder,
+            "loop": s.loop,
+            "pdca": s.pdca,
         }
         for s in skills
     ]
+
+
+@app.get("/api/skills/roles", tags=["Skills"])
+def api_skills_roles() -> dict[str, Any]:
+    """The user-facing 'who uses what' page: docs/skills-by-role.md, verbatim.
+
+    Declared before /api/skills/{name} so the static segment wins.
+    """
+    path = LIB_DIR.parent / "docs" / "skills-by-role.md"
+    if not path.is_file():
+        raise HTTPException(404, "docs/skills-by-role.md not found")
+    return {"path": str(path), "content": path.read_text(encoding="utf-8")}
 
 
 # Cache for skill usage scan (recompute at most every 10 min)

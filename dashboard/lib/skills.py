@@ -39,6 +39,70 @@ class SkillInfo:
     line_count: int
     invocable: bool
     lifecycle: str  # "manual" | "hook" | "agent" | "unknown"
+    source: str = "external"   # "rivendell" | "gstack" | "external" | "builtin"
+    folder: str = ""           # rivendell skills/<folder>/ the symlink resolves into
+    loop: str = ""             # frontmatter loop: sales|gov|invest|hr|knowledge|platform|dev|shared
+    pdca: str = ""             # frontmatter pdca: plan|do|check|act
+
+
+RIVENDELL_SKILLS = Path(__file__).parent.parent.parent / "skills"
+
+
+def _locate(skill_dir: Path) -> tuple[str, str]:
+    """Where does this deployed skill actually live?
+
+    ~/.claude/skills/<name> is a symlink for everything `sk deploy` owns; the
+    target path tells us the rivendell folder (skills/<folder>/<name>). gstack
+    ships as its own pack; anything else is a hand-installed external skill.
+    """
+    name = skill_dir.name
+    if name.startswith("gstack") or name == "gstack":
+        return "gstack", ""
+    try:
+        target = skill_dir.resolve()
+    except OSError:
+        return "external", ""
+    try:
+        rel = target.relative_to(RIVENDELL_SKILLS.resolve())
+    except ValueError:
+        return "external", ""
+    parts = rel.parts
+    return ("rivendell", parts[0]) if len(parts) >= 2 else ("rivendell", "")
+
+
+def _description(text: str) -> str:
+    """First sentence of the frontmatter description, folded-block aware.
+
+    _parse_frontmatter is single-line and returns ">" for `description: >`
+    blocks, which is what most rivendell skills use.
+    """
+    m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    if not m:
+        return ""
+    lines = m.group(1).splitlines()
+    for i, line in enumerate(lines):
+        dm = re.match(r"^description\s*:\s*(.*)$", line)
+        if not dm:
+            continue
+        head = dm.group(1).strip()
+        if head and head not in (">", "|", ">-", "|-"):
+            return head.strip("\"'")[:200]
+        body: list[str] = []
+        for cont in lines[i + 1:]:
+            if cont and not cont.startswith((" ", "\t")):
+                break
+            if cont.strip():
+                body.append(cont.strip())
+        joined = " ".join(body)
+        # Stop at the routing boilerplate; the first sentence is the summary.
+        cut = re.split(r"\s(?:TRIGGER|SKIP|DO NOT TRIGGER)\b", joined, maxsplit=1)[0]
+        return cut.strip()[:200]
+    return ""
+
+
+def _fm_str(frontmatter: dict[str, Any], key: str) -> str:
+    v = frontmatter.get(key, "")
+    return v.strip() if isinstance(v, str) else ""
 
 
 def _read_tsv(tsv_path: Path | None = None) -> dict[str, dict[str, str]]:
@@ -147,9 +211,14 @@ def list_skills(
         lifecycle = _detect_lifecycle(name, frontmatter)
 
         tsv_entry = tsv_data.get(name, {})
-        category = tsv_entry.get("category_zh", "")
+        source, folder = _locate(skill_dir)
+        # Folder is the taxonomy of record (README Structure); the TSV label is
+        # a legacy hand-written map kept only for skills we do not own.
+        category = folder or tsv_entry.get("category_zh", "")
         summary = tsv_entry.get("summary_zh", "")
-        if not category and (name.startswith("gstack") or name == "gstack"):
+        if not summary:
+            summary = _description(text)
+        if not category and source == "gstack":
             category = "gstack"
 
         result.append(SkillInfo(
@@ -159,6 +228,10 @@ def list_skills(
             line_count=line_count,
             invocable=bool(invocable),
             lifecycle=lifecycle,
+            source=source,
+            folder=folder,
+            loop=_fm_str(frontmatter, "loop"),
+            pdca=_fm_str(frontmatter, "pdca"),
         ))
 
         # Second pass: discover sub-pack skills nested one level deeper
@@ -191,9 +264,7 @@ def list_skills(
             sub_category = sub_tsv.get("category_zh", "") or name
             sub_summary = sub_tsv.get("summary_zh", "")
             if not sub_summary:
-                desc = sub_fm.get("description", "")
-                if isinstance(desc, str):
-                    sub_summary = desc.strip().splitlines()[0][:200] if desc.strip() else ""
+                sub_summary = _description(sub_text)
 
             result.append(SkillInfo(
                 name=display_name,
@@ -202,6 +273,10 @@ def list_skills(
                 line_count=sub_line_count,
                 invocable=bool(sub_invocable),
                 lifecycle=sub_lifecycle,
+                source="gstack" if name.startswith("gstack") else "external",
+                folder="",
+                loop=_fm_str(sub_fm, "loop"),
+                pdca=_fm_str(sub_fm, "pdca"),
             ))
 
     result.extend(_get_builtins_cached())
@@ -266,7 +341,7 @@ def _extract_builtin_skills() -> list[SkillInfo]:
         seen.add(name)
         desc = _extract_builtin_description(out, name) or _BUILTIN_FALLBACK_DESC.get(name, "")
         skills.append(SkillInfo(
-            name=name, category="builtin",
+            name=name, category="builtin", source="builtin",
             summary=desc[:300], line_count=0,
             invocable=True, lifecycle="builtin",
         ))

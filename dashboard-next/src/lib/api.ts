@@ -295,6 +295,19 @@ export interface SkillInfo {
   line_count: number;
   invocable: boolean;
   lifecycle: string;
+  /** rivendell | gstack | external | builtin */
+  source: string;
+  /** rivendell skills/<folder>/ the deployed symlink resolves into */
+  folder: string;
+  /** frontmatter loop: sales|gov|invest|hr|knowledge|platform|dev|shared */
+  loop: string;
+  /** frontmatter pdca: plan|do|check|act */
+  pdca: string;
+}
+
+export interface SkillRolesDoc {
+  path: string;
+  content: string;
 }
 
 export interface SkillDetail extends SkillInfo {

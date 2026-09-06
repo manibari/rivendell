@@ -28,6 +28,11 @@ import Logo from "./Logo";
 
 type NavNode =
   | {
+      // A caption that groups the rows below it; not a route, never expands.
+      kind: "section";
+      label: string;
+    }
+  | {
       kind: "link";
       href: string;
       label: string;
@@ -42,49 +47,9 @@ type NavNode =
     };
 
 const NAV: NavNode[] = [
+  // ── 看狀況 ────────────────────────────────────────────────────────────
+  { kind: "section", label: "看狀況" },
   { kind: "link", href: "/", label: "總覽", icon: LayoutDashboard },
-  { kind: "link", href: "/avatar", label: "助理", icon: UserRound },
-  {
-    kind: "link",
-    href: "/projects",
-    label: "專案管理",
-    icon: FolderOpen,
-    children: [
-      { kind: "link", href: "/agents", label: "Agent 管理", icon: Bot },
-      { kind: "link", href: "/tokens", label: "Token 用量", icon: Coins },
-    ],
-  },
-  {
-    kind: "header",
-    label: "技能庫",
-    icon: Library,
-    children: [
-      { kind: "link", href: "/skills", label: "Skill 總覽", icon: Sparkles },
-      {
-        kind: "link",
-        href: "/projects/rivendell/workflow",
-        label: "Workflow Map",
-        icon: Workflow,
-        children: [
-          { kind: "link", href: "/projects/rivendell/workflow/ui", label: "UI Feature" },
-          { kind: "link", href: "/projects/rivendell/workflow/backend", label: "Backend" },
-          {
-            kind: "link",
-            href: "/projects/rivendell/workflow/slide",
-            label: "Slide",
-            children: [
-              { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-a", label: "A. 投資人 BP" },
-              { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-b", label: "B. 客戶客製提案" },
-              { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-c", label: "C. IoT / 廠務報告" },
-              { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-d", label: "D. B2B 首拜 / 通用" },
-            ],
-          },
-          { kind: "link", href: "/projects/rivendell/workflow/maintenance", label: "Maintenance" },
-        ],
-      },
-      { kind: "link", href: "/harvest", label: "Skill Harvest", icon: Wheat },
-    ],
-  },
   {
     kind: "header",
     label: "系統健康",
@@ -97,11 +62,52 @@ const NAV: NavNode[] = [
       { kind: "link", href: "/health/git", label: "Git 衛生", icon: GitBranch },
     ],
   },
-  { kind: "link", href: "/ports", label: "部署管理", icon: Network },
+  // ── 做事 ──────────────────────────────────────────────────────────────
+  { kind: "section", label: "做事" },
+  { kind: "link", href: "/avatar", label: "助理", icon: UserRound },
+  {
+    kind: "link",
+    href: "/projects/rivendell/workflow",
+    label: "工作流程",
+    icon: Workflow,
+    children: [
+      { kind: "link", href: "/projects/rivendell/workflow/ui", label: "UI Feature" },
+      { kind: "link", href: "/projects/rivendell/workflow/backend", label: "Backend" },
+      {
+        kind: "link",
+        href: "/projects/rivendell/workflow/slide",
+        label: "Slide",
+        children: [
+          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-a", label: "A. 投資人 BP" },
+          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-b", label: "B. 客戶客製提案" },
+          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-c", label: "C. IoT / 廠務報告" },
+          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-d", label: "D. B2B 首拜 / 通用" },
+        ],
+      },
+      { kind: "link", href: "/projects/rivendell/workflow/maintenance", label: "Maintenance" },
+    ],
+  },
+  // ── 管資產 ────────────────────────────────────────────────────────────
+  { kind: "section", label: "管資產" },
+  {
+    kind: "header",
+    label: "技能庫",
+    icon: Library,
+    children: [
+      { kind: "link", href: "/skills", label: "Skill 總覽", icon: Sparkles },
+      { kind: "link", href: "/skills/roles", label: "依角色看", icon: UserRound },
+      { kind: "link", href: "/harvest", label: "Skill Harvest", icon: Wheat },
+    ],
+  },
+  { kind: "link", href: "/projects", label: "專案", icon: FolderOpen },
+  { kind: "link", href: "/agents", label: "Agent", icon: Bot },
+  { kind: "link", href: "/tokens", label: "Token 用量", icon: Coins },
+  { kind: "link", href: "/ports", label: "部署", icon: Network },
 ];
 
 function nodeId(node: NavNode): string {
-  return node.kind === "link" ? node.href : `header:${node.label}`;
+  if (node.kind === "link") return node.href;
+  return `${node.kind}:${node.label}`;
 }
 
 /** Splits a node's href into pathname + query-param entries for matching.
@@ -142,6 +148,7 @@ function ancestorsOfPath(
 ): Set<string> {
   const out = new Set<string>();
   function visit(node: NavNode, ancestors: string[]): boolean {
+    if (node.kind === "section") return false;
     const id = nodeId(node);
     const selfMatches =
       node.kind === "link" && nodeMatches(node.href, pathname, searchParams);
@@ -296,6 +303,7 @@ function SidebarNav() {
     let leaf: string | null = null;
     let bestScore = -1;
     function visit(node: NavNode) {
+      if (node.kind === "section") return;
       if (node.kind === "link" && nodeMatches(node.href, pathname, searchParams)) {
         const { pathname: hPath, params } = parseHref(node.href);
         const score = hPath.length + params.length * 100;
@@ -317,6 +325,17 @@ function SidebarNav() {
   })();
 
   function renderNode(node: NavNode, depth: number, key: string): React.ReactElement {
+    if (node.kind === "section") {
+      return (
+        <p
+          key={key}
+          className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider"
+          style={{ color: "var(--text-subtle)", paddingTop: key === "n-0" ? 0 : 14 }}
+        >
+          {node.label}
+        </p>
+      );
+    }
     const id = nodeId(node);
     const children =
       node.kind === "header"
