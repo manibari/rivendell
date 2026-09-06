@@ -1,6 +1,7 @@
 ---
 name: init-project
 loop: dev
+pdca: plan
 description: >
   Initialize Claude Code project config files (AGENTS.md, .claude/CLAUDE.md).
   TRIGGER when: starting a new project, onboarding Claude to an existing project,

@@ -1,5 +1,7 @@
 ---
 name: qa-journey
+loop: dev
+pdca: check
 description: >
   Persona-driven journey QA — simulate a REAL user (with limited knowledge and patience)
   completing an end-to-end task through the UI, and report UX friction, not bugs.

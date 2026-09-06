@@ -1,5 +1,7 @@
 ---
 name: ic-lot-normalization
+loop: dev
+pdca: plan
 description: >
   Domain reference for normalizing semiconductor lot / batch / product codes when
   building an IC test / yield-management (YMS) or ETL pipeline. IC test data arrives

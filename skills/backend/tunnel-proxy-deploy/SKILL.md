@@ -1,5 +1,7 @@
 ---
 name: tunnel-proxy-deploy
+loop: dev
+pdca: act
 description: >
   Deploy FastAPI + Next.js behind Cloudflare Tunnel. Covers reverse proxy pitfalls,
   trailing slash redirects, CORS, port mapping, and end-to-end QA checklist.

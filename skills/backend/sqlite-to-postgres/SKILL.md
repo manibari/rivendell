@@ -1,5 +1,7 @@
 ---
 name: SQLite to PostgreSQL Migration
+loop: dev
+pdca: do
 description: >
   Migrate an existing project from SQLite to PostgreSQL (or Supabase) — syntax diffs,
   schema conversion, data migration, connection layer, verification.

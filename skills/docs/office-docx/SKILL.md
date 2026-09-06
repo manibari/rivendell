@@ -1,5 +1,7 @@
 ---
 name: office-docx
+loop: shared
+pdca: do
 description: >
   Word document (.docx) creation, editing, and analysis. Tracked changes,
   comments, formatting preservation, text extraction.

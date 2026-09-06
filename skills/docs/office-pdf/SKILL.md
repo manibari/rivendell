@@ -1,5 +1,7 @@
 ---
 name: office-pdf
+loop: shared
+pdca: do
 description: >
   PDF manipulation: extract text/tables, create PDFs, merge/split, fill forms.
   TRIGGER when: user asks to create, read, edit, merge, split, or fill .pdf files.

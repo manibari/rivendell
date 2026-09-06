@@ -1,5 +1,7 @@
 ---
 name: odb-dfm-reference
+loop: dev
+pdca: plan
 description: >
   Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and building
   CAM/DFM/NPI tooling (the Siemens Valor "read/verify/mark the board" layer, NOT

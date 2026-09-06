@@ -1,5 +1,7 @@
 ---
 name: docker-compose-setup
+loop: dev
+pdca: do
 description: >
   Set up Docker Compose for multi-service projects (Next.js + FastAPI + Postgres/Redis).
   Generates Dockerfiles, docker-compose.yml (dev + prod), .env.example, .dockerignore,

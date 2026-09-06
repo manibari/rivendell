@@ -1,5 +1,7 @@
 ---
 name: app-ops-baseline
+loop: dev
+pdca: plan
 description: >
   Planning-stage gate that injects a standard "ops baseline" feature checklist into
   every new product / web app: 開發 roadmap, 系統日誌, 版本管理 (changelog), 意見回饋

@@ -318,6 +318,16 @@ grep -rn "skills/business\|skills/media\|skills/meta" . --include="*" 2>/dev/nul
 - Task 8 repo 外同步已完成 2026-09-03：`~/.claude/CLAUDE.md` 路由表（10 行）、
   memory 3 檔（sales-assistant-deprecated / MEMORY.md / deck_building_workflow）。
   規則庫用詞稽核：兩份 CLAUDE.md 全量掃描歸零，media/→knowledge 撞詞已消歧。
+- **Wave 2 executed 2026-09-07（frontmatter only，不搬檔、不改名）**：剩下 83 支補 `loop:`、90 支補 `pdca:`，
+  124/124 全部有合法值，`sk lint` 0 errors。歸屬原則：agents/ → platform；backend/frontend/git/planning/qa/quality/
+  workflow 主體 → dev；docs/ 拆成 sales（slide-*、pitch-deck、discovery-interview、metadata-workshop）與 shared
+  （chart-design、mermaid/excalidraw、office-*、doc-coauthoring、sow-writer、internal-comms、iot-factory-report、
+  gdoc-report-builder）；跨循環的 de-slopify、say-it-plain、doc-to-structured-data 標 shared；context-journal /
+  context-recovery / claude-to-telegram / settings-audit / auto-stage / protect-secrets / repo-rename 歸 platform；
+  gdrive-to-skills 歸 knowledge。pdca 判準：領域參考（ml-*、odb-dfm、ic-lot、backend-async-jobs、spine-rbac）= plan，
+  建東西 = do，qa-* / env-doctor / repro-exam / github-repo-audit = check，部署與 tunnel / spine-versioning /
+  large-file-refactor / autoresearch = act。同日新增 `docs/skills-by-role.md`（八角色 PDCA 劇本）與
+  `sk check` Role coverage 檢查。README Loop × PDCA 表：dev 19/21/8/8、shared 1/13/2/—、platform 1/13/5/5。
 
 ## 風險與回退
 

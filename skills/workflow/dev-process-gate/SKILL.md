@@ -1,6 +1,7 @@
 ---
 name: dev-process-gate
 loop: dev
+pdca: plan
 description: >
   Enforce development workflow: requirement → user-flow → wireframe → mockup → development → QA testing.
   TRIGGER when: user asks to build a feature, create a page, or implement UI functionality

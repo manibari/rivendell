@@ -1,5 +1,7 @@
 ---
 name: ai-vision-extract
+loop: dev
+pdca: do
 description: >
   The pattern for "photo → AI does the OCR/extraction → structured data", learned
   from iihi (孕 app) prod: a cost-aware identify→normalize→cache→generate→persist

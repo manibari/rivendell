@@ -1,5 +1,7 @@
 ---
 name: ml-eval-quality
+loop: dev
+pdca: plan
 description: >
   Domain reference for the evaluation + quality backbone of an ML/AutoML platform:
   one task-aware metric dispatcher, a small-data cross-validation gate, CV-consistent

@@ -1,5 +1,7 @@
 ---
 name: repro-exam
+loop: dev
+pdca: check
 description: >
   Generate a deterministic "exam" (input → expected output) from a project's core
   logic (e.g. backtest engine, portfolio strategy) so a collaborator runs it on

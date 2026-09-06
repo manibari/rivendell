@@ -1,6 +1,7 @@
 ---
 name: ci-pipeline
 loop: dev
+pdca: act
 description: >
   Detect project stack and generate GitHub Actions CI workflow with lint, test, build jobs.
   TRIGGER when: user asks to set up CI, create a pipeline, or project has no .github/workflows/ directory.

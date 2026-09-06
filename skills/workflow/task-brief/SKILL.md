@@ -1,6 +1,7 @@
 ---
 name: task-brief
 loop: dev
+pdca: plan
 description: >
   把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段
   （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI 不同的東西；到執行階段用

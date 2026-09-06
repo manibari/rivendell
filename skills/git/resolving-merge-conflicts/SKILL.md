@@ -1,5 +1,7 @@
 ---
 name: resolving-merge-conflicts
+loop: dev
+pdca: do
 description: >
   Resolve an in-progress git merge or rebase conflict by recovering each side's
   intent from its primary sources, then proving the result with the project's own

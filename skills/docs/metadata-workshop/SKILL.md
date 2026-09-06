@@ -1,5 +1,7 @@
 ---
 name: metadata-workshop
+loop: sales
+pdca: plan
 description: >
   Run Metadata Workshop with a consulting client — convert business knowledge into
   YAML schemas (the moat: 2nd same-industry client gets ≥70% reuse). Verticals:

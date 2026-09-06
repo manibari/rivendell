@@ -1,5 +1,7 @@
 ---
 name: vector-search-setup
+loop: dev
+pdca: do
 description: >
   Set up a vector search knowledge base in a FastAPI project from scratch.
   Covers embedding package selection, data modelling, semantic search API,

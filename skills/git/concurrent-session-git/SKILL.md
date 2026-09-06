@@ -1,5 +1,7 @@
 ---
 name: concurrent-session-git
+loop: dev
+pdca: do
 description: >
   Git hygiene when multiple Claude sessions (or a human + an agent) share ONE
   working tree and collide — your commit sweeps another session's uncommitted

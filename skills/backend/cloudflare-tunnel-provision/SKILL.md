@@ -1,5 +1,7 @@
 ---
 name: cloudflare-tunnel-provision
+loop: dev
+pdca: act
 description: >
   Stand up a brand-new public domain for a self-hosted dockerized app behind a
   Cloudflare Tunnel, from scratch, via the Cloudflare API — no dashboard clicking.

@@ -1,5 +1,7 @@
 ---
 name: protect-secrets
+loop: platform
+pdca: do
 description: >
   PreToolUse hook — blocks Read/Edit/Write/Bash on .env, private keys, credentials.json.
   Catalog visibility only; install via .claude/settings.json hooks. Hook is the only

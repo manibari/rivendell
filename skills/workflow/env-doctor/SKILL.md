@@ -1,5 +1,7 @@
 ---
 name: env-doctor
+loop: dev
+pdca: check
 description: >
   Generate a project `doctor.sh` (or `doctor.py`) that checks Python/Node
   versions, dependency lockfile hashes, model/data download state, key env vars,

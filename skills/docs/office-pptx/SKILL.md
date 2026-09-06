@@ -1,5 +1,7 @@
 ---
 name: office-pptx
+loop: shared
+pdca: do
 description: >
   PowerPoint (.pptx) creation, editing, and analysis. Layouts, speaker notes,
   comments, media, and Codex-generated visual asset placement.

@@ -1,5 +1,7 @@
 ---
 name: github-repo-audit
+loop: dev
+pdca: check
 description: >
   Audit a GitHub repository for structure quality, documentation coverage, CI/CD health,
   dependency freshness, and code hygiene. Produces a scored report with actionable fixes.

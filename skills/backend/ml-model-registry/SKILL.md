@@ -1,5 +1,7 @@
 ---
 name: ml-model-registry
+loop: dev
+pdca: plan
 description: >
   Domain reference for the model-registry / governance layer of an ML platform:
   turning a successful training run into a versioned, governed ModelVersion that is

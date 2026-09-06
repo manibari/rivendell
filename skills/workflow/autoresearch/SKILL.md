@@ -1,5 +1,7 @@
 ---
 name: autoresearch
+loop: dev
+pdca: act
 description: >
   Autonomous iteration loop — define goal + metric + verify command, agent loops
   modify→verify→keep/discard. Integrates with agent-headless + dashboard.

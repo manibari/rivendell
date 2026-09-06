@@ -1,5 +1,7 @@
 ---
 name: pitch-deck
+loop: sales
+pdca: do
 description: >
   Pitch decks / investor presentations with strategic storytelling — discovery interview,
   narrative planning, Codex-generated visual asset briefs, HTML slide generation,

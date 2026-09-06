@@ -1,5 +1,7 @@
 ---
 name: Excalidraw Diagram
+loop: shared
+pdca: do
 description: >
   Generate `.excalidraw` JSON files (hand-drawn / whimsical aesthetic) and
   render to PNG via Playwright + headless Chromium. Same "ARGUE not DISPLAY"

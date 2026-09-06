@@ -1,5 +1,7 @@
 ---
 name: De-Slopify
+loop: shared
+pdca: check
 description: Remove telltale signs of AI-generated "slop" writing from documentation and prose. Make text sound authentically human-written. Includes 審查文體模式 (review-ready mode) for formal documents going to reviewers/committees/client executives — scrubs internal-strategy traces, English shop-talk, reviewer-facing asides, self-assessment (「這是最關鍵的一題」/「最核心」), and internal codenames (M1/P0/Phase 1) from the body text.
 when_to_use: before publishing READMEs, documentation, blog posts, or any public-facing text; after AI-assisted writing sessions; during documentation reviews; before submitting proposals, tenders, SOWs, decks, or any document read by 審查委員 or client executives (審查文體模式); when told 「自言自語用詞太多」 or asked why internal codenames are still in the text
 version: 2.3.0

@@ -1,5 +1,7 @@
 ---
 name: LaunchD Agent
+loop: platform
+pdca: do
 description: >
   Create / debug / manage macOS launchd LaunchAgents — plist generation, scheduling,
   launchctl lifecycle, troubleshooting, portable multi-agent fleet.

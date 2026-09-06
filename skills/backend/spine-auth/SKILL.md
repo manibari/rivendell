@@ -1,5 +1,7 @@
 ---
 name: spine-auth
+loop: dev
+pdca: do
 description: >
   Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core
   (jose JWT + bcrypt + HS256, hash/verify/decode, a get_current_user Bearer

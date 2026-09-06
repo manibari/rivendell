@@ -69,6 +69,9 @@ as release notes.
 
 ## Skills Catalog (124 skills)
 
+> 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
+> 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。
+
 ### platform/ — 平台自我改善
 
 | Skill | 觸發方式 | 說明 |
@@ -272,14 +275,14 @@ as release notes.
 
 | Loop | plan | do | check | act |
 |------|------|----|-------|-----|
-| sales | 2 | 3 | 1 | 1 |
+| sales | 5 | 5 | 2 | 1 |
 | gov | 2 | 2 | — | — |
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
-| knowledge | 1 | 4 | — | 1 |
-| platform | — | 5 | 3 | 4 |
-| dev | — | — | — | — |
-| shared | 1 | — | — | — |
+| knowledge | 1 | 5 | — | 1 |
+| platform | 1 | 13 | 5 | 5 |
+| dev | 19 | 21 | 8 | 8 |
+| shared | 1 | 13 | 2 | — |
 
 
 ## Built-in Claude Code Skills (not in this repo)

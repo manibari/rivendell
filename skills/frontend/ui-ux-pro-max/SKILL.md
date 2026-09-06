@@ -1,5 +1,7 @@
 ---
 name: ui-ux-pro-max
+loop: dev
+pdca: plan
 description: >
   UI/UX design intelligence with searchable database. 50+ styles, 97 color palettes,
   57 font pairings, 25 chart types, 9 stacks.

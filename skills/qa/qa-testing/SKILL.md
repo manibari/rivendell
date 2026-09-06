@@ -1,5 +1,7 @@
 ---
 name: qa-testing
+loop: dev
+pdca: check
 description: >
   Cross-framework test strategy and writing guidance for pytest, Vitest, and Swift Testing.
   TRIGGER when: user writes tests, asks about testing strategy, mocking patterns,

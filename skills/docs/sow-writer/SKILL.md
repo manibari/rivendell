@@ -1,5 +1,7 @@
 ---
 name: sow-writer
+loop: shared
+pdca: do
 description: >
   Generate Taiwan-format Statement of Work (工作說明書) for consulting projects —
   12+ sections including 服務工作內容, 時程 (Mermaid Gantt), 驗收, 費用 (人天), 變更管理.

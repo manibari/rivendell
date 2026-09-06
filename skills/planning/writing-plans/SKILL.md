@@ -1,5 +1,7 @@
 ---
 name: Writing Plans
+loop: dev
+pdca: plan
 description: >
   Create detailed implementation plans with bite-sized tasks for engineers
   with zero codebase context.

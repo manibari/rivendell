@@ -1,5 +1,7 @@
 ---
 name: slide-template-extractor
+loop: sales
+pdca: plan
 description: >
   Extract design system from existing PPTX/Google Slides → locked HTML slide template
   with CSS variables. Stops style drift across deck generations.

@@ -1,5 +1,7 @@
 ---
 name: context-journal
+loop: platform
+pdca: do
 description: Auto-append a per-turn work-log to disk so /compact (and built-in auto-compact) become safe — the durable record of operations and decisions survives outside the context window, is re-injected automatically after compaction, and an early tunable reminder nudges you to /compact once context crosses a threshold. Installs three Claude Code hooks (Stop + SessionStart + UserPromptSubmit). TRIGGER when user says /context-journal, "自動記錄工作日誌", "減少前文/token 浪費", "compact 前留紀錄", "自動提醒 compact", "安裝 session log hook", or wants a running log that makes compaction lossless. DO NOT TRIGGER for one-shot "save my work" snapshots (use gstack-context-save) or post-compaction git-based recovery (use context-recovery).
 when_to_use: when the user wants token savings from compaction without losing continuity — set up, manage, or manually read the auto-appended per-turn work-log.
 version: 1.0.0

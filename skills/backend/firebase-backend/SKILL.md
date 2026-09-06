@@ -1,5 +1,7 @@
 ---
 name: firebase-backend
+loop: dev
+pdca: do
 description: >
   Firebase / Firestore / Cloud Functions guidance for GCP apps —
   schema, security rules, emulators, FCM, deploy.

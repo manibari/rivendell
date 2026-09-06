@@ -1,5 +1,7 @@
 ---
 name: audio-transcription-flow
+loop: dev
+pdca: do
 description: >
   Implement a complete audio upload → speech-to-text → transcript display workflow in a web app.
   TRIGGER when: user says "語音轉文字", "上傳音檔", "Whisper 整合", "轉逐字稿", "transcribe audio",

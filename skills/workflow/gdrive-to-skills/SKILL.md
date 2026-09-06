@@ -1,5 +1,7 @@
 ---
 name: gdrive-to-skills
+loop: knowledge
+pdca: do
 description: >
   Read Google Drive documents via MCP, categorize them, and create structured knowledge skills.
   Use when: user wants to import Google Drive files into the skills library, or says /gdrive-to-skills.

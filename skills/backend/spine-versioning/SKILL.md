@@ -1,5 +1,7 @@
 ---
 name: spine-versioning
+loop: dev
+pdca: act
 description: >
   Canonical version + changelog for the product fleet — and crucially the
   ENFORCEMENT that stops "forgot to bump". Audit (2026-06-27/28) of chimesflow,

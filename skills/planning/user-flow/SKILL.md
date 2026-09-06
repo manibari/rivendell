@@ -1,5 +1,7 @@
 ---
 name: user-flow
+loop: dev
+pdca: plan
 description: >
   Design user workflow diagrams with Mermaid flowcharts, covering happy path and error branches.
   TRIGGER when: user says "design flow", "draw flowchart", "user journey",

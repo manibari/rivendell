@@ -1,6 +1,7 @@
 ---
 name: deploy
 loop: dev
+pdca: act
 description: >
   Recommend deployment platform and generate deploy config (Dockerfile, fly.toml, vercel.json, CD workflow).
   TRIGGER when: user asks to deploy, asks "how to deploy", or wants to set up continuous deployment.

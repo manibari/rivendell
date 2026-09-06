@@ -1,6 +1,7 @@
 ---
 name: plan-check-style
 loop: dev
+pdca: plan
 description: >
   Scan available style skills and load matching design conventions when entering plan mode for UI tasks.
   TRIGGER when: Claude enters plan mode AND the task involves frontend UI,

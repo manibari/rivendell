@@ -1,5 +1,7 @@
 ---
 name: ios-integration
+loop: dev
+pdca: do
 description: >
   iOS system integration: App Extensions (Share, Widget), Deep Links,
   Universal Links, App Groups, permissions, and map SDK integration.

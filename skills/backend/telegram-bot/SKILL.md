@@ -1,5 +1,7 @@
 ---
 name: Telegram Bot Development Guide
+loop: dev
+pdca: do
 description: Comprehensive guide for building Telegram bots with grammY (TypeScript) or python-telegram-bot (Python). Covers framework selection, project structure, Bot API features, deployment, and common patterns.
 when_to_use: when building a Telegram bot, working with Telegram Bot API, or using grammY, python-telegram-bot, aiogram, or Telegraf
 version: 1.0.0

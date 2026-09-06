@@ -25,7 +25,7 @@
   3. 既有前綴/後綴系列（`qa-*`、`slide-*`、`*-scraper`、`*-writer`…）優先於循環前綴，不重複疊加。
   4. 跨循環共用工具**不掛循環前綴**（`tw-company-lookup`、`sow-writer`、`mermaid-diagram`），物理上放最大使用者的循環目錄，frontmatter 標 `loop: shared`。
   5. 一支 skill 橫跨兩條循環的兩個環位（合併錯位）→ 拆，用 plan 設計。
-- **循環（英文）**：`sales`（業務開發）、`gov`（政府案件：標案+補助）、`invest`（投資研究）、`hr`（人資）、`knowledge`（內容消化）、`platform`（rivendell 自我改善）。`dev` 循環下一波。
+- **循環（英文）**：`sales`（業務開發）、`gov`（政府案件：標案+補助）、`invest`（投資研究）、`hr`（人資）、`knowledge`（內容消化）、`platform`（rivendell 自我改善）、`dev`（產品開發：planning/backend/frontend/qa/quality/git/workflow 主體，wave 2 於 2026-09-07 標完）。跨循環工具標 `shared`（docs/ 的圖表、office-*、doc-coauthoring、sow-writer；quality/ 的 de-slopify、say-it-plain；backend/doc-to-structured-data）。
 - **縮寫表**：`yt`(YouTube)、`tw`(台灣)、`mops`(公開資訊觀測站)、`crm`、`jd`、`rfq`、`sow`、`gov`、`hr`。新縮寫必須先加進此表再用。
 - **frontmatter 欄位**：`loop:` ∈ {sales|gov|invest|hr|knowledge|platform|dev|shared}；`pdca:` ∈ {plan|do|check|act}（單值；填不出單值 = 拆分訊號）。
 - 循環制 established 2026-09-03；wave 1 plan：`docs/plans/2026-08-30-skill-loop-taxonomy-wave1.md`。

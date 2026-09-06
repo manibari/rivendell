@@ -1,6 +1,7 @@
 ---
 name: setup-permissions
 loop: dev
+pdca: plan
 description: >
   Allowlist the build/test/run tools a project actually uses, so routine
   commands stop prompting. Writes narrow, tool-scoped patterns — never a

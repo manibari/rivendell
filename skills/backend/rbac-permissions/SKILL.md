@@ -1,5 +1,7 @@
 ---
 name: rbac-permissions
+loop: dev
+pdca: do
 description: >
   Design and implement Role-Based Access Control (RBAC) for full-stack apps.
   Covers role hierarchy, Python/FastAPI decorator-based backend protection,

@@ -1,5 +1,7 @@
 ---
 name: QA Planner
+loop: dev
+pdca: check
 description: >
   Analyze code changes to generate a structured QA plan with impact analysis, test cases, and risk assessment.
   TRIGGER when: feature implementation is complete, before PR review, user says /qa-planner or "plan QA",

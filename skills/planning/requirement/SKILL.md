@@ -1,5 +1,7 @@
 ---
 name: requirement
+loop: dev
+pdca: plan
 description: >
   Define structured requirements, user stories, and acceptance criteria for a feature.
   TRIGGER when: user says "define requirement", "write user story", "what should we build",

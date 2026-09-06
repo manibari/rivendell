@@ -1,5 +1,7 @@
 ---
 name: Context Recovery
+loop: platform
+pdca: do
 description: Automatically recover working context after session compaction or when continuation is implied but context is missing. Uses filesystem artifacts, git state, and project metadata.
 when_to_use: when session starts with truncated context, user references prior work without details, compaction indicators appear, or user says "continue" / "where were we"
 version: 1.0.0

@@ -1,5 +1,7 @@
 ---
 name: Headless Agent
+loop: platform
+pdca: do
 description: Pattern for running Claude Code as an automated, non-interactive agent with scheduling, structured logging, and output management.
 when_to_use: when setting up Claude Code to run unattended — scheduled tasks, automated research, periodic code maintenance, or any headless/batch workflow
 version: 1.0.0

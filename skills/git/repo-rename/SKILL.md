@@ -1,5 +1,7 @@
 ---
 name: repo-rename
+loop: platform
+pdca: act
 description: Systematically audit all cross-location references when renaming a git repo, generate a migration checklist, and execute the rename safely. Covers launchd plists, Claude Code configs, shell scripts, sibling repos, and package manifests.
 tags: [git, refactoring, migration]
 version: 1

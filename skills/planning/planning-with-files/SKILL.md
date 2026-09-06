@@ -1,5 +1,7 @@
 ---
 name: planning-with-files
+loop: dev
+pdca: plan
 description: >
   Manus-style file-based planning with task_plan.md, findings.md, and progress.md.
   TRIGGER when: user says /planning-with-files, asks to plan or break down a complex

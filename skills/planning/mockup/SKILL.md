@@ -1,5 +1,7 @@
 ---
 name: mockup
+loop: dev
+pdca: plan
 description: >
   Create UI mockups at three fidelity levels (ASCII → static HTML → interactive HTML),
   reading the project's design system for tokens and constraints, with Figma export.

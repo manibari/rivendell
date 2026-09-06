@@ -1,5 +1,7 @@
 ---
 name: Executing Plans
+loop: dev
+pdca: do
 description: >
   Execute detailed plans in batches with review checkpoints.
   TRIGGER when: a complete implementation plan exists and needs to be executed

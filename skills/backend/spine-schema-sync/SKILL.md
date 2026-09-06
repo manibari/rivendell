@@ -1,5 +1,7 @@
 ---
 name: spine-schema-sync
+loop: dev
+pdca: do
 description: >
   Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet.
   Audit (2026-06-27) of chimesflow / mops / family-fiscal: chimesflow + mops BOTH

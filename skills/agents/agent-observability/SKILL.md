@@ -1,5 +1,7 @@
 ---
 name: agent-observability
+loop: platform
+pdca: check
 description: >
   Make any script-based agent visible in rivendell: execution history,
   live log streaming, and timeline events. Step-by-step guide for integrating

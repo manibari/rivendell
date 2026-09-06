@@ -1,5 +1,7 @@
 ---
 name: iot-factory-report
+loop: shared
+pdca: do
 description: >
   Analyze factory IoT/SCADA time-series (CSV/Excel) → visual report with charts + PPTX.
   Covers UPW/RO, compressors, chillers. Cycle detection, anomaly marking, trend analysis.

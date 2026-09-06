@@ -1,5 +1,7 @@
 ---
 name: doc-coauthoring
+loop: shared
+pdca: do
 description: >
   Three-stage doc co-authoring workflow (Context → Refinement →
   Reader Testing with a fresh Claude). For substantial multi-stakeholder docs.

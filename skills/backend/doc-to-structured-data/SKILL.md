@@ -1,5 +1,7 @@
 ---
 name: doc-to-structured-data
+loop: shared
+pdca: do
 description: Parse unstructured technical documents (.doc, .pdf, .xlsx) into structured CSV/JSON — handles format detection, extraction strategy selection, domain-specific field recognition, and multi-table output with validation.
 tags: [backend, data-extraction, document-processing]
 version: 1

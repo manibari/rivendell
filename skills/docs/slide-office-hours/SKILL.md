@@ -1,5 +1,7 @@
 ---
 name: slide-office-hours
+loop: sales
+pdca: check
 description: >
   Red-team review for B2B presales deck storyline.md before slide generation. Routes by
   (stage × profile) matrix; rejects 公開資料 voice. Outputs signed-off storyline consumed

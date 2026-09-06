@@ -1,5 +1,7 @@
 ---
 name: office-xlsx
+loop: shared
+pdca: do
 description: >
   Spreadsheet (.xlsx/.csv) creation, editing, and analysis. Formulas, formatting,
   data analysis, visualization.

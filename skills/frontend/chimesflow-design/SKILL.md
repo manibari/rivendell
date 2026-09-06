@@ -1,5 +1,7 @@
 ---
 name: chimesflow-design
+loop: dev
+pdca: plan
 description: >
   HARD GATE loader that anchors all new frontend / UI work to ChimesFlow's design
   system as the default starting point. Step 0 force-reads ChimesFlow's canonical

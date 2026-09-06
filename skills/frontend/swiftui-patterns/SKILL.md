@@ -1,5 +1,7 @@
 ---
 name: swiftui-patterns
+loop: dev
+pdca: do
 description: >
   SwiftUI architecture patterns and best practices for iOS 17+ apps.
   TRIGGER when: user builds SwiftUI views, designs MVVM architecture,

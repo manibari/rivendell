@@ -1,5 +1,7 @@
 ---
 name: gdoc-report-builder
+loop: shared
+pdca: do
 description: >
   Build structured Google Docs / Slides via MCP — batch table editing, paragraph styling,
   find-and-replace, media insertion, share/export.

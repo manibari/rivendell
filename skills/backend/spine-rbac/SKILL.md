@@ -1,5 +1,7 @@
 ---
 name: spine-rbac
+loop: dev
+pdca: plan
 description: >
   Canonical RBAC tiering for the FastAPI product fleet. UNLIKE spine-auth, RBAC
   has almost NO convergent code core — a real audit of family-fiscal vs chimesflow

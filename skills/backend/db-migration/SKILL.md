@@ -1,5 +1,7 @@
 ---
 name: db-migration
+loop: dev
+pdca: do
 description: >
   Set up database migration tools and generate migration files for schema changes.
   TRIGGER when: user modifies DB schema, adds a new model, asks about migrations,

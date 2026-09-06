@@ -1,5 +1,7 @@
 ---
 name: cloudflare-tunnel-ops
+loop: dev
+pdca: act
 description: >
   Operate, move, and troubleshoot an EXISTING Cloudflare Tunnel for a dockerized app —
   deploy to a new host (copy creds, no re-provision), debug error 1033 / dead container,

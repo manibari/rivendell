@@ -1,5 +1,7 @@
 ---
 name: mcp-builder
+loop: dev
+pdca: do
 description: >
   Guide for creating high-quality MCP (Model Context Protocol) servers that
   enable LLMs to interact with external services through well-designed tools.

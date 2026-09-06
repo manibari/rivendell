@@ -1,5 +1,7 @@
 ---
 name: backend-async-jobs
+loop: dev
+pdca: plan
 description: >
   Tiered design rubric for backend work that might be slow: keep it sync, push it
   to a one-off job, or model it as a multi-run ML/pipeline — and the patterns for

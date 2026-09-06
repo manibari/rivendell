@@ -1,5 +1,7 @@
 ---
 name: internal-comms
+loop: shared
+pdca: do
 description: >
   Templates for during/after-project stakeholder comms — 3P updates, status reports,
   incident reports, FAQs, newsletters.

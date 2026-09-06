@@ -1,5 +1,7 @@
 ---
 name: agent-persona
+loop: platform
+pdca: plan
 description: >
   Generate structured role prompts for headless Claude Code agents (tester, maintainer,
   reviewer, developer, researcher). Auto-injects project structure, tool permissions,

@@ -1,5 +1,7 @@
 ---
 name: slide-workflow
+loop: sales
+pdca: do
 description: >
   Gated presentation workflow: purpose → style → outline → content → Codex visual
   assets → generate → review → export. Prevents jumping to generation with no

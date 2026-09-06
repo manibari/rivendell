@@ -1,5 +1,7 @@
 ---
 name: settings-audit
+loop: platform
+pdca: check
 description: >
   Audit and clean up .claude/settings.local.json — remove invalid permissions,
   fix JSON syntax, and validate format. Detects one-time Bash commands that

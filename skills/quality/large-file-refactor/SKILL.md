@@ -1,5 +1,7 @@
 ---
 name: large-file-refactor
+loop: dev
+pdca: act
 description: >
   Systematically split large single-file components (500+ lines) into modular
   architecture while preserving interface compatibility.

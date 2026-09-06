@@ -1,5 +1,7 @@
 ---
 name: discovery-interview
+loop: sales
+pdca: plan
 description: >
   Run a structured Discovery interview with a potential consulting client to find their
   most painful manual workflow — the basis for an AI agent proposal and SOW.
