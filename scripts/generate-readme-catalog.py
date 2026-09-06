@@ -225,7 +225,15 @@ def scan_skills() -> dict:
 
 def generate_catalog_section(categories: dict, existing: dict) -> str:
     total = sum(len(v) for v in categories.values())
-    lines = [f"## Skills Catalog ({total} skills)", ""]
+    lines = [
+        f"## Skills Catalog ({total} skills)",
+        "",
+        # Emitted by the generator so it survives every regeneration (this whole
+        # section is replaced on each `sk readme`).
+        "> 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。",
+        "> 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。",
+        "",
+    ]
 
     for cat in CATEGORY_ORDER:
         skills = categories.get(cat, [])

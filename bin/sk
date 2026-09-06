@@ -687,6 +687,32 @@ cmd_check() {
   fi
 
   echo ""
+  # Role coverage: every skill must appear in docs/skills-by-role.md at least once,
+  # so the user-facing "who uses what" page cannot silently fall behind the catalog.
+  echo -e "${CYAN}[Role coverage]${NC}"
+  local role_doc="$REPO_DIR/docs/skills-by-role.md"
+  if [ ! -f "$role_doc" ]; then
+    echo -e "  ${YELLOW}docs/skills-by-role.md missing${NC}"
+  else
+    local uncovered=0 uncovered_list=""
+    while IFS= read -r skill_dir; do
+      [ -z "$skill_dir" ] && continue
+      local name
+      name="$(basename "$skill_dir")"
+      if ! grep -q "\`$name\`" "$role_doc"; then
+        uncovered=$((uncovered+1))
+        uncovered_list+="    $name\n"
+      fi
+    done < <(all_skill_dirs)
+    if [ "$uncovered" -gt 0 ]; then
+      echo -e "  ${YELLOW}$uncovered skill(s) not listed in docs/skills-by-role.md${NC}"
+      echo -e "$uncovered_list"
+    else
+      echo -e "  ${GREEN}Every skill appears in docs/skills-by-role.md${NC}"
+    fi
+  fi
+
+  echo ""
 }
 
 cmd_sync() {
