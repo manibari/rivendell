@@ -26,9 +26,13 @@
 | [6. 人資](#6-人資) | 6a 開缺 · 6b 履歷篩選 · 6c 內部公告 |
 | [7. 知識工作者](#7-知識工作者) | 7a 訂閱與掃描 · 7b 單支影片／錄音消化 · 7c Drive 文件變 skill |
 | [8. 平台維護者](#8-平台維護者) | 8a 新增或修改 skill · 8b 排程 agent · 8c session 與環境 · 8d repo 維運 |
-| [9. 創辦人／經營者](#9-創辦人經營者) | 9a 投資人募資 BP · 9b 方向與產品決策 |
+| [9. CEO／創辦人](#9-ceo創辦人) | 9a 方向與優先序 · 9b 投資人募資 BP · 9c 現金與定價 · 9d 關鍵人事 |
+| [10. COO／營運](#10-coo營運) | 10a 營運節奏 · 10b 客戶交付管理 · 10c 合約與法遵 · 10d 財務營運 |
+| [11. 行銷](#11-行銷) | 11a 定位與訊息 · 11b 內容產製 · 11c 網站與 landing page · 11d 名單與成效 |
 
 橫向共用（每個角色、每件工作都會碰到）：`task-brief`（開工前先定義任務、判斷階段）、`say-it-plain`（把話講清楚）、`knowledge-graph`（記住人／公司／專案的事實）、`context-journal` / `context-recovery`（長 session 不掉 context）、`session-wrap`（收工）、`self-improving-agent`（踩坑就記）。
+
+收發信不分角色，走助理層而不是 skill：`bin/sk-mail-triage-cron` 每天唯讀抓信、分類、重要的推 Telegram、可疑的貼 `sk-junk`（可逆）、要動作的開 `sk dispatch` 提案；寄信只有 `scripts/send-mail.py`，且只在提案確認後由 dispatch 執行，模型不能直接寄。**各角色目前沒有任何信件模板**（業務跟進、交付通知、催款、候選人回覆、投資人更新），要寄信時是每次現寫再走 dispatch。
 
 畫圖不分角色，一律從 `chart-design` 進：它 triage 後轉 `mermaid-diagram`（工程師看）或 `excalidraw-diagram`（簡報用）；使用者旅程用 `user-flow`；要驗證資料流用 `qa-dataflow`。
 
@@ -133,7 +137,7 @@
 
 ## 3. 業務／Presales
 
-你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff，加上素材庫維護。對應 CLAUDE.md「Slide / Deck Building」的 B、D 兩類，storyline-first 是硬閘門。**四條路徑各走各的，不要混。**（投資人募資不在這裡，那是第 9 節創辦人的事。）
+你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff，加上素材庫維護。對應 CLAUDE.md「Slide / Deck Building」的 B、D 兩類，storyline-first 是硬閘門。**四條路徑各走各的，不要混。**（投資人募資不在這裡，那是第 9 節 CEO 的事。）
 
 ### 3a 陌生開發到第一次拜訪（B2B 首拜）
 
@@ -268,30 +272,34 @@
 
 ## 6. 人資
 
+你在做：開缺、看履歷、發內部公告。三件工作的 Plan 目前都是人腦在做，沒有 skill；`hr-jd-writer` 與 `hr-candidate-analysis` 都是 Do。
+
 ### 6a 開缺
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `hr-jd-writer` 前段 | 從組織需求推職責、必備、加分 |
-| Do | `hr-jd-writer` | 結構化 JD、招募文 |
-| Check | `de-slopify` | 對外前去 AI 腔 |
-| Act | `knowledge-graph` | |
+| Plan | `task-brief`（決定階段）｜ ★ **職缺需求單**：為什麼開、headcount 與預算、職級、報告線、成功 90 天長什麼樣 | hr-jd-writer 的 Discovery Questions 只問職稱與組織位置，是寫 JD 的輸入，不回答「要不要開」 |
+| Do | `hr-jd-writer` ｜ 視情況：`tw-company-lookup`（對標同業職缺） | 結構化 JD、招募文 |
+| Check | `de-slopify` → `say-it-plain` | 對外前去 AI 腔；一句話講得出這個缺在做什麼 |
+| Act | `knowledge-graph` ｜ ★ 錄取後回頭改 JD（哪些必備其實不必備） | |
 
 ### 6b 履歷篩選
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | JD 的必備條件當篩選標準 | |
-| Do | `hr-candidate-analysis` | PDF 履歷抽結構、看 GitHub |
-| Check | `github-repo-audit` | 候選人 repo 打分 |
-| Act | `knowledge-graph`（候選人、面試決策） | |
+| Plan | ★ **篩選標準與面試流程**：從 JD 抽 must-have 打分表、定面試關卡與面試官、每關問什麼 | 沒有標準就會每份履歷重新想一次 |
+| Do | `hr-candidate-analysis` ｜ 視情況：`github-repo-audit`（有 repo 的候選人） | PDF 履歷抽結構、看 GitHub 程式品質 |
+| Check | ★ 面試回饋彙整（多位面試官對同一候選人的評分對齊） | |
+| Act | `knowledge-graph`（候選人、面試決策）｜ ★ 錄取後回饋 6a 的 JD | |
 
 ### 6c 內部公告
 
 | | 用誰 | 說明 |
 |---|---|---|
+| Plan | 誰要知道、什麼時候、走哪個管道 | 目前寫在 internal-comms 的模板選擇裡 |
 | Do | `internal-comms` | 公告、newsletter、FAQ 模板 |
-| Check | `say-it-plain` · `de-slopify` | 結論先行、去 AI 腔 |
+| Check | `say-it-plain` → `de-slopify` | 結論先行、去 AI 腔 |
+| Act | — | |
 
 ---
 
@@ -369,27 +377,129 @@
 
 ---
 
-## 9. 創辦人／經營者
+## 9. CEO／創辦人
 
-你在做：對投資人講公司、決定做不做什麼。跟業務（第 3 節）的差別：業務對客戶賣方案，這裡對投資人賣公司、對自己拷問方向；deck 的敘事、數字揭露、去識別化規矩都不同。
+你在做：決定公司往哪走、錢從哪來、誰上車。這一層的 skill 最少：整個庫是從做事的角色長出來的，經營層的工作大多還在人腦和試算表裡。下面每一個 ★ 都是真的沒有，不是漏標。
 
-### 9a 投資人募資 BP
+### 9a 方向與優先序（季度目標、做／不做、槓桿）
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief`（思考／探索階段）→ `pitch-deck` 的 discovery interview ｜ 視情況：`gstack-office-hours` (gstack)、`invest-research`（看同業估值與市場數字） | 敘事先於投影片；數字要有來源 |
+| Plan | `task-brief`（思考／探索階段）→ `gstack-office-hours` (gstack) ｜ 視情況：`invest-research`（市場與同業數字） | 思考階段用反問，不要急著出草稿 |
+| Do | ★ **季度目標與優先序文件**（3 條槓桿、明確不做清單、每條掛負責角色） | 增量接線優於重寫；先找 2–3 條槓桿 |
+| Check | `gstack-plan-ceo-review` (gstack) → `say-it-plain` ｜ ★ 月檢視：目標 vs 實際 | 一句話講不出「這是什麼」代表還沒想清 |
+| Act | ★ **公司層決策紀錄**（做了什麼決定、為什麼不做另一個）→ `knowledge-graph` | 決策交給第 1 節（產品）、第 3 節（客戶）、第 10 節（營運）執行 |
+
+### 9b 投資人募資 BP
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `task-brief` → `pitch-deck` 的 discovery interview ｜ 視情況：`gstack-office-hours` (gstack)、`invest-research`（同業估值） | 敘事先於投影片；數字要有來源 |
 | Do | `pitch-deck` → `office-pptx` ｜ 視情況：`chart-design`（數據頁）、`excalidraw-diagram`（產品示意） | |
 | Check | `slide-office-hours` → `de-slopify` | 紅隊審敘事；他案引用要去識別化（身分匿名、技術數字留具體） |
-| Act | `knowledge-graph`（投資人、回饋、條件） | 每一輪 pitch 的回饋沉澱，下一版 deck 從這裡改 |
+| Act | `knowledge-graph`（投資人、回饋、條件）｜ ★ 募資進度表（誰、階段、下一步） | 每一輪 pitch 的回饋沉澱，下一版 deck 從這裡改 |
 
-### 9b 方向與產品決策
+### 9c 現金與定價
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief`（先判斷在思考／探索／決定哪一階段）→ `gstack-office-hours` (gstack) | 思考階段用反問，不要急著出草稿 |
-| Do | `requirement`（決定做了才寫）｜ 視情況：`gstack-plan-ceo-review` (gstack，大功能砍 scope 到槓桿) | 增量接線優於重寫；先找 2–3 條槓桿 |
-| Check | `gstack-plan-ceo-review` (gstack) · `say-it-plain` | 一句話講不出「這是什麼」代表還沒想清 |
-| Act | 決定交給第 1 節（產品）或第 3 節（客戶）· `knowledge-graph` | 決策記成事實，含為什麼不做 |
+| Plan | ★ **現金流與跑道**（未來 6 個月進出、最壞情況） | 沒有這張表，9a 的取捨沒有分母 |
+| Do | ★ 定價與報價策略（人天費率、專案 vs 訂閱）→ `gov-rfq-writer` / `sow-writer` 吃它的數字 | 現在報價單裡的費率是每次現想 |
+| Check | ★ 月結：應收、已收、逾期 | |
+| Act | ★ 調價或砍支出的決定 → 回 9a | |
+
+### 9d 關鍵人事（開缺、合夥、外包）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ **職缺需求單**（為什麼開、headcount 與預算、職級、成功 90 天）— 同 6a Plan，決定權在這裡 | 人資（第 6 節）執行，CEO 決定 |
+| Do | 交第 6 節 `hr-jd-writer` → `hr-candidate-analysis` ｜ 視情況：`sow-writer`（外包用 SOW 綁範圍） | |
+| Check | ★ 面試回饋彙整（同 6b Check） | |
+| Act | `knowledge-graph`（人、決定、為什麼） | |
+
+---
+
+## 10. COO／營運
+
+你在做：讓公司每週照節奏轉：案子有沒有照進度交、錢有沒有收到、合約有沒有簽對。這一層跟 CEO 一樣幾乎沒有 skill；現有的零件是 funnel（presales-pipeline）、週報模板（internal-comms）、CRM 投影，和只看 rivendell 自己的 workflow-retro。
+
+### 10a 營運節奏（週會、月檢視、跨案子進度）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ **週檢視清單**（每個案子：狀態、下一個里程碑、卡點、負責人） | 沒有清單，週會變成各自報流水帳 |
+| Do | `internal-comms`（週報、3P）→ `presales-pipeline`（funnel）→ `sales-crm-projection` ｜ 視情況：`workflow-retro`（只涵蓋 rivendell 的 skill 與 agent） | 現有零件各管一塊，沒有一張表把案子、客戶、錢串起來 |
+| Check | ★ 跨案子進度儀表（dashboard 現在的 projects 頁是 agent 視角，不是交付視角） | |
+| Act | ★ 公司層 retro（本週卡在哪、下週改什麼）→ 回 9a | |
+
+### 10b 客戶交付管理（kickoff 到驗收）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `sales-client-kickoff-docs` → `sow-writer` 的驗收與變更條款 | kickoff 三件套裡有時程與範圍 |
+| Do | ★ **交付追蹤**（里程碑、變更單、客戶待辦）｜ 交付物本身走第 1 節（產品）或第 4 節（報告） | |
+| Check | `qa-journey` / `qa-dataflow`（交付前驗收）｜ ★ 驗收單（客戶簽什麼、憑什麼請款） | 驗收單是請款的前置 |
+| Act | ★ 結案回顧（做對什麼、下次不接什麼）→ `knowledge-graph` ｜ `sales-material`（案例進素材庫） | |
+
+### 10c 合約與法遵（NDA、MOU、合約版本、個資）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ 合約清單（每個客戶：NDA 日期、合約期限、續約點） | |
+| Do | `doc-coauthoring` + 樣板（`~/.claude/CLAUDE.md` 已標 NDA／MOU 暫無 skill）→ `sow-writer` | |
+| Check | `de-slopify` 審查文體 ｜ ★ 條款檢核（付款、智財、責任上限） | |
+| Act | ★ 到期提醒與續約 → 回 10a 週檢視 | |
+
+### 10d 財務營運（請款、發票、費用、對帳）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ 請款排程（哪個案子哪個里程碑何時開票） | 吃 10b 的驗收單 |
+| Do | `office-xlsx` ｜ ★ 請款單與發票流程 | |
+| Check | ★ 對帳（開出的、收到的、逾期的）→ 9c 月結 | |
+| Act | ★ 逾期催收與現金決策 → 回 9c | |
+
+---
+
+## 11. 行銷
+
+你在做：讓還不認識你的人找到你、看懂你、留下聯絡方式交給業務。這一層也幾乎沒有 skill：現有的是對外文字打磨、landing page 產生與稽核、看同業內容的工具，沒有定位、內容日曆、案例研究、SEO、成效追蹤。
+
+### 11a 定位與訊息
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `task-brief`（思考／探索）→ `gstack-office-hours` (gstack) ｜ 視情況：`sales-customer-intel`（目標客戶長什麼樣）、`tw-company-lookup` | 先講清楚給誰、解什麼痛、跟誰不一樣 |
+| Do | ★ **定位一頁**（目標客群、痛點、一句話價值、三個證據）→ `say-it-plain` | 這一頁是所有文案的上游 |
+| Check | `slide-office-hours` 的紅隊形狀 ｜ ★ 拿三個真客戶驗訊息 | |
+| Act | 定位一頁進 `sales-material` 素材庫 · `knowledge-graph` | 業務與行銷共用同一句話 |
+
+### 11b 內容產製（文章、貼文、案例研究）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ **內容日曆**（主題、管道、頻率、負責人）｜ 視情況：`yt-channel-scraper` → `video-transcript`（看同業在講什麼）、`sales-keyword-discovery`（關鍵字） | |
+| Do | `doc-coauthoring` → `de-slopify` ｜ 視情況：`chart-design`（圖）、`excalidraw-diagram`（示意）、`video-clip-extract`（短片段）｜ ★ 案例研究模板（去識別化規矩：身分匿名、技術數字留具體） | 案例研究是行銷最強的素材，但每次都從頭寫 |
+| Check | `de-slopify` → `say-it-plain` ｜ ★ 發布前檢核（客戶同意、去識別化、數字來源） | |
+| Act | 案例進 `sales-material` · `knowledge-graph` ｜ ★ 成效回填（哪篇帶來名單） | |
+
+### 11c 網站與 landing page
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | 11a 的定位一頁 → `requirement` → `user-flow` | 頁面要讓人做什麼動作 |
+| Do | `chimesflow-design` → `mockup` → `frontend-design` ｜ 視情況：`ui-ux-pro-max` | 走第 1 節 1b 的做法 |
+| Check | `gstack-landing-report` (gstack) → `gstack-design-review` (gstack) → `check-html-figure.mjs` ｜ ★ SEO 基本檢核 | |
+| Act | `deploy` ｜ ★ 流量與轉換追蹤 | |
+
+### 11d 名單與成效（交給業務）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | ★ 名單定義（什麼叫一個可交給業務的 lead） | |
+| Do | ★ 名單表（來源、時間、狀態）→ `presales-pipeline`（進業務 funnel） | 現在沒有從行銷到業務的交接點 |
+| Check | ★ 每月：哪個管道帶來名單、成本 | |
+| Act | 回 11b 內容日曆與 9a 優先序 | |
 
 ---
 

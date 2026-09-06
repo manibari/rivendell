@@ -288,3 +288,42 @@ figures 規格、紅字▲、writing-rules HARD GATE。入口狀態不同（手�
 | `gov-tender-proposal-writer`（D3） | 服務建議書／投標文件，框架來自招標文件與評選表，形狀照 `gov-subsidy-writer`（目錄 framing → 逐題拍板 → 紅字歸零） | 4（接到真案子再抽） | ⬜ |
 
 前置：狀態機先定（`active → evaluating → bidding → submitted → won | lost`，旁支 `no-bid`、`expired`），frontmatter 欄位全部可選，爬蟲不填不會壞。
+
+## 2026-09-07 — hr 循環：開缺與履歷篩選的 Plan 都沒有 skill（使用者指出）
+
+`hr-jd-writer`、`hr-candidate-analysis` 都是 Do；前面的決策步靠人腦。不拆 hr-jd-writer（它的 Discovery Questions 只是 JD 的輸入，拆出來太薄），改登記兩個真正的缺口：
+
+| 缺口 | 一句話 | 狀態 |
+|---|---|---|
+| 職缺需求單（6a Plan） | 為什麼開、headcount 與預算、職級、報告線、成功 90 天長什麼樣；產出物是 hr-jd-writer 的輸入 | ⬜ |
+| 篩選標準與面試流程（6b Plan） | 從 JD 抽 must-have 打分表、面試關卡與面試官、每關問什麼；hr-candidate-analysis 依它打分 | ⬜ |
+
+兩個都等第一次真的開缺再抽，用真案子的表單反推形狀。
+
+## 2026-09-07 — 經營層（CEO／COO）整層沒有 skill（使用者指出）
+
+角色頁新增第 9 節 CEO 與第 10 節 COO，八件工作裡 ★ 超過一半。這不是漏標：skill 庫是從做事的角色長出來的，經營層的工作一直在人腦與試算表裡，沒經過 Claude session，所以沒被收割。
+現有零件：gstack-office-hours、gstack-plan-ceo-review、internal-comms、presales-pipeline（funnel）、sales-crm-projection、workflow-retro（只看 rivendell）。
+
+| 缺口（按「不做最貴」排） | 一句話 | 狀態 |
+|---|---|---|
+| 9c 現金流與跑道 | 未來 6 個月進出、最壞情況；9a 的取捨沒有它沒有分母 | ⬜ |
+| 10a 週檢視清單 + 跨案子進度儀表 | 每案：狀態、下一個里程碑、卡點、負責人；dashboard 的 projects 頁是 agent 視角，不是交付視角 | ⬜ |
+| 10b 交付追蹤 + 驗收單 | 里程碑、變更單、客戶待辦；驗收單是請款前置 | ⬜ |
+| 9a 季度目標與優先序 + 公司層決策紀錄 | 3 條槓桿、不做清單、決策為什麼 | ⬜ |
+| 10d 請款排程 + 對帳 | 吃驗收單開票，對到現金流 | ⬜ |
+| 10c 合約清單 + 條款檢核 + 到期提醒 | NDA／MOU 樣板已知缺（CLAUDE.md） | ⬜ |
+| 9c 定價與報價策略 | 人天費率、專案 vs 訂閱；gov-rfq-writer / sow-writer 吃它的數字 | ⬜ |
+
+抽取順序建議：先 10a 週檢視（一張 markdown 表 + agent 每週彙整，最便宜、每週都用），再 9c 現金流（試算表 + office-xlsx），其餘等真的跑過兩個月有形狀再抽。
+
+## 2026-09-07 — 行銷整層沒有 skill（使用者指出）
+
+角色頁新增第 11 節行銷（定位與訊息、內容產製、網站與 landing、名單與成效）。現有零件：de-slopify、say-it-plain、frontend-design、gstack-landing-report、chart-design、yt-channel-scraper／video-transcript、sales-keyword-discovery。
+最先值得抽的兩個：**定位一頁**（所有文案的上游，也是 sales-material 缺的那一句話）與**案例研究模板**（去識別化規矩已在 memory，每次仍從頭寫）。名單交接（11d → presales-pipeline）是行銷與業務之間現在完全沒有的接點。
+
+## 2026-09-07 — 各角色的 Do 都沒有接到 mail（使用者指出）
+
+機制存在：`sk-mail-triage-cron`（唯讀讀信 → 分類 → Telegram／junk 標籤／dispatch 提案）+ `send-mail.py`（只由 dispatch 在確認後執行）。缺的是**角色層的信件模板與觸發點**：
+業務跟進（3a 拜訪後、3b 提案後）、交付通知與驗收請求（10b）、催款（10d）、候選人回覆與面試邀請（6b）、投資人更新（9b）。
+形狀：每個模板 = 觸發條件 + 收件人來源（CRM 投影／knowledge-graph）+ 正文骨架 + 走 dispatch 的 payload；不新增寄信路徑，只餵 dispatch。先做業務跟進與催款兩個，用真信反推。

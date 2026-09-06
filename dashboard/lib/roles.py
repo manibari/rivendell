@@ -64,7 +64,7 @@ def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
     gaps: list[str] = []
     # Segments are separated by · or →; a segment starting with ★ is a gap.
     # (Do not split on "/" — gap text such as "won / lost / no-bid" uses it.)
-    for seg in re.split(r"\s*[·→]\s*", cell):
+    for seg in re.split(r"\s*[·→｜]\s*", cell):
         seg = seg.strip()
         if seg.startswith("★"):
             g = _strip_md(seg.lstrip("★").strip()).replace("`", "")
