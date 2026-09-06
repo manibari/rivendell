@@ -1,6 +1,6 @@
 ---
 name: pitch-deck
-loop: sales
+loop: shared
 pdca: do
 description: >
   Pitch decks / investor presentations with strategic storytelling — discovery interview,

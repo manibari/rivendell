@@ -20,12 +20,13 @@
 |---|---|
 | [1. 產品開發者](#1-產品開發者) | 1a 新產品起手 · 1b 新功能／新頁面 · 1c 後端功能／修 bug／重構 · 1d 部署與上線 · 1e iOS app |
 | [2. QA／驗收者](#2-qa驗收者) | 2a 接手或驗收別人／AI 的 code · 2b 功能完成後的 QA · 2c 使用者旅程測試 · 2d 跨機器重現 |
-| [3. 業務／Presales](#3-業務presales) | 3a 陌生開發到第一次拜訪 · 3b 客戶客製提案 · 3c 投資人募資 BP · 3d 簽約與 kickoff · 3e 素材庫與 CRM 維護 |
+| [3. 業務／Presales](#3-業務presales) | 3a 陌生開發到第一次拜訪 · 3b 客戶客製提案 · 3c 簽約與 kickoff · 3d 素材庫與 CRM 維護 |
 | [4. 顧問／報告與標案撰寫](#4-顧問報告與標案撰寫) | 4a 政府標案 · 4b 政府補助計畫 · 4c 顧問案交付文件 · 4d 客戶資料梳理 |
 | [5. 分析師／投資研究](#5-分析師投資研究) | 5a 投資研究 · 5b 廠務時序分析 · 5c ML／AutoML 平台 · 5d 製造領域資料 · 5e 自動迭代實驗 |
 | [6. 人資](#6-人資) | 6a 開缺 · 6b 履歷篩選 · 6c 內部公告 |
 | [7. 知識工作者](#7-知識工作者) | 7a 訂閱與掃描 · 7b 單支影片／錄音消化 · 7c Drive 文件變 skill |
 | [8. 平台維護者](#8-平台維護者) | 8a 新增或修改 skill · 8b 排程 agent · 8c session 與環境 · 8d repo 維運 |
+| [9. 創辦人／經營者](#9-創辦人經營者) | 9a 投資人募資 BP · 9b 方向與產品決策 |
 
 橫向共用（每個角色、每件工作都會碰到）：`task-brief`（開工前先定義任務、判斷階段）、`say-it-plain`（把話講清楚）、`knowledge-graph`（記住人／公司／專案的事實）、`context-journal` / `context-recovery`（長 session 不掉 context）、`session-wrap`（收工）、`self-improving-agent`（踩坑就記）。
 
@@ -132,7 +133,7 @@
 
 ## 3. 業務／Presales
 
-你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff；另外還有募資、素材庫維護。對應 CLAUDE.md「Slide / Deck Building」，storyline-first 是硬閘門。**五條路徑各走各的，不要混。**
+你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff，加上素材庫維護。對應 CLAUDE.md「Slide / Deck Building」的 B、D 兩類，storyline-first 是硬閘門。**四條路徑各走各的，不要混。**（投資人募資不在這裡，那是第 9 節創辦人的事。）
 
 ### 3a 陌生開發到第一次拜訪（B2B 首拜）
 
@@ -150,18 +151,9 @@
 | Plan | `discovery-interview` · `metadata-workshop` · `sales-customer-intel`（更新） | 挖最痛的手工流程；業務知識變 schema |
 | Do | `sales-material` → `sales-deck-design` → `slide-workflow` ｜ 視情況：`slide-template-extractor`（有參考 PPTX 要鎖風格）、`gov-rfq-writer`（要附報價）、`chart-design`（有圖） | 從素材庫組裝；客製提案要像企業提案；報價比 SOW 輕 |
 | Check | `slide-office-hours` · `sales-material-health`（素材沒過期）· `gstack-design-review` (gstack) | |
-| Act | won → 3d；lost → `presales-pipeline` lost + 原因 · `knowledge-graph` | |
+| Act | won → 3c；lost → `presales-pipeline` lost + 原因 · `knowledge-graph` | |
 
-### 3c 投資人募資 BP
-
-| | 用誰 | 說明 |
-|---|---|---|
-| Plan | `pitch-deck` 的 discovery interview · `gstack-office-hours` (gstack) | 敘事先於投影片 |
-| Do | `pitch-deck` → `excalidraw-diagram`（示意圖）· `chart-design`（數據頁）· `office-pptx` | |
-| Check | `slide-office-hours` · `de-slopify` | 案例去識別化（身分匿名、數字留具體） |
-| Act | `knowledge-graph`（投資人、回饋） | |
-
-### 3d 簽約與 kickoff
+### 3c 簽約與 kickoff
 
 | | 用誰 | 說明 |
 |---|---|---|
@@ -170,7 +162,7 @@
 | Check | `de-slopify` 審查文體 · `say-it-plain` | 合約給客戶老闆看 |
 | Act | `presales-pipeline` won · 轉顧問（第 4 節）或開發者（第 1 節） | 案子從 presales 變專案 |
 
-### 3e 素材庫與 CRM 維護（排程）
+### 3d 素材庫與 CRM 維護（排程）
 
 | | 用誰 | 說明 |
 |---|---|---|
@@ -374,6 +366,30 @@
 | Do | `repo-rename` · `doc-drift-sync`（修） | plist、settings、sibling repo 全掃 |
 | Check | `sk check portability` · `sk check ports` | 硬編碼路徑、port 漂移 |
 | Act | `gstack-upgrade` · `gstack-learn` (gstack) · `autoresearch`（指標型改善） | |
+
+---
+
+## 9. 創辦人／經營者
+
+你在做：對投資人講公司、決定做不做什麼。跟業務（第 3 節）的差別：業務對客戶賣方案，這裡對投資人賣公司、對自己拷問方向；deck 的敘事、數字揭露、去識別化規矩都不同。
+
+### 9a 投資人募資 BP
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `task-brief`（思考／探索階段）→ `pitch-deck` 的 discovery interview ｜ 視情況：`gstack-office-hours` (gstack)、`invest-research`（看同業估值與市場數字） | 敘事先於投影片；數字要有來源 |
+| Do | `pitch-deck` → `office-pptx` ｜ 視情況：`chart-design`（數據頁）、`excalidraw-diagram`（產品示意） | |
+| Check | `slide-office-hours` → `de-slopify` | 紅隊審敘事；他案引用要去識別化（身分匿名、技術數字留具體） |
+| Act | `knowledge-graph`（投資人、回饋、條件） | 每一輪 pitch 的回饋沉澱，下一版 deck 從這裡改 |
+
+### 9b 方向與產品決策
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `task-brief`（先判斷在思考／探索／決定哪一階段）→ `gstack-office-hours` (gstack) | 思考階段用反問，不要急著出草稿 |
+| Do | `requirement`（決定做了才寫）｜ 視情況：`gstack-plan-ceo-review` (gstack，大功能砍 scope 到槓桿) | 增量接線優於重寫；先找 2–3 條槓桿 |
+| Check | `gstack-plan-ceo-review` (gstack) · `say-it-plain` | 一句話講不出「這是什麼」代表還沒想清 |
+| Act | 決定交給第 1 節（產品）或第 3 節（客戶）· `knowledge-graph` | 決策記成事實，含為什麼不做 |
 
 ---
 

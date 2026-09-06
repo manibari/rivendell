@@ -631,3 +631,9 @@ category: best_practice
 - **範圍**: grep 全部 headless cron 腳本，`bin/sk-harvest-cron`、`bin/sk-facts-cron`、`bin/sk-token-analysis-cron` 的 `claude -p` 呼叫**同樣沒有 timeout**——這是這批 headless cron 共同的架構缺口，不是單一腳本的個案。
 - **How to apply**: 幫這 4 支腳本的 `claude -p` 呼叫加 `timeout <N>s`（依歷史執行時間抓一個合理上限，例如 600s），逾時要讓 `run_exit` 明確非 0 並落地至少一行可讀的錯誤訊息到 log，不要留 0 bytes 靜默失敗。長期可以考慮幫 `sk-exec-lib` 加一個「本週某排定 agent 完全沒有產出記錄」的主動告警，而不是靠人工回頭翻 log 才發現整週報告消失。
 - **Related**: 同一次也發現 `dashboard/lib/db.py:6` 的 DB_PATH 錯誤（`/api/agents/{label}/runs` 對所有 agent 回傳 `[]`）已知未修至少 6 個 retro 週期，且 `ROADMAP.md` 文末寫明「登記不修——每項要有去處,不能爛在文件」，但這項和 `bin/sk:489` UTF-8 截斷、tester `_shared` 誤報都沒有進 Known-Gap Register——詳見 `reports/workflow-retro-2026-W36-manibaris-macbook-air-1213.md`。
+
+## 2026-09-07 — 投資人募資 BP 不是業務的工作（使用者糾正）
+- category: correction
+- **情境**: 角色頁把「投資人募資 BP」放在業務／Presales 底下當 3c，理由是 pitch-deck 是 deck 類 skill、frontmatter `loop: sales`。使用者糾正：募資是創辦人／經營者的事。
+- **為什麼錯**: 我用「產出形狀（deck）」分工作，該用「對誰、為了什麼」分。業務對客戶賣方案；募資對投資人賣公司，敘事、數字揭露、去識別化規矩都不同，讀者也不同。
+- **How to apply**: 角色頁新增第 9 節「創辦人／經營者」（9a 募資 BP、9b 方向與產品決策）；`pitch-deck` 的 `loop` 改 `shared`（沒有 founder 循環，跨循環工具照規則 4 標 shared）。分工作時先問「這件事的對手方是誰」，不看產出物長什麼樣。

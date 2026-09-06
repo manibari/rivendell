@@ -275,14 +275,14 @@ as release notes.
 
 | Loop | plan | do | check | act |
 |------|------|----|-------|-----|
-| sales | 5 | 5 | 2 | 1 |
+| sales | 5 | 4 | 2 | 1 |
 | gov | 2 | 2 | — | — |
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 5 | 5 |
 | dev | 19 | 21 | 8 | 8 |
-| shared | 1 | 13 | 2 | — |
+| shared | 1 | 14 | 2 | — |
 
 
 ## Built-in Claude Code Skills (not in this repo)
