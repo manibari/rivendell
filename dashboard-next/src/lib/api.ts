@@ -309,6 +309,12 @@ export interface RoleStage {
   stage: "Plan" | "Do" | "Check" | "Act";
   text: string;
   skills: string[];
+  /** 主線：必經，照順序 */
+  core: string[];
+  /** 視情況：有那個條件才叫 */
+  conditional: string[];
+  /** 自動：hook / gate，自己會跳出來 */
+  automatic: string[];
   gaps: string[];
   external: string[];
   note: string;

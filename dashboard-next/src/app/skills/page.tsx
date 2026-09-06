@@ -53,6 +53,24 @@ const FOLDER_LABELS: Record<string, string> = {
   docs: "文件與簡報",
 };
 
+const PDCA_LABELS: Record<string, string> = {
+  plan: "想清楚",
+  do: "做出來",
+  check: "驗證",
+  act: "收尾 · 下一輪",
+};
+
+// Density tint for the loop × PDCA cells: sequential greens only (DESIGN.md),
+// light text once the background gets dark enough to need it.
+function cellTone(n: number, max: number): { bg: string; fg: string } {
+  if (n === 0) return { bg: "transparent", fg: "var(--status-warn)" };
+  const t = Math.min(1, n / Math.max(1, max));
+  if (t >= 0.66) return { bg: SEQ_GREENS[0], fg: "#ffffff" };
+  if (t >= 0.4) return { bg: SEQ_GREENS[2], fg: "#ffffff" };
+  if (t >= 0.2) return { bg: SEQ_GREENS[5], fg: "#0a0a0a" };
+  return { bg: SEQ_GREENS[7], fg: "#0a0a0a" };
+}
+
 const SOURCE_LABELS: Record<string, string> = {
   rivendell: "rivendell",
   gstack: "gstack",
@@ -180,6 +198,8 @@ export default function SkillsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [source, setSource] = useState<string>("rivendell");
   const [view, setView] = useState<"loops" | "roles">("loops");
+  const [expandAll, setExpandAll] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterFolder, setFilterFolder] = useState("");
   const [filterLoop, setFilterLoop] = useState("");
@@ -217,8 +237,16 @@ export default function SkillsPage() {
     }
     const loops = LOOP_ORDER.filter((l) => loopCount.has(l));
     let gaps = 0;
-    for (const l of loops) for (const p of PDCA_ORDER) if (!cells.has(`${l}/${p}`)) gaps++;
-    return { cells, loops, loopCount, gaps, untagged: rivendell.filter((s) => !s.loop || !s.pdca).length };
+    let maxCell = 1;
+    const stageCount = new Map<string, number>();
+    for (const l of loops)
+      for (const p of PDCA_ORDER) {
+        const n = cells.get(`${l}/${p}`)?.length ?? 0;
+        if (n === 0) gaps++;
+        maxCell = Math.max(maxCell, n);
+        stageCount.set(p, (stageCount.get(p) || 0) + n);
+      }
+    return { cells, loops, loopCount, gaps, maxCell, stageCount, untagged: rivendell.filter((s) => !s.loop || !s.pdca).length };
   }, [rivendell]);
 
   const folders = useMemo(() => {
@@ -371,70 +399,160 @@ export default function SkillsPage() {
         ]}
       />
 
-      {/* Loop × PDCA grid — the architecture view */}
+      {/* Loop × PDCA grid — the architecture view.
+          Cells show a count (tinted by density); click one to list its skills
+          below the grid. "全部展開" inlines every chip for a full read. */}
       <div className="mt-6 p-4" style={cardStyle}>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
           <h2 style={h2}>循環 × PDCA</h2>
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            每格列出該循環在該階段的 skill；「—」代表缺環。
-            {grid.untagged > 0 && ` 未標籤 ${grid.untagged} 支。`}
-          </span>
+          <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
+            <span>格子 = 該循環在該階段的 skill 數；「—」= 缺環。點一格看清單。{grid.untagged > 0 && ` 未標籤 ${grid.untagged} 支。`}</span>
+            <button
+              type="button"
+              onClick={() => setExpandAll((v) => !v)}
+              className="px-2 py-0.5 font-mono"
+              style={{ border: "1px solid var(--border)", borderRadius: 3, color: "var(--text)", background: expandAll ? "var(--surface-2)" : "var(--surface)" }}
+            >
+              {expandAll ? "收合" : "全部展開"}
+            </button>
+          </div>
         </div>
         <div style={{ overflowX: "auto" }}>
-          <table className="w-full" style={{ borderCollapse: "separate", borderSpacing: 0, minWidth: 880 }}>
+          <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 760, tableLayout: "fixed" }}>
+            <colgroup>
+              <col style={{ width: 170 }} />
+              {PDCA_ORDER.map((p) => (
+                <col key={p} />
+              ))}
+              <col style={{ width: 64 }} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="text-left px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--text-subtle)", width: 150 }}>
+                <th className="text-left px-2 pb-2 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
                   loop
                 </th>
                 {PDCA_ORDER.map((p) => (
-                  <th key={p} className="text-left px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
-                    {p}
+                  <th key={p} className="px-2 pb-2 text-center" style={{ color: "var(--text-subtle)" }}>
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-wider">{p}</div>
+                    <div className="text-[10px] font-normal">{PDCA_LABELS[p]}</div>
                   </th>
                 ))}
+                <th className="px-2 pb-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+                  合計
+                </th>
               </tr>
             </thead>
             <tbody>
               {grid.loops.map((loop) => (
-                <tr key={loop} style={{ borderTop: `1px solid ${BORDER}` }}>
-                  <td className="px-2 py-2 align-top" style={{ borderTop: `1px solid ${BORDER}` }}>
-                    <button
-                      type="button"
-                      onClick={() => setFilterLoop(filterLoop === loop ? "" : loop)}
-                      className="text-left"
-                      title="點一下只看這個循環"
-                    >
-                      <div className="font-mono text-sm" style={{ color: filterLoop === loop ? "var(--accent)" : "var(--text)", fontWeight: 500 }}>
-                        {loop}
-                      </div>
-                      <div className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                        {LOOP_LABELS[loop] ?? ""} · {grid.loopCount.get(loop)}
-                      </div>
-                    </button>
-                  </td>
+                <tr key={loop}>
+                  <th scope="row" className="px-2 py-1.5 text-left align-middle" style={{ borderTop: `1px solid ${BORDER}` }}>
+                    <div className="font-mono text-sm" style={{ color: "var(--text)", fontWeight: 500 }}>
+                      {loop}
+                    </div>
+                    <div className="text-[11px] font-normal" style={{ color: "var(--text-muted)" }}>
+                      {LOOP_LABELS[loop] ?? ""}
+                    </div>
+                  </th>
                   {PDCA_ORDER.map((p) => {
-                    const list = grid.cells.get(`${loop}/${p}`) ?? [];
+                    const key = `${loop}/${p}`;
+                    const list = grid.cells.get(key) ?? [];
+                    const n = list.length;
+                    const sel = selectedCell === key;
+                    const tone = cellTone(n, grid.maxCell);
                     return (
-                      <td key={p} className="px-2 py-2 align-top" style={{ borderTop: `1px solid ${BORDER}`, borderLeft: `1px solid ${BORDER}` }}>
-                        {list.length === 0 ? (
-                          <span className="font-mono text-xs" title="缺環" style={{ color: "var(--text-subtle)" }}>
-                            —
-                          </span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {list.map((s) => (
-                              <SkillLink key={s.name} name={s.name} />
-                            ))}
+                      <td key={p} style={{ border: `1px solid ${BORDER}`, padding: 0, verticalAlign: "top" }}>
+                        {expandAll ? (
+                          <div className="flex flex-wrap gap-1 p-2" style={{ minHeight: 44 }}>
+                            {n === 0 ? (
+                              <span className="font-mono text-xs" style={{ color: "var(--status-warn)" }}>—</span>
+                            ) : (
+                              list.map((s) => <SkillLink key={s.name} name={s.name} />)
+                            )}
                           </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCell(sel ? null : key)}
+                            title={n ? `${loop} · ${p} · ${n} 支，點開看清單` : "缺環：這個階段沒有 skill"}
+                            className="flex w-full items-center justify-center font-mono transition-shadow"
+                            style={{
+                              height: 48,
+                              background: tone.bg,
+                              color: tone.fg,
+                              fontSize: n ? 16 : 14,
+                              fontWeight: n ? 500 : 400,
+                              boxShadow: sel ? "inset 0 0 0 2px var(--accent)" : "none",
+                              cursor: n ? "pointer" : "default",
+                            }}
+                            disabled={n === 0}
+                          >
+                            {n ? n : "—"}
+                          </button>
                         )}
                       </td>
                     );
                   })}
+                  <td className="px-2 text-right font-mono text-sm tabular-nums align-middle" style={{ borderTop: `1px solid ${BORDER}`, color: "var(--text-muted)" }}>
+                    {grid.loopCount.get(loop)}
+                  </td>
                 </tr>
               ))}
+              <tr>
+                <th scope="row" className="px-2 pt-2 text-left text-[11px] font-medium uppercase tracking-wider" style={{ borderTop: `1px solid ${BORDER}`, color: "var(--text-subtle)" }}>
+                  合計
+                </th>
+                {PDCA_ORDER.map((p) => (
+                  <td key={p} className="px-2 pt-2 text-center font-mono text-sm tabular-nums" style={{ borderTop: `1px solid ${BORDER}`, color: "var(--text-muted)" }}>
+                    {grid.stageCount.get(p) ?? 0}
+                  </td>
+                ))}
+                <td className="px-2 pt-2 text-right font-mono text-sm tabular-nums" style={{ borderTop: `1px solid ${BORDER}`, color: "var(--text)" }}>
+                  {rivendell.length}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
+
+        {!expandAll && selectedCell && (
+          <div className="mt-3 p-3" style={{ background: SURFACE_2, borderRadius: "var(--radius-sm)" }}>
+            <div className="mb-2 flex items-baseline gap-2 text-xs">
+              <span className="font-mono" style={{ color: "var(--text)", fontWeight: 500 }}>
+                {selectedCell.replace("/", " · ")}
+              </span>
+              <span style={{ color: "var(--text-muted)" }}>
+                {LOOP_LABELS[selectedCell.split("/")[0]]} · {PDCA_LABELS[selectedCell.split("/")[1]]} · {(grid.cells.get(selectedCell) ?? []).length} 支
+              </span>
+              <button type="button" onClick={() => setSelectedCell(null)} className="ml-auto font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
+                關閉
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(grid.cells.get(selectedCell) ?? []).map((s) => (
+                <Link
+                  key={s.name}
+                  href={`/skills/${encodeURIComponent(s.name)}`}
+                  className="flex flex-col gap-0.5 p-2"
+                  style={{ ...cardStyle, minWidth: 180, maxWidth: 260, flex: "1 1 180px" }}
+                >
+                  <span className="font-mono text-xs" style={{ color: "var(--text)", fontWeight: 500 }}>
+                    {s.name}
+                  </span>
+                  {s.summary && (
+                    <span className="text-[11px] leading-snug" style={{ color: "var(--text-muted)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      {s.summary}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {!expandAll && !selectedCell && (
+          <p className="mt-2 text-[11px]" style={{ color: "var(--text-subtle)" }}>
+            顏色越深 = 該格 skill 越多。缺環的格子代表這條循環在這一步沒有任何 skill 可叫。
+          </p>
+        )}
       </div>
 
       {/* Folder map + usage */}

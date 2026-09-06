@@ -17,20 +17,24 @@ const STAGE_LABEL: Record<string, string> = {
   Act: "收尾 · 下一輪",
 };
 
-function Chip({ name, external }: { name: string; external?: boolean }) {
+type ChipKind = "core" | "conditional" | "automatic";
+
+function Chip({ name, external, kind = "core" }: { name: string; external?: boolean; kind?: ChipKind }) {
+  const muted = kind !== "core";
   return (
     <Link
       href={`/skills/${encodeURIComponent(name)}`}
       className="inline-block font-mono transition-colors"
-      title={external ? "外部 gstack skill" : name}
+      title={`${name}${external ? "（外部 gstack）" : ""}${kind === "conditional" ? " · 視情況" : kind === "automatic" ? " · 自動觸發" : ""}`}
       style={{
         fontSize: 11,
         lineHeight: "16px",
         padding: "1px 6px",
-        borderRadius: 3,
-        border: `1px ${external ? "dashed" : "solid"} var(--border)`,
-        background: external ? "transparent" : "var(--surface)",
-        color: external ? "var(--text-muted)" : "var(--text)",
+        borderRadius: kind === "automatic" ? 99 : 3,
+        border: `1px ${kind === "conditional" || external ? "dashed" : "solid"} ${kind === "core" ? "var(--border-strong)" : "var(--border)"}`,
+        background: kind === "automatic" ? "var(--surface-2)" : muted ? "transparent" : "var(--surface)",
+        color: muted ? "var(--text-muted)" : "var(--text)",
+        fontWeight: kind === "core" ? 500 : 400,
         whiteSpace: "nowrap",
       }}
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent-soft)")}
@@ -71,10 +75,37 @@ function StageCell({ stage }: { stage: RoleStage }) {
         </span>
       ) : (
         <>
-          {stage.skills.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {stage.skills.map((s) => (
-                <Chip key={s} name={s} external={stage.external.includes(s)} />
+          {stage.core.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              {stage.core.map((s, i) => (
+                <span key={s} className="inline-flex items-center gap-1">
+                  {i > 0 && (
+                    <span aria-hidden className="text-[10px]" style={{ color: "var(--text-subtle)" }}>
+                      →
+                    </span>
+                  )}
+                  <Chip name={s} external={stage.external.includes(s)} kind="core" />
+                </span>
+              ))}
+            </div>
+          )}
+          {stage.conditional.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-[10px]" style={{ color: "var(--text-subtle)" }}>
+                視情況
+              </span>
+              {stage.conditional.map((s) => (
+                <Chip key={s} name={s} external={stage.external.includes(s)} kind="conditional" />
+              ))}
+            </div>
+          )}
+          {stage.automatic.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-[10px]" style={{ color: "var(--text-subtle)" }}>
+                自動
+              </span>
+              {stage.automatic.map((s) => (
+                <Chip key={s} name={s} external={stage.external.includes(s)} kind="automatic" />
               ))}
             </div>
           )}
@@ -161,6 +192,11 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
         </span>
         <span className="font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
           source: docs/skills-by-role.md · {data.updated}
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-subtle)" }}>
+          <span style={{ border: "1px solid var(--border-strong)", borderRadius: 3, padding: "0 5px", color: "var(--text)", fontWeight: 500 }}>主線</span>
+          <span style={{ border: "1px dashed var(--border)", borderRadius: 3, padding: "0 5px" }}>視情況</span>
+          <span style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 99, padding: "0 6px" }}>自動</span>
         </span>
         <Link href="/skills/roles?raw=1" className="inline-flex items-center gap-1 text-[11px]" style={{ color: "var(--text-subtle)" }}>
           <ExternalLink size={11} /> 原文

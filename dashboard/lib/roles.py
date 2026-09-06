@@ -45,6 +45,22 @@ def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
     """
     codes = _CODE_RE.findall(cell)
     skills = [c for c in codes if known is None or c in known]
+    # Three segments separated by ｜: main line, "視情況：" (conditional),
+    # "自動：" (hooks / gates that fire on their own). Skill refs are bucketed
+    # by which segment they sit in so the UI can style them apart.
+    core: list[str] = []
+    conditional: list[str] = []
+    automatic: list[str] = []
+    for part in cell.split("｜"):
+        stripped = part.strip()
+        bucket = core
+        if stripped.startswith("視情況"):
+            bucket = conditional
+        elif stripped.startswith("自動"):
+            bucket = automatic
+        for c in _CODE_RE.findall(part):
+            if (known is None or c in known) and c not in bucket:
+                bucket.append(c)
     gaps: list[str] = []
     # Segments are separated by · or →; a segment starting with ★ is a gap.
     # (Do not split on "/" — gap text such as "won / lost / no-bid" uses it.)
@@ -57,6 +73,9 @@ def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
     return {
         "text": _strip_md(cell).replace("`", ""),
         "skills": skills,
+        "core": core,
+        "conditional": conditional,
+        "automatic": automatic,
         "gaps": gaps,
         "external": external,
     }
@@ -153,7 +172,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
             have = {s["stage"] for s in j["stages"]}
             for st in _STAGES:
                 if st not in have:
-                    j["stages"].append({"stage": st, "text": "", "skills": [], "gaps": [], "external": [], "note": "", "empty": True})
+                    j["stages"].append({"stage": st, "text": "", "skills": [], "core": [], "conditional": [], "automatic": [], "gaps": [], "external": [], "note": "", "empty": True})
             j["stages"].sort(key=lambda s: _STAGES.index(s["stage"]))
             j["gap_count"] = sum(len(s["gaps"]) for s in j["stages"])
         r["job_count"] = len(r["jobs"])

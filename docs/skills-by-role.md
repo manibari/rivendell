@@ -4,7 +4,8 @@
 > 這頁回答：**我是誰 → 我手上是哪一件工作 → 這件工作走到哪一步 → 該叫誰**。
 >
 > 三層：**角色**（你是誰）→ **工作**（同一個角色會有好幾條不同的路徑，例如業務的陌生開發、客製提案、募資、kickoff 各走各的）→ **PDCA**（每件工作自己的 Plan / Do / Check / Act）。
-> 每格「用誰」列 skill，`★` 代表這一步還沒有 skill（缺環）。標 `(gstack)` 的是外部 gstack skill。
+> 每格「用誰」分三段：**主線**（必經，照順序）｜**視情況：**（有那個條件才叫）｜**自動：**（hook 或 gate，自己會跳出來，不用叫）。
+> `★` 代表這一步還沒有 skill（缺環）。標 `(gstack)` 的是外部 gstack skill。
 > 同一支 skill 出現在多個角色、多件工作是正常的。
 >
 > 維護規則：新 skill 進來要在這頁至少出現一次；`sk check` 會列出沒被收編的 skill。
@@ -40,46 +41,46 @@
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief` → `requirement` → `app-ops-baseline` → `init-project` → `setup-permissions` | 先定義任務；注入 roadmap / logs / changelog / feedback / api-keys / settings 基線；建 CLAUDE.md、AGENTS.md；只放用到的權限 |
-| Do | product-skeleton clone → `spine-auth` · `spine-rbac` · `spine-schema-sync` · `spine-versioning` · `docker-compose-setup` · `markdown-file-ssot` | 骨架已接好線，每個 spine 模組各有一個要自己決定的政策 |
-| Check | `qa-testing` · `env-doctor` | 測試策略；另一台機器跑得起來 |
-| Act | `ci-pipeline` · `deploy` · `cloudflare-tunnel-provision` · `doc-drift-sync` | CI、選平台、開網域、文件對齊版本 |
+| Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `app-ops-baseline` ｜ 視情況：`gstack-office-hours` (gstack)、`discovery-interview`、`chimesflow-design`、`ui-ux-pro-max` ｜ 自動：`dev-process-gate` | 主線五步：定義任務 → 產品範圍與 user story → 第一條核心旅程 → 首頁 wireframe → 注入 ops 基線（roadmap / logs / changelog / feedback / api-keys / settings）。還沒想清楚值不值得做才叫 office-hours；有客戶才做 discovery；要接 ChimesFlow 設計系統才載 chimesflow-design |
+| Do | product-skeleton clone → `init-project` → `spine-auth` → `spine-schema-sync` → `spine-versioning` ｜ 視情況：`spine-rbac`（多人用才需要）、`docker-compose-setup`、`markdown-file-ssot`、`setup-permissions` | 骨架已接好線，每個 spine 模組各有一個要自己決定的政策；init-project 建 CLAUDE.md / AGENTS.md |
+| Check | `qa-testing` → `env-doctor` ｜ 視情況：`qa-journey`（第一條旅程能走通） | 測試策略；另一台機器跑得起來 |
+| Act | `ci-pipeline` → `deploy` ｜ 視情況：`cloudflare-tunnel-provision`（要對外）｜ 自動：`doc-drift-sync` | 起手的 Act 就是第一次上線，之後進 1b / 1c 循環 |
 
 ### 1b 新功能／新頁面（UI）
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief` → `gstack-office-hours` (gstack) → `requirement` → `user-flow` → `chimesflow-design` → `mockup` → `ui-ux-pro-max` → `writing-plans` / `planning-with-files` → `plan-check-style` · `dev-process-gate` | 值不值得做 → user story → 旅程圖 → 鎖設計系統 → wireframe → 計畫；跳步會被 gate 擋 |
-| Do | `executing-plans` · `frontend-design` · `gstack-freeze` / `gstack-unfreeze` (gstack) | 分批執行有 checkpoint；重構時鎖穩定區 |
-| Check | `qa-planner` → `qa-auto` · `qa-journey` · `qa-dataflow`（動到資料寫入時 HARD GATE）· `gstack-review` · `gstack-qa` · `gstack-design-review` (gstack) | QA 計畫 → 自動測試；像真使用者走一遍；資料流有沒有走鐘；diff 審查 |
-| Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) · `spine-versioning` | 合併部署、盯回歸、更新文件、bump 版本 |
+| Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `writing-plans` ｜ 視情況：`gstack-office-hours` (gstack，值不值得做)、`chimesflow-design`（新前端）、`ui-ux-pro-max`（挑風格）、`planning-with-files`（多步驟要追蹤進度時取代 writing-plans）｜ 自動：`dev-process-gate`、`plan-check-style` | 主線五步；跳步會被 gate 擋；進 plan mode 做 UI 時 style 自動載入 |
+| Do | `executing-plans` → `frontend-design` ｜ 視情況：`gstack-freeze` / `gstack-unfreeze` (gstack，重構時鎖穩定區) | 分批執行有 checkpoint |
+| Check | `qa-planner` → `qa-auto` → `gstack-review` (gstack) ｜ 視情況：`qa-journey`（有旅程要走）、`qa-dataflow`（動到資料寫入時 HARD GATE）、`gstack-qa`、`gstack-design-review` (gstack) | QA 計畫 → 自動測試 → diff 審查 |
+| Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) ｜ 自動：`spine-versioning` | 合併部署、盯回歸、更新文件；沒 bump 版本 push 會被擋 |
 
 ### 1c 後端功能／修 bug／重構
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief` · `gstack-investigate` (gstack) · `backend-async-jobs` · `spine-rbac` | 先找根因；慢工作要同步 / job / pipeline 先決定；權限先選 tier |
-| Do | `spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `large-file-refactor` · `concurrent-session-git` · `resolving-merge-conflicts` · `agent-dispatch` · `gstack-careful` (gstack) | 各功能一支；大檔拆模組；多 session 共用 tree 的 git 規矩；衝突回到兩邊意圖；3 個以上獨立問題平行修；破壞性指令前護欄 |
-| Check | `qa-testing` · `qa-dataflow` · `gstack-review` · `gstack-codex` (gstack) · `repro-exam` | 寫測試；資料流反證；diff 審查；第二意見；標準考題 |
-| Act | `deploy` · `gstack-canary` (gstack) · `gstack-benchmark` (gstack，動到請求路徑時) · `doc-drift-sync` | 部署、監控、效能、文件 |
+| Plan | `task-brief` → `gstack-investigate` (gstack，bug 才要) ｜ 視情況：`backend-async-jobs`（慢工作先決定同步 / job / pipeline）、`spine-rbac`（權限先選 tier） | 先找根因再動手 |
+| Do | 對應功能的那一支 ｜ 視情況：`spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `large-file-refactor`（500 行以上）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 一次只會用到其中一兩支，看功能是什麼 |
+| Check | `qa-testing` → `gstack-review` (gstack) ｜ 視情況：`qa-dataflow`（資料流反證）、`gstack-codex` (gstack，第二意見)、`repro-exam`（要給人標準考題） | |
+| Act | `deploy` → `gstack-canary` (gstack) ｜ 視情況：`gstack-benchmark` (gstack，動到請求路徑) ｜ 自動：`doc-drift-sync` | |
 
 ### 1d 部署與上線
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `deploy` · `ci-pipeline` | 選平台、生設定、CI |
-| Do | `cloudflare-tunnel-provision` · `tunnel-proxy-deploy` · `docker-compose-setup` | 從零開網域；FastAPI + Next.js 走 tunnel 的反代坑；compose |
-| Check | `gstack-canary` (gstack) · `env-doctor` · `gstack-cso` (gstack，上線前安全審計) | 上線後回歸；環境一致；安全 |
-| Act | `cloudflare-tunnel-ops` · `spine-versioning` · `doc-drift-sync` · `gstack-document-release` (gstack) | tunnel 掛了／搬機器；版本閘門；文件跟上 |
+| Plan | `deploy` ｜ 視情況：`ci-pipeline`（還沒有 CI） | 選平台、生設定 |
+| Do | `cloudflare-tunnel-provision` → `tunnel-proxy-deploy` ｜ 視情況：`docker-compose-setup` | 從零開網域；FastAPI + Next.js 走 tunnel 的反代坑 |
+| Check | `gstack-canary` (gstack) → `env-doctor` ｜ 視情況：`gstack-cso` (gstack，上線前安全審計) | 上線後回歸；環境一致 |
+| Act | `cloudflare-tunnel-ops` ｜ 自動：`spine-versioning`、`doc-drift-sync` ｜ 視情況：`gstack-document-release` (gstack) | tunnel 掛了／搬機器 |
 
 ### 1e iOS app
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `requirement` · `user-flow` · `mockup` | 同 1b |
-| Do | `swiftui-patterns` · `ios-integration` | MVVM、Extension、Deep Link、地圖 |
-| Check | `qa-testing`（Swift Testing）· `gstack-ios-qa` · `gstack-ios-design-review` (gstack) | |
-| Act | `gstack-ios-sync` · `gstack-ios-clean` (gstack) | |
+| Plan | `requirement` → `user-flow` → `mockup` | 同 1b |
+| Do | `swiftui-patterns` ｜ 視情況：`ios-integration`（Extension、Deep Link、地圖） | MVVM 為主 |
+| Check | `qa-testing`（Swift Testing）→ `gstack-ios-qa` (gstack) ｜ 視情況：`gstack-ios-design-review` (gstack) | |
+| Act | `gstack-ios-sync` ｜ 視情況：`gstack-ios-clean` (gstack) | |
 
 工作之間怎麼接：1a 只跑一次，產出的是 repo（骨架接好 spine、CLAUDE.md、權限、CI、第一次部署），之後 1b 與 1c 都在它裡面反覆跑。1b 的計畫（writing-plans 任務清單）裡「要一個 endpoint」就是 1c 的輸入；1c 的 qa-dataflow 反證結果回到 1b 的 Check。1d 是每一輪 1b／1c 的 Act 都會經過的那段，獨立成一件工作是因為開網域、搬機器不綁任何功能。接縫都是檔案：requirement → user-flow 圖 → 任務清單 → QA 計畫（交 2b）→ 版本號與 CHANGELOG（spine-versioning 閘門擋沒 bump 的 push）→ 下一輪 1b。
 
@@ -138,7 +139,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `presales-pipeline`（建 client 檔）→ `tw-company-lookup` → `sales-customer-intel` → `metadata-workshop`（猜製程）· `gstack-office-hours` (gstack) | 公司登記；情蒐要 operator-level 猜製程與業務流程，不是轉述公開資料；值不值得追 |
-| Do | storyline.md（**你寫**，AI 補洞）→ `slide-office-hours` → `slide-workflow` → `chart-design` → `excalidraw-diagram` / `mermaid-diagram` → `office-pptx` / `gdoc-report-builder` → `de-slopify` | 通用流程 D：storyline 紅隊過了才生成；圖走 chart-design；繁中打磨 |
+| Do | storyline.md（**你寫**，AI 補洞）→ `slide-office-hours` → `slide-workflow` → `office-pptx` → `de-slopify` ｜ 視情況：`chart-design`（deck 有圖才進，它再轉 `excalidraw-diagram` / `mermaid-diagram`）、`gdoc-report-builder`（要出 Google Slides） | 通用流程 D：storyline 紅隊過了才生成；繁中打磨 |
 | Check | `slide-office-hours`（`status: signed-off` 才准生成）· `gstack-design-review` (gstack) · `check-html-figure.mjs` | 硬閘門；視覺一致；圖檔切版與字級 |
 | Act | `presales-pipeline`（active → 下一步）· `knowledge-graph` | 狀態流轉；人與決策記成事實 |
 
@@ -147,7 +148,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `discovery-interview` · `metadata-workshop` · `sales-customer-intel`（更新） | 挖最痛的手工流程；業務知識變 schema |
-| Do | `sales-material`（從素材庫組裝）· `sales-deck-design` · `slide-workflow` · `slide-template-extractor`（有參考 PPTX）· `gov-rfq-writer`（報價）· `chart-design` | 客製提案要像企業提案；報價比 SOW 輕 |
+| Do | `sales-material` → `sales-deck-design` → `slide-workflow` ｜ 視情況：`slide-template-extractor`（有參考 PPTX 要鎖風格）、`gov-rfq-writer`（要附報價）、`chart-design`（有圖） | 從素材庫組裝；客製提案要像企業提案；報價比 SOW 輕 |
 | Check | `slide-office-hours` · `sales-material-health`（素材沒過期）· `gstack-design-review` (gstack) | |
 | Act | won → 3d；lost → `presales-pipeline` lost + 原因 · `knowledge-graph` | |
 
