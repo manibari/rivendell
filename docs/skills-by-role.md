@@ -1,117 +1,87 @@
-# Skills by Role — 你是誰，就從哪一頁開始
+# Skills by Role — 角色 → 工作 → PDCA
 
-> 這頁是給**使用者**看的視角，不是給 skill 目錄用的分類。skill 實體照循環放在 `skills/<loop>/`（見 README Skills Catalog），
-> 這裡只回答一個問題：**我現在扮演什麼角色、手上這件事走到哪一步、該叫哪支 skill**。
-> 同一支 skill 出現在多個角色是正常的；一個人一天也會換好幾個角色。
+> 給**使用者**看的視角。skill 實體照循環放在 `skills/<loop>/`（見 README Skills Catalog），
+> 這頁回答：**我是誰 → 我手上是哪一件工作 → 這件工作走到哪一步 → 該叫誰**。
 >
-> 每個角色一套 **PDCA**：Plan（想清楚要做什麼）→ Do（做出來）→ Check（驗證、審查）→ Act（收尾、沉澱、下一輪）。
-> 每列是「情境 → 用誰 → 一句話」，順序照一件事從頭到尾。標 `(gstack)` 的是外部 gstack skill，不在本 repo。
+> 三層：**角色**（你是誰）→ **工作**（同一個角色會有好幾條不同的路徑，例如業務的陌生開發、客製提案、募資、kickoff 各走各的）→ **PDCA**（每件工作自己的 Plan / Do / Check / Act）。
+> 每格「用誰」列 skill，`★` 代表這一步還沒有 skill（缺環）。標 `(gstack)` 的是外部 gstack skill。
+> 同一支 skill 出現在多個角色、多件工作是正常的。
 >
-> 維護規則：新 skill 進來要在這頁至少出現一次；`sk check` 會列出沒被任何角色收編的 skill。
-> 更新：2026-09-06。
+> 維護規則：新 skill 進來要在這頁至少出現一次；`sk check` 會列出沒被收編的 skill。
+> 某件工作需要更細的展開（狀態機、資料欄位、缺口優先序），另開 `docs/loops/<loop>-<工作>.md`，這裡只連過去。
+> 更新：2026-09-07。
 
 ---
 
 ## 角色索引
 
-| 角色 | 你在做什麼 | 主要循環 / 資料夾 |
-|---|---|---|
-| [1. 產品開發者](#1-產品開發者) | 蓋新產品、加功能、修 bug、部署 | dev · planning · backend · frontend · git |
-| [2. QA／驗收者](#2-qa驗收者) | 驗收自己、別人或 AI 寫的東西；接手 code | qa · quality |
-| [3. 業務／Presales](#3-業務presales) | 找客戶、情蒐、做提案 deck、kickoff | sales · docs 簡報類 |
-| [4. 顧問／報告與標案撰寫](#4-顧問報告與標案撰寫) | 政府案、SOW、廠務報告、Word / Google Docs 交付 | gov · docs 文件類 |
-| [5. 分析師／投資研究](#5-分析師投資研究) | 從資料算東西、畫數據圖、財報、ML 平台 | invest · chart-design data 類 |
-| [6. 人資](#6-人資) | JD、履歷分析、內部公告 | hr |
-| [7. 知識工作者](#7-知識工作者) | 看影片、讀文件、整理成可查的筆記 | knowledge |
-| [8. 平台維護者](#8-平台維護者) | 維護 rivendell 本身：skill、agent、排程、hook | platform · agents · workflow |
+| 角色 | 工作 |
+|---|---|
+| [1. 產品開發者](#1-產品開發者) | 1a 新產品起手 · 1b 新功能／新頁面 · 1c 後端功能／修 bug／重構 · 1d 部署與上線 · 1e iOS app |
+| [2. QA／驗收者](#2-qa驗收者) | 2a 接手或驗收別人／AI 的 code · 2b 功能完成後的 QA · 2c 使用者旅程測試 · 2d 跨機器重現 |
+| [3. 業務／Presales](#3-業務presales) | 3a 陌生開發到第一次拜訪 · 3b 客戶客製提案 · 3c 投資人募資 BP · 3d 簽約與 kickoff · 3e 素材庫與 CRM 維護 |
+| [4. 顧問／報告與標案撰寫](#4-顧問報告與標案撰寫) | 4a 政府標案 · 4b 政府補助計畫 · 4c 顧問案交付文件 · 4d 客戶資料梳理 |
+| [5. 分析師／投資研究](#5-分析師投資研究) | 5a 投資研究 · 5b 廠務時序分析 · 5c ML／AutoML 平台 · 5d 製造領域資料 · 5e 自動迭代實驗 |
+| [6. 人資](#6-人資) | 6a 開缺 · 6b 履歷篩選 · 6c 內部公告 |
+| [7. 知識工作者](#7-知識工作者) | 7a 訂閱與掃描 · 7b 單支影片／錄音消化 · 7c Drive 文件變 skill |
+| [8. 平台維護者](#8-平台維護者) | 8a 新增或修改 skill · 8b 排程 agent · 8c session 與環境 · 8d repo 維運 |
 
-橫向共用（每個角色都會碰到）：`task-brief`（開工前先定義任務、判斷階段）、`say-it-plain`（把話講清楚）、`knowledge-graph`（記住人／公司／專案的事實）、`context-journal` / `context-recovery`（長 session 不掉 context）、`session-wrap`（收工）。
+橫向共用（每個角色、每件工作都會碰到）：`task-brief`（開工前先定義任務、判斷階段）、`say-it-plain`（把話講清楚）、`knowledge-graph`（記住人／公司／專案的事實）、`context-journal` / `context-recovery`（長 session 不掉 context）、`session-wrap`（收工）、`self-improving-agent`（踩坑就記）。
+
+畫圖不分角色，一律從 `chart-design` 進：它 triage 後轉 `mermaid-diagram`（工程師看）或 `excalidraw-diagram`（簡報用）；使用者旅程用 `user-flow`；要驗證資料流用 `qa-dataflow`。
 
 ---
 
 ## 1. 產品開發者
 
-你在做：蓋一個新產品，或在既有產品上加功能、修 bug、重構、部署。對應 `~/.claude/CLAUDE.md` 的「UI Feature / New Page」與「Backend-only / Bug Fix」兩條流程。
+你在做：蓋新產品、加功能、修 bug、重構、部署。對應 `~/.claude/CLAUDE.md` 的「UI Feature / New Page」與「Backend-only / Bug Fix」。
 
-### Plan — 想清楚要做什麼
+### 1a 新產品起手（greenfield）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 接到一句「幫我做 X」，還不知道在哪個階段 | `task-brief` | 先判斷思考／探索／決定／執行，執行才產五欄位 brief |
-| 這值不值得做、產品層面的質疑 | `gstack-office-hours` (gstack) | YC 式反問，不產草稿 |
-| 定 user story 與驗收標準 | `requirement` | 結構化需求 |
-| 新產品 / 新 web app 起手 | `app-ops-baseline` | 注入 roadmap / logs / changelog / feedback / api-keys / settings 基線 |
-| 全新 repo 要有 CLAUDE.md、AGENTS.md | `init-project` | 初始化專案設定 |
-| 減少權限彈窗 | `setup-permissions` | 只放專案真的用到的工具 |
-| 畫使用者操作路徑（畫面切換、錯誤分支） | `user-flow` | Mermaid 旅程圖，之後 qa-journey 照著走 |
-| 畫給工程師看的系統架構、時序、狀態機 | `mermaid-diagram` | .mmd → PNG，圖要 argue 不是 display |
-| 新前端／新頁面 | `chimesflow-design` → `mockup` → `frontend-design` | 先鎖設計系統，再出 wireframe，再做 |
-| 挑風格、色盤、字型 | `ui-ux-pro-max` | 設計資料庫 |
-| 進 plan mode 做 UI 任務 | `plan-check-style` | 自動載入對應風格慣例 |
-| 寫給零 context 工程師的實作計畫 | `writing-plans` | 小任務切分 |
-| 多步驟、要追蹤進度的專案 | `planning-with-files` | task_plan / findings / progress 三檔 |
-| 跳過需求／設計直接要 code | `dev-process-gate` | 擋下來，補前置 |
-| 加後端功能前先決定同步 / 非同步 / 多輪 pipeline | `backend-async-jobs` | 分級決策，不要一律開 job |
+| Plan | `task-brief` → `requirement` → `app-ops-baseline` → `init-project` → `setup-permissions` | 先定義任務；注入 roadmap / logs / changelog / feedback / api-keys / settings 基線；建 CLAUDE.md、AGENTS.md；只放用到的權限 |
+| Do | product-skeleton clone → `spine-auth` · `spine-rbac` · `spine-schema-sync` · `spine-versioning` · `docker-compose-setup` · `markdown-file-ssot` | 骨架已接好線，每個 spine 模組各有一個要自己決定的政策 |
+| Check | `qa-testing` · `env-doctor` | 測試策略；另一台機器跑得起來 |
+| Act | `ci-pipeline` · `deploy` · `cloudflare-tunnel-provision` · `doc-drift-sync` | CI、選平台、開網域、文件對齊版本 |
 
-### Do — 做出來
+### 1b 新功能／新頁面（UI）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 照計畫分批執行、每批 review | `executing-plans` | 有 checkpoint 的執行 |
-| 加登入、JWT、密碼 | `spine-auth` | fleet 收斂的 crypto core + 每產品自決的 token 政策 |
-| 加角色權限 | `spine-rbac`（決策）→ `rbac-permissions`（實作） | 先選 Tier-1 寫死或 Tier-2 矩陣，再做 |
-| DB schema 變更、dev↔prod 同步 | `spine-schema-sync` → `db-migration` | Alembic，deploy 在 serve 前跑 upgrade head |
-| 版本號、changelog、忘記 bump | `spine-versioning` | 核心是 pre-push 閘門 |
-| 多服務 Docker 起手 | `docker-compose-setup` | Next.js + FastAPI + Postgres/Redis |
-| SQLite 搬到 Postgres | `sqlite-to-postgres` | 語法差異、資料搬遷、驗證 |
-| 向量搜尋、知識庫 | `vector-search-setup` | embedding 選型到 API |
-| 收發 email | `imap-smtp-integration` | FastAPI 內建 IMAP/SMTP |
-| 串第三方 OAuth、存 token | `oauth-token-vault` | Fernet 加密儲存 |
-| Telegram bot | `telegram-bot` | grammY 或 python-telegram-bot |
-| 做 MCP server | `mcp-builder` | FastMCP 模式 |
-| Firebase / Firestore | `firebase-backend` | schema、rules、deploy |
-| 語音上傳轉逐字稿功能 | `audio-transcription-flow` | 上傳 → STT → 顯示 |
-| 拍照給 AI 抽結構 | `ai-vision-extract` | identify → normalize → cache → persist |
-| 半結構資料要人可編、程式可查 | `markdown-file-ssot` | Markdown + frontmatter 當 SSOT |
-| iOS：SwiftUI 架構、系統整合 | `swiftui-patterns` · `ios-integration` | MVVM、Extension、Deep Link |
-| 500 行以上的大檔要拆 | `large-file-refactor` | 保介面拆模組 |
-| 多個 Claude session 共用一個 working tree | `concurrent-session-git` | 不要把別人的改動掃進自己的 commit |
-| merge / rebase 卡衝突 | `resolving-merge-conflicts` | 回到兩邊意圖，用專案自己的檢查證明結果 |
-| 3 個以上獨立問題要平行修 | `agent-dispatch` | 每個 agent 一個 worktree |
-| 被 bug 擋住 | `gstack-investigate` (gstack) | 先找根因 |
-| 重構時保護穩定區 | `gstack-freeze` / `gstack-unfreeze` (gstack) | 鎖住不該動的 |
-| 危險指令前 | `gstack-careful` (gstack) | rm、force push 前的護欄 |
+| Plan | `task-brief` → `gstack-office-hours` (gstack) → `requirement` → `user-flow` → `chimesflow-design` → `mockup` → `ui-ux-pro-max` → `writing-plans` / `planning-with-files` → `plan-check-style` · `dev-process-gate` | 值不值得做 → user story → 旅程圖 → 鎖設計系統 → wireframe → 計畫；跳步會被 gate 擋 |
+| Do | `executing-plans` · `frontend-design` · `gstack-freeze` / `gstack-unfreeze` (gstack) | 分批執行有 checkpoint；重構時鎖穩定區 |
+| Check | `qa-planner` → `qa-auto` · `qa-journey` · `qa-dataflow`（動到資料寫入時 HARD GATE）· `gstack-review` · `gstack-qa` · `gstack-design-review` (gstack) | QA 計畫 → 自動測試；像真使用者走一遍；資料流有沒有走鐘；diff 審查 |
+| Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) · `spine-versioning` | 合併部署、盯回歸、更新文件、bump 版本 |
 
-### Check — 驗證與審查
+### 1c 後端功能／修 bug／重構
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 功能做完，要出 QA 計畫 | `qa-planner` → `qa-auto` | 影響分析 → 自動產測試並跑 |
-| 寫測試、選 mock 策略 | `qa-testing` | pytest / Vitest / Swift Testing |
-| 像真使用者走一遍 UI | `qa-journey` | persona 驅動的旅程測試 |
-| 這次動到資料寫入 / 跨模組 / 新 store | `qa-dataflow` | 功能關係圖 + 反證關卡有沒有牙齒（HARD GATE） |
-| commit 前看 diff | `gstack-review` (gstack) | 差異審查 |
-| 想要獨立第二意見 | `gstack-codex` (gstack) | Codex 看一次 |
-| 另一台機器跑出來不一樣 | `env-doctor` | 產 doctor 腳本比環境 |
-| 要給別人一份標準考題驗算法 | `repro-exam` | 輸入 → 期望輸出 |
-| 架構圖放進交付物前 | `chart-design`（含 `check-html-figure.mjs`） | 套風格、字級、機械檢查、三欄收據 |
+| Plan | `task-brief` · `gstack-investigate` (gstack) · `backend-async-jobs` · `spine-rbac` | 先找根因；慢工作要同步 / job / pipeline 先決定；權限先選 tier |
+| Do | `spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `large-file-refactor` · `concurrent-session-git` · `resolving-merge-conflicts` · `agent-dispatch` · `gstack-careful` (gstack) | 各功能一支；大檔拆模組；多 session 共用 tree 的 git 規矩；衝突回到兩邊意圖；3 個以上獨立問題平行修；破壞性指令前護欄 |
+| Check | `qa-testing` · `qa-dataflow` · `gstack-review` · `gstack-codex` (gstack) · `repro-exam` | 寫測試；資料流反證；diff 審查；第二意見；標準考題 |
+| Act | `deploy` · `gstack-canary` (gstack) · `gstack-benchmark` (gstack，動到請求路徑時) · `doc-drift-sync` | 部署、監控、效能、文件 |
 
-### Act — 部署、沉澱、下一輪
+### 1d 部署與上線
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 設 CI | `ci-pipeline` | 偵測 stack 生 GitHub Actions |
-| 要上線 | `deploy` → `gstack-land-and-deploy` / `gstack-ship` (gstack) | 選平台、生設定，合併並部署 |
-| 對外開一個新網域 | `cloudflare-tunnel-provision` | 從零建 tunnel |
-| tunnel 掛了、搬機器 | `cloudflare-tunnel-ops` | 現有 tunnel 的維運 |
-| FastAPI + Next.js 走 tunnel 的反代坑 | `tunnel-proxy-deploy` | trailing slash、CORS、port |
-| 上線後盯回歸 | `gstack-canary` (gstack) | 部署後監控 |
-| 版本動了，CHANGELOG / ROADMAP / CLAUDE.md 對不齊 | `doc-drift-sync` | 偵測並修文件漂移 |
-| 上線後更新 README / docs | `gstack-document-release` (gstack) | 文件跟上 |
-| 收工 | `session-wrap` | commit、歸檔 learnings、更新 progress |
-| 踩到坑 | `self-improving-agent` | 記進對的 learnings 檔 |
+| Plan | `deploy` · `ci-pipeline` | 選平台、生設定、CI |
+| Do | `cloudflare-tunnel-provision` · `tunnel-proxy-deploy` · `docker-compose-setup` | 從零開網域；FastAPI + Next.js 走 tunnel 的反代坑；compose |
+| Check | `gstack-canary` (gstack) · `env-doctor` · `gstack-cso` (gstack，上線前安全審計) | 上線後回歸；環境一致；安全 |
+| Act | `cloudflare-tunnel-ops` · `spine-versioning` · `doc-drift-sync` · `gstack-document-release` (gstack) | tunnel 掛了／搬機器；版本閘門；文件跟上 |
 
-常搭配：QA／驗收者（第 2 節）、平台維護者的 `agent-launchd`（要排程時）。
+### 1e iOS app
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `requirement` · `user-flow` · `mockup` | 同 1b |
+| Do | `swiftui-patterns` · `ios-integration` | MVVM、Extension、Deep Link、地圖 |
+| Check | `qa-testing`（Swift Testing）· `gstack-ios-qa` · `gstack-ios-design-review` (gstack) | |
+| Act | `gstack-ios-sync` · `gstack-ios-clean` (gstack) | |
+
+常搭配：QA／驗收者（第 2 節）、平台維護者 8b（要排程時）。
 
 ---
 
@@ -119,322 +89,292 @@
 
 你在做：驗收一包程式碼，不管是自己寫的、外包的、還是 AI 生的。重點不是「跑得起來」，是「走的路對不對、關卡擋不擋得住」。
 
-### Plan
+### 2a 接手或驗收別人／AI 的 code
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 先定義要驗什麼、成功長什麼樣 | `task-brief` | 完成定義要是「看得到證據」 |
-| 從 diff 推要測哪裡、風險在哪 | `qa-planner` | 影響分析 + 測試案例 |
-| 有 user-flow 圖，要決定旅程怎麼走 | `user-flow`（讀） | 旅程測試的劇本來源 |
+| Plan | `task-brief` · `github-repo-audit` | 完成定義要是「看得到證據」；先打 repo 健康分 |
+| Do | `qa-dataflow` · `skill-apply` | 畫地圖 → 拔依賴反證 → 只釘重要接縫；拿外部 skill 集當 review 鏡片 |
+| Check | `chart-design` 的 `check-html-figure.mjs` · `de-slopify`（報告給人看時） | 功能關係圖的機械檢查；報告文字 |
+| Act | `qa-dataflow` gap-report（含「不要動壞的東西」）· `large-file-refactor`（建議）· `doc-drift-sync` | 落差報告交回開發者；文件對齊 |
 
-### Do
+### 2b 功能完成後的 QA
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 從 QA 計畫產測試並執行 | `qa-auto` | 回報覆蓋缺口 |
-| 手寫測試、測試策略 | `qa-testing` | 跨框架指引 |
-| 模擬一個沒耐心的真使用者 | `qa-journey` | 找 UX 摩擦 |
-| 接手 code、懷疑資料流走鐘、表沒人讀、閘門是裝飾 | `qa-dataflow` | 畫地圖 → 拔依賴反證 → 只釘重要接縫 |
-| 整個 repo 健康度 | `github-repo-audit` | 結構、文件、CI、依賴打分 |
-| 拿外部 skill 集（如 matt-skills）審自己的 code | `skill-apply` | 把外部 skill 當 review 鏡片 |
-| 跨機器結果不一致 | `env-doctor` · `repro-exam` | 比環境、比考題 |
-| headless 瀏覽器跑 UI 流程 | `gstack-qa` / `gstack-qa-only` (gstack) | 修或只報告 |
-| 安全審計 | `gstack-cso` (gstack) | 上線前 |
+| Plan | `qa-planner` | 從 diff 推影響、測試案例、風險 |
+| Do | `qa-auto` · `qa-testing` · `gstack-qa` / `gstack-qa-only` (gstack) | 產測試並跑；手寫測試；headless 瀏覽器跑 UI |
+| Check | `gstack-review` · `gstack-cso` (gstack) | diff 審查；安全 |
+| Act | 覆蓋缺口回 1b / 1c | |
 
-### Check
+### 2c 使用者旅程測試
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 產出的功能關係圖要交付 | `chart-design` 的 `check-html-figure.mjs` | 重疊、wrap、字級、溢出的機械診斷 |
-| 視覺一致性 | `gstack-design-review` (gstack) | 設計走鐘 |
-| 報告文字給委員或客戶看 | `de-slopify`（審查文體模式） | 去 AI 腔、去內部代號 |
+| Plan | `user-flow`（讀） | 旅程劇本來源 |
+| Do | `qa-journey` | 模擬沒耐心的真使用者，記 friction ledger |
+| Check | `gstack-design-review` (gstack) | 視覺一致性 |
+| Act | friction 回 1b | |
 
-### Act
+### 2d 跨機器重現
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 落差報告交回開發者 | `qa-dataflow` 的 gap-report 模板 | 附「不要動壞的東西」那節 |
-| 500 行大檔的重構建議 | `large-file-refactor` | 交給開發者執行 |
-| 文件跟實作對不齊 | `doc-drift-sync` | 回頭修文件 |
-
-常搭配：產品開發者（第 1 節）。
+| Plan | `repro-exam` | 先出一組標準考題 |
+| Do | `env-doctor` | 比環境、依賴 hash、模型檔 |
+| Check | 逐 key 比覆蓋，不看總量 | CLAUDE.md gotcha：一個角落少一列是常見根因 |
+| Act | doctor 腳本進 repo | |
 
 ---
 
 ## 3. 業務／Presales
 
-你在做：從一家公司的名字開始，到第一次拜訪、提案 deck、簽 NDA 後 kickoff。對應 CLAUDE.md 的「Slide / Deck Building」流程，storyline-first 是硬閘門。
+你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff；另外還有募資、素材庫維護。對應 CLAUDE.md「Slide / Deck Building」，storyline-first 是硬閘門。**五條路徑各走各的，不要混。**
 
-### Plan — 情蒐與定位
+### 3a 陌生開發到第一次拜訪（B2B 首拜）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 新客戶進來 | `presales-pipeline` | 建 `01_presales/<client>/` 標準資料夾 |
-| 查公司登記、董監事 | `tw-company-lookup` | findbiz 官方資料 |
-| 會前情蒐、猜製程與業務流程 | `sales-customer-intel` | operator-level 推測 > 公開資料轉述 |
-| 跟客戶對話挖最痛的手工流程 | `discovery-interview` | 30 分鐘訪談腳本 |
-| 把客戶的業務知識變 schema | `metadata-workshop` | 第二個同業客戶可重用七成 |
-| 爬蟲關鍵字一直漏 | `sales-keyword-discovery` | 從漏網之魚找新詞 |
-| 這個提案值不值得做 | `gstack-office-hours` (gstack) | 反問模式 |
+| Plan | `presales-pipeline`（建 client 檔）→ `tw-company-lookup` → `sales-customer-intel` → `metadata-workshop`（猜製程）· `gstack-office-hours` (gstack) | 公司登記；情蒐要 operator-level 猜製程與業務流程，不是轉述公開資料；值不值得追 |
+| Do | storyline.md（**你寫**，AI 補洞）→ `slide-office-hours` → `slide-workflow` → `chart-design` → `excalidraw-diagram` / `mermaid-diagram` → `office-pptx` / `gdoc-report-builder` → `de-slopify` | 通用流程 D：storyline 紅隊過了才生成；圖走 chart-design；繁中打磨 |
+| Check | `slide-office-hours`（`status: signed-off` 才准生成）· `gstack-design-review` (gstack) · `check-html-figure.mjs` | 硬閘門；視覺一致；圖檔切版與字級 |
+| Act | `presales-pipeline`（active → 下一步）· `knowledge-graph` | 狀態流轉；人與決策記成事實 |
 
-### Do — 做提案
+### 3b 客戶客製提案（已接觸，要提案）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 從素材庫組客製提案 | `sales-material` | 情蒐 + 案例 + 方案 + 補助 |
-| 你寫 storyline，AI 補洞 | `slide-workflow` | 七階段閘門 |
-| storyline 紅隊審查 | `slide-office-hours` | 沒 signed-off 不准生成 |
-| 客戶 sales / 導入提案要像企業提案 | `sales-deck-design` | 暖色乾淨、16:9、自截圖驗證 |
-| 投資人 BP | `pitch-deck` | 含 discovery 與敘事規劃 |
-| 有參考 PPTX 要鎖風格 | `slide-template-extractor` | 抽成 HTML 模板 |
-| deck 裡的圖表 / 架構圖 | `chart-design` → `excalidraw-diagram` / `mermaid-diagram` | 先 triage 再畫，套風格檔 |
-| 出 PPTX | `office-pptx` | html2pptx |
-| 出 Google Slides | `gdoc-report-builder` | MCP 批次寫入 |
-| 繁中打磨、講者備註 | `de-slopify` · `say-it-plain` | 去 AI 腔、結論先行 |
-| 簽完 NDA 要 kickoff | `sales-client-kickoff-docs` | 三件套專案初始檔 |
-| 報價 | `gov-rfq-writer` | 比 SOW 輕的報價單 |
+| Plan | `discovery-interview` · `metadata-workshop` · `sales-customer-intel`（更新） | 挖最痛的手工流程；業務知識變 schema |
+| Do | `sales-material`（從素材庫組裝）· `sales-deck-design` · `slide-workflow` · `slide-template-extractor`（有參考 PPTX）· `gov-rfq-writer`（報價）· `chart-design` | 客製提案要像企業提案；報價比 SOW 輕 |
+| Check | `slide-office-hours` · `sales-material-health`（素材沒過期）· `gstack-design-review` (gstack) | |
+| Act | won → 3d；lost → `presales-pipeline` lost + 原因 · `knowledge-graph` | |
 
-### Check
+### 3c 投資人募資 BP
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 素材庫有沒有過期補助、缺 frontmatter | `sales-material-health` | 排程跑 |
-| deck 視覺一致性 | `gstack-design-review` (gstack) | 出貨前 |
-| 圖檔切版、字級 | `chart-design` 的 `check-html-figure.mjs` | 機械檢查 + 截圖 |
+| Plan | `pitch-deck` 的 discovery interview · `gstack-office-hours` (gstack) | 敘事先於投影片 |
+| Do | `pitch-deck` → `excalidraw-diagram`（示意圖）· `chart-design`（數據頁）· `office-pptx` | |
+| Check | `slide-office-hours` · `de-slopify` | 案例去識別化（身分匿名、數字留具體） |
+| Act | `knowledge-graph`（投資人、回饋） | |
 
-### Act
+### 3d 簽約與 kickoff
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| CRM 資料投影到本機 markdown | `sales-crm-projection` | 每日排程 |
-| 客戶的人、決策、里程碑 | `knowledge-graph` | 記成可查事實 |
-| 案子 archive / lost | `presales-pipeline` | 狀態流轉 |
+| Plan | `gov-rfq-writer` → `sow-writer` | 報價 → 工作說明書（12 節、Gantt、驗收、人天） |
+| Do | `sales-client-kickoff-docs` | NDA 簽完，讀客戶 homework 建三件套 |
+| Check | `de-slopify` 審查文體 · `say-it-plain` | 合約給客戶老闆看 |
+| Act | `presales-pipeline` won · 轉顧問（第 4 節）或開發者（第 1 節） | 案子從 presales 變專案 |
 
-常搭配：顧問（第 4 節，SOW 與標案）、知識工作者（第 7 節，客戶影片與文件消化）。
+### 3e 素材庫與 CRM 維護（排程）
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | `sales-keyword-discovery` | 爬蟲關鍵字一直漏就跑 |
+| Do | `sales-crm-projection` | CRM 投影到本機 markdown，每日 |
+| Check | `sales-material-health` | 過期補助、缺 frontmatter、孤兒檔 |
+| Act | 修素材、更新 keywords | |
 
 ---
 
 ## 4. 顧問／報告與標案撰寫
 
-你在做：政府標案與補助、SOW、廠務報告、給委員或客戶老闆看的文字交付物。對應 CLAUDE.md 的「Text Report Generation」流程。
+你在做：政府標案與補助、SOW、廠務報告、給委員或客戶老闆看的文字交付物。對應 CLAUDE.md「Text Report Generation」。
 
-### Plan — 找案、定框架
+### 4a 政府標案 → 展開見 [docs/loops/gov-tender.md](loops/gov-tender.md)
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 找標案 | `gov-tender-scraper` | g0v API，排程 |
-| 找補助 | `gov-subsidy-scraper` | 政府入口去重 |
-| 定任務與交付定義 | `task-brief` | 五欄位 brief |
-| 客戶業務知識梳理 | `metadata-workshop` · `discovery-interview` | schema 與痛點 |
-| 官方計畫書的章節代碼當頂層框架 | `gov-subsidy-writer` 的目錄 framing | 先讀官方 SOT 全文再引用代碼 |
+| Plan | `gov-tender-scraper`（排程抓、過濾、歸檔、INDEX）· ★ **triage：要不要投**（fit 評分、資格門檻、go / no-go 與理由）· `tw-company-lookup`（機關、競爭者） | 現在 `status` 只有 active / archived，由截止日決定，不是由人的決定 |
+| Do | `gov-rfq-writer`（報價）· `sow-writer` · ★ **投標文件／服務建議書 writer**（fallback `doc-coauthoring`）· `chart-design` → `office-docx` | 標案要交的是服務建議書，不是 RFQ；writer 形狀照 `gov-subsidy-writer`，框架來自招標文件與評選表 |
+| Check | ★ **投標前檢核**（資格文件、押標金、印章、份數、截止時間、格式）· `de-slopify` 審查文體 · `say-it-plain` | 漏一項就廢標，整條循環最貴的失敗 |
+| Act | ★ **決標回填**（won / lost / no-bid、決標價、得標者、落差原因；g0v 有端點）· `gov-tender-scraper` Step 7 關鍵字回饋 · ★ 得標案 → `sales-material` 案例 + `knowledge-graph` · ★ 命中率／投標率／得標率回顧 | 現在唯一的學習迴路是「標題像不像」，不是「投得上投不上」 |
 
-### Do — 寫
+### 4b 政府補助計畫
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 補助計畫書（SBIR、數產署） | `gov-subsidy-writer` | 分項 → 拍板 → 紅字 → docx，Phase 8 審查意見回覆 |
-| 詢價 / 規格回覆 | `gov-rfq-writer` | 報價單 |
-| 工作說明書 | `sow-writer` | 台灣格式 12 節，含 Gantt |
-| 多方利害關係人的長文件 | `doc-coauthoring` | Context → Refinement → 新 Claude 讀者測試 |
-| 交付到 Google Docs | `gdoc-report-builder` | 表格、樣式、分享 |
-| IoT / SCADA 時序 → 報告 + PPTX | `iot-factory-report` | UPW、壓縮機、冷凍機 |
-| 專案週報、3P、事故報告 | `internal-comms` | 模板 |
-| 舊文件（doc / pdf / xlsx）抽成結構資料 | `doc-to-structured-data` | 先偵測格式再選策略 |
-| Word / PDF / Excel 產出 | `office-docx` · `office-pdf` · `office-xlsx` | 各自格式 |
-| 文件裡的圖表、架構圖 | `chart-design`（入口）→ `mermaid-diagram` / `excalidraw-diagram` | Word 內嵌圖不是 slide，尺寸另算 |
+| Plan | `gov-subsidy-scraper` · `gov-subsidy-writer` Phase 1（官方文件先行、目錄 framing） | 先讀官方 SOT 全文再用章節代碼 |
+| Do | `gov-subsidy-writer` Phase 2–5（分項架構 → 逐題拍板 → 內文 → 效益量化）· `chart-design` · `office-docx` | |
+| Check | `gov-subsidy-writer` Phase 6（紅字▲歸零 + 文體掃描）· `de-slopify` 審查文體 · `say-it-plain` | |
+| Act | Phase 7 輸出 → Phase 8 書面審查意見 → 審查會議簡報 · `knowledge-graph`（委員、意見） | 這條線的 Check / Act 是完整的，標案線可以抄它 |
 
-### Check — 審查文體
+### 4c 顧問案交付文件（SOW、廠務報告、週報、通用文件）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 給委員看，掃內部策略痕跡、英文行話、自評 | `de-slopify` 審查文體模式 | 「這是最關鍵的一題」這種要拿掉 |
-| 結論沒先講、術語沒解釋 | `say-it-plain` | BLUF 重寫 |
-| 圖檔切版、字級、留白 | `chart-design` 的 Post-check + `check-html-figure.mjs` | 三欄收據 |
+| Plan | `task-brief` · `metadata-workshop` · `discovery-interview` | 五欄位 brief；先梳理客戶知識 |
+| Do | `sow-writer` · `iot-factory-report`（UPW／壓縮機／冷凍機）· `internal-comms`（週報、3P、事故）· `doc-coauthoring`（多方長文件）· `gdoc-report-builder` · `office-docx` / `office-pdf` / `office-xlsx` · `chart-design` → `mermaid-diagram` / `excalidraw-diagram` | Word 內嵌圖不是 slide，尺寸另算 |
+| Check | `de-slopify` 審查文體 · `say-it-plain` · `check-html-figure.mjs` | 三欄收據：機械檢查／截圖／人眼分開寫 |
+| Act | `knowledge-graph` · 沒 skill 的報告類型（市調、EHS、排程）記 `.learnings/FEATURE_REQUESTS.md`，接到真案子再抽 | |
 
-### Act
+### 4d 客戶資料梳理
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 審查意見回來 | `gov-subsidy-writer` Phase 8 | 意見 → 審查會議簡報 |
-| 客戶、案子、委員的事實 | `knowledge-graph` | 下次不用重查 |
-| 域內還沒有 skill 的報告類型（市調、EHS、排程） | `doc-coauthoring` 通用模式 | 接到真案子再抽 skill，見 `.learnings/FEATURE_REQUESTS.md` |
-
-常搭配：業務（第 3 節）、分析師（第 5 節，數據圖）。
+| Plan | `discovery-interview` | 找最痛的手工流程 |
+| Do | `metadata-workshop` · `doc-to-structured-data` | 業務知識 → YAML schema；舊文件 → 結構資料 |
+| Check | 第二個同業客戶能重用七成才算成功 | metadata-workshop 的護城河定義 |
+| Act | schema 進 `markdown-file-ssot` 或客戶 repo · `knowledge-graph` | |
 
 ---
 
 ## 5. 分析師／投資研究
 
-你在做：從資料算出東西，畫數據圖，做財報或製程分析；或在建 ML / AutoML 平台。
+你在做：從資料算出東西，畫數據圖，做財報或製程分析；或在建 ML／AutoML 平台。
 
-### Plan — 拿到資料
+### 5a 投資研究
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 台股財務三表、月營收 | `mops-financial-scraper` | MOPS → SQLite / DuckDB |
-| 非結構文件變表 | `doc-to-structured-data` | CSV / JSON |
-| IC 批號、產品碼要標準化 | `ic-lot-normalization` | YMS / ETL 的領域參考 |
-| PCB ODB++ 解析、DFM | `odb-dfm-reference` | 製造端 EDA 的坑 |
-| 定義目標、指標、驗證指令 | `task-brief` · `autoresearch` 前置 | 可量測才能迭代 |
+| Plan | `mops-financial-scraper` · `tw-company-lookup` | 財務三表、月營收 → SQLite / DuckDB |
+| Do | `invest-research` · `chart-design`（data 類）· `office-xlsx` | 持股追蹤、回測、風險；圖走 R1–R4 |
+| Check | `repro-exam` · `env-doctor` | 兩台機器算出來要一樣 |
+| Act | `knowledge-graph` · 報告交付走 4c | |
 
-### Do — 算與畫
+### 5b 廠務時序分析
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 持續追蹤持股、回測、風險 | `invest-research` | 本機 news_stock + 自主搜尋 |
-| 廠務時序：週期偵測、異常 | `iot-factory-report` | 圖 + PPTX |
-| 數據圖（趨勢、分佈、相關、占比） | `chart-design` data 類 | matplotlib / plotly / ECharts，R1–R4 |
-| 試算表分析與公式 | `office-xlsx` | .xlsx / .csv |
-| ML 平台的評估與品質層 | `ml-eval-quality` | 指標分派、小資料 CV 閘門 |
-| ML 平台的模型登錄與治理 | `ml-model-registry` | run → 版本 → 生命週期 |
-| 慢的分析要不要丟背景 | `backend-async-jobs` | 分級 |
-| 讓 agent 自己迭代到指標變好 | `autoresearch` | modify → verify → keep/discard |
+| Plan | `metadata-workshop`（PI tag 梳理）· `doc-to-structured-data` | 先弄清楚 tag 是什麼 |
+| Do | `iot-factory-report` · `chart-design` | 週期偵測、異常標記、趨勢 → 圖 + PPTX |
+| Check | `chart-design` Post-check（R3 同軸同單位）· `check-html-figure.mjs` | |
+| Act | 報告交付走 4c · `knowledge-graph` | |
 
-### Check
+### 5c ML／AutoML 平台
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 兩台機器算出來不一樣 | `repro-exam` · `env-doctor` | 先比考題再比環境 |
-| 圖能不能看、有沒有截軸誤導 | `chart-design` Post-check | R3 同軸同單位 |
-| 平台的資料流真的照宣稱跑嗎 | `qa-dataflow` | 治理欄位有沒有牙齒 |
+| Plan | `ml-eval-quality` · `ml-model-registry` · `backend-async-jobs` | 領域參考：指標分派、小資料 CV 閘門、登錄與治理、訓練要不要丟 pipeline |
+| Do | 走 1c 後端 | |
+| Check | `qa-dataflow` | 治理欄位有沒有牙齒（retired 的模型還能不能推論） |
+| Act | 走 1d 部署 | |
 
-### Act
+### 5d 製造領域資料
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 分析結論、公司事實 | `knowledge-graph` | 沉澱 |
-| 報告交付 | 顧問（第 4 節）的 `gdoc-report-builder` / `office-docx` | 換角色 |
+| Plan | `ic-lot-normalization` · `odb-dfm-reference` | 批號標準化；ODB++ 解析與 DFM 的坑 |
+| Do | 走 1c | |
+| Check | `repro-exam` | 一張真板子當考題 |
+| Act | 領域學到的回寫 reference skill | |
 
-常搭配：顧問（第 4 節）、產品開發者（第 1 節，ML 平台後端）。
+### 5e 自動迭代實驗
+
+| | 用誰 | 說明 |
+|---|---|---|
+| Plan | 定目標、指標、驗證指令 | 可量測才能迭代 |
+| Do | `autoresearch` | modify → verify → keep / discard，夜間跑 |
+| Check | 指標曲線 · `agent-observability` | dashboard 看得到 |
+| Act | 留下的改動進 commit | |
 
 ---
 
 ## 6. 人資
 
-你在做：開缺、看履歷、發內部公告。
+### 6a 開缺
 
-### Plan
-
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 從組織需求推職缺 | `hr-jd-writer` 前段 | 職責、必備、加分、職涯 |
+| Plan | `hr-jd-writer` 前段 | 從組織需求推職責、必備、加分 |
+| Do | `hr-jd-writer` | 結構化 JD、招募文 |
+| Check | `de-slopify` | 對外前去 AI 腔 |
+| Act | `knowledge-graph` | |
 
-### Do
+### 6b 履歷篩選
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 寫 JD、招募文 | `hr-jd-writer` | 結構化 JD |
-| 公告、newsletter、FAQ | `internal-comms` | 模板 |
-| 文字去 AI 腔 | `de-slopify` | 對外前 |
+| Plan | JD 的必備條件當篩選標準 | |
+| Do | `hr-candidate-analysis` | PDF 履歷抽結構、看 GitHub |
+| Check | `github-repo-audit` | 候選人 repo 打分 |
+| Act | `knowledge-graph`（候選人、面試決策） | |
 
-### Check
+### 6c 內部公告
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| PDF 履歷抽結構、看 GitHub 程式品質 | `hr-candidate-analysis` | 產候選人 profile |
-| 候選人的 repo 健康度 | `github-repo-audit` | 打分 |
-
-### Act
-
-| 情境 | 用誰 | 一句話 |
-|---|---|---|
-| 候選人、面試決策 | `knowledge-graph` | 記事實 |
+| Do | `internal-comms` | 公告、newsletter、FAQ 模板 |
+| Check | `say-it-plain` · `de-slopify` | 結論先行、去 AI 腔 |
 
 ---
 
 ## 7. 知識工作者
 
-你在做：消化外部內容（影片、錄音、文件），變成 `knowledge/` 裡可查的筆記。`knowledge/` 是內容摘要庫，`knowledge-graph` 是實體事實庫，兩者不同。
+你在做：消化外部內容，變成 `knowledge/` 裡可查的筆記。`knowledge/` 是內容摘要庫，`knowledge-graph` 是實體事實庫。
 
-### Plan — 決定看什麼
+### 7a 訂閱與掃描（排程）
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 訂閱頻道、UP 主、podcast，自動掃新集 | `yt-channel-scraper` | 掃到就歸檔 |
-| Google Drive 裡的文件要變 skill | `gdrive-to-skills` | 讀、分類、建 skill |
+| Plan | 決定訂閱哪些頻道、UP 主、podcast | |
+| Do | `yt-channel-scraper` | 掃到新集就歸檔 |
+| Check | `knowledge/videos/INDEX.md`（自動重生）· 筆記 reliability 標記 | 手動字幕 ✅ / 自動字幕 ⚠️ / whisper 🤖 |
+| Act | `knowledge-graph` | |
 
-### Do — 消化
+### 7b 單支影片／錄音消化
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 線上影片：摘要、繁中文章、翻譯 | `video-transcript` | 抓真字幕，比 ASR 準 |
-| 本機錄影、錄音、螢幕錄製 | `local-media-transcribe` | mlx-whisper 離線，含畫面取樣 |
-| 要字幕檔（srt / vtt）保留時間軸 | `subtitle-file` | 雙語、翻譯不掉軸 |
-| 只要影片某一段 | `video-clip-extract` | 不下載全片 |
+| Plan | 決定要摘要、繁中文章、翻譯、字幕檔還是片段 | 四種輸出各一支 |
+| Do | `video-transcript`（線上，抓真字幕）· `local-media-transcribe`（本機錄影錄音，離線）· `subtitle-file`（srt / vtt 保留時間軸）· `video-clip-extract`（只要一段） | |
+| Check | reliability 標記 | |
+| Act | `knowledge-graph` · 可以做成 skill 的交 `session-harvest` | |
 
-### Check
+### 7c Drive 文件變 skill
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 這份筆記能信幾分 | 筆記 frontmatter 的 reliability 標記 | 手動字幕 ✅ / 自動字幕 ⚠️ / whisper 🤖 |
-| INDEX 有沒有更新 | `knowledge/videos/INDEX.md`（自動重生） | 每次寫入重生 |
-
-### Act
-
-| 情境 | 用誰 | 一句話 |
-|---|---|---|
-| 內容裡提到的人、公司、決策 | `knowledge-graph` | 從摘要庫抽到事實庫 |
-| 看完發現可以做成 skill | `session-harvest` | 交給平台維護者 |
-
-常搭配：業務（客戶的公開影片）、平台維護者。
+| Do | `gdrive-to-skills` | 讀 Drive、分類、建 knowledge skill |
+| Check | `sk check`（gdrive 段） | 過期匯入 |
+| Act | `sync-readme` | |
 
 ---
 
 ## 8. 平台維護者
 
-你在做：維護 rivendell 本身，讓 skill、agent、排程、hook 一直可用。這是 `platform` 循環，也是唯一有完整 PDCA 覆蓋的循環。
+你在做：維護 rivendell 本身。這是 `platform` 循環。
 
-### Plan — 決定要加什麼
+### 8a 新增或修改 skill
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 想找外面有沒有現成 skill | `skill-scout` | 搜 → 評估 → port → 驗證 |
-| 寫 skill 前先讀原則 | `writing-great-skills` | model-invoked vs user-invoked |
-| 要建一個新 agent 角色 | `agent-persona` | tester / maintainer / reviewer 的 prompt |
-| 先定義任務 | `task-brief` | 五欄位 |
+| Plan | `skill-scout`（外面有沒有現成）· `writing-great-skills`（先讀原則）· `task-brief` | |
+| Do | `skill-creator` · `skill-apply` · `sync-readme` | 建、改、評測；README 目錄（描述改了要手動改那列） |
+| Check | `sk lint` · `sk check`（symlink、frontmatter、Role coverage）· `audit-fix` | 新 skill 沒進角色頁會被抓 |
+| Act | `session-harvest` · `learnings-promotion-sprint` | 告一段落收割；跨專案蒸餾 |
 
-### Do — 建與接線
+### 8b 排程 agent
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 從零建、改、評測 skill | `skill-creator` | 含 eval 與 trigger 優化 |
-| 拿外部 skill 集審自己的東西 | `skill-apply` | 不裝也能用 |
-| 排程 agent（launchd plist） | `agent-launchd` | 用 `launchctl bootout / bootstrap`，不要 kill |
-| 無人值守跑 Claude Code | `agent-headless` | 結構化 log、輸出管理 |
-| 讓腳本 agent 在 dashboard 看得到 | `agent-observability` | 執行歷史、live log |
-| 多個獨立修復平行跑 | `agent-dispatch` | 各自 worktree |
-| 從手機遙控 session | `claude-to-telegram` | ask_user 走 Telegram |
-| settings.local.json 亂了 | `settings-audit` · `setup-permissions` | 清無效權限、只放用到的 |
-| 自動 stage、擋 .env | `auto-stage` · `protect-secrets` | hook，不用手動叫 |
-| README 目錄跟 skill 對不上 | `sync-readme` | 新 skill 進表；描述改了要手動改那列 |
-| 長 session 保護 | `context-journal` · `context-recovery` | compact 不掉 context |
-| 讓 agent 自己迭代到指標變好 | `autoresearch` | 夜間跑 |
-| repo 改名 | `repo-rename` | plist、settings、sibling repo 全掃 |
+| Plan | `agent-persona` | tester / maintainer / reviewer 的 prompt |
+| Do | `agent-launchd` · `agent-headless` · `agent-observability` · `agent-dispatch` | plist（bootout / bootstrap，不要 kill）；無人值守；dashboard 看得到；平行修 |
+| Check | 系統健康「排程健康」· `sk check agents` | agents.conf 與 launchd 對帳 |
+| Act | `workflow-retro` | 每週讀 telemetry 找下一個瓶頸 |
 
-### Check — 健康與漂移
+### 8c session 與環境
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 每日健康 | `bin/sk check` · `bin/sk maintain` | symlink、frontmatter、agent、磁碟 |
-| audit 報告有問題要修 | `audit-fix` | 自動修權限問題 |
-| 這個 session 有沒有可抽的 skill | `session-harvest` | 告一段落時跑 |
-| CHANGELOG / ROADMAP / CLAUDE.md 對不齊 | `doc-drift-sync` | 版本動就跑 |
-| 素材庫、reports 過期 | `sales-material-health` · `sk reports-janitor` | 排程 |
+| Plan | `setup-permissions` · `settings-audit` | 只放用到的權限；清無效設定 |
+| Do | `context-journal` · `context-recovery` · `claude-to-telegram` · `auto-stage` · `protect-secrets` | 長 session 不掉 context；手機遙控；hook 自動 stage、擋 .env |
+| Check | `sk check` | |
+| Act | `session-wrap` · `self-improving-agent` · `learnings-promotion-sprint` | 收工；踩坑分流到對的 vault；升進 CLAUDE.md |
 
-### Act — 沉澱與回顧
+### 8d repo 維運
 
-| 情境 | 用誰 | 一句話 |
+| | 用誰 | 說明 |
 |---|---|---|
-| 踩坑、被糾正、知識過期 | `self-improving-agent` | 分流到對的 learnings vault |
-| 各專案 learnings 堆太多 | `learnings-promotion-sprint` | 跨專案蒸餾，升進 CLAUDE.md |
-| 每週回顧下一個瓶頸 | `workflow-retro` | 讀 telemetry，出 1–3 個 action |
-| 收工 | `session-wrap` | commit、歸檔、progress |
-| gstack 有新版 | `gstack-upgrade` (gstack) | 升級 |
-| 學到東西 | `gstack-learn` (gstack) | 記進 gstack |
+| Plan | `doc-drift-sync`（偵測） | CHANGELOG / ROADMAP / CLAUDE.md 對不齊 |
+| Do | `repo-rename` · `doc-drift-sync`（修） | plist、settings、sibling repo 全掃 |
+| Check | `sk check portability` · `sk check ports` | 硬編碼路徑、port 漂移 |
+| Act | `gstack-upgrade` · `gstack-learn` (gstack) · `autoresearch`（指標型改善） | |
 
 ---
 
 ## 覆蓋檢查
 
 `bin/sk check` 會列出 `skills/*/*/SKILL.md` 中沒有在這頁出現的 skill 名稱。新 skill 進來，或改名後，這裡要跟著補。
-角色不需要互斥；一支 skill 出現在三個角色是資訊，不是錯誤。
+角色與工作都不需要互斥；一支 skill 出現在三件工作是資訊，不是錯誤。

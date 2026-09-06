@@ -274,3 +274,17 @@ figures 規格、紅字▲、writing-rules HARD GATE。入口狀態不同（手�
 `demo-walkthrough-pages`（07-06）、`gdrive-deck-miner`（07-06）、`personal-info-vault`
 （07-07）、`repo-contract-brief`（08-06）、光泉配給預測（05-18 條目，08-05 有進展）。
 另 08-11 兩個 Weak 觀察等第 2 實例：多來源 ETL 合併、跨專案 port registry。
+
+## 2026-09-07 — gov 循環（標案線）Check / Act 是空的：四個缺口
+
+細化見 `docs/loops/gov-tender.md`。README Loop × PDCA 表 gov 列的 check／act「—」不是漏標，是真的沒有 skill。
+`materials/tenders/` 目前除了爬蟲自己沒有任何 skill 讀它；`status` 由截止日決定，不由人的決定決定。
+
+| 缺口 | 一句話 | 優先 | 狀態 |
+|---|---|---|---|
+| `gov-tender-triage`（P2） | 讀 case 檔 + 招標文件，出 fit 評分、資格門檻、go / no-go 與理由，寫回 `status: evaluating → bidding \| no-bid` | 2 | ⬜ |
+| 投標前檢核 checklist（C1） | 資格文件、押標金、印章、份數、截止時間、格式；漏一項就廢標 | 1（最便宜、最貴的失敗） | ⬜ |
+| 決標回填（A1） | 爬蟲對 `status: bidding` 的案子查 g0v 決標端點，回填 `awarded_to` / `awarded_amount`；人補 `lost_reason` | 3 | ⬜ |
+| `gov-tender-proposal-writer`（D3） | 服務建議書／投標文件，框架來自招標文件與評選表，形狀照 `gov-subsidy-writer`（目錄 framing → 逐題拍板 → 紅字歸零） | 4（接到真案子再抽） | ⬜ |
+
+前置：狀態機先定（`active → evaluating → bidding → submitted → won | lost`，旁支 `no-bid`、`expired`），frontmatter 欄位全部可選，爬蟲不填不會壞。
