@@ -73,17 +73,7 @@ const NAV: NavNode[] = [
     children: [
       { kind: "link", href: "/projects/rivendell/workflow/ui", label: "UI Feature" },
       { kind: "link", href: "/projects/rivendell/workflow/backend", label: "Backend" },
-      {
-        kind: "link",
-        href: "/projects/rivendell/workflow/slide",
-        label: "Slide",
-        children: [
-          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-a", label: "A. 投資人 BP" },
-          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-b", label: "B. 客戶客製提案" },
-          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-c", label: "C. IoT / 廠務報告" },
-          { kind: "link", href: "/projects/rivendell/workflow/slide?branch=branch-d", label: "D. B2B 首拜 / 通用" },
-        ],
-      },
+      { kind: "link", href: "/projects/rivendell/workflow/slide", label: "Slide" },
       { kind: "link", href: "/projects/rivendell/workflow/maintenance", label: "Maintenance" },
     ],
   },

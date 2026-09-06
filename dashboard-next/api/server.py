@@ -47,6 +47,7 @@ from lib.tokens import (  # noqa: E402
     get_daily_usage,
 )
 from lib.skills import list_skills  # noqa: E402
+from lib.roles import parse_roles  # noqa: E402
 from lib.hooks import list_hooks  # noqa: E402
 
 app = FastAPI(
@@ -1214,14 +1215,33 @@ def api_skills() -> list[dict[str, Any]]:
 
 @app.get("/api/skills/roles", tags=["Skills"])
 def api_skills_roles() -> dict[str, Any]:
-    """The user-facing 'who uses what' page: docs/skills-by-role.md, verbatim.
+    """角色 → 工作 → PDCA, parsed from docs/skills-by-role.md (the SoT).
 
-    Declared before /api/skills/{name} so the static segment wins.
+    Declared before /api/skills/{name} so the static segment wins. `content`
+    is the raw markdown for a "原文" view; `roles` is the parsed structure.
     """
     path = LIB_DIR.parent / "docs" / "skills-by-role.md"
     if not path.is_file():
         raise HTTPException(404, "docs/skills-by-role.md not found")
-    return {"path": str(path), "content": path.read_text(encoding="utf-8")}
+    known = {s.name for s in list_skills()}
+    data = parse_roles(path, known)
+    data["content"] = path.read_text(encoding="utf-8")
+    return data
+
+
+_DOCS_ROOT = (LIB_DIR.parent / "docs").resolve()
+
+
+@app.get("/api/docs/{doc_path:path}", tags=["Skills"])
+def api_doc(doc_path: str) -> dict[str, Any]:
+    """Serve one markdown file from rivendell/docs/ (deep-dive pages such as
+    docs/loops/gov-tender.md). Path is confined to docs/; nothing else."""
+    if not doc_path.endswith(".md"):
+        doc_path += ".md"
+    target = (_DOCS_ROOT / doc_path).resolve()
+    if _DOCS_ROOT not in target.parents or not target.is_file():
+        raise HTTPException(404, f"docs/{doc_path} not found")
+    return {"path": str(target.relative_to(_DOCS_ROOT.parent)), "content": target.read_text(encoding="utf-8")}
 
 
 # Cache for skill usage scan (recompute at most every 10 min)

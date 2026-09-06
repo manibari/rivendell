@@ -305,7 +305,44 @@ export interface SkillInfo {
   pdca: string;
 }
 
-export interface SkillRolesDoc {
+export interface RoleStage {
+  stage: "Plan" | "Do" | "Check" | "Act";
+  text: string;
+  skills: string[];
+  gaps: string[];
+  external: string[];
+  note: string;
+  empty?: boolean;
+}
+
+export interface RoleJob {
+  id: string;
+  title: string;
+  deep_dive: { label: string; href: string } | null;
+  stages: RoleStage[];
+  gap_count: number;
+}
+
+export interface Role {
+  id: string;
+  title: string;
+  intro: string;
+  notes: string[];
+  jobs: RoleJob[];
+  job_count: number;
+  gap_count: number;
+}
+
+export interface SkillRolesData {
+  path: string;
+  updated: string;
+  shared: string[];
+  roles: Role[];
+  totals: { roles: number; jobs: number; gaps: number };
+  content: string;
+}
+
+export interface DocContent {
   path: string;
   content: string;
 }

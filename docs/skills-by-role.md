@@ -81,6 +81,8 @@
 | Check | `qa-testing`（Swift Testing）· `gstack-ios-qa` · `gstack-ios-design-review` (gstack) | |
 | Act | `gstack-ios-sync` · `gstack-ios-clean` (gstack) | |
 
+工作之間怎麼接：1a 只跑一次，產出的是 repo（骨架接好 spine、CLAUDE.md、權限、CI、第一次部署），之後 1b 與 1c 都在它裡面反覆跑。1b 的計畫（writing-plans 任務清單）裡「要一個 endpoint」就是 1c 的輸入；1c 的 qa-dataflow 反證結果回到 1b 的 Check。1d 是每一輪 1b／1c 的 Act 都會經過的那段，獨立成一件工作是因為開網域、搬機器不綁任何功能。接縫都是檔案：requirement → user-flow 圖 → 任務清單 → QA 計畫（交 2b）→ 版本號與 CHANGELOG（spine-versioning 閘門擋沒 bump 的 push）→ 下一輪 1b。
+
 常搭配：QA／驗收者（第 2 節）、平台維護者 8b（要排程時）。
 
 ---
@@ -189,7 +191,7 @@
 | Plan | `gov-tender-scraper`（排程抓、過濾、歸檔、INDEX）· ★ **triage：要不要投**（fit 評分、資格門檻、go / no-go 與理由）· `tw-company-lookup`（機關、競爭者） | 現在 `status` 只有 active / archived，由截止日決定，不是由人的決定 |
 | Do | `gov-rfq-writer`（報價）· `sow-writer` · ★ **投標文件／服務建議書 writer**（fallback `doc-coauthoring`）· `chart-design` → `office-docx` | 標案要交的是服務建議書，不是 RFQ；writer 形狀照 `gov-subsidy-writer`，框架來自招標文件與評選表 |
 | Check | ★ **投標前檢核**（資格文件、押標金、印章、份數、截止時間、格式）· `de-slopify` 審查文體 · `say-it-plain` | 漏一項就廢標，整條循環最貴的失敗 |
-| Act | ★ **決標回填**（won / lost / no-bid、決標價、得標者、落差原因；g0v 有端點）· `gov-tender-scraper` Step 7 關鍵字回饋 · ★ 得標案 → `sales-material` 案例 + `knowledge-graph` · ★ 命中率／投標率／得標率回顧 | 現在唯一的學習迴路是「標題像不像」，不是「投得上投不上」 |
+| Act | ★ **決標回填**（won / lost / no-bid、決標價、得標者、落差原因；g0v 有端點）· `gov-tender-scraper` Step 7 關鍵字回饋 · ★ 得標案沉澱：推進 `sales-material` 案例庫與 `knowledge-graph` · ★ 命中率／投標率／得標率回顧 | 現在唯一的學習迴路是「標題像不像」，不是「投得上投不上」 |
 
 ### 4b 政府補助計畫
 

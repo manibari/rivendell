@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { apiFetch, type SkillInfo, type SkillUsage } from "@/lib/api";
 import MetricsRow from "@/components/MetricsRow";
+import RolePdca from "@/components/RolePdca";
 import {
   Treemap,
   Tooltip,
@@ -178,6 +179,7 @@ export default function SkillsPage() {
   const [usage, setUsage] = useState<SkillUsage>({});
   const [err, setErr] = useState<string | null>(null);
   const [source, setSource] = useState<string>("rivendell");
+  const [view, setView] = useState<"loops" | "roles">("loops");
   const [search, setSearch] = useState("");
   const [filterFolder, setFilterFolder] = useState("");
   const [filterLoop, setFilterLoop] = useState("");
@@ -299,13 +301,33 @@ export default function SkillsPage() {
             Skill 總覽
           </h1>
           <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
-            循環 × PDCA 是分類的依據（與 README 覆蓋表同源）；資料夾是檔案所在。
-            <Link href="/skills/roles" className="ml-2" style={{ color: "var(--accent)" }}>
-              依角色看 →
-            </Link>
+            兩個視角看同一批 skill：循環 × PDCA 是分類依據（與 README 覆蓋表同源）；角色 → 工作 → PDCA 是使用者視角。
           </p>
+          <div className="mt-2 flex gap-1 p-0.5" style={{ background: SURFACE_2, borderRadius: "var(--radius-sm)", width: "fit-content" }}>
+            {(["loops", "roles"] as const).map((k) => {
+              const on = view === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setView(k)}
+                  className="px-3 py-1 text-xs transition-colors"
+                  style={{
+                    borderRadius: 3,
+                    background: on ? "var(--surface)" : "transparent",
+                    color: on ? "var(--text)" : "var(--text-muted)",
+                    boxShadow: on ? "0 0 0 1px var(--border)" : "none",
+                    fontWeight: on ? 500 : 400,
+                  }}
+                >
+                  {k === "loops" ? "循環 × PDCA" : "角色 → 工作 → PDCA"}
+                </button>
+              );
+            })}
+          </div>
         </div>
         {/* Source toggle */}
+        {view === "loops" && (
         <div className="flex gap-1 p-0.5" style={{ background: SURFACE_2, borderRadius: "var(--radius-sm)" }}>
           {["rivendell", "gstack", "external", "builtin", "all"].map((k) => {
             const n = k === "all" ? skills.length : sourceCounts.get(k) || 0;
@@ -333,8 +355,12 @@ export default function SkillsPage() {
             );
           })}
         </div>
+        )}
       </div>
 
+      {view === "roles" && <RolePdca />}
+
+      {view === "loops" && (<>
       <MetricsRow
         metrics={[
           { label: "總數", value: metrics.total },
@@ -547,6 +573,7 @@ export default function SkillsPage() {
           沒有符合條件的 skill
         </p>
       )}
+      </>)}
     </div>
   );
 }
