@@ -1,0 +1,420 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Fleet 產品骨架：接好線的 spine 模組",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "request",
+        "label": "一次請求怎麼過關",
+        "focus": [
+          "client",
+          "api",
+          "auth",
+          "rbac",
+          "db"
+        ],
+        "note": "Bearer → get_current_user → require_role Depends → 才碰得到資料。"
+      },
+      {
+        "id": "deploy",
+        "label": "部署時序",
+        "focus": [
+          "deploy",
+          "alembic",
+          "db",
+          "api"
+        ],
+        "note": "redeploy 先跑 alembic upgrade head，成功才啟動 API。"
+      },
+      {
+        "id": "gate",
+        "label": "版本閘門",
+        "focus": [
+          "gate",
+          "version",
+          "health",
+          "monitor"
+        ],
+        "note": "code 變了沒 bump 就擋 push；APP_VERSION 從 /api/health 露給 ops 監控。"
+      }
+    ],
+    "repository": {
+      "url": "https://github.com/manibari/product-skeleton",
+      "revision": "c858af0fda7c1e4d8140b173bdcbc7ffddef690a"
+    }
+  },
+  "components": [
+    {
+      "id": "monitor",
+      "type": "external",
+      "label": "Ops 監控",
+      "sublabel": "monitors.toml，X-Health-Key",
+      "pos": [
+        1080,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "health",
+      "type": "backend",
+      "label": "/api/health",
+      "sublabel": "keyed，回 db 連線 + 版本",
+      "sources": [
+        {
+          "path": "backend/app/main.py",
+          "line": 44,
+          "end_line": 52,
+          "label": "health endpoint"
+        }
+      ],
+      "pos": [
+        560,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "version",
+      "type": "backend",
+      "label": "APP_VERSION",
+      "sublabel": "version.py 單一來源",
+      "sources": [
+        {
+          "path": "backend/app/version.py",
+          "line": 7,
+          "label": "APP_VERSION"
+        }
+      ],
+      "pos": [
+        300,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "版本閘門",
+      "sublabel": "git push 時 hooks/pre-push",
+      "tag": "spine-versioning",
+      "sources": [
+        {
+          "path": "hooks/pre-push",
+          "line": 15,
+          "end_line": 20,
+          "label": "gate"
+        }
+      ],
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "client",
+      "type": "external",
+      "label": "呼叫端",
+      "sublabel": "瀏覽器 / 前端 3__NN__",
+      "pos": [
+        40,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI app",
+      "sublabel": "uvicorn 8__NN__",
+      "sources": [
+        {
+          "path": "backend/app/main.py",
+          "line": 23,
+          "end_line": 26,
+          "label": "app + swagger policy"
+        }
+      ],
+      "pos": [
+        300,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "auth core",
+      "sublabel": "jose + bcrypt + HS256",
+      "tag": "spine-auth",
+      "sources": [
+        {
+          "path": "backend/app/auth.py",
+          "line": 37,
+          "end_line": 91,
+          "label": "hash / decode / get_current_user"
+        }
+      ],
+      "pos": [
+        560,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "rbac",
+      "type": "security",
+      "label": "require_role()",
+      "sublabel": "Tier-1 寫死角色",
+      "tag": "spine-rbac",
+      "sources": [
+        {
+          "path": "backend/app/auth.py",
+          "line": 94,
+          "label": "Depends factory"
+        }
+      ],
+      "pos": [
+        820,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "deploy",
+      "type": "cloud",
+      "label": "redeploy 腳本",
+      "sublabel": "WSL systemd + git-poll",
+      "pos": [
+        300,
+        380
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "alembic",
+      "type": "backend",
+      "label": "Alembic",
+      "sublabel": "upgrade head",
+      "tag": "spine-schema-sync",
+      "sources": [
+        {
+          "path": "backend/alembic/env.py",
+          "line": 24,
+          "label": "DATABASE_URL from settings"
+        }
+      ],
+      "pos": [
+        560,
+        380
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "54__NN__",
+      "sources": [
+        {
+          "path": "docker-compose.yml",
+          "line": 14,
+          "label": "port"
+        },
+        {
+          "path": "backend/app/db.py",
+          "line": 28,
+          "label": "users.role"
+        }
+      ],
+      "pos": [
+        1080,
+        380
+      ],
+      "size": [
+        150,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "FastAPI 進程 backend/app/",
+      "wraps": [
+        "version",
+        "health",
+        "api",
+        "auth",
+        "rbac"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "部署時序：先 migrate 再 serve",
+      "wraps": [
+        "deploy",
+        "alembic"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-api",
+      "from": "client",
+      "to": "api",
+      "label": "HTTPS + Bearer",
+      "variant": "emphasis",
+      "labelDy": -26
+    },
+    {
+      "id": "api-auth",
+      "from": "api",
+      "to": "auth",
+      "label": "Depends(get_current_user)",
+      "variant": "security",
+      "labelDy": -26
+    },
+    {
+      "id": "auth-rbac",
+      "from": "auth",
+      "to": "rbac",
+      "label": "CurrentUser.role",
+      "variant": "security",
+      "labelDy": -26
+    },
+    {
+      "id": "auth-db",
+      "from": "auth",
+      "to": "db",
+      "label": "SQLAlchemy · users by sub",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          635,
+          330
+        ],
+        [
+          1155,
+          330
+        ]
+      ],
+      "labelAt": [
+        880,
+        318
+      ]
+    },
+    {
+      "id": "monitor-health",
+      "from": "monitor",
+      "to": "health",
+      "label": "X-Health-Key",
+      "variant": "security",
+      "labelDy": -26
+    },
+    {
+      "id": "health-version",
+      "from": "health",
+      "to": "version",
+      "label": "回報 APP_VERSION",
+      "variant": "dashed",
+      "labelDy": -26
+    },
+    {
+      "id": "gate-version",
+      "from": "gate",
+      "to": "version",
+      "label": "code 變了必須 bump",
+      "variant": "security",
+      "labelDy": 56
+    },
+    {
+      "id": "deploy-api",
+      "from": "deploy",
+      "to": "api",
+      "label": "migrate 成功才啟動",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelDy": -30,
+      "labelDx": 8
+    },
+    {
+      "id": "deploy-alembic",
+      "from": "deploy",
+      "to": "alembic",
+      "label": "先跑",
+      "variant": "emphasis",
+      "labelDy": -26
+    },
+    {
+      "id": "alembic-db",
+      "from": "alembic",
+      "to": "db",
+      "label": "upgrade head",
+      "variant": "emphasis",
+      "labelDy": -26
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "收斂的（照抄）",
+      "items": [
+        "auth crypto core：jose + bcrypt + HS256，sub 永遠是 str(user_id)",
+        "schema-sync：Alembic，deploy 在 serve 前跑 upgrade head",
+        "versioning：閘門是核心，不是 changelog 格式"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "每個產品要自己決定的",
+      "items": [
+        "token：單一長效 vs access + refresh",
+        "rbac：Tier-1 寫死 vs Tier-2 Role×Entity 矩陣",
+        "changelog：dev-facing vs 使用者看的更新歷程"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "骨架還沒接的",
+      "items": [
+        "前端、feedback、通知、audit trail、email、file storage、api-keys"
+      ]
+    }
+  ]
+}

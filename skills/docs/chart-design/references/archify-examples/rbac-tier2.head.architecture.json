@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "RBAC Tier-2：Role×Entity×Level 矩陣（chimesflow 形狀）",
+    "quality_profile": "showcase"
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [
+      40,
+      60
+    ],
+    "cols": 3,
+    "cellW": 150,
+    "cellH": 64,
+    "gapX": 110,
+    "gapY": 100
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "呼叫端",
+      "sublabel": "Bearer token",
+      "row": 0,
+      "col": 0,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "router",
+      "type": "backend",
+      "label": "Router handler",
+      "sublabel": "@router.post(...)",
+      "row": 0,
+      "col": 1,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "get_current_user",
+      "sublabel": "decode → users lookup",
+      "row": 0,
+      "col": 2,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "role",
+      "type": "security",
+      "label": "require_role(...)",
+      "sublabel": "遷移期保留，端點搬完才刪",
+      "tag": "Tier-1 過渡",
+      "row": 1,
+      "col": 0,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "perm",
+      "type": "security",
+      "label": "require_permission()",
+      "sublabel": "查矩陣，allow / deny",
+      "tag": "Tier-2",
+      "row": 1,
+      "col": 1,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "users",
+      "type": "database",
+      "label": "users",
+      "sublabel": "roles: list[str]",
+      "row": 1,
+      "col": 2,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "admin",
+      "type": "frontend",
+      "label": "權限管理 UI",
+      "sublabel": "GET/PATCH /api/permissions",
+      "row": 2,
+      "col": 0,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "matrix",
+      "type": "database",
+      "label": "role_permissions",
+      "sublabel": "role × entity × level",
+      "row": 2,
+      "col": 1,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "seed",
+      "type": "backend",
+      "label": "SEED_MATRIX",
+      "sublabel": "admin = 每個 entity write",
+      "row": 2,
+      "col": 2,
+      "size": [
+        150,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "授權：資料驅動，非開發者也能改",
+      "wraps": [
+        "role",
+        "perm",
+        "matrix",
+        "seed"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-router",
+      "from": "client",
+      "to": "router",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "router-perm",
+      "from": "router",
+      "to": "perm",
+      "label": "Depends 在簽名上",
+      "variant": "security",
+      "labelDy": 24
+    },
+    {
+      "id": "router-role",
+      "from": "router",
+      "to": "role",
+      "label": "未搬完的端點",
+      "variant": "dashed",
+      "labelDy": 24
+    },
+    {
+      "id": "perm-auth",
+      "from": "perm",
+      "to": "auth",
+      "label": "先驗身分",
+      "variant": "security",
+      "labelDy": 24
+    },
+    {
+      "id": "auth-users",
+      "from": "auth",
+      "to": "users",
+      "label": "sub → user.roles",
+      "labelDy": 24
+    },
+    {
+      "id": "perm-matrix",
+      "from": "perm",
+      "to": "matrix",
+      "label": "查 role × entity",
+      "labelDy": 24
+    },
+    {
+      "id": "admin-matrix",
+      "from": "admin",
+      "to": "matrix",
+      "label": "翻格子",
+      "variant": "dashed"
+    },
+    {
+      "id": "seed-matrix",
+      "from": "seed",
+      "to": "matrix",
+      "label": "冪等 seed",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "什麼時候才升",
+      "items": [
+        "角色 > 3",
+        "非開發者要改權限",
+        "要 per-entity read/write 粒度"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "不要混在一起",
+      "items": [
+        "矩陣只管 allow/deny（欄）",
+        "DEPT/OWN/ALL 列範圍另外一個模組"
+      ]
+    }
+  ]
+}

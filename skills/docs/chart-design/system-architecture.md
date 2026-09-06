@@ -152,3 +152,35 @@
 | Network diagram 不標 public/private | 必標 + 標 protocol:port |
 | > 5 色 | ≤ 5、每色有意義 |
 | 不寫 caption「這張圖回答什麼問題」 | 每張圖開頭一句說清楚 |
+
+---
+
+## 架構前後比對（Before / Delta / After）— 用 archify，不 vendor
+
+> 2026-09-06 實測紀錄見 rivendell `.learnings/LEARNINGS.md`。這節是 recipe，不是 skill：
+> 需要的時候臨時裝，用完不留。等某個產品真的維護起一份 architecture JSON 基準，再升級成 skill。
+
+**什麼時候值得**：架構評審（plan-eng-review）要看「改了什麼」、大重構前後、RBAC / auth 這類 tier 升級。
+**什麼時候不值得**：只是畫一張圖（走 mermaid / excalidraw）；30+ 節點的功能關係圖（qa-dataflow 手工模板，archify 排不出來）。
+
+**步驟**：
+
+```bash
+npx skills add tt-a1i/archify -g            # 裝進 ~/.claude/skills/archify（MIT）
+export ARCHIFY_UPDATE_CHECK_DISABLED=1     # 它預設會 GET 更新 manifest，關掉
+cd ~/.claude/skills/archify
+node bin/archify.mjs validate architecture base.json --quality showcase --json
+node bin/archify.mjs validate architecture head.json --quality showcase --json
+node bin/archify.mjs compare  architecture base.json head.json delta.html --quality showcase --json
+```
+
+**JSON 怎麼寫**：`references/archify-examples/` 有三份可直接抄形狀——
+`rbac-tier1.base` → `rbac-tier2.head`（一次 compare 的 base/head 對），`spine-skeleton`（帶 GitHub 行號證據的單張）。
+規則：同一個元件在 base 與 head 用**同一個 id**，delta 才會標成 changed 而不是 removed+added；
+≤ 12 元件；`size: [150, 64]`；橫向間距 ≥ 110px 標籤才排得下；標籤壓到框就照診斷建議加 `labelDy`。
+
+**限制**：
+- `meta.repository` 只吃 `https://github.com/<owner>/<repo>` + 40 碼 commit SHA；純 local repo 用不了 `--repo-root` 證據。
+- viewer UI 只有 en / zh-CN；圖上文字可以繁中。
+- `visual-check` 的「首屏不可捲動」規則跟我們的 1600×900 slide 規則不同用途，fail 不代表圖不能用。
+- 每次都要手排 pos / via，11 元件約 4–5 輪 validate；這是它不 vendor 的主因。

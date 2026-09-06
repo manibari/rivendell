@@ -10,11 +10,19 @@ description: >
   (same axes = same metric, same unit, same population), R4 type-to-structure
   (a linear flow is NEVER a 2×2 matrix). Per-project visual style lives in
   `styles/<name>.md`, loaded by the skill — not hardcoded.
-  TRIGGER: "畫圖表", "做表格", "生成 chart", "畫架構圖", "畫流程圖", "做圖", or invoked
-  as sub-call by slide-workflow Gate 5, iot-factory-report Step 4, pitch-deck
-  data-page generation, gdoc-report-builder visualization step.
-  SKIP: pure text slides; one-liner mermaid/excalidraw sketches owned by those
-  skills directly; non-visual tables that are just data dumps.
+  This is the SINGLE ENTRY for drawing: generic asks land here first, get
+  triaged, then hand off to mermaid-diagram / excalidraw-diagram / a chart
+  library. Also owns `references/check-html-figure.mjs` (mechanical checks for
+  any HTML figure) and the three-claim handoff receipt.
+  TRIGGER: any generic drawing ask — "畫圖表", "做表格", "生成 chart", "畫架構圖",
+  "畫流程圖", "做圖", "draw a diagram", "visualize this", "architecture diagram" —
+  and ANY figure that goes into a report / deck / proposal / customer-facing
+  document; or invoked as sub-call by slide-workflow Gate 5, iot-factory-report
+  Step 4, pitch-deck data-page generation, gdoc-report-builder visualization step.
+  SKIP: user already named the tool ("用 Mermaid 畫", ".mmd", "excalidraw") and the
+  figure stays internal (go straight to that skill); user-journey / screen
+  transitions (user-flow); verifying a dataflow, not drawing it (qa-dataflow);
+  pure text slides; non-visual tables that are just data dumps.
 tags: [docs, workflow]
 version: 1.0.0
 user-invocable: true

@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "RBAC Tier-1：寫死角色（family-fiscal 形狀）",
+    "quality_profile": "showcase"
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [
+      40,
+      60
+    ],
+    "cols": 3,
+    "cellW": 150,
+    "cellH": 64,
+    "gapX": 110,
+    "gapY": 100
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "呼叫端",
+      "sublabel": "Bearer token",
+      "row": 0,
+      "col": 0,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "router",
+      "type": "backend",
+      "label": "Router handler",
+      "sublabel": "@router.post(...)",
+      "row": 0,
+      "col": 1,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "get_current_user",
+      "sublabel": "decode → users lookup",
+      "row": 0,
+      "col": 2,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "role",
+      "type": "security",
+      "label": "require_role()",
+      "sublabel": "Depends factory，2–3 個角色字串",
+      "tag": "Tier-1",
+      "row": 1,
+      "col": 1,
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "users",
+      "type": "database",
+      "label": "users",
+      "sublabel": "role: str",
+      "row": 1,
+      "col": 2,
+      "size": [
+        150,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "授權：角色寫在程式碼裡",
+      "wraps": [
+        "role"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-router",
+      "from": "client",
+      "to": "router",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "router-role",
+      "from": "router",
+      "to": "role",
+      "label": "Depends 在簽名上",
+      "variant": "security",
+      "labelDy": 24
+    },
+    {
+      "id": "role-auth",
+      "from": "role",
+      "to": "auth",
+      "label": "先驗身分",
+      "variant": "security",
+      "labelDy": 24
+    },
+    {
+      "id": "auth-users",
+      "from": "auth",
+      "to": "users",
+      "label": "sub → user.role",
+      "labelDy": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "夠用的時候",
+      "items": [
+        "≤3 個角色",
+        "只有開發者改權限",
+        "不需要 per-entity 粒度"
+      ]
+    }
+  ]
+}

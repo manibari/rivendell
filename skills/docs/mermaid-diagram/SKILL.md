@@ -7,12 +7,18 @@ description: >
   state, ER, class, mindmap, C4, timeline, sankey) and render to PNG via
   `npx @mermaid-js/mermaid-cli` (zero install). Diagrams should ARGUE, not
   DISPLAY — shape carries the meaning.
-  TRIGGER when: user asks for a flowchart / sequence / architecture / state
-  diagram, says "畫流程圖" / "draw a diagram" / "visualize this", or finishes
-  a `user-flow` Mermaid block and needs a PNG.
-  DO NOT TRIGGER when: user wants a free-form sketch / whimsical aesthetic
-  (use `excalidraw-diagram`); a wireframe (use `mockup`); UI screens (use
-  `gstack-design-html`); or text-only ASCII for a code comment.
+  The engineer-facing renderer: technical diagrams for README, design docs,
+  ADRs, code review — precise, auto-laid-out, not styled for a deck.
+  TRIGGER when: user names Mermaid / ".mmd" / "mermaid block"; asks for a
+  sequence / state / ER / class / C4 diagram for engineers or docs; or
+  `chart-design` (after triage) or `user-flow` (Mermaid block done, needs a
+  PNG) hands off here.
+  DO NOT TRIGGER when: a generic "畫流程圖" / "畫架構圖" / "draw a diagram" with no
+  tool named — that is `chart-design`'s entry, it triages first; the figure goes
+  into a report / deck / proposal (also `chart-design`, it applies the style
+  file); free-form sketch / whimsical aesthetic (`excalidraw-diagram`); a
+  wireframe (`mockup`); UI screens (`gstack-design-html`); text-only ASCII for a
+  code comment.
 when_to_use: when visualizing workflow, architecture, sequence, state, or concept relationships in a technical/precise style
 version: 1.0.0
 tags: [docs, diagram, mermaid, flowchart, rendering]

@@ -61,3 +61,8 @@ Key routing rules:
 - Design system, brand → invoke gstack-design-consultation
 - Visual audit, design polish → invoke gstack-design-review
 - Architecture review → invoke gstack-plan-eng-review
+- Any drawing ask (畫圖 / 畫流程圖 / 畫架構圖 / draw a diagram) → invoke chart-design
+  first; it triages and hands off to mermaid-diagram / excalidraw-diagram. Never
+  route to gstack-diagram (rivendell owns diagrams). Exceptions that skip the
+  entry: user names the tool (Mermaid / excalidraw) for an internal figure;
+  user journey / screen flow (user-flow); verifying a dataflow (qa-dataflow).

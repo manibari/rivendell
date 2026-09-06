@@ -108,7 +108,7 @@ as release notes.
 | **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
 | **planning-with-files** | 自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | Define structured requirements, user stories |
-| **user-flow** | `/user-flow` 或自動 | Design user workflow diagrams with Mermaid flowcharts |
+| **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
 
 ### workflow/ — 工作流程與 Session 維運
@@ -252,14 +252,14 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **chart-design** | 自動 | Chart / table / diagram sub-workflow shared by every report + deck skill. |
+| **chart-design** | 自動 | 畫圖的單一入口：泛用「畫圖／畫架構圖／畫流程圖」與所有要進報告／簡報的圖先到這裡 triage，再轉 mermaid / excalidraw；含 R1–R4、check-html-figure.mjs 機械檢查、三欄交付收據 |
 | **discovery-interview** | 自動 | Run a structured Discovery interview with a potential consulting client to find |
 | **doc-coauthoring** | `/doc-coauthoring` 或自動 | Structured workflow for collaboratively co-authoring documentation through |
-| **excalidraw-diagram** | 自動 | Create Excalidraw diagram JSON files that make visual arguments |
+| **excalidraw-diagram** | 自動 | 手繪風 .excalidraw → PNG；renderer 不是入口，由指名風格或 chart-design / pitch-deck 轉入 |
 | **gdoc-report-builder** | 自動 | Build structured reports in Google Docs/Slides via MCP tools — batch table |
 | **internal-comms** | `/internal-comms` 或自動 | Templates and formats for ongoing organizational communications during and |
 | **iot-factory-report** | 自動 | Analyze factory IoT/SCADA time-series data (CSV/Excel) and produce visual |
-| **mermaid-diagram** | `/mermaid-diagram` 或自動 | Generate Mermaid `.mmd` files that argue visually (flowcharts, sequence, state |
+| **mermaid-diagram** | `/mermaid-diagram` 或自動 | 給工程師看的 Mermaid 技術圖 .mmd → PNG（README、設計文件）；指名 Mermaid 或由 chart-design / user-flow 轉入 |
 | **metadata-workshop** | 自動 | Run a structured Metadata Workshop with a consulting client to convert their |
 | **office-docx** | 自動 | Word (.docx) 建立、編輯、分析，支援追蹤修訂與註解 |
 | **office-pdf** | 自動 | PDF 操作：文字/表格擷取、建立、合併/分割、表單填寫 |

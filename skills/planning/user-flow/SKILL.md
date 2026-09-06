@@ -4,9 +4,16 @@ loop: dev
 pdca: plan
 description: >
   Design user workflow diagrams with Mermaid flowcharts, covering happy path and error branches.
-  TRIGGER when: user says "design flow", "draw flowchart", "user journey",
-  or needs to map out screen transitions and decision points.
-  DO NOT TRIGGER when: user is asking for system architecture or data flow diagrams.
+  The subject is the USER's path through screens, not the system.
+  TRIGGER when: user says "user journey", "使用者流程", "畫面怎麼切換", "design the
+  flow for <feature>", "happy path / error branches", or needs to map screen
+  transitions and decision points before wireframing; also invoked by
+  dev-process-gate as the step after requirement.
+  DO NOT TRIGGER when: a generic "畫流程圖" / "draw a flowchart" with no user or
+  screen in it (`chart-design` triages: system flow → mermaid-diagram);
+  system architecture, sequence, or data flow diagrams (`mermaid-diagram`);
+  checking whether a dataflow really runs as claimed (`qa-dataflow`); walking
+  the flow in a live app (`qa-journey`).
 tags: [workflow]
 version: 1
 source: manual

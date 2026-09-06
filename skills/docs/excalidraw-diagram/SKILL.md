@@ -8,14 +8,18 @@ description: >
   philosophy as `mermaid-diagram` but with a friendly, sketchy look —
   preferred for slide decks, pitch material, and anything where "corporate
   technical" would be the wrong vibe.
-  TRIGGER when: user asks for a "whimsical", "hand-drawn", or "sketchy"
-  diagram; wants a diagram for a pitch deck / presentation / external
-  audience; says "畫個示意圖" / "draw something casual"; or already used
-  `mermaid-diagram` and wants a softer-looking alternative for the same
+  A renderer, not an entry: it is reached by naming the style, or by
+  `chart-design` / `pitch-deck` deciding the deck wants a hand-drawn look.
+  TRIGGER when: user names "excalidraw", "whimsical", "hand-drawn", "sketchy",
+  "畫個示意圖" / "draw something casual"; `chart-design` or `pitch-deck` hands
+  off here for a deck / external-audience figure; or the user already has a
+  `mermaid-diagram` output and wants a softer-looking version of the same
   content.
-  DO NOT TRIGGER when: user needs precise technical diagrams with automatic
-  layout (use `mermaid-diagram`); wireframes (use `mockup`); UI screens
-  (use `gstack-design-html`); or photo-realistic / data-driven charts.
+  DO NOT TRIGGER when: a generic "畫圖" / "畫架構圖" / "draw a diagram" with no
+  style named (`chart-design` triages first, even for decks); engineer-facing
+  technical diagrams with automatic layout (`mermaid-diagram`); wireframes
+  (`mockup`); UI screens (`gstack-design-html`); photo-realistic / data-driven
+  charts.
 when_to_use: when a diagram needs a hand-drawn / non-corporate aesthetic, especially for slide decks or external presentations
 version: 1.0.0
 tags: [docs, diagram, excalidraw, whimsical, rendering]
