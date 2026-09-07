@@ -332,6 +332,10 @@ export interface RoleJob {
 export interface Role {
   id: string;
   title: string;
+  /** 職權層：決策 / 營運 / 市場 / 交付 / 驗證 / 支援 */
+  tier: string;
+  /** 能決定什麼 · 對誰負責 */
+  authority: string;
   intro: string;
   notes: string[];
   jobs: RoleJob[];
@@ -343,6 +347,8 @@ export interface SkillRolesData {
   path: string;
   updated: string;
   shared: string[];
+  /** tier labels in display order */
+  tiers: string[];
   roles: Role[];
   totals: { roles: number; jobs: number; gaps: number };
   content: string;

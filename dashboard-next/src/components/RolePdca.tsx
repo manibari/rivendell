@@ -206,7 +206,14 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
       <div className="grid gap-4" style={{ gridTemplateColumns: "220px minmax(0, 1fr)" }}>
         {/* Role list */}
         <nav className="flex flex-col gap-0.5 self-start" style={{ position: "sticky", top: 16 }}>
-          {data.roles.map((r) => {
+          {(data.tiers.length ? data.tiers : [""]).map((tier) => (
+            <div key={tier || "all"} className="flex flex-col gap-0.5">
+              {tier && (
+                <p className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-subtle)" }}>
+                  {tier}
+                </p>
+              )}
+              {data.roles.filter((r) => (tier ? r.tier === tier : true)).map((r) => {
             const on = r.id === role.id;
             return (
               <button
@@ -232,6 +239,8 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
               </button>
             );
           })}
+            </div>
+          ))}
           {data.shared.length > 0 && (
             <div className="mt-3 px-3 text-[11px] leading-relaxed" style={{ color: "var(--text-subtle)" }}>
               {data.shared.map((s, i) => (
@@ -246,9 +255,21 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
         {/* Jobs of the selected role */}
         <div className="min-w-0">
           <div className="mb-3">
-            <h2 className="text-lg" style={{ color: "var(--text)", fontWeight: 500, letterSpacing: "-0.01em" }}>
-              {role.id}. {role.title}
-            </h2>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <h2 className="text-lg" style={{ color: "var(--text)", fontWeight: 500, letterSpacing: "-0.01em" }}>
+                {role.id}. {role.title}
+              </h2>
+              {role.tier && (
+                <span className="font-mono text-[10px] px-1.5 py-0.5 uppercase tracking-wider" style={{ background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 99, color: "var(--text-muted)" }}>
+                  {role.tier}
+                </span>
+              )}
+            </div>
+            {role.authority && (
+              <p className="mt-1 text-xs" style={{ color: "var(--text)" }}>
+                職權：{role.authority}
+              </p>
+            )}
             {role.intro && (
               <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
                 {role.intro}

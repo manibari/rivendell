@@ -96,6 +96,11 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
     job: dict[str, Any] | None = None
     shared: list[str] = []
     in_index = False
+    # From the index table: role id → (tier label, authority one-liner).
+    # A blank first cell continues the previous tier (rowspan by convention).
+    tiers: dict[str, tuple[str, str]] = {}
+    tier_order: list[str] = []
+    current_tier = ""
 
     for raw in lines:
         line = raw.rstrip()
@@ -117,8 +122,21 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
             continue
 
         if in_index:
-            if line.startswith("橫向共用") or line.startswith("畫圖"):
+            if line.startswith("橫向共用") or line.startswith("畫圖") or line.startswith("收發信"):
                 shared.append(_strip_md(line).replace("`", ""))
+            elif line.startswith("|"):
+                cells = _cells(line)
+                is_separator = bool(cells[0]) and set(cells[0]) <= {"-", ":"}
+                if len(cells) >= 3 and not is_separator and cells[0] not in ("職權層",):
+                    tier_cell = _strip_md(cells[0])
+                    if tier_cell:
+                        # "**決策**：一句話" → label before the colon
+                        current_tier = tier_cell.split("：", 1)[0].strip()
+                        if current_tier not in tier_order:
+                            tier_order.append(current_tier)
+                    rid_m = re.search(r"\[(\d+)\.", cells[1])
+                    if rid_m:
+                        tiers[rid_m.group(1)] = (current_tier, _strip_md(cells[2]))
             continue
 
         if role is None:
@@ -166,6 +184,11 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
             # Prose after a job table: how the jobs connect, 常搭配, caveats.
             role["notes"].append(_strip_md(line.lstrip("> ").strip()).replace("`", ""))
 
+    for r in roles:
+        tier, authority = tiers.get(r["id"], ("", ""))
+        r["tier"] = tier
+        r["authority"] = authority
+
     # Fill missing stages so the UI always has four columns.
     for r in roles:
         for j in r["jobs"]:
@@ -182,6 +205,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
         "path": str(p),
         "updated": updated,
         "shared": shared,
+        "tiers": tier_order,
         "roles": roles,
         "totals": {
             "roles": len(roles),
