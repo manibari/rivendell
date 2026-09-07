@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChevronLeft } from "lucide-react";
-import { apiFetch, type SkillRolesData } from "@/lib/api";
+import { apiFetch, docAssetUrl, type SkillRolesData } from "@/lib/api";
 import RolePdca from "@/components/RolePdca";
 
 // /skills/roles — the structured 角色 → 工作 → PDCA view. `?raw=1` shows the
@@ -22,7 +22,17 @@ function RawDoc() {
       className="prose prose-sm max-w-none p-6"
       style={{ color: "var(--text)", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)" }}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{doc.content}</ReactMarkdown>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          img: ({ src, alt }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={docAssetUrl("skills-by-role.md", typeof src === "string" ? src : "")} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)" }} />
+          ),
+        }}
+      >
+        {doc.content}
+      </ReactMarkdown>
     </article>
   );
 }

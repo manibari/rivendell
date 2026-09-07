@@ -1,0 +1,33 @@
+%% 職權層交接圖 — argue：六層之間交的是具體檔案，不是「配合」
+%% beat：skills-by-role.md「職權的邊界比工作清單更重要」
+flowchart TD
+  classDef tier fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef artifact fill:#ffffff,stroke:#d1d5db,color:#374151
+  classDef gap fill:#fff7e6,stroke:#f59e0b,color:#8a5a00,stroke-dasharray:5 4
+
+  CEO["決策 · CEO<br/>方向、資源、人事"]:::tier
+  COO["營運 · COO<br/>節奏、合約、請款"]:::tier
+  MKT["市場 · 行銷<br/>訊息、內容、名單"]:::tier
+  SALES["市場 · 業務<br/>提案、成交"]:::tier
+  DELIV["交付 · 開發／顧問／分析<br/>做出承諾的東西"]:::tier
+  QA["驗證 · QA<br/>能擋不能改"]:::tier
+  SUP["支援 · 人資／知識／平台<br/>讓前面的人做得動"]:::tier
+
+  A1["季度目標與優先序 ★"]:::gap
+  A2["定價策略 ★"]:::gap
+  A3["名單表 ★"]:::gap
+  A4["SOW + kickoff 三件套"]:::artifact
+  A5["里程碑 / 驗收單 ★"]:::gap
+  A6["落差報告"]:::artifact
+  A7["職缺需求單 ★"]:::gap
+
+  CEO --> A1 --> COO
+  CEO --> A2 --> SALES
+  MKT --> A3 --> SALES
+  SALES --> A4 --> COO
+  COO --> A5 --> DELIV
+  DELIV --> A6
+  A6 -->|擋或放行| QA
+  QA -.->|退回| DELIV
+  CEO --> A7 --> SUP
+  SUP -.->|工具、人、筆記| DELIV

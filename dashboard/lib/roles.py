@@ -169,7 +169,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
             job["stages"].append(entry)
             continue
 
-        if job is None and line and not line.startswith("|") and not line.startswith("#"):
+        if job is None and line and not line.startswith(("|", "#", "![", "<", "*")):
             # Role-level prose: first paragraph is the intro, later ones are notes.
             clean = _strip_md(line.lstrip("> ").strip()).replace("`", "")
             if not clean:
@@ -180,7 +180,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
                 role["notes"].append(clean)
             continue
 
-        if job is not None and line and not line.startswith(("|", "#", "---")):
+        if job is not None and line and not line.startswith(("|", "#", "---", "![", "<", "*")):
             # Prose after a job table: how the jobs connect, 常搭配, caveats.
             role["notes"].append(_strip_md(line.lstrip("> ").strip()).replace("`", ""))
 

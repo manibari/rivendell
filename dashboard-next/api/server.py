@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -1230,6 +1231,15 @@ def api_skills_roles() -> dict[str, Any]:
 
 
 _DOCS_ROOT = (LIB_DIR.parent / "docs").resolve()
+
+
+@app.get("/api/docs-asset/{asset_path:path}", tags=["Skills"])
+def api_doc_asset(asset_path: str) -> FileResponse:
+    """Images referenced by markdown under rivendell/docs/ (png/svg/jpg only)."""
+    target = (_DOCS_ROOT / asset_path).resolve()
+    if _DOCS_ROOT not in target.parents or not target.is_file() or target.suffix.lower() not in (".png", ".svg", ".jpg", ".jpeg", ".gif"):
+        raise HTTPException(404, f"docs/{asset_path} not found")
+    return FileResponse(str(target))
 
 
 @app.get("/api/docs/{doc_path:path}", tags=["Skills"])

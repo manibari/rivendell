@@ -3,7 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, FileText } from "lucide-react";
-import { apiFetch, type SkillRolesData, type RoleJob, type RoleStage } from "@/lib/api";
+import { apiFetch, docAssetUrl, type SkillRolesData, type RoleJob, type RoleStage } from "@/lib/api";
+
+function Figure({ src, caption, open = false }: { src: string; caption: string; open?: boolean }) {
+  return (
+    <details open={open} className="mt-2" style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-md)", background: "var(--surface)" }}>
+      <summary className="cursor-pointer px-3 py-2 text-xs" style={{ color: "var(--text-muted)" }}>
+        {caption}
+      </summary>
+      <div className="px-3 pb-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={docAssetUrl("skills-by-role.md", src)} alt={caption} style={{ maxWidth: "100%", maxHeight: 720, height: "auto", background: "#fff" }} />
+      </div>
+    </details>
+  );
+}
 
 // 角色 → 工作 → PDCA. Data comes from docs/skills-by-role.md via /api/skills/roles;
 // this component only lays it out: pick a role on the left, each job on the
@@ -203,7 +217,9 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
         </Link>
       </div>
 
-      <div className="grid gap-4" style={{ gridTemplateColumns: "220px minmax(0, 1fr)" }}>
+      <Figure src="assets/diagrams/roles-authority-handoff.png" caption="職權層交接圖：六層之間交的是具體檔案；★ 是還沒有人在產的交接物" />
+
+      <div className="mt-4 grid gap-4" style={{ gridTemplateColumns: "220px minmax(0, 1fr)" }}>
         {/* Role list */}
         <nav className="flex flex-col gap-0.5 self-start" style={{ position: "sticky", top: 16 }}>
           {(data.tiers.length ? data.tiers : [""]).map((tier) => (
@@ -280,6 +296,9 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
                 {n}
               </p>
             ))}
+            {role.id === "1" && (
+              <Figure src="assets/diagrams/dev-jobs-linkage.png" caption="1a→1d 接縫圖：1a 一次、1b／1c 反覆、1d 每輪都經過；箭頭上的都是檔案" />
+            )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {role.jobs.map((j) => (
                 <a

@@ -6,7 +6,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChevronLeft } from "lucide-react";
-import { apiFetch, type DocContent } from "@/lib/api";
+import { apiFetch, docAssetUrl, type DocContent } from "@/lib/api";
 
 // /docs/<path> renders one markdown file from rivendell/docs/ — the deep-dive
 // pages the role view links to (docs/loops/gov-tender.md and friends).
@@ -38,7 +38,17 @@ export default function DocPage() {
         className="prose prose-sm max-w-none p-6"
         style={{ color: "var(--text)", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)" }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{doc.content}</ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            img: ({ src, alt }) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={docAssetUrl(slug, typeof src === "string" ? src : "")} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)" }} />
+            ),
+          }}
+        >
+          {doc.content}
+        </ReactMarkdown>
       </article>
     </div>
   );

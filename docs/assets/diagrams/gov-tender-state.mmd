@@ -1,0 +1,25 @@
+%% 標案狀態機 — argue：status 應由人的決定與決標事實驅動，不由截止日
+%% beat：docs/loops/gov-tender.md「狀態機（要先定，其他都掛在它上面）」
+stateDiagram-v2
+  classDef now fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef gap fill:#fff7e6,stroke:#f59e0b,color:#8a5a00
+  classDef won fill:#e8efea,stroke:#10b981,color:#0a0a0a
+  classDef lost fill:#fdf5f5,stroke:#ef4444,color:#7f1d1d
+
+  [*] --> active : P1 爬蟲寫入 case
+  active --> evaluating : P2 triage ★
+  active --> expired : 截止日過（現況唯一的轉換）
+  evaluating --> bidding : go
+  evaluating --> no_bid : no-go + decision_reason
+  bidding --> submitted : 投標（C1 檢核 ★）
+  submitted --> won : A1 決標回填 ★
+  submitted --> lost : A1 決標回填 ★ + lost_reason
+  won --> [*] : A3 進素材庫
+  lost --> [*] : A2 關鍵字回饋
+  no_bid --> [*]
+  expired --> [*]
+
+  class active,expired now
+  class evaluating,bidding,submitted gap
+  class won won
+  class lost,no_bid lost

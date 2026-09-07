@@ -47,6 +47,10 @@ README 的 Loop × PDCA 表 gov 那列 check／act 是「—」，不是漏標�
 
 ## 狀態機（要先定，其他都掛在它上面）
 
+![標案狀態機](../assets/diagrams/gov-tender-state.png)
+
+*圖：黃色三個狀態現在都不存在；「截止日過」是現況唯一的轉換。★ 是要補的動作。*
+
 現在 `status` 是截止日的函數。改成人的決定加上事實回填：
 
 ```

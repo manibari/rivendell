@@ -1,0 +1,29 @@
+%% 產品開發者 1a→1d 接縫圖 — argue：1a 一次、1b/1c 反覆、1d 每輪都經過；接縫全是檔案
+%% beat：skills-by-role.md 第 1 節「工作之間怎麼接」
+flowchart TD
+  classDef once fill:#2d4a3e,stroke:#2d4a3e,color:#ffffff
+  classDef loop fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef artifact fill:#ffffff,stroke:#d1d5db,color:#374151
+
+  J1a["1a 新產品起手<br/>只跑一次"]:::once
+  J1b["1b 新功能 / 新頁面<br/>反覆"]:::loop
+  J1c["1c 後端 / 修 bug<br/>反覆"]:::loop
+  J1d["1d 部署與上線<br/>每輪都經過"]:::loop
+  J2b["2b QA（驗證層）"]:::loop
+
+  R["repo：骨架 + spine<br/>CLAUDE.md、CI、首次部署"]:::artifact
+  REQ["requirement.md<br/>user-flow 圖"]:::artifact
+  TASKS["任務清單<br/>writing-plans"]:::artifact
+  QAP["QA 計畫<br/>qa-planner"]:::artifact
+  GATE["版本號 + CHANGELOG<br/>spine-versioning 閘門"]:::artifact
+  DF["qa-dataflow 反證"]:::artifact
+
+  J1a --> R --> J1b
+  J1b --> REQ --> TASKS
+  TASKS -->|要一個 endpoint| J1c
+  J1c --> DF -->|回到 1b 的 Check| J1b
+  J1b --> QAP --> J2b
+  J1c --> QAP
+  J2b -->|通過| J1d
+  J1d --> GATE -->|沒 bump 擋 push| J1d
+  GATE -->|下一輪| J1b

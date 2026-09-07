@@ -30,6 +30,10 @@
 | | [7. 知識工作者](#7-知識工作者) | 看什麼、記什麼；對筆記可信度標記負責 | 7a 訂閱與掃描 · 7b 單支影片／錄音消化 · 7c Drive 文件變 skill |
 | | [8. 平台維護者](#8-平台維護者) | rivendell 本身：skill、agent、hook；對其他角色叫得到工具負責 | 8a 新增或修改 skill · 8b 排程 agent · 8c session 與環境 · 8d repo 維運 |
 
+![職權層交接圖](assets/diagrams/roles-authority-handoff.png)
+
+*圖：六層之間交的是具體檔案，不是「配合」；★ 的檔案就是還沒有人在產的交接物。*
+
 職權的邊界比工作清單更重要：業務可以建議接不接但不能定價（9c）；QA 可以擋但不能改；人資可以跑流程但開缺是 9d 的決定；COO 承諾交期，交付角色對里程碑負責。同一個人一天會換好幾頂帽子，換帽子時就換頁。
 
 橫向共用（每個角色、每件工作都會碰到）：`task-brief`（開工前先定義任務、判斷階段）、`say-it-plain`（把話講清楚）、`knowledge-graph`（記住人／公司／專案的事實）、`context-journal` / `context-recovery`（長 session 不掉 context）、`session-wrap`（收工）、`self-improving-agent`（踩坑就記）。
@@ -90,6 +94,10 @@
 | Act | `gstack-ios-sync` ｜ 視情況：`gstack-ios-clean` (gstack) | |
 
 工作之間怎麼接：1a 只跑一次，產出的是 repo（骨架接好 spine、CLAUDE.md、權限、CI、第一次部署），之後 1b 與 1c 都在它裡面反覆跑。1b 的計畫（writing-plans 任務清單）裡「要一個 endpoint」就是 1c 的輸入；1c 的 qa-dataflow 反證結果回到 1b 的 Check。1d 是每一輪 1b／1c 的 Act 都會經過的那段，獨立成一件工作是因為開網域、搬機器不綁任何功能。接縫都是檔案：requirement → user-flow 圖 → 任務清單 → QA 計畫（交 2b）→ 版本號與 CHANGELOG（spine-versioning 閘門擋沒 bump 的 push）→ 下一輪 1b。
+
+![產品開發者 1a→1d 接縫圖](assets/diagrams/dev-jobs-linkage.png)
+
+*圖：1a 只跑一次，1b／1c 反覆，1d 每輪都經過；每個箭頭上的東西都是檔案。*
 
 常搭配：QA／驗收者（第 2 節）、平台維護者 8b（要排程時）。
 

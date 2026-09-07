@@ -519,3 +519,17 @@ export interface TimelineEvent {
   cost_usd?: number;
   detail?: string;
 }
+
+/** Resolve a markdown-relative image path (e.g. "../assets/x.png" from
+ *  docs/loops/gov-tender.md) to the /api/docs-asset URL. `docPath` is the
+ *  markdown's path relative to rivendell/docs/. */
+export function docAssetUrl(docPath: string, src: string): string {
+  if (/^(https?:)?\/\//.test(src) || src.startsWith("/")) return src;
+  const dir = docPath.includes("/") ? docPath.slice(0, docPath.lastIndexOf("/")) : "";
+  const parts = (dir ? dir.split("/") : []).filter(Boolean);
+  for (const seg of src.split("/")) {
+    if (seg === "..") parts.pop();
+    else if (seg !== "." && seg) parts.push(seg);
+  }
+  return `${API_BASE}/api/docs-asset/${parts.join("/")}`;
+}
