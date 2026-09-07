@@ -769,6 +769,12 @@ files_changed = int('$files_changed') if '$files_changed' else None
 qa_passed = int('$qa_passed') if '$qa_passed' else None
 branch_name = '$branch_name' or None
 pr_url = '$pr_url' or None
+# Task object (角色 → 工作 → PDCA): which loop this run belongs to.
+task_role = '${SK_EXEC_ROLE:-}' or None
+task_job = '${SK_EXEC_JOB:-}' or None
+task_stage = '${SK_EXEC_STAGE:-}' or None
+if task_job and not task_role:
+    task_role = task_job.rstrip('abcdefghijklmnopqrstuvwxyz')
 
 started_at = datetime.fromtimestamp(start_epoch).isoformat() if start_epoch else None
 finished_at = datetime.fromtimestamp(end_epoch).isoformat() if end_epoch else None
@@ -799,12 +805,18 @@ conn.execute('''CREATE TABLE IF NOT EXISTS agent_runs (
     commit_sha TEXT, files_changed INTEGER, qa_passed INTEGER,
     branch_name TEXT, pr_url TEXT
 )''')
+existing = {row[1] for row in conn.execute('PRAGMA table_info(agent_runs)')}
+for col in ('role', 'job', 'stage'):
+    if col not in existing:
+        conn.execute(f'ALTER TABLE agent_runs ADD COLUMN {col} TEXT')
 conn.execute('''INSERT INTO agent_runs
     (agent_name, project, started_at, finished_at, exit_code,
-     tokens_used, cost_usd, commit_sha, files_changed, qa_passed, branch_name, pr_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+     tokens_used, cost_usd, commit_sha, files_changed, qa_passed, branch_name, pr_url,
+     role, job, stage)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
     (agent_name, project, started_at, finished_at, exit_code,
-     tokens_used, cost_usd, commit_sha, files_changed, qa_passed, branch_name, pr_url))
+     tokens_used, cost_usd, commit_sha, files_changed, qa_passed, branch_name, pr_url,
+     task_role, task_job, task_stage))
 conn.commit()
 conn.close()
 " 2>/dev/null || true

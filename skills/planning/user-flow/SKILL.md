@@ -5,7 +5,7 @@ pdca: plan
 description: >
   Design user workflow diagrams with Mermaid flowcharts, covering happy path and error branches.
   The subject is the USER's path through screens, not the system.
-  TRIGGER when: user says "user journey", "使用者流程", "畫面怎麼切換", "design the
+  TRIGGER when: user says "user journey", "畫使用者流程", "畫面怎麼切換", "design the
   flow for <feature>", "happy path / error branches", or needs to map screen
   transitions and decision points before wireframing; also invoked by
   dev-process-gate as the step after requirement.

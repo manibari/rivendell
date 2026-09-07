@@ -1,0 +1,105 @@
+{
+  "_comment": "sk check routing — each phrase must appear in exactly ONE skill's TRIGGER text (matching the DO NOT TRIGGER / SKIP part does not count). Add a row whenever a trigger phrase is converged or a new entry skill is created.",
+  "tests": [
+    {
+      "phrase": "畫流程圖",
+      "expect": "chart-design"
+    },
+    {
+      "phrase": "畫架構圖",
+      "expect": "chart-design"
+    },
+    {
+      "phrase": "draw a diagram",
+      "expect": "chart-design"
+    },
+    {
+      "phrase": "畫圖表",
+      "expect": "chart-design"
+    },
+    {
+      "phrase": "畫個示意圖",
+      "expect": "excalidraw-diagram"
+    },
+    {
+      "phrase": "user journey",
+      "expect": "user-flow"
+    },
+    {
+      "phrase": "畫使用者流程",
+      "expect": "user-flow"
+    },
+    {
+      "phrase": "確認資料流對不對",
+      "expect": "qa-dataflow"
+    },
+    {
+      "phrase": "寫 SOW",
+      "expect": "sow-writer"
+    },
+    {
+      "phrase": "寫 JD",
+      "expect": "hr-jd-writer"
+    },
+    {
+      "phrase": "做 BP",
+      "expect": "pitch-deck"
+    },
+    {
+      "phrase": "做簡報",
+      "expect": "slide-workflow"
+    },
+    {
+      "phrase": "更新標案",
+      "expect": "gov-tender-scraper"
+    },
+    {
+      "phrase": "爬補助",
+      "expect": "gov-subsidy-scraper"
+    },
+    {
+      "phrase": "客戶調查",
+      "expect": "sales-customer-intel"
+    },
+    {
+      "phrase": "說人話",
+      "expect": "say-it-plain"
+    },
+    {
+      "phrase": "定義任務",
+      "expect": "task-brief"
+    },
+    {
+      "phrase": "語音轉文字",
+      "expect": "audio-transcription-flow"
+    },
+    {
+      "phrase": "把這支影片轉逐字稿",
+      "expect": "local-media-transcribe"
+    },
+    {
+      "phrase": "幫我做字幕檔",
+      "expect": "subtitle-file"
+    },
+    {
+      "phrase": "抓財報",
+      "expect": "mops-financial-scraper"
+    },
+    {
+      "phrase": "廠務報告",
+      "expect": "iot-factory-report"
+    },
+    {
+      "phrase": "review storyline",
+      "expect": "slide-office-hours"
+    },
+    {
+      "phrase": "新客戶 kickoff",
+      "expect": "sales-client-kickoff-docs"
+    },
+    {
+      "phrase": "走一遍使用者流程",
+      "expect": "qa-journey"
+    }
+  ]
+}

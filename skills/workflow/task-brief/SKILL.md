@@ -82,6 +82,18 @@ task-brief 是 gate，不是 peer。判斷階段後**路由到對的下游 skill
 
 ---
 
+### Step 1 收尾 — 標記任務物件（角色 → 工作 → PDCA）
+
+判斷完階段，順手把這件事掛到 `docs/skills-by-role.md` 的工作編號上，讓 dashboard 的角色視圖知道這條循環跑過：
+
+```bash
+skills/workflow/task-brief/scripts/task-tag.sh --job 4a --stage plan "評估今天三件標案要不要投"
+```
+
+`--job` 是角色頁的工作編號（1a、3b、4a…），`--stage` 是 plan／do／check／act。排程 agent 用
+`sk run --job 4a --stage plan` 同一套欄位進 `agent_runs`；互動 session 靠這一行寫進
+`~/.claude/session-logs/<repo>/tasks.jsonl`。對不上任何工作 → 那是角色頁缺的，記 FEATURE_REQUESTS，不要硬掛。
+
 ## Step 2 — 五欄位 Brief（只在執行階段）
 
 逐欄訪談：**AI 問、使用者答**。不要替使用者自己填——他沒講清楚的地方你一填就變 generic。

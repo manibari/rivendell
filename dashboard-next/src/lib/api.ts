@@ -327,6 +327,10 @@ export interface RoleJob {
   deep_dive: { label: string; href: string } | null;
   stages: RoleStage[];
   gap_count: number;
+  /** telemetry: agent_runs rows + tasks.jsonl records tagged with this job */
+  runs: number;
+  by_stage: Record<string, number>;
+  last_run: string;
 }
 
 export interface Role {
@@ -341,6 +345,7 @@ export interface Role {
   jobs: RoleJob[];
   job_count: number;
   gap_count: number;
+  runs: number;
 }
 
 export interface SkillRolesData {
@@ -350,7 +355,7 @@ export interface SkillRolesData {
   /** tier labels in display order */
   tiers: string[];
   roles: Role[];
-  totals: { roles: number; jobs: number; gaps: number };
+  totals: { roles: number; jobs: number; gaps: number; jobs_run: number; runs: number };
   content: string;
 }
 

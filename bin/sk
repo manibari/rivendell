@@ -35,6 +35,7 @@ Commands:
   import-gh <url>     Clone skill from GitHub URL
   list                Show all skills + deployment status
   check [--verbose]   Health check: symlinks, reviews, gdrive, frontmatter
+  check routing       Trigger phrases route to exactly one skill (data/routing-tests.json)
   check ssot          SSOT drift: diff agents.conf vs ~/.claude/projects.json
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   check disk          Disk capacity: data volume backing \$HOME (WARN ≥90%, CRIT ≥95%)
@@ -685,6 +686,17 @@ cmd_check() {
   if [ "$missing_tags" -eq 0 ] && [ "$missing_version" -eq 0 ]; then
     echo -e "  ${GREEN}All frontmatter OK${NC}"
   fi
+
+  echo ""
+  # Routing regression: each test phrase must sit in exactly one skill's TRIGGER text.
+  echo -e "${CYAN}[Routing]${NC}"
+  if python3 "$REPO_DIR/scripts/check-routing.py" >/tmp/sk-routing.$$ 2>&1; then
+    echo -e "  ${GREEN}$(tail -1 /tmp/sk-routing.$$ | sed 's/^ *//')${NC}"
+  else
+    echo -e "  ${YELLOW}$(tail -1 /tmp/sk-routing.$$ | sed 's/^ *//')${NC}"
+    grep FAIL /tmp/sk-routing.$$ | sed 's/^/  /'
+  fi
+  rm -f /tmp/sk-routing.$$
 
   echo ""
   # Role coverage: every skill must appear in docs/skills-by-role.md at least once,
@@ -2351,6 +2363,7 @@ cmd_run() {
   local task="" project_dir="." model="" max_budget="" dry_run=0
   local extra_tools="" permission_mode="default" resume_session=""
   local inject_context=0
+  local task_role="" task_job="" task_stage=""
 
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -2367,6 +2380,12 @@ cmd_run() {
       --resume)       resume_session="$2"; shift 2 ;;
       --resume=*)     resume_session="${1#--resume=}"; shift ;;
       --context)      inject_context=1; shift ;;
+      --role)         task_role="$2"; shift 2 ;;
+      --role=*)       task_role="${1#--role=}"; shift ;;
+      --job)          task_job="$2"; shift 2 ;;
+      --job=*)        task_job="${1#--job=}"; shift ;;
+      --stage)        task_stage="$2"; shift 2 ;;
+      --stage=*)      task_stage="${1#--stage=}"; shift ;;
       --dry-run)      dry_run=1; shift ;;
       -h|--help)      cmd_run_help; return 0 ;;
       --)             shift; task="$*"; break ;;
@@ -2410,6 +2429,9 @@ cmd_run() {
   SK_EXEC_LOG_PREFIX="run" \
   SK_EXEC_CONTEXT="$inject_context" \
   SK_EXEC_DRY_RUN="$dry_run" \
+  SK_EXEC_ROLE="$task_role" \
+  SK_EXEC_JOB="$task_job" \
+  SK_EXEC_STAGE="$task_stage" \
   sk_exec "$task"
 }
 
@@ -2430,6 +2452,9 @@ Flags:
   --yolo                Skip ALL permission checks (use with caution)
   --resume <session>    Resume a previous session by name
   --context             Inject project .claude/CLAUDE.md into prompt
+  --role <n>            Task object: role id from docs/skills-by-role.md (e.g. 4)
+  --job <id>            Task object: job id (e.g. 4a); role is inferred from it
+  --stage <pdca>        Task object: plan | do | check | act
   --dry-run             Show command without executing
   -h, --help            Show this help
 
@@ -2439,6 +2464,7 @@ Examples:
   sk run --budget 0.50 --auto "refactor utils.py to use dataclasses"
   sk run --model sonnet "update README with current API endpoints"
   sk run --context "refactor the auth module"
+  sk run --job 4a --stage plan "triage today's tenders"   # tagged in agent_runs
   sk run --resume sk-run-myapp-143022
   sk run --dry-run "migrate database schema"
 EOF
@@ -4499,6 +4525,7 @@ case "${1:-help}" in
   check)
     shift
     case "${1:-}" in
+      routing) shift; python3 "$REPO_DIR/scripts/check-routing.py" "$@" ;;
       ssot)   shift; cmd_check_ssot "$@" ;;
       disk)   shift; cmd_check_disk "$@" ;;
       agents) shift; cmd_check_agents "$@" ;;

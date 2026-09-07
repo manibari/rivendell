@@ -67,6 +67,10 @@ def _migrate_agent_runs(conn: sqlite3.Connection) -> None:
         "qa_passed": "INTEGER",
         "branch_name": "TEXT",
         "pr_url": "TEXT",
+        # Task object: 角色 → 工作 → PDCA (docs/skills-by-role.md ids)
+        "role": "TEXT",
+        "job": "TEXT",
+        "stage": "TEXT",
     }
     for col, col_type in new_columns.items():
         if col not in existing:

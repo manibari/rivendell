@@ -13,7 +13,9 @@ appears in it); this module only reads the conventions it is written in:
 """
 from __future__ import annotations
 
+import json
 import re
+import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -79,6 +81,59 @@ def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
         "gaps": gaps,
         "external": external,
     }
+
+
+_DATA_DIR = Path(__file__).parent.parent / "data"
+_SESSION_LOGS = Path.home() / ".claude" / "session-logs"
+
+
+def _telemetry() -> dict[str, dict[str, Any]]:
+    """job id → {runs, by_stage, last_run, sources} from two places:
+
+    - agent_runs.role/job/stage (scheduled runs via `sk run --job … --stage …`);
+      both db files are read because sk-exec-lib and the dashboard have
+      historically written to different ones.
+    - ~/.claude/session-logs/<repo>/tasks.jsonl (interactive sessions tagged by
+      task-brief's task-tag.sh).
+    """
+    out: dict[str, dict[str, Any]] = {}
+
+    def bump(job: str, stage: str, ts: str, source: str) -> None:
+        if not job:
+            return
+        rec = out.setdefault(job, {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
+        rec["runs"] += 1
+        if stage:
+            rec["by_stage"][stage] = rec["by_stage"].get(stage, 0) + 1
+        if ts and ts > rec["last_run"]:
+            rec["last_run"] = ts[:10]
+        rec["sources"][source] = rec["sources"].get(source, 0) + 1
+
+    for name in ("rivendell.db", "sk-dashboard.db"):
+        db = _DATA_DIR / name
+        if not db.is_file():
+            continue
+        try:
+            conn = sqlite3.connect(str(db))
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(agent_runs)")}
+            if {"job", "stage"} <= cols:
+                for job, stage, ts in conn.execute("SELECT job, stage, started_at FROM agent_runs WHERE job IS NOT NULL AND job != ''"):
+                    bump(job, stage or "", ts or "", "agent_runs")
+            conn.close()
+        except sqlite3.Error:
+            continue
+
+    if _SESSION_LOGS.is_dir():
+        for f in _SESSION_LOGS.glob("*/tasks.jsonl"):
+            try:
+                for line in f.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    rec = json.loads(line)
+                    bump(str(rec.get("job", "")), str(rec.get("stage", "")), str(rec.get("ts", "")), "session")
+            except (OSError, json.JSONDecodeError):
+                continue
+    return out
 
 
 def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict[str, Any]:
@@ -189,6 +244,17 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
         r["tier"] = tier
         r["authority"] = authority
 
+    # Telemetry: has this job ever actually run? (docs ★ vs runtime silence)
+    tele = _telemetry()
+    for r in roles:
+        r["runs"] = 0
+        for j in r["jobs"]:
+            t = tele.get(j["id"], {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
+            j["runs"] = t["runs"]
+            j["by_stage"] = t["by_stage"]
+            j["last_run"] = t["last_run"]
+            r["runs"] += t["runs"]
+
     # Fill missing stages so the UI always has four columns.
     for r in roles:
         for j in r["jobs"]:
@@ -211,5 +277,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
             "roles": len(roles),
             "jobs": sum(r["job_count"] for r in roles),
             "gaps": sum(r["gap_count"] for r in roles),
+            "jobs_run": sum(1 for r in roles for j in r["jobs"] if j["runs"]),
+            "runs": sum(r["runs"] for r in roles),
         },
     }

@@ -71,7 +71,7 @@ function GapRow({ text }: { text: string }) {
   );
 }
 
-function StageCell({ stage }: { stage: RoleStage }) {
+function StageCell({ stage, runs }: { stage: RoleStage; runs?: number }) {
   const empty = stage.empty || (stage.skills.length === 0 && stage.gaps.length === 0 && !stage.text);
   return (
     <div className="min-w-0 flex flex-col gap-1.5 p-3" style={{ borderLeft: "1px solid var(--border)" }}>
@@ -82,6 +82,11 @@ function StageCell({ stage }: { stage: RoleStage }) {
         <span className="text-[10px]" style={{ color: "var(--text-subtle)" }}>
           {STAGE_LABEL[stage.stage]}
         </span>
+        {runs ? (
+          <span className="ml-auto font-mono text-[10px]" style={{ color: "var(--accent)" }} title="這一步的執行次數">
+            ×{runs}
+          </span>
+        ) : null}
       </div>
       {empty ? (
         <span className="font-mono text-xs" style={{ color: "var(--text-subtle)" }}>
@@ -165,6 +170,13 @@ function JobCard({ job }: { job: RoleJob }) {
             ★ 缺 {job.gap_count}
           </span>
         )}
+        <span
+          className="font-mono text-[10px] px-1.5 py-0.5"
+          title="來源：agent_runs（sk run --job）與 session-logs/*/tasks.jsonl（task-tag）"
+          style={{ color: job.runs ? "var(--accent)" : "var(--text-subtle)", background: job.runs ? "var(--accent-bg)" : "transparent", border: "1px solid var(--border)", borderRadius: 99 }}
+        >
+          {job.runs ? `跑過 ${job.runs} 次 · ${job.last_run}` : "沒有執行紀錄"}
+        </span>
         {deepHref && (
           <Link
             href={deepHref}
@@ -177,7 +189,7 @@ function JobCard({ job }: { job: RoleJob }) {
       </header>
       <div className="grid" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
         {job.stages.map((s) => (
-          <StageCell key={s.stage} stage={s} />
+          <StageCell key={s.stage} stage={s} runs={job.by_stage?.[s.stage.toLowerCase()]} />
         ))}
       </div>
     </section>
@@ -202,7 +214,8 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--text-muted)" }}>
         <span className="font-mono">
-          {data.totals.roles} 角色 · {data.totals.jobs} 工作 · <span style={{ color: "var(--status-warn)" }}>★ {data.totals.gaps} 缺環</span>
+          {data.totals.roles} 角色 · {data.totals.jobs} 工作 · <span style={{ color: "var(--status-warn)" }}>★ {data.totals.gaps} 缺環</span> ·{" "}
+          <span title="有執行紀錄的工作數 / 總執行次數">{data.totals.jobs_run} 件跑過 · {data.totals.runs} 次</span>
         </span>
         <span className="font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
           source: docs/skills-by-role.md · {data.updated}
