@@ -26,8 +26,12 @@ fi
 # was interrupted (SIGKILL, OOM, Ctrl-C, disk full) leaves no sentinel and we
 # rebuild on next launch. `BUILD_ID` alone is not enough — Next can write it
 # before all chunks are flushed, leading to "Cannot find module" 500s.
+# `public` is in the watch list because a production build SNAPSHOTS it: a file
+# dropped in afterwards 404s until the next build, with no error anywhere except
+# the browser (2026-09-09: the avatar VRM models were re-fetched onto a new
+# machine and stayed 404 because nothing here noticed public/ had changed).
 SENTINEL=".next/.build-complete"
-if [ ! -f "$SENTINEL" ] || [ -n "$(find src next.config.ts package.json -newer "$SENTINEL" 2>/dev/null)" ]; then
+if [ ! -f "$SENTINEL" ] || [ -n "$(find src public next.config.ts package.json -newer "$SENTINEL" 2>/dev/null)" ]; then
     rm -rf .next
     npm run build
     touch "$SENTINEL"

@@ -89,9 +89,28 @@ export default function DiskCapacity() {
                 fontFamily: "var(--font-mono)",
               }}
             >
-              已用 {disk.used_gb} / {disk.size_gb}G · 剩 {disk.avail_gb}G
+              已用 {disk.used_gb}G · 剩 {disk.avail_gb}G
             </span>
           </div>
+
+          {/* On APFS the three df numbers do NOT add up: size is the shared
+              container, used is this volume only, avail is container-free. The
+              remainder is the other volumes (System, VM/swap, Preboot) plus
+              snapshots — spell it out rather than printing "399 / 460G · 剩 22.3G"
+              and letting the reader do arithmetic that cannot work. */}
+          {(() => {
+            const other = Math.round((disk.size_gb - disk.used_gb - disk.avail_gb) * 10) / 10;
+            if (other < 1) return null;
+            return (
+              <p
+                className="mt-1 tabular-nums"
+                style={{ color: "var(--text-subtle)", fontSize: 11, fontFamily: "var(--font-mono)" }}
+                title="APFS 容器由多個磁區共用：size 是容器總量、used 只算這個磁區、avail 是容器剩餘，三者不相加。"
+              >
+                容器 {disk.size_gb}G，另 {other}G 為同容器的系統磁區與快照
+              </p>
+            );
+          })()}
 
           {/* Usage bar — track on surface-2, fill in status color */}
           <div

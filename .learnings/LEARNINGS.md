@@ -656,3 +656,36 @@ category: best_practice
   或在 `sk maintain` 收尾加一步。已登記在 FEATURE_REQUESTS。
 - **Related**: 2026-08-30「兩機分岔 merge：70 個衝突裡 64 個是日期命名的 agent report」——
   同一個根因的第 2 次現形（那次談檔名，這次談沒人 commit）。
+
+## 2026-09-09 — Next production build 會「快照」public/，之後放進去的檔案一律 404
+
+- category: errors / gotcha
+- **情境**: 助理頁（/avatar）3D 角色空白，widget console：
+  `fetch for ".../avatar/models/male.vrm" responded with 404`。`.vrm` 被 `.gitignore` 擋
+  （11 MB 二進位佔位模型），換機後本來就沒有，照 README 重抓下來 **檔案確實在磁碟上，
+  Next 仍然回 404**。
+- **根因**: `next start` 跑的是 production build，`public/` 在 build 當下就被快照。
+  同目錄的 `README.md`（build 前就存在）回 200、新抓的 `.vrm` 回 404 —— 這個對照組是決定性證據。
+  再驗一次：`echo probe > public/.../\_probe.txt` 也馬上 404。
+  更深一層：`dashboard-next/start-web.sh` 的 rebuild 哨兵只看
+  `find src next.config.ts package.json -newer .next/.build-complete`，**`public` 不在清單裡**，
+  所以丟模型進去永遠不會觸發重建，重啟服務也沒用。
+- **已修**: 哨兵加入 `public`（commit 見同日）；models/README.md 補上真正可用的 curl 兩行
+  （原本寫「用上面 curl 重抓」但檔案裡根本沒有那段指令，換機無法自救）。
+- **How to apply**: 動到 `public/` 一律當成需要 rebuild，不是重啟。症狀特徵是
+  **檔案在、curl 也 404、同目錄舊檔卻正常** —— 先拿同目錄舊檔當對照組，比猜 MIME／權限快。
+- **Related**: `~/.claude/CLAUDE.md`「`next-server`（無 dev）= production build，不會 hot-reload」
+  的具體案例；`.next/` 是原子的，不要局部刪。
+
+## 2026-09-09 — APFS 上 df 的三個數字不能相加，UI 別並排印
+
+- category: correction / ui
+- **情境**: 使用者指出「已用 399 / 460G · 剩 22.3G 顯示有問題吧」。
+- **實情**: 數字全部正確，是 `df -k /System/Volumes/Data` 的原樣輸出；
+  但 APFS 容器由多個磁區共用，`size`=容器總量 460G、`used`=**只有這個磁區** 399G、
+  `avail`=容器剩餘 22.3G，中間 39G 是同容器的 System(16G)／VM swap／Preboot／Recovery
+  加上 APFS 快照。三者本來就不該相加。
+- **已修**: `DiskCapacity.tsx` 改成「已用 399G · 剩 22.3G」，另起一行說明
+  「容器 460G，另 39G 為同容器的系統磁區與快照」。
+- **How to apply**: 顯示 df 數據時，**要嘛只出 used + avail，要嘛把差額講出來**；
+  把 size/used/avail 並排會讓人以為能相減，在 APFS 上必然對不起來。
