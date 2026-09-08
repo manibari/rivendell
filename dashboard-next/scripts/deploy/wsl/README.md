@@ -25,12 +25,12 @@ moving parts, no benefit here.
 ## Prerequisites
 
 - Node ≥ 20, Python ≥ 3.11, `docker` usable from your WSL shell (`docker ps` works).
-- `~/code/rivendell` cloned on the WSL host (this repo), **checked out to the
-  deploy branch**. The /ports → 部署管理 work currently lives on
-  `chore/skill-quality` (not yet merged to main — a parallel session is finishing
-  related port-map work). So: `git checkout chore/skill-quality`, and the
-  `crontab.sample` sets `DASHBOARD_DEPLOY_BRANCH=chore/skill-quality`. Once that
-  work lands on main, flip both back to main.
+- `~/code/rivendell` cloned on the WSL host (this repo), checked out to **main**.
+  The /ports → 部署管理 work landed on main 2026-09-07 (ROADMAP R1a), so prod
+  tracks main again and `crontab.sample` sets `DASHBOARD_DEPLOY_BRANCH=main`.
+  On a WSL host still pointing at the retired `chore/skill-quality` branch:
+  `git fetch origin && git checkout main && git pull`, then update the crontab
+  line.
 - `~/projects/ops/monitors.toml` present (the shared health SoT; clone `manibari/ops`).
 - WSL **systemd enabled** — `/etc/wsl.conf`:
   ```

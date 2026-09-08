@@ -5,6 +5,6 @@
 # Track a feature branch until its work lands on main (the /ports work currently
 # lives on chore/skill-quality). Drop this line to follow main. The local checkout
 # must be ON the same branch (git checkout chore/skill-quality).
-DASHBOARD_DEPLOY_BRANCH=chore/skill-quality
+DASHBOARD_DEPLOY_BRANCH=main
 
 * * * * * $HOME/code/rivendell/dashboard-next/scripts/deploy/wsl/dashboard-redeploy.sh >> $HOME/rivendell-dashboard-redeploy.log 2>&1

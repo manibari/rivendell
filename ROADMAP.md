@@ -16,8 +16,9 @@
 
 ## Wave 0 — 止血(先於一切;每項獨立 commit + CHANGELOG + bump)
 
-- [ ] **R1a** 收斂 git split-brain:port-map 平行 session WIP 落地(**Peter**)→
-      `chore/skill-quality` 合 main(2026-08-30 本 merge 執行中)→ WSL 改追 main。
+- [x] **R1a** 收斂 git split-brain:port-map 平行 session WIP 落地(**Peter**)→
+      `chore/skill-quality` 已全數落地 main(2026-09-07,分支與 main 0/0)→
+      WSL 部署改追 main(crontab.sample + README,2026-09-09),分支已刪。
 - [ ] **R1b** FlowView Suspense 修復 byte-exact 單獨 commit(防 `checkout --` 滅失 → build 再炸)。
 - [ ] **R3** family-fiscal prod 回灌 fail-loud SECRET_KEY(骨架 config 模式 backport)+
       prod 換真金鑰。**財務資料 + 公網 tunnel,最高優先。**
