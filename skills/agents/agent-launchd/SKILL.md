@@ -219,6 +219,40 @@ with open(plist_path, "wb") as f:
 
    This applies especially when the sourced lib is optional (e.g., dashboard telemetry). If the lib is mandatory, log the failure and exit cleanly rather than proceeding silently.
 
+8. **Docker-backed services need TWO layers, not one** — Making a launchd agent auto-start is
+   useless if the database it talks to doesn't come back. Docker needs both:
+
+   - Docker Desktop set to start at login (`AutoStart=True` in
+     `~/Library/Group Containers/group.com.docker/settings-store.json`)
+   - The container's own restart policy (`restart: unless-stopped` in `docker-compose.yml`)
+
+   The default policy is `no`, so a container that was running before a reboot will **not**
+   come back even once Docker Desktop is up. Check with
+   `docker inspect <name> --format '{{.HostConfig.RestartPolicy.Name}}'`.
+
+   Missing either layer produces the same misleading symptom: **the app starts fine but has no
+   data**, because the API process is up and the DB isn't. It looks like data loss, not a
+   startup-ordering problem. Apply to a running container without recreating it via
+   `docker update --restart unless-stopped <name>`, and fix the compose file too so the next
+   `up` carries it.
+
+9. **Verify KeepAlive actually restarts — don't assume** — `KeepAlive: true` in the plist is not
+   proof. `kill -9` the process and confirm launchd spawns a new PID:
+
+   ```bash
+   OLD=$(launchctl list | awk '/my-agent/{print $1}')
+   kill -9 $OLD; sleep 15
+   launchctl list | awk '/my-agent/{print $1}'   # must differ from $OLD
+   ```
+
+   Also set `ThrottleInterval` (default 10s) so a crash-looping job doesn't hammer the system.
+
+10. **launchd fixes reboots and crashes, not sleep** — A `~/Library/LaunchAgents/` job starts at
+    *login*, not boot, and stops at logout. Closing a laptop lid suspends every process; the
+    service is down for the whole sleep and only resumes on wake. If the user's goal is
+    "the site stays up", say this explicitly — launchd does not deliver it, a machine that
+    stays awake does.
+
 ---
 
 ## Portable Multi-Agent Fleet Pattern

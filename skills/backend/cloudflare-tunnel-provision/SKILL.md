@@ -117,6 +117,8 @@ the real `config.yml` and `<id>.json` local-only.
 | DNS resolves but 5xx/timeout | DNS record not **proxied** | Set `proxied: true` (orange cloud) — a grey-cloud CNAME bypasses the tunnel. |
 | `localhost`/`127.0.0.1` in ingress doesn't reach the app | cloudflared is a separate container | Use the compose **service name**, not localhost. |
 | Page loads but API data empty (307 / CORS) | App-layer reverse-proxy issue | Out of scope here → use `[[tunnel-proxy-deploy]]`. |
+| `<uuid>.cfargotunnel.com` CNAME won't resolve | **The zone is not on Cloudflare yet** | `cfargotunnel.com` targets only resolve through Cloudflare's own DNS. If the domain still uses the registrar's nameservers, the record can be *created* but never resolves. **Moving nameservers to Cloudflare is a hard prerequisite** — you cannot stand up a tunnel subdomain first and migrate DNS later. If the zone shows `status: pending`, that's the blocker. See `[[dns-mail-migration]]`. |
+| New zone: HTTPS fails with `no peer certificate` / TLS alert 40 | Universal SSL not issued yet | Not a misconfiguration. A freshly activated zone usually gets its cert within ~15 min (occasionally longer). Poll `https://<host>/` until it stops returning `000`; don't "fix" DNS in the meantime. |
 
 ## Related
 
