@@ -689,3 +689,23 @@ category: best_practice
   「容器 460G，另 39G 為同容器的系統磁區與快照」。
 - **How to apply**: 顯示 df 數據時，**要嘛只出 used + avail，要嘛把差額講出來**；
   把 size/used/avail 並排會讓人以為能相減，在 APFS 上必然對不起來。
+
+## 2026-09-09 — hook 腳本進了 git，但「註冊」沒有，換機等於沒裝
+
+- category: gotcha / portability
+- **情境**: 當天把 storyline gate 與 dataflow gate 兩支 PreToolUse hook 做出來、腳本 commit 進
+  `skills/*/scripts/`，也在本機 `~/.claude/settings.json` 註冊、實測擋得住。收工推完才發現：
+  **`~/.claude/settings.json` 不在任何 repo 裡**，換一台機器 clone 下來，腳本全在、卻沒有任何東西會呼叫它們。
+  閘門看起來有做，實際上只在這台機器成立。
+- **另一個雷**: 我當初註冊時寫的是絕對路徑 `/Users/manibari/code/rivendell/skills/...`，
+  repo 搬家或換機直接死。正確寫法是 `~/.claude/skills/<name>/scripts/...`
+  —— 走 `sk deploy` 建的符號連結，跟 protect-secrets / auto-stage 同款。
+  （`sk check portability` 只掃 repo 內檔案，掃不到 `~/.claude/settings.json`，所以它沒抓到。）
+- **已修**: `data/global-hooks.json` 當 manifest（含每條 hook 的 why 與逃生口）；
+  `sk hooks` 報狀態、`sk hooks install` 冪等註冊、`sk check` 多一段 [Global hooks]、
+  `sk bootstrap` 在 cmd_deploy 之後跑 install（順序不能反，manifest 指的是 deploy 建的 symlink）。
+  負向測試：拔掉一條 → 偵測到 + exit 1 → install 補回 → 與備份比對其他 hook 未受損。
+- **How to apply**: 任何「行為要在所有機器上成立」的東西，先問**它的設定檔在不在 repo**。
+  hook、launchd plist、`~/.claude/*` 都屬於這類：**程式碼進 git ≠ 行為會發生**。
+  新增 global hook 的流程是「改 manifest + 跑 install」，手動註冊等於只在自己機器上有。
+- **Related**: 同日「janitor 只搬檔不 commit」是同一個家族——**做完的事沒有落地機制**。

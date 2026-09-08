@@ -1,0 +1,17 @@
+{
+  "_comment": "Global Claude Code hooks rivendell owns. ~/.claude/settings.json is NOT in any repo, so hook SCRIPTS being committed does not mean a new machine actually runs them — this manifest is the missing half. Install/repair with `sk hooks install` (idempotent; matches on command string). Paths use the ~/.claude/skills/<name>/ deploy symlink so they survive a repo move; run `sk deploy` first.",
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash|Write",
+      "command": "~/.claude/skills/slide-workflow/scripts/storyline-gate-hook.sh",
+      "why": "Deck generation is blocked while a storyline.md exists that is not signed-off (slide-workflow Gate 0). Escape: SK_SKIP_STORYLINE_GATE=1 or .storyline-gate-off"
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Edit|Write|Bash",
+      "command": "~/.claude/skills/qa-dataflow/scripts/dataflow-gate-hook.sh",
+      "why": "Migration writes are blocked while the repo's qa-dataflow function map is older than 30 days. Escape: SK_SKIP_DATAFLOW_GATE=1 or .dataflow-gate-off"
+    }
+  ]
+}

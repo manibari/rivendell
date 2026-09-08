@@ -35,7 +35,9 @@ Commands:
   import-gh <url>     Clone skill from GitHub URL
   list                Show all skills + deployment status
   check [--verbose]   Health check: symlinks, reviews, gdrive, frontmatter
+  hooks [install]     Global Claude Code hooks: report or register (data/global-hooks.json)
   check routing       Trigger phrases route to exactly one skill (data/routing-tests.json)
+  check hooks         Global hooks in data/global-hooks.json are registered in ~/.claude
   check ssot          SSOT drift: diff agents.conf vs ~/.claude/projects.json
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   check disk          Disk capacity: data volume backing \$HOME (WARN ≥90%, CRIT ≥95%)
@@ -514,6 +516,77 @@ days_since() {
   echo $(( (now_epoch - target_epoch) / 86400 ))
 }
 
+# ─── cmd_hooks() ───────────────────────────────────────────────────────
+# Global Claude Code hooks live in ~/.claude/settings.json, which is not in
+# any repo — so committing a hook script does NOT mean another machine runs
+# it. data/global-hooks.json is the manifest; this installs/reports it.
+cmd_hooks() {
+  local action="${1:-status}"
+  local manifest="$REPO_DIR/data/global-hooks.json"
+  local settings="$HOME/.claude/settings.json"
+
+  if [ ! -f "$manifest" ]; then
+    echo -e "${RED}Missing:${NC} $manifest"; return 1
+  fi
+  if [ ! -f "$settings" ]; then
+    echo -e "${RED}Missing:${NC} $settings"; return 1
+  fi
+
+  case "$action" in
+    status|install)
+      python3 - "$manifest" "$settings" "$action" <<'PYHOOK'
+import json, os, sys
+manifest_path, settings_path, action = sys.argv[1:4]
+manifest = json.load(open(manifest_path))
+settings = json.load(open(settings_path))
+hooks = settings.setdefault("hooks", {})
+
+missing, present, unreadable = [], [], []
+for want in manifest["hooks"]:
+    event, matcher, cmd = want["event"], want["matcher"], want["command"]
+    entries = hooks.setdefault(event, [])
+    found = any(h.get("command") == cmd for e in entries for h in e.get("hooks", []))
+    (present if found else missing).append(want)
+    script = os.path.expanduser(cmd.split()[0])
+    if not (os.path.isfile(script) and os.access(script, os.X_OK)):
+        unreadable.append(cmd)
+
+if action == "install" and missing:
+    for want in missing:
+        hooks.setdefault(want["event"], []).append(
+            {"matcher": want["matcher"],
+             "hooks": [{"type": "command", "command": want["command"]}]}
+        )
+    with open(settings_path, "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"  installed {len(missing)} hook(s); restart Claude Code to load them")
+    for w in missing:
+        print(f"    + {w['event']} {w['matcher']} -> {w['command']}")
+elif missing:
+    print(f"  {len(missing)} hook(s) NOT registered — run: sk hooks install")
+    for w in missing:
+        print(f"    - {w['event']} {w['matcher']} -> {w['command']}")
+else:
+    print(f"  all {len(present)} manifest hook(s) registered")
+
+if unreadable:
+    print(f"  {len(unreadable)} script(s) not executable — run `sk deploy` first:")
+    for c in unreadable:
+        print(f"    ! {c}")
+    sys.exit(1)
+sys.exit(0 if not missing or action == "install" else 1)
+PYHOOK
+      ;;
+    -h|--help)
+      echo "Usage: sk hooks [status|install]"
+      echo "  status   Report which manifest hooks are registered (default)"
+      echo "  install  Register any missing ones (idempotent)"
+      ;;
+    *) echo -e "${RED}Unknown:${NC} sk hooks $action"; return 1 ;;
+  esac
+}
+
 cmd_check() {
   local verbose=0
   [ "${1:-}" = "--verbose" ] && verbose=1
@@ -686,6 +759,17 @@ cmd_check() {
   if [ "$missing_tags" -eq 0 ] && [ "$missing_version" -eq 0 ]; then
     echo -e "  ${GREEN}All frontmatter OK${NC}"
   fi
+
+  echo ""
+  # Global hooks: the scripts are committed but ~/.claude/settings.json is not,
+  # so a fresh machine can have every hook script and run none of them.
+  echo -e "${CYAN}[Global hooks]${NC}"
+  if cmd_hooks status >/tmp/sk-hooks.$$ 2>&1; then
+    echo -e "  ${GREEN}$(sed 's/^ *//' /tmp/sk-hooks.$$ | head -1)${NC}"
+  else
+    sed 's/^ */  /' /tmp/sk-hooks.$$ | while IFS= read -r l; do echo -e "  ${YELLOW}${l}${NC}"; done
+  fi
+  rm -f /tmp/sk-hooks.$$
 
   echo ""
   # Routing regression: each test phrase must sit in exactly one skill's TRIGGER text.
@@ -4378,6 +4462,16 @@ cmd_bootstrap() {
   echo ""
 
   # Step 6: External skill packs (e.g. gstack)
+  # Global hooks must be registered AFTER cmd_deploy, because the manifest
+  # points at ~/.claude/skills/<name>/ symlinks that deploy creates.
+  echo -e "${YELLOW}[5b/7] Global Claude Code hooks${NC}"
+  if [ -f "$HOME/.claude/settings.json" ]; then
+    cmd_hooks install 2>&1 | sed 's/^/  /'
+  else
+    echo -e "  ${YELLOW}skip${NC}  ~/.claude/settings.json not present yet — run \`sk hooks install\` after first Claude Code launch"
+  fi
+  echo ""
+
   echo -e "${YELLOW}[6/7] External skill packs${NC}"
   parse_profile "$profile_name" | while IFS='|' read -r type name url setup_cmd _; do
     [ "$type" = "external_skill_pack" ] || continue
@@ -4526,6 +4620,7 @@ case "${1:-help}" in
     shift
     case "${1:-}" in
       routing) shift; python3 "$REPO_DIR/scripts/check-routing.py" "$@" ;;
+      hooks)  shift; cmd_hooks "$@" ;;
       ssot)   shift; cmd_check_ssot "$@" ;;
       disk)   shift; cmd_check_disk "$@" ;;
       agents) shift; cmd_check_agents "$@" ;;
@@ -4534,6 +4629,7 @@ case "${1:-help}" in
       *)    cmd_check "${1:-}" ;;
     esac
     ;;
+  hooks)      shift; cmd_hooks "$@" ;;
   run)        shift; cmd_run "$@" ;;
   dispatch)   shift; cmd_dispatch "$@" ;;
   audit)      shift; cmd_audit "$@" ;;
