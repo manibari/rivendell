@@ -42,6 +42,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/skills/git/auto-stage/scripts/auto-stage-hook.sh"
+          },
+          {
+            "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/skills/platform/sync-readme/scripts/sync-readme-hook.sh"
           }
         ]
