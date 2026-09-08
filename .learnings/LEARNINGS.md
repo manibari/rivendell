@@ -637,3 +637,22 @@ category: best_practice
 - **情境**: 角色頁把「投資人募資 BP」放在業務／Presales 底下當 3c，理由是 pitch-deck 是 deck 類 skill、frontmatter `loop: sales`。使用者糾正：募資是創辦人／經營者的事。
 - **為什麼錯**: 我用「產出形狀（deck）」分工作，該用「對誰、為了什麼」分。業務對客戶賣方案；募資對投資人賣公司，敘事、數字揭露、去識別化規矩都不同，讀者也不同。
 - **How to apply**: 角色頁新增第 9 節「創辦人／經營者」（9a 募資 BP、9b 方向與產品決策）；`pitch-deck` 的 `loop` 改 `shared`（沒有 founder 循環，跨循環工具照規則 4 標 shared）。分工作時先問「這件事的對手方是誰」，不看產出物長什麼樣。
+
+## 2026-09-09 — sk-reports-janitor 只搬檔不 commit，封存永遠停在工作區
+
+- category: gotcha / platform-ops
+- **情境**: 收工盤點時 `git status` 有 70 筆 reports 變動：32 個 ` D` + 一個未追蹤的
+  `reports/archive/2026-08/`（40 檔）。以為是誰手動刪了報告，實際是 `sk-reports-janitor`
+  2026-09-06 03:00 跑過，把 8 月報告搬進 archive —— 但那支腳本**只做 `mv`，沒有 git 動作**。
+- **為什麼會拖著**: 專案規矩寫「reports 歸排程 agent 所有，互動 session 不要 commit」，
+  於是每個 session 看到都跳過；agent 自己又不 commit，結果搬移在工作區躺了 3 天，
+  每次 `git status` 都是雜訊，而且正好是 2026-08-30 那條「兩機同名 report add/add 衝突」
+  的溫床（另一台機器 pull 後會把舊檔復活）。
+- **How to apply**: janitor 這類「機械搬檔」的產物**要有人 commit**，跟「不要手改 agent
+  寫的報告內容」是兩件事，不要混為一談。收工時的處理：`git add -A reports` →
+  確認 `git diff --cached -M --name-status` 全是 `R100`（純改名，git 會保留歷史）→
+  一筆 `chore(reports):` 獨立 commit，不要混進功能 commit。
+  **根治**：讓 `sk-reports-janitor` 搬完自己 commit（跟 harvest cron 同款），
+  或在 `sk maintain` 收尾加一步。已登記在 FEATURE_REQUESTS。
+- **Related**: 2026-08-30「兩機分岔 merge：70 個衝突裡 64 個是日期命名的 agent report」——
+  同一個根因的第 2 次現形（那次談檔名，這次談沒人 commit）。

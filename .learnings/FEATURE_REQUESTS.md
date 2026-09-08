@@ -327,3 +327,10 @@ figures 規格、紅字▲、writing-rules HARD GATE。入口狀態不同（手�
 機制存在：`sk-mail-triage-cron`（唯讀讀信 → 分類 → Telegram／junk 標籤／dispatch 提案）+ `send-mail.py`（只由 dispatch 在確認後執行）。缺的是**角色層的信件模板與觸發點**：
 業務跟進（3a 拜訪後、3b 提案後）、交付通知與驗收請求（10b）、催款（10d）、候選人回覆與面試邀請（6b）、投資人更新（9b）。
 形狀：每個模板 = 觸發條件 + 收件人來源（CRM 投影／knowledge-graph）+ 正文骨架 + 走 dispatch 的 payload；不新增寄信路徑，只餵 dispatch。先做業務跟進與催款兩個，用真信反推。
+
+## 2026-09-09 — sk-reports-janitor 搬完應自己 commit
+
+`bin/sk-reports-janitor` 只 `mv` 檔案進 `reports/archive/YYYY-MM/`，不做 git 動作，
+所以封存永遠停在工作區等人撿（2026-09-06 那次躺了 3 天，見 LEARNINGS 同日條）。
+形狀：搬完後 `git add -A reports/` + 檢查全是 R100 + `git commit -m "chore(reports): archive YYYY-MM"`，
+沿用 harvest cron 既有的 commit 慣例；或退一步，在 `sk maintain` 收尾統一掃一次。⬜
