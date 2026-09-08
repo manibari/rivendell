@@ -100,6 +100,32 @@ deep_recovery_api() {
     ) || return 1
 }
 
+# A 200 on the web root is not proof the page works. `next start` serves HTML
+# that references content-hashed chunks; when something rebuilds .next underneath
+# the running server (a stray `next build`, a verification run that forgot
+# NEXT_DIST_DIR), the old hashes are pruned while the server keeps emitting the
+# old names. The document still returns 200 and only its assets fail, so the
+# dashboard renders unstyled and a root-only check sees nothing wrong. Follow
+# through to what the page actually asks for.
+probe_web() {
+    local url="$1" assets a
+    assets=$(curl -fs --max-time 15 "$url" 2>/dev/null) || return 1
+    assets=$(printf '%s' "$assets" \
+        | grep -oE '/_next/static/[a-zA-Z0-9/_.-]*\.(js|css)' \
+        | sort -u | head -5)
+    # No hashed assets in the markup — a plain 200 is all the signal available.
+    [ -z "$assets" ] && return 0
+    while IFS= read -r a; do
+        [ -n "$a" ] || continue
+        curl -fs --max-time 15 -o /dev/null "${url%/}$a" 2>/dev/null || return 1
+    done <<< "$assets"
+    return 0
+}
+
+probe_url() {
+    curl -fs --max-time 15 -o /dev/null "$1" 2>/dev/null
+}
+
 check_and_restart() {
     local key="$1" url="$2" label="$3"
     local state failures last_restart restarts_today today_date
@@ -125,7 +151,9 @@ check_and_restart() {
         return 0
     fi
 
-    if curl -fs --max-time 15 -o /dev/null "$url" 2>/dev/null; then
+    local probe="probe_url"
+    [ "$key" = "web" ] && probe="probe_web"
+    if "$probe" "$url"; then
         if [ "$failures" -gt 0 ]; then
             log "OK $key (recovered after $failures failures)"
             set_state "$key" 0 "$last_restart" "$restarts_today" "$today_date"
