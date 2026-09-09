@@ -10,7 +10,7 @@ description: >
   SKIP: storyline.md already `status: signed-off`.
 tags: [docs, presales, review]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Edit, Bash, Grep, Glob"
 ---
 

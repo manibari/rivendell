@@ -20,7 +20,7 @@ description: >
   安全稽核（gstack-cso）；只是要畫流程圖、沒有要驗證（mermaid-diagram / user-flow）。
 tags: [qa, architecture, verification]
 version: 2.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

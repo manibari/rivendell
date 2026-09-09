@@ -16,7 +16,7 @@ description: >
   upload→transcribe FEATURE into a web app (audio-transcription-flow).
 tags: [media, audio, video, transcribe, whisper, local]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

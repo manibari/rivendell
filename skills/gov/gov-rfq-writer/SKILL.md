@@ -11,7 +11,7 @@ description: >
   DO NOT TRIGGER when: user wants the formal contract (use sow-writer) or a sales pitch (use pitch-deck).
 tags: [docs, business]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

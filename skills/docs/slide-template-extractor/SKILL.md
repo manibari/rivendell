@@ -9,7 +9,7 @@ description: >
   SKIP: create from scratch (pitch-deck / sales-material); edit existing PPTX (office-pptx).
 tags: [docs, workflow]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebFetch"
 ---
 

@@ -8,7 +8,7 @@ Personal Claude Code and Codex skills library — manage, version control, and d
 skills/
 ├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(12)
 ├── agents/     # 自動化 Agent：排程、觀測、persona (5)
-├── planning/   # 需求與規劃：requirement → user-flow → mockup → plans (7)
+├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
 ├── workflow/   # dev 循環工具與 Session 維運 (15)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
 ├── quality/    # 程式品質、審查、文字打磨 (5)
@@ -67,7 +67,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (124 skills)
+## Skills Catalog (125 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 > 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。
@@ -108,6 +108,7 @@ as release notes.
 | **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
 | **planning-with-files** | 自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | Define structured requirements, user stories |
+| **system-design** | 自動 | SA/SD 環節 — 在「畫面定了 / 需求定了」之後、「拆成實作任務」之前，把系統設計 |
 | **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
 
@@ -281,7 +282,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 5 | 5 |
-| dev | 19 | 21 | 8 | 8 |
+| dev | 20 | 21 | 8 | 8 |
 | shared | 1 | 14 | 2 | — |
 
 

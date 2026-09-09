@@ -15,7 +15,7 @@ description: >
   loaded design system and the user explicitly wants that instead.
 tags: [frontend, design, hard-gate]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Bash, Grep, Glob, Skill"
 ---
 

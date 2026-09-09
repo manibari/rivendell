@@ -9,7 +9,7 @@ description: >
   SKIP: local .docx/.pptx (office-docx / office-pptx); single-edit Google Docs.
 tags: [docs]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
 ---
 

@@ -22,9 +22,9 @@ Ensure the team follows the design-first workflow before writing code.
 ## Workflow Stages
 
 ```
-0. Demand          1. Requirement  →  2. User Flow  →  3. Design           →  4. Mockup           →  5. Development                              →  6. QA           →  7. CI/CD
-   /gstack-            /requirement      /user-flow     /gstack-design-        /mockup →               /planning-with-files →                       /gstack-qa          /ci-pipeline
-   office-hours                                         consultation +         /gstack-design-html     /gstack-plan-eng-review
+0. Demand          1. Requirement  →  2. User Flow  →  3. Design           →  4. Mockup           →  5. System Design    →  6. Development                              →  7. QA           →  8. CI/CD
+   /gstack-            /requirement      /user-flow     /gstack-design-        /mockup →               /system-design          /planning-with-files →                       /gstack-qa          /ci-pipeline
+   office-hours                                         consultation +         /gstack-design-html                             /gstack-plan-eng-review                      /qa-dataflow
                                                         /gstack-design-
                                                         shotgun
 ```
@@ -72,8 +72,14 @@ Report what's missing and suggest the next step:
 > Design direction is set. Let's lock the static layout.
 > I'll use `/mockup` → `/gstack-design-html` to produce finalized HTML.
 
-**If all design stages complete but no implementation plan:**
-> All design artifacts are ready. Let's plan the implementation.
+**If all design stages complete but no system design (`docs/design/*-sd.md`):**
+> The screens are settled but the system isn't. Before task breakdown I'll use `/system-design`
+> to lock the data model, module boundaries, interface contracts, and the target 功能關係圖.
+> HARD GATE when this feature touches schema / cross-module handoff / a new store.
+> Small internal-logic changes: `/system-design` Step 0 will mark it Skip and say why.
+
+**If system design exists but no implementation plan:**
+> Design artifacts are ready. Let's plan the implementation.
 > I'll use `/planning-with-files` → `/gstack-plan-eng-review` (and `/gstack-plan-design-review` for UI tasks).
 
 **If development is complete but no tests:**

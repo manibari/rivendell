@@ -100,6 +100,26 @@
     {
       "phrase": "走一遍使用者流程",
       "expect": "qa-journey"
+    },
+    {
+      "phrase": "系統設計",
+      "expect": "system-design"
+    },
+    {
+      "phrase": "SA SD",
+      "expect": "system-design"
+    },
+    {
+      "phrase": "先把架構定下來",
+      "expect": "system-design"
+    },
+    {
+      "phrase": "資料表怎麼設計",
+      "expect": "system-design"
+    },
+    {
+      "phrase": "模組怎麼拆",
+      "expect": "system-design"
     }
   ]
 }

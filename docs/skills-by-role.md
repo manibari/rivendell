@@ -61,7 +61,7 @@
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `writing-plans` ｜ 視情況：`gstack-office-hours` (gstack，值不值得做)、`chimesflow-design`（新前端）、`ui-ux-pro-max`（挑風格）、`planning-with-files`（多步驟要追蹤進度時取代 writing-plans）｜ 自動：`dev-process-gate`、`plan-check-style` | 主線五步；跳步會被 gate 擋；進 plan mode 做 UI 時 style 自動載入 |
+| Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `system-design` → `writing-plans` ｜ 視情況：`gstack-office-hours` (gstack，值不值得做)、`chimesflow-design`（新前端）、`ui-ux-pro-max`（挑風格）、`planning-with-files`（多步驟要追蹤進度時取代 writing-plans）｜ 自動：`dev-process-gate`、`plan-check-style` | 主線六步；畫面定了之後、拆任務之前先過 `system-design`（SA/SD：資料模型 / 職責邊界 / 介面契約 / 功能關係圖 target），動到 schema / 跨模組 / 新 store 時是 HARD GATE；跳步會被 gate 擋 |
 | Do | `executing-plans` → `frontend-design` ｜ 視情況：`gstack-freeze` / `gstack-unfreeze` (gstack，重構時鎖穩定區) | 分批執行有 checkpoint |
 | Check | `qa-planner` → `qa-auto` → `gstack-review` (gstack) ｜ 視情況：`qa-journey`（有旅程要走）、`qa-dataflow`（動到資料寫入時 HARD GATE）、`gstack-qa`、`gstack-design-review` (gstack) | QA 計畫 → 自動測試 → diff 審查 |
 | Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) ｜ 自動：`spine-versioning` | 合併部署、盯回歸、更新文件；沒 bump 版本 push 會被擋 |
@@ -70,7 +70,7 @@
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `task-brief` → `gstack-investigate` (gstack，bug 才要) ｜ 視情況：`backend-async-jobs`（慢工作先決定同步 / job / pipeline）、`spine-rbac`（權限先選 tier） | 先找根因再動手 |
+| Plan | `task-brief` → `gstack-investigate` (gstack，bug 才要) → `system-design`（動到 schema / 跨模組傳遞 / 新增 store 時 HARD GATE；純內部邏輯小改由它自己判 Skip）｜ 視情況：`backend-async-jobs`（慢工作先決定同步 / job / pipeline）、`spine-rbac`（權限先選 tier） | 先找根因再動手；沒畫面也要有 SA/SD —— 它產出的 target 功能關係圖就是事後 `qa-dataflow` 的對照基準 |
 | Do | 對應功能的那一支 ｜ 視情況：`spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `large-file-refactor`（500 行以上）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 一次只會用到其中一兩支，看功能是什麼 |
 | Check | `qa-testing` → `gstack-review` (gstack) ｜ 視情況：`qa-dataflow`（資料流反證）、`gstack-codex` (gstack，第二意見)、`repro-exam`（要給人標準考題） | |
 | Act | `deploy` → `gstack-canary` (gstack) ｜ 視情況：`gstack-benchmark` (gstack，動到請求路徑) ｜ 自動：`doc-drift-sync` | |
@@ -88,7 +88,7 @@
 
 | | 用誰 | 說明 |
 |---|---|---|
-| Plan | `requirement` → `user-flow` → `mockup` | 同 1b |
+| Plan | `requirement` → `user-flow` → `mockup` → `system-design` | 同 1b |
 | Do | `swiftui-patterns` ｜ 視情況：`ios-integration`（Extension、Deep Link、地圖） | MVVM 為主 |
 | Check | `qa-testing`（Swift Testing）→ `gstack-ios-qa` (gstack) ｜ 視情況：`gstack-ios-design-review` (gstack) | |
 | Act | `gstack-ios-sync` ｜ 視情況：`gstack-ios-clean` (gstack) | |
@@ -112,7 +112,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` · `github-repo-audit` | 完成定義要是「看得到證據」；先打 repo 健康分 |
-| Do | `qa-dataflow` · `skill-apply` | 畫地圖 → 拔依賴反證 → 只釘重要接縫；拿外部 skill 集當 review 鏡片 |
+| Do | `qa-dataflow` · `skill-apply` | 畫地圖 → 拔依賴反證 → 只釘重要接縫；有 `docs/design/*-sd.md` 就拿它的 §6 target 圖當對照，不要重畫；拿外部 skill 集當 review 鏡片 |
 | Check | `chart-design` 的 `check-html-figure.mjs` · `de-slopify`（報告給人看時） | 功能關係圖的機械檢查；報告文字 |
 | Act | `qa-dataflow` gap-report（含「不要動壞的東西」）· `large-file-refactor`（建議）· `doc-drift-sync` | 落差報告交回開發者；文件對齊 |
 
@@ -498,7 +498,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | 11a 的定位一頁 → `requirement` → `user-flow` | 頁面要讓人做什麼動作 |
-| Do | `chimesflow-design` → `mockup` → `frontend-design` ｜ 視情況：`ui-ux-pro-max` | 走第 1 節 1b 的做法 |
+| Do | `chimesflow-design` → `mockup` → `system-design` → `frontend-design` ｜ 視情況：`ui-ux-pro-max` | 走第 1 節 1b 的做法 |
 | Check | `gstack-landing-report` (gstack) → `gstack-design-review` (gstack) → `check-html-figure.mjs` ｜ ★ SEO 基本檢核 | |
 | Act | `deploy` ｜ ★ 流量與轉換追蹤 | |
 

@@ -10,7 +10,7 @@ description: >
   implementation plans for engineers (use writing-plans).
 tags: [workflow]
 version: 1
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch"
 hooks:
   PreToolUse:

@@ -15,7 +15,7 @@ description: >
   to *read* the translation, that's video-transcript Mode 4, not this.
 tags: [media, subtitles, srt, youtube]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

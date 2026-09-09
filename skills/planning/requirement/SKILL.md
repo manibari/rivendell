@@ -87,6 +87,7 @@ After saving, prompt:
 > | 3 | `/gstack-design-consultation` | Design system / brand direction |
 > | 4 | `/gstack-design-shotgun` | Generate design variants, pick one |
 > | 5 | `/mockup` → `/gstack-design-html` | Finalize static HTML |
-> | 6 | `/planning-with-files` → `/gstack-plan-eng-review` | Implementation task list + architecture review |
+> | 6 | `/system-design` | SA/SD：資料模型 / 職責邊界 / 介面契約 / 功能關係圖(target) |
+> | 7 | `/planning-with-files` → `/gstack-plan-eng-review` | Implementation task list + architecture review |
 >
 > Next: `/user-flow`

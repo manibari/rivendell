@@ -729,12 +729,20 @@ cmd_check() {
   # --- Frontmatter ---
   echo ""
   echo -e "${CYAN}[Frontmatter]${NC}"
-  local missing_tags=0 missing_version=0
-  local missing_tags_list="" missing_version_list=""
+  local missing_tags=0 missing_version=0 bad_invocable=0
+  local missing_tags_list="" missing_version_list="" bad_invocable_list=""
   while IFS= read -r skill_dir; do
     [ -z "$skill_dir" ] && continue
     local name
     name="$(basename "$skill_dir")"
+    # generate-readme-catalog.py reads fm["user_invocable"] (underscore). A
+    # hyphenated key parses as a different field, silently reads False, and the
+    # README lists a user-invocable skill as "自動" — so /<skill> is invisible
+    # to anyone reading the catalog. Underscore is the only correct spelling.
+    if [ -f "$skill_dir/SKILL.md" ] && grep -q '^user-invocable:' "$skill_dir/SKILL.md"; then
+      bad_invocable=$((bad_invocable+1))
+      bad_invocable_list+="    $name\n"
+    fi
     local tags
     tags="$(get_frontmatter_field "$skill_dir" "tags")"
     if [ -z "$tags" ]; then
@@ -756,7 +764,12 @@ cmd_check() {
     echo -e "  ${YELLOW}$missing_version skill(s) missing 'version'${NC}"
     [ "$verbose" -eq 1 ] && echo -e "$missing_version_list"
   fi
-  if [ "$missing_tags" -eq 0 ] && [ "$missing_version" -eq 0 ]; then
+  if [ "$bad_invocable" -gt 0 ]; then
+    echo -e "  ${RED}$bad_invocable skill(s) use 'user-invocable' (hyphen) — must be 'user_invocable'${NC}"
+    echo -e "$bad_invocable_list"
+    echo -e "  ${YELLOW}fix: grep -rl '^user-invocable:' skills/ | xargs sed -i '' 's/^user-invocable:/user_invocable:/' && ./bin/sk readme${NC}"
+  fi
+  if [ "$missing_tags" -eq 0 ] && [ "$missing_version" -eq 0 ] && [ "$bad_invocable" -eq 0 ]; then
     echo -e "  ${GREEN}All frontmatter OK${NC}"
   fi
 

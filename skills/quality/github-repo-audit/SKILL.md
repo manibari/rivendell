@@ -11,7 +11,7 @@ description: >
   or wants to review a specific PR diff (use gstack-review).
 tags: [quality]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Bash, Glob, Grep, WebFetch, WebSearch"
 ---
 

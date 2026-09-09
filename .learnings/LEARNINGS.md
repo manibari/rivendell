@@ -9,6 +9,29 @@
 > learnings stay here or get promoted directly to `rivendell/.claude/CLAUDE.md` if
 > they're a rule. See `reports/learnings-promotion-sprint-2026-05-13.md`.
 
+## 2026-09-09 — README 目錄的「觸發方式」欄有 27 支 skill 顯示錯誤：frontmatter key 連字號 vs 底線
+
+- **Category**: bug（工具鏈 SSOT drift）
+- **Seen in**: 新建 `planning/system-design` 後跑 `./bin/sk readme`，明明寫了
+  `user-invocable: true`，README 目錄卻顯示「自動」而不是「`/system-design` 或自動」。
+- **Root cause**: `scripts/generate-readme-catalog.py:135` 讀的是
+  `fm.get("user_invocable", False)`（**底線**），`bin/sk:234` 的 skill 模板也產底線版；
+  但實際有 27 支 skill 的 frontmatter 寫成 `user-invocable`（**連字號**），
+  YAML 解析成另一個 key，取值恆為 False。
+- **證據**: `grep -rl "^user-invocable:" skills/ | wc -l` → 27；
+  `grep -rl "^user_invocable:" skills/ | wc -l` → 57。
+  受影響的包含 `chart-design`、`qa-dataflow`、`planning-with-files`、`slide-workflow`、
+  `pitch-deck` 等主線 entry skill —— 全部在 README 被標成「自動」，
+  讀 README 的人不會知道可以直接打 `/chart-design`。
+- **Rule**: **底線 `user_invocable` 是唯一正確 key**（generator 與 `sk` 模板都用它）。
+  新 skill 照抄 `bin/sk` 產出的模板，不要憑「其他欄位都用連字號」類推 ——
+  `allowed-tools` 是連字號、`user_invocable` 是底線，這裡本來就不一致。
+- **未修**: 27 支的批次修正沒做（超出當次任務範圍）。要修的話：
+  `grep -rl "^user-invocable:" skills/ | xargs sed -i '' 's/^user-invocable:/user_invocable:/'`
+  然後 `./bin/sk readme` 重生目錄、`./bin/sk check` 驗證。
+  更根本的修法是讓 `sk check` 的 [Frontmatter] 段把連字號版當 FAIL —— 目前它放行，
+  所以這個 drift 不會被任何閘門攔到。
+
 ## 2026-08-02 — 新機器 bootstrap：repo 放在非預期路徑時用 symlink 補，別改 `sk-bootstrap`
 
 - **Category**: best_practice（新機器搬遷）

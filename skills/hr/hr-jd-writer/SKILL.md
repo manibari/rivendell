@@ -11,7 +11,7 @@ description: >
   DO NOT TRIGGER when: user wants to analyze a candidate resume (use hr-candidate-analysis).
 tags: [workflow]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
 ---
 
