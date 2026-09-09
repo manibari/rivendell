@@ -83,7 +83,7 @@
 **deploy 驗證**：`~/.claude/skills/system-design -> …/skills/planning/system-design`，
 `/system-design` 已可用。
 
-## 5. 卡點（未解）
+## 5. 卡點（第一輪，已於第二輪解決）
 
 ### 卡點 A — README 32 列仍標「自動」，frontmatter 修好也不會變
 
@@ -124,3 +124,67 @@ UI flow 現為 11 個編號步驟 + ~15 支條件性 sub-skill。真正的問題
 方向（未執行，待決定）：把 flow 從「11 步線性」改寫成
 **「必經 gate（3–4 個）+ 條件分支」**，每個非必經步驟在 flow 上直接標出跳過條件。
 這會動到 `~/.claude/CLAUDE.md`（不在此 repo，需另行決定）。
+
+
+---
+
+## 6. 第二輪（同日）— 兩個卡點都解掉
+
+使用者裁示：「改 CLAUDE.md，32 列手動改」。
+
+### 卡點 B → 解：flow 從 11 步線性改成 4 個 gate
+
+`~/.claude/CLAUDE.md` 原本兩個區塊（`### UI Feature / New Page` + `### Backend-only /
+Bug Fix / Refactor`）合併成單一 `### 產品開發（UI 與 backend 同一條流程）`。
+**75 行 → 52 行。**
+
+```
+G1 想清楚  必經                     /requirement（+office-hours / investigate / user-flow / app-ops-baseline）
+G2 定樣子  只有「要新畫面」才進入      design-consultation → shotgun → chimesflow-design → mockup → design-html
+G3 定結構  動 schema/跨模組/新 store  /system-design → planning-with-files（大功能 +autoplan）
+G4 出貨    必經                     implement → review → ship（+qa-dataflow / qa / benchmark / canary）
+```
+
+合併的理由跟這次的主題同源：原本兩條 flow 把 implement / review / ship 各寫一次，
+G2 條件化之後，backend 流程就只是「G2 整段跳過」，不需要第二條 flow。
+純 backend 小改只經過 G1 + G4；改文案只有 G4。
+
+例外條款收緊：「直接實作 / skip design」跳過 G1–G3，但 **G4 的 `/gstack-review` 與
+`/gstack-careful` 不跳** —— 那兩個擋的是已經造成過損失的事。
+
+> ⚠️ `~/.claude/CLAUDE.md` **不在任何 repo 內**，這次改動不進版控。
+> 換機器要重做。（與 `.claude/CLAUDE.md` 記載的「global hooks 只committed 一半」同類問題。）
+
+### 卡點 A → 解：32 列手動改完
+
+依 generator 自己的規則（`user_invocable` 且描述含 trigger → `` `/name` 或自動``）
+逐列改寫 README 觸發欄。
+
+驗證：`user_invocable: true` 共 68 支，README 仍標「自動」**0 支**；
+`./bin/sk readme` 重生後仍為 0（證明 generator 的 preserve 行為會保住手改結果，
+不會被下次重生洗掉）；`sk check` Symlinks / Frontmatter / Routing 30/30 / Role coverage 全綠。
+
+## 7. 仍未決
+
+**每個 gate 要不要標 owner（戴誰的帽子）+ 驗收人。** 使用者指出「定樣子很多時候是
+design / UIUX 在做，不是 engineer」。
+
+建議（**尚未執行**）：不拆成多條角色 flow —— 拆了會讓 G1/G4 在每個角色版本重複，
+正是這輪剛消掉的那種重複；且 `docs/skills-by-role.md` 已經是角色視角的 SoT，
+CLAUDE.md 再做一次會變雙 SoT。改為在四個 gate 各加一行：
+
+| Gate | 帽子 | 誰說可以過 |
+|---|---|---|
+| G1 | 產品 / PM | 驗收標準可測 |
+| G2 | 設計 / UIUX | `/gstack-design-review` |
+| G3 | 工程 / 架構 | `/gstack-plan-eng-review` |
+| G4 | 工程 + QA | 測試綠燈 + `/qa-dataflow` |
+
+理由：換角色時真正變的不是步驟順序，是**驗收標準與拍板人**。gstack 已經把這件事
+編碼在審查層（eng / design / ceo 三種 plan-review 審同一份 plan），產出層缺同樣的標記。
+Solo 時是同一人輪流戴帽，換帽子＝換驗收標準；有真人分工時帽子邊界就是交接點，
+交接一律走檔案（G2 交 `mockups/*.html` + component inventory 給 G3）。
+
+**未來的 gap（不用現在做）**：現行 G2 的 skills 假設 AI 在做設計
+（`design-shotgun` 生成變體）。真人設計師進來後 G2 會變成「接收設計稿 + 驗證可實作」，
+那需要一支「設計稿落地檢查」，不是「生成變體」。
