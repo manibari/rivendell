@@ -1,0 +1,15 @@
+# The lint bar is a decision this repo makes, not whatever ruff defaults to this
+# month. Without this file CI installed an unpinned ruff, and the day 0.16
+# widened its default rule set the bar jumped from 2 rules to 11 rule families
+# with no commit here — 43 findings appeared and CI went red on every push.
+#
+# This selects ruff's long-standing default (pycodestyle errors + pyflakes),
+# which is the bar the code has actually been held to. The rules 0.16 added by
+# default (BLE001 blind-except, S110 try-except-pass, PLW1510
+# subprocess-without-check, DTZ011, SIM, PIE, RUF100) are worth adopting, but
+# that is a deliberate cleanup of ~43 sites, not a silent upgrade.
+#
+# Pair with the pinned version in .github/workflows — both halves are needed:
+# the pin stops the tool moving, this stops the rule set moving.
+[lint]
+select = ["E4", "E7", "E9", "F"]
