@@ -25,7 +25,7 @@ description: >
   pure text slides; non-visual tables that are just data dumps.
 tags: [docs, workflow]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

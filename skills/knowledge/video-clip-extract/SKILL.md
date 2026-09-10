@@ -15,7 +15,7 @@ description: >
   files already on disk (use ffmpeg directly).
 tags: [media, video, ffmpeg, youtube]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

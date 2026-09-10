@@ -66,6 +66,10 @@ export default function AvatarPage() {
   }, []);
 
   useEffect(() => {
+    // refreshLog is async and awaits the gateway before setLog, so no state is
+    // set synchronously here — the rule cannot see past the await and flags the
+    // call itself. Fetch-on-mount plus poll is the intended shape.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshLog();
     const t = setInterval(refreshLog, 10000);
     return () => clearInterval(t);
@@ -90,6 +94,11 @@ export default function AvatarPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem("avatar-persona");
+    // This one really is a synchronous setState, and it has to be: localStorage
+    // does not exist during SSR, so a lazy useState initializer would throw on
+    // the server, and a typeof-window guard would render "" there and the saved
+    // value here — a hydration mismatch. An effect is the only correct place.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setChosen(saved);
     refresh();
   }, [refresh]);

@@ -9,7 +9,7 @@ description: >
   DO NOT TRIGGER when: user just wants to transcribe a local file for personal use (use a CLI tool instead).
 tags: [backend, workflow]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

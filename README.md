@@ -8,7 +8,7 @@ Personal Claude Code and Codex skills library — manage, version control, and d
 skills/
 ├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(12)
 ├── agents/     # 自動化 Agent：排程、觀測、persona (5)
-├── planning/   # 需求與規劃：requirement → user-flow → mockup → plans (7)
+├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
 ├── workflow/   # dev 循環工具與 Session 維運 (15)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
 ├── quality/    # 程式品質、審查、文字打磨 (5)
@@ -67,7 +67,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (124 skills)
+## Skills Catalog (125 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 > 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。
@@ -81,7 +81,7 @@ as release notes.
 | **learnings-promotion-sprint** | 自動 | Periodic cross-project `.learnings/` distillation. Sweeps every project's `. |
 | **self-improving-agent** | 自動 + hook | 捕捉學習與錯誤修正，記錄至 .learnings/，提升有價值見解到 CLAUDE.md |
 | **session-harvest** | `/session-harvest` | 工作告一段落時，自動審查 session 內容，找出可重複使用的模式並建議建立新 skill |
-| **session-wrap** | 自動 | End-of-session cleanup: auto-commit uncommitted changes, archive learnings |
+| **session-wrap** | `/session-wrap` 或自動 | End-of-session cleanup: auto-commit uncommitted changes, archive learnings |
 | **skill-apply** | `/skill-apply` 或自動 | Turn a skill you have imported but not installed into a review of your own |
 | **skill-creator** | 自動 | 建立、修改、評測 skills，含 eval 和 benchmark 工具 |
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
@@ -97,17 +97,18 @@ as release notes.
 | **agent-headless** | `/agent-headless` | Pattern for running Claude Code as an automated |
 | **agent-launchd** | 自動 | Create / debug / manage macOS launchd LaunchAgents — plist generation |
 | **agent-observability** | 自動 | Make any script-based agent visible in rivendell: execution history |
-| **agent-persona** | 自動 | Generate structured role prompts for headless Claude Code agents (tester |
+| **agent-persona** | `/agent-persona` 或自動 | Generate structured role prompts for headless Claude Code agents (tester |
 
 ### planning/ — 需求與規劃（requirement → user-flow → mockup → plans）
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **app-ops-baseline** | 自動 | Planning-stage gate that injects a standard "ops baseline" feature checklist |
+| **app-ops-baseline** | `/app-ops-baseline` 或自動 | Planning-stage gate that injects a standard "ops baseline" feature checklist |
 | **executing-plans** | 自動 | Execute detailed plans in batches with review checkpoints |
 | **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
-| **planning-with-files** | 自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
+| **planning-with-files** | `/planning-with-files` 或自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | Define structured requirements, user stories |
+| **system-design** | `/system-design` 或自動 | SA/SD 環節 — 在「畫面定了 / 需求定了」之後、「拆成實作任務」之前，把系統設計 |
 | **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
 
@@ -128,7 +129,7 @@ as release notes.
 | **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
 | **repro-exam** | 自動 | 依照專案的核心邏輯（如 backtest engine、portfolio strategy）產生一組 deterministic 測驗（input → |
 | **settings-audit** | 自動 | 審查清理 .claude/settings.local.json — 移除無效 permissions、修正 JSON 語法、偵測一次性指令誤存為永久權限 |
-| **setup-permissions** | 自動 | 偵測專案工具鏈，自動設定 permission allowlists，減少手動核准 |
+| **setup-permissions** | `/setup-permissions` 或自動 | 偵測專案工具鏈，自動設定 permission allowlists，減少手動核准 |
 | **task-brief** | `/task-brief` 或自動 | 把模糊的交辦翻譯成 AI 能正確執行的「任務定義」。先判斷任務落在四階段 （思考 / 探索 / 決定 / 執行）的哪一階段，每階段餵 AI |
 
 ### qa/ — QA 與驗收（測試、旅程、資料流稽核）
@@ -139,14 +140,14 @@ as release notes.
 | **qa-dataflow** | `/qa-dataflow` 或自動 | 驗證資料流是否照宣稱在跑，以及路上的關卡到底擋不擋得住（寫了沒人讀、閘門不擋、基準永不報警）；產出功能關係主表 + 落差報告 |
 | **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
 | **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
-| **qa-testing** | 自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
+| **qa-testing** | `/qa-testing` 或自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
 
 ### quality/ — 程式品質
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **de-slopify** | 自動 | 移除 AI 生成「廢文」痕跡，讓文本讀起來像人寫的 |
-| **github-repo-audit** | 自動 | Audit a GitHub repository for structure quality, documentation coverage |
+| **de-slopify** | `/de-slopify` 或自動 | 移除 AI 生成「廢文」痕跡，讓文本讀起來像人寫的 |
+| **github-repo-audit** | `/github-repo-audit` 或自動 | Audit a GitHub repository for structure quality, documentation coverage |
 | **large-file-refactor** | 自動 | Systematically split large single-file components (500+ lines) into modular |
 | **protect-secrets** | Hook (PreToolUse) | 攔截讀取/修改 .env、private keys、credentials 等敏感檔案 |
 | **say-it-plain** | `/say-it-plain` 或自動 | 把「講不清、抓不到重點、要人一問再問」的中文重寫成人能秒懂的版本——結論先行 |
@@ -164,7 +165,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **chimesflow-design** | 自動 | HARD GATE loader that anchors all new frontend / UI work to ChimesFlow's design |
+| **chimesflow-design** | `/chimesflow-design` 或自動 | HARD GATE loader that anchors all new frontend / UI work to ChimesFlow's design |
 | **frontend-design** | 自動 | 設計哲學 — 產出獨特、避免 AI 感的 production-grade UI |
 | **ios-integration** | 自動 | iOS 系統整合：App Extensions、Deep Links、Universal Links、App Groups、權限、地圖 |
 | **swiftui-patterns** | 自動 | SwiftUI iOS 17+ 架構模式：@Observable、MVVM、strict concurrency、NavigationStack |
@@ -175,13 +176,13 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **ai-vision-extract** | 自動 | The pattern for "photo → AI does the OCR/extraction → structured data" |
-| **audio-transcription-flow** | 自動 | Implement a complete audio upload → speech-to-text → transcript display |
+| **audio-transcription-flow** | `/audio-transcription-flow` 或自動 | Implement a complete audio upload → speech-to-text → transcript display |
 | **backend-async-jobs** | 自動 | Design decision + pattern for backend work that might be slow: when to keep a |
 | **cloudflare-tunnel-ops** | `/cloudflare-tunnel-ops` 或自動 | Operate, move, and troubleshoot an EXISTING Cloudflare Tunnel for a dockerized |
 | **cloudflare-tunnel-provision** | `/cloudflare-tunnel-provision` 或自動 | Stand up a brand-new public domain for a self-hosted dockerized app behind a |
 | **db-migration** | 自動 | 偵測 DB stack，設定 migration 工具（Alembic/Prisma/Drizzle），指導安全 schema 變更 |
-| **doc-to-structured-data** | 自動 | 非結構化技術文件（.doc/.pdf 測試計畫、規格書、datasheet）→ 結構化 CSV/JSON，含格式偵測、欄位對映、驗證 |
-| **docker-compose-setup** | 自動 | Set up Docker Compose for multi-service projects (Next. |
+| **doc-to-structured-data** | `/doc-to-structured-data` 或自動 | 非結構化技術文件（.doc/.pdf 測試計畫、規格書、datasheet）→ 結構化 CSV/JSON，含格式偵測、欄位對映、驗證 |
+| **docker-compose-setup** | `/docker-compose-setup` 或自動 | Set up Docker Compose for multi-service projects (Next. |
 | **firebase-backend** | 自動 | Firebase 全方位開發：Firestore CRUD/queries、Cloud Functions (1st/2nd gen, TS+Python)、CLI、emulator、Security Rules、Auth、Hosting、GCP 整合 |
 | **ic-lot-normalization** | 自動 | Domain reference for normalizing semiconductor lot / batch / product codes when |
 | **imap-smtp-integration** | 自動 | IMAP/SMTP Integration - Integrate email reading and sending via IMAP/SMTP into |
@@ -191,7 +192,7 @@ as release notes.
 | **ml-model-registry** | 自動 | Domain reference for the model-registry / governance layer of an ML platform: |
 | **oauth-token-vault** | 自動 | OAuth Token Vault - Implement OAuth 2. |
 | **odb-dfm-reference** | 自動 | Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and |
-| **rbac-permissions** | 自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
+| **rbac-permissions** | `/rbac-permissions` 或自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
 | **spine-rbac** | 自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
@@ -218,7 +219,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **gov-rfq-writer** | 自動 | Generate Request for Quotation (RFQ / 報價單) for consulting projects. |
+| **gov-rfq-writer** | `/gov-rfq-writer` 或自動 | Generate Request for Quotation (RFQ / 報價單) for consulting projects. |
 | **gov-subsidy-scraper** | `/gov-subsidy-scraper` | Automated government subsidy scraper — fetches grant listings from Taiwan |
 | **gov-subsidy-writer** | `/gov-subsidy-writer` | Write Taiwan government subsidy proposals (政府補助計畫書) end-to-end — official 目錄 |
 | **gov-tender-scraper** | `/gov-tender-scraper` | Automated government tender scraper — fetches public tender listings from |
@@ -235,41 +236,41 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **hr-candidate-analysis** | `/hr-candidate-analysis` | Interview candidate management — extract structured data from PDF resumes |
-| **hr-jd-writer** | 自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
+| **hr-jd-writer** | `/hr-jd-writer` 或自動 | Generate structured Job Descriptions (JD / 職缺描述) from organizational context. |
 
 ### knowledge/ — 內容消化
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **knowledge-graph** | `/knowledge-graph` | 三層記憶系統：人物/公司/專案持久事實，經 scripts/kg.py 寫入 JSONL + 摘要；sk-facts-cron 每日自動抽取 |
-| **local-media-transcribe** | 自動 | Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture |
-| **subtitle-file** | 自動 | Produce a subtitle FILE (.srt / . |
-| **video-clip-extract** | 自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
-| **video-transcript** | 自動 | Read an online video's spoken content (via its subtitles) and transform it into |
-| **yt-channel-scraper** | 自動 | Subscribe to YouTube channels, Bilibili UP 主, and podcast shows |
+| **local-media-transcribe** | `/local-media-transcribe` 或自動 | Transcribe a LOCAL audio/video file on disk (screen recording, meeting capture |
+| **subtitle-file** | `/subtitle-file` 或自動 | Produce a subtitle FILE (.srt / . |
+| **video-clip-extract** | `/video-clip-extract` 或自動 | Cut a highlight clip out of an online video and save it as a standalone file — |
+| **video-transcript** | `/video-transcript` 或自動 | Read an online video's spoken content (via its subtitles) and transform it into |
+| **yt-channel-scraper** | `/yt-channel-scraper` 或自動 | Subscribe to YouTube channels, Bilibili UP 主, and podcast shows |
 
 ### docs/ — 文件處理與簡報
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
-| **chart-design** | 自動 | 畫圖的單一入口：泛用「畫圖／畫架構圖／畫流程圖」與所有要進報告／簡報的圖先到這裡 triage，再轉 mermaid / excalidraw；含 R1–R4、check-html-figure.mjs 機械檢查、三欄交付收據 |
-| **discovery-interview** | 自動 | Run a structured Discovery interview with a potential consulting client to find |
+| **chart-design** | `/chart-design` 或自動 | 畫圖的單一入口：泛用「畫圖／畫架構圖／畫流程圖」與所有要進報告／簡報的圖先到這裡 triage，再轉 mermaid / excalidraw；含 R1–R4、check-html-figure.mjs 機械檢查、三欄交付收據 |
+| **discovery-interview** | `/discovery-interview` 或自動 | Run a structured Discovery interview with a potential consulting client to find |
 | **doc-coauthoring** | `/doc-coauthoring` 或自動 | Structured workflow for collaboratively co-authoring documentation through |
-| **excalidraw-diagram** | 自動 | 手繪風 .excalidraw → PNG；renderer 不是入口，由指名風格或 chart-design / pitch-deck 轉入 |
-| **gdoc-report-builder** | 自動 | Build structured reports in Google Docs/Slides via MCP tools — batch table |
+| **excalidraw-diagram** | `/excalidraw-diagram` 或自動 | 手繪風 .excalidraw → PNG；renderer 不是入口，由指名風格或 chart-design / pitch-deck 轉入 |
+| **gdoc-report-builder** | `/gdoc-report-builder` 或自動 | Build structured reports in Google Docs/Slides via MCP tools — batch table |
 | **internal-comms** | `/internal-comms` 或自動 | Templates and formats for ongoing organizational communications during and |
-| **iot-factory-report** | 自動 | Analyze factory IoT/SCADA time-series data (CSV/Excel) and produce visual |
+| **iot-factory-report** | `/iot-factory-report` 或自動 | Analyze factory IoT/SCADA time-series data (CSV/Excel) and produce visual |
 | **mermaid-diagram** | `/mermaid-diagram` 或自動 | 給工程師看的 Mermaid 技術圖 .mmd → PNG（README、設計文件）；指名 Mermaid 或由 chart-design / user-flow 轉入 |
-| **metadata-workshop** | 自動 | Run a structured Metadata Workshop with a consulting client to convert their |
+| **metadata-workshop** | `/metadata-workshop` 或自動 | Run a structured Metadata Workshop with a consulting client to convert their |
 | **office-docx** | 自動 | Word (.docx) 建立、編輯、分析，支援追蹤修訂與註解 |
 | **office-pdf** | 自動 | PDF 操作：文字/表格擷取、建立、合併/分割、表單填寫 |
 | **office-pptx** | 自動 | PowerPoint (.pptx) 建立、編輯、分析，支援版面配置、講者備註與 Codex 圖片資產 placement |
 | **office-xlsx** | 自動 | 試算表 (.xlsx/.csv) 建立、編輯、分析，支援公式與資料視覺化 |
-| **pitch-deck** | 自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
-| **slide-office-hours** | 自動 | Red-team review for a B2B presales deck storyline (storyline. |
-| **slide-template-extractor** | 自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
-| **slide-workflow** | 自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
-| **sow-writer** | 自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
+| **pitch-deck** | `/pitch-deck` 或自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
+| **slide-office-hours** | `/slide-office-hours` 或自動 | Red-team review for a B2B presales deck storyline (storyline. |
+| **slide-template-extractor** | `/slide-template-extractor` 或自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
+| **slide-workflow** | `/slide-workflow` 或自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
+| **sow-writer** | `/sow-writer` 或自動 | Generate professional Taiwan-format Statement of Work (工作說明書 / SOW) for |
 
 ### Loop × PDCA 覆蓋表
 
@@ -281,7 +282,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 5 | 5 |
-| dev | 19 | 21 | 8 | 8 |
+| dev | 20 | 21 | 8 | 8 |
 | shared | 1 | 14 | 2 | — |
 
 

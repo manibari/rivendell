@@ -18,7 +18,7 @@ description: >
   local audio/video file (that's a Whisper job), or the link is a plain web page (fetch it directly).
 tags: [media, content, video, youtube]
 version: 2.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

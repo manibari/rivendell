@@ -15,7 +15,7 @@ description: >
   libraries — anything without a multi-user admin/settings surface.
 tags: [workflow, scaffold, gate]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Bash, Grep, Glob, Skill"
 ---
 

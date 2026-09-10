@@ -18,7 +18,7 @@ description: >
   (local-media-transcribe).
 tags: [media, content, video, youtube, podcast, bilibili, subscription]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

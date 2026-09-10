@@ -9,7 +9,7 @@ description: >
   SKIP: generic CSV (office-xlsx); business reports without sensor data.
 tags: [docs, workflow]
 version: 1.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 

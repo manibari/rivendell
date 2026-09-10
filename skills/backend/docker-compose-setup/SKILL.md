@@ -11,7 +11,7 @@ description: >
   or GitHub Actions CI/CD (use ci-pipeline skill).
 tags: [backend, deploy]
 version: 2.0.0
-user-invocable: true
+user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 
