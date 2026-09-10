@@ -1641,7 +1641,8 @@ def _generate_skill_md(candidate: dict[str, Any]) -> str:
     purpose = candidate.get("purpose", "")
     trigger = candidate.get("trigger", "")
     category = candidate.get("category", "workflow")
-    reasoning = candidate.get("reasoning", "")
+    # candidate["reasoning"] is deliberately not emitted — see the stub comment
+    # below: the harvest digest does not belong in the generated SKILL.md.
 
     # Single model-facing description with TRIGGER (Claude Code triggers on
     # `description`; a separate when_to_use line is non-standard and redundant).
