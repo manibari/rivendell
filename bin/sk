@@ -3955,14 +3955,38 @@ cmd_check_agents() {
   done
   _ensure_agents_conf   # compare against a fresh generation, not the stale cache
 
-  # Active agent labels declared in agents.conf (skip comments/blanks)
-  local conf_labels=""
-  while IFS='|' read -r label _rest; do
+  # Active agent labels declared in agents.conf (skip comments/blanks).
+  #
+  # An agent whose project isn't cloned on this host is NOT drift: sk-setup-agents
+  # deliberately skips it ("project not on this host"), so no action taken here
+  # can ever load it. Counting it anyway left this machine permanently red on
+  # agents belonging to repos it does not have — the kind of finding that teaches
+  # people to stop reading the report. Track those separately and say so.
+  local self_name
+  self_name="$(basename -s .git "$(git -C "$REPO_DIR" config --get remote.origin.url 2>/dev/null)" 2>/dev/null || true)"
+  [ -z "$self_name" ] && self_name="$(basename "$REPO_DIR")"
+
+  local conf_labels="" absent_labels=""
+  local label project_rel project_dir
+  while IFS='|' read -r label project_rel _rest; do
     # Comment check must precede xargs — see cmd_check_agents above.
     [[ "$label" =~ ^[[:space:]]*# ]] && continue
     label="$(echo "$label" | xargs)"
     [ -z "$label" ] && continue
-    [[ "$label" =~ ^com\.sk\.agent\. ]] && conf_labels+="$label"$'\n'
+    [[ "$label" =~ ^com\.sk\.agent\. ]] || continue
+    project_rel="$(echo "${project_rel:-}" | xargs)"
+    # Same resolution as sk-setup-agents: "." and this repo's own name mean
+    # rivendell itself, anything else is a sibling repo.
+    if [ "$project_rel" = "." ] || [ "$project_rel" = "$self_name" ] || [ -z "$project_rel" ]; then
+      project_dir="$REPO_DIR"
+    else
+      project_dir="$PROJECTS_DIR/$project_rel"
+    fi
+    if [ -d "$project_dir" ]; then
+      conf_labels+="$label"$'\n'
+    else
+      absent_labels+="$label"$'\n'
+    fi
   done < "$AGENTS_CONF_FILE"
 
   # Labels currently registered with the service manager
@@ -3976,6 +4000,10 @@ cmd_check_agents() {
   local not_loaded extra
   not_loaded="$(comm -23 <(echo "$conf_sorted") <(echo "$loaded_sorted") | grep -v '^$' || true)"
   extra="$(comm -13 <(echo "$conf_sorted") <(echo "$loaded_sorted") | grep -v '^$' || true)"
+
+  local absent_sorted absent_count
+  absent_sorted="$(echo "$absent_labels" | sort -u | grep -v '^$' || true)"
+  absent_count="$(echo -n "$absent_sorted" | grep -c '^' || true)"
 
   local nl_count ex_count defined_count total loaded_count
   nl_count="$(echo -n "$not_loaded" | grep -c '^' || true)"
@@ -3999,17 +4027,19 @@ cmd_check_agents() {
       done <<< "$1"
       printf ']'
     }
-    printf '{"total_drift":%d,"defined":%d,"loaded":%d,"not_loaded":' "$total" "$defined_count" "$loaded_count"
+    printf '{"total_drift":%d,"defined":%d,"loaded":%d,"absent_projects":%d,"not_loaded":' "$total" "$defined_count" "$loaded_count" "$absent_count"
     labels_to_json "$not_loaded"
     printf ',"loaded_not_in_conf":'
     labels_to_json "$extra"
+    printf ',"not_on_this_host":'
+    labels_to_json "$absent_sorted"
     printf '}\n'
   else
     if $quiet && [ "$total" -eq 0 ]; then
       return 0
     fi
     echo -e "${CYAN}=== Agent Schedule Health ===${NC}"
-    echo "agents.conf defined: $defined_count | launchd loaded: $loaded_count"
+    echo "agents.conf defined: $defined_count | launchd loaded: $loaded_count | not on this host: $absent_count"
     echo ""
     if [ "$nl_count" -gt 0 ]; then
       echo -e "${YELLOW}declared in agents.conf but NOT loaded in launchd:${NC}"
@@ -4019,6 +4049,11 @@ cmd_check_agents() {
     if [ "$ex_count" -gt 0 ]; then
       echo -e "${YELLOW}loaded in launchd but NOT in agents.conf:${NC}"
       while IFS= read -r lbl; do [ -z "$lbl" ] && continue; echo "  $lbl"; done <<< "$extra"
+      echo ""
+    fi
+    if [ "$absent_count" -gt 0 ]; then
+      echo "declared, but the project is not cloned here (not drift):"
+      while IFS= read -r lbl; do [ -z "$lbl" ] && continue; echo "  $lbl"; done <<< "$absent_sorted"
       echo ""
     fi
     if [ "$total" -eq 0 ]; then
