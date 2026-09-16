@@ -82,6 +82,7 @@
       來回都是人工判斷,不是機制。
 - [ ] **W4-5** invocation 分流:**已量測 = 121 個 skill 的 description 合計
       58,731 字元 ≈ 16.8K tokens,每個 session 都載入**(對上 FR 2026-05-08 的估算)。
+      (量測時 121 支;2026-09-16 已 125 支,數字只會往上,結論不變。)
       Claude Code 原生支援 `disable-model-invocation: true`——description 完全不進
       context(官方文件已查證;gstack CHANGELOG 說「Claude 會 strip 掉」是過時資訊)。
       **但機械掃描抽不出候選:121 個裡純斜線指令 0 個**,每一個都寫了自然語言觸發語,

@@ -18,6 +18,116 @@ feature/fix 一條 bullet 帶短 hash;不把多個修正捲成一條模糊敘述
 
 （空）
 
+## 0.3.0 — skill loop 分類法 × 個人助理層 × agent registry v2 — 2026-09-16
+
+> **回填說明**：0.2.2（2026-07-19）之後兩個月沒有 cut 版，累積 125 個非 reports
+> commit。repo 沒有 git tag 可以錨定中間點，事後拆成多個 MINOR 等於是在發明歷史，
+> 所以整段收斂成一個 0.3.0，依 initiative 分節、每條帶短 hash。granularity rule
+> 從下一版恢復逐條即時記錄。
+
+### skills 分類法：loop(subject)-object-action + PDCA
+
+- **全庫重編為 15 個 loop 分類**（`3c6b7b9` 計畫 → wave 1 `f344ad2` `9ca631b`
+  `578d007` `e2fa5c2` `95c4ec6` → wave 2 `222d481`）。`business/`、`media/`、
+  `meta/` 三個以「像什麼」命名的資料夾解散，改以「屬於哪條 loop」歸戶：
+  sales / gov / invest / hr / knowledge / platform 各自成 loop。
+- **命名文法 v2 + PDCA frontmatter**（`56e8ddc` `107511c`）。124 個 skill 全數
+  補上 `loop` / `pdca` 欄位,catalog 產出 Loop×PDCA 覆蓋表,frontmatter 值進 lint。
+- **skills-by-role 八份角色 playbook**（`1fea6f9`）,`sk check` 守覆蓋率;角色頁
+  改以 authority tier 分組（`5353e72` `a57d2cb` `b4fee6b`）。
+- **dashboard `/skills` 改畫真實架構**（`ef1b848` `f1f8b7f` `e0e3b87`）——
+  loop × PDCA 熱圖、角色 → 工作 → PDCA 結構檢視,sidebar 依「你在做什麼」重組。
+- **繪圖 trigger 收斂到 chart-design**（`50b9189` `650a8db`）,附機械式 figure
+  checker 與 three-claim handoff receipt。
+- **system-design skill**（`630758c`）—— 補上沒人在產出的 SA/SD 環節。
+
+### 個人助理層：知識庫 → dispatch → avatar
+
+- **assistant stack 落地**（`15b17fe`）—— knowledge base、dispatch loop、avatar
+  三件一起進 main。
+- **`sk dispatch` 行動層**：模糊指令/信件事件 → 具體化提案（引知識庫）→ 分級確認
+  （email/calendar 逐件 typed-yes、垃圾信批次、crm 放行、internal 自動）→ 確定性
+  actuator 執行。模型永不執行寄送,payload hash 防竄改。
+- **`bin/sk-mail-triage-cron`**（daily 7:45）：重要信摘要推播、垃圾信 sk-junk 貼標
+  + 批次確認（永不 expunge,junk-guard 保護知識庫已知寄件人）、可行動事件自動開提案;
+  業務行為路由 Rightek-CRM。
+- **knowledge-graph 啟用**（翻案,原排隊退役）：`scripts/kg.py` 唯一寫入 API
+  + `bin/sk-facts-cron`（daily 21:30,知識庫自身 git 為交易邊界）+ `~/.claude/CLAUDE.md`
+  recall 區塊。首跑落地 8 筆 facts / 6 entities。
+- **avatar**：`/avatar` 頁（VRM 對話視窗、人格切換、引擎與 API 金鑰設定）+ `gateway/`
+  （:8310,OpenAI 相容 `/v1/chat/completions`;引擎鏈 codex→claude→API key 直連）。
+  雙人格林迪（Lindir）/ 米瑞爾（Míriel）,註冊表 `data/persona.conf`。
+  後續 de-slop 助理語氣 + 對話歷史 + neural TTS endpoint（`bae732c`）。
+- **link-collection flow**（`0f213f5`）—— 自動分類的連結收藏。
+- ports.conf 補登記 mops:8200 與 iihi:8300 兩筆漂移。
+
+### agent registry v2（雙層模型：registry → launchd）
+
+- **schema v2 共用 parser + 第一個 OODA minister**（`1cc1130`）,`sk-registry-gen`
+  CLI generate/validate/check（`4829baa`）,20 條 agents.conf 條目全數遷入
+  registry（`d38af63`）。
+- **`sk-setup-agents` 改由 registry 生成 conf**（`bd10c54`）,`agents.conf` 退為
+  不進 git 的 build artifact（`94b03bf`）,registry 驗證接進 health check（`b880123`）。
+- **`sk-projects-sync` 回歸**（`9898d95`）—— `~/.claude/projects.json` 在 repo 外、
+  不隨 clone 走,先前兩個月無人重建。同時修掉它原本讀死 `agents.conf` 的問題。
+- **`sk-setup-agents` 支援指名 label**（`4d5dbb1`）—— 加一個排程不必彈掉正在服務
+  流量的 dashboard 與 gateway。
+
+### qa-dataflow：驗證資料流「實際上」怎麼跑
+
+- **skill 本體**（`7310f99`）,七個探針依「問的是什麼問題」拆開（`ee0c17c`）,
+  功能關係圖當成維護中的 artefact 而非一次性報告（`26dc4d4`）,
+  無出口的帶狀區與會跟著資料移動的基準線（`dd4955e`）。
+- QA 家族收攏到 `skills/qa/`,並讓 deploy 不再跳過死連結（`65aef77`）。
+
+### 多機維運與機器搬遷
+
+- **per-machine 報告檔名**（`068a131` `a3b8156` `4a7b8af`）—— 兩台機器合併時
+  70 個衝突有 64 個是同名的日期報告（`110d2b7`）。
+- **`sk-relocate`**（`d68dd79`）—— 搬 repo 並重建所有記著舊路徑的東西;
+  machine-migration 破損修復（`2f2cc60`）。
+- **部署前置 preflight gate**（`5c43216`）,`sk-reboot` 無人值守重開機穿過
+  FileVault（`04e6a8d`）。
+- **BSD/GNU 可攜性**：`sed -i ''` 換掉（`38a07d2`）,`sk audit` 摘要從來沒進過
+  報告（`117cd93`）,interval timer 改用 OnActiveSec 不在載入時就開火（`bf44ff7`）。
+- WSL prod 改追 main,ROADMAP R1a 關閉（`b5929b9`）。
+
+### 知識 loop：影音 → 知識庫
+
+- **video/media skill 家族**（`c7f3991`）—— transcript / clip / subtitle,
+  無字幕自動降級 Whisper（`55ea48e` `17f1ae3`）,持續 429 的 COOKIES 逃生口（`2abad9d`）。
+- **`local-media-transcribe`**（`dc0724f`）—— mlx-whisper 全離線本機聽寫;
+  本機 ASR 改成大聲失敗而不是吐出流暢的垃圾（`385a3b7`）。
+- **知識庫**（`703c331` `97d62e3`）—— 影音筆記歸檔 + 可瀏覽 INDEX.md;
+  `channel-scraper` 改成訂閱頻道而非逐條貼連結（`b8ac03d`）。
+
+### gov / sales / 文字品質
+
+- **subsidy-writer**：figures + reapply-from-approved + 分級待補清單（`71d0142`）,
+  Phase 8 書面審查意見 → 審查會議簡報（`25da1f4`）;scraper 繞開兩個死掉的入口（`cd4437b`）。
+- **`say-it-plain`**（`6702efb`）+ audience calibration（`ae91cf1`）;
+  **`de-slopify`** 加 self-assessment 與內部代號掃描（`3966c9f`）。
+- **`qa-journey`**（`f39315c`）、**`skill-apply`**（`df2275a`）、
+  **`context-journal`**（`04302e7`）、**`pitch-deck` 出 PPTX 前的 copy-review gate**（`1537d08`）。
+
+### 平台工具與 dashboard
+
+- **`sk todo`**（`8501447` `a51c958`）—— 一頁列出還沒了結的事。
+- **ports 以 live listener 為 SoT + ownership registry**（`47cf550`）。
+- **dual-target deploy**（`d733e04`）—— 同一份 skill 同時進 Claude Code 與 Codex。
+- **global hooks manifest**（`95d0882`）—— commit 了腳本不等於裝了 hook;
+  auto-stage 重新接線讓描述它的規則重新為真（`4adcce5`）。
+- **`sk clean` / `sk rename`**（`e557f56` `45eb5be`）,watchdog 移出 launchctl
+  以便 systemd 也抓得到吊死的服務（`b27a54d`）,watchdog 追到網頁真正引用的
+  資產（`3f5334d`）。
+- dashboard token 重複計算與價格表（`998d945`）,avatar 404 其實是舊的 production
+  build（`4674eb5`）,CI ruff 釘版本讓 lint 標準不再自己移動（`e731fc2` `c3257fd`）。
+
+### 檢查工具誠實化
+
+- **不再報告任何動作都清不掉的紅字**（`1ddbb27`）—— `_shared` 不是 skill 卻天天
+  FAIL;沒 clone 在本機的專案其 agent 被計入 drift。兩者都改為分開陳述、不計入總數。
+
 ## 0.2.2 — tokens 頁誠實化：雙軸吞吐 + 砍幻覺金額 — 2026-07-19
 
 - **fix(tokens): Max 吃到飽用戶的幻覺 $**。舊頁頭條大字是 `$total_cost_usd`
@@ -115,15 +225,17 @@ feature/fix 一條 bullet 帶短 hash;不把多個修正捲成一條模糊敘述
   and `gdrive-to-skills` `imported_at`.
 - Restored launchd agent loading: all 16 agents in `agents.conf` now report as
   loaded.
-All notable changes to the rivendell platform are recorded here.
-Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
+---
 
-**Versioning = ISO week** (one iteration per week, closed at `workflow-retro`).
-The `[Unreleased]` section collects changes mid-week; it is promoted to a dated
-`## [YYYY-Www]` heading when the iteration closes. Kept aligned with
-[ROADMAP.md](ROADMAP.md) by the `doc-drift-sync` skill.
+# 歷史：ISO-week 版號時期（0.1.0 之前）
 
-## [Unreleased]
+以下是 semver 之前的舊 changelog,採 ISO 週版號（一週一迭代,`workflow-retro`
+收斂）。保留原始紀錄以供追溯,**不再更新**;檔案頂端的 semver 規則才是現行制度。
+
+## [未結算] — 條目已併入 0.3.0
+
+> 這一段在改用 semver 時沒有收尾,就地擱置了三個月。其中的助理層／knowledge-graph
+> 都已上線,已於 2026-09-16 併進上方 0.3.0;此處原樣保留,不再是待辦。
 
 ### Added
 - 助理 Avatar：`/avatar` 頁（VRM 對話視窗、人格切換、引擎與 API 金鑰設定）+
