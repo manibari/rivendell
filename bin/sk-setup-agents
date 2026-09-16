@@ -13,6 +13,14 @@
 # Options:
 #   --dry-run   Print generated units without installing
 #   --unload    Unload all managed agents
+#
+# Args:
+#   [label...]  Only touch these agents; everything else is left alone. Accepts
+#               a full label or its short name (`facts` = com.sk.agent.*.facts).
+#               Without this, the run unloads and reloads EVERY managed unit —
+#               including com.sk.dashboard.web/api and com.sk.gateway, which are
+#               keepalive services serving live traffic. Adding one agent should
+#               not bounce the dashboard, so name it.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -48,11 +56,14 @@ SELF_NAME="$(basename -s .git "$(git -C "$REPO_DIR" config --get remote.origin.u
 [ -z "$SELF_NAME" ] && SELF_NAME="$(basename "$REPO_DIR")"
 DRY_RUN=false
 UNLOAD_ONLY=false
+ONLY_LABELS=()
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --unload) UNLOAD_ONLY=true ;;
+    -*) echo "Unknown option: $arg" >&2; exit 1 ;;
+    *) ONLY_LABELS+=("$arg") ;;
   esac
 done
 
@@ -117,6 +128,10 @@ if $UNLOAD_ONLY; then
   while IFS='|' read -r label _rest; do
     label="$(echo "$label" | xargs)"
     [ -z "$label" ] && continue
+
+    if [ ${#ONLY_LABELS[@]} -gt 0 ] && ! wanted "$label"; then
+      continue
+    fi
     if svc_is_loaded "$label"; then
       svc_unload "$label" && echo "  Unloaded: $label" || true
     fi
@@ -159,6 +174,16 @@ else
 fi
 echo ""
 
+wanted() {  # $1 = label — true when it matches a label named on the command line
+  local short="${1##*.}"
+  local want
+  for want in "${ONLY_LABELS[@]}"; do
+    [ "$want" = "$1" ] && return 0
+    [ "$want" = "$short" ] && return 0
+  done
+  return 1
+}
+
 in_profile() {  # $1 = label
   $PROFILE_ACTIVE || return 0          # no profile on this host → no filtering
   local p
@@ -181,6 +206,10 @@ while IFS='|' read -r label project_rel script sched_type sched_val log_dir_rel 
   sched_val="$(echo "$sched_val" | xargs)"
   extra_args="$(echo "${extra_args:-}" | xargs)"
   [ -z "$label" ] && continue
+
+  if [ ${#ONLY_LABELS[@]} -gt 0 ] && ! wanted "$label"; then
+    continue
+  fi
 
   # "." (and this repo's own name) mean rivendell itself; anything else is a
   # sibling repo. Derived, never hardcoded — a rename must not break this.
