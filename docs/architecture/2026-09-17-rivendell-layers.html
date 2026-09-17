@@ -1,0 +1,1041 @@
+<title>Rivendell 架構四圖</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #EFF2F3;
+    --surface: #FFFFFF;
+    --surface-2: #E4E9EB;
+    --ink: #16232B;
+    --ink-2: #566B75;
+    --ink-3: #8397A0;
+    --rule: #C9D4D8;
+    --rule-soft: #DDE4E7;
+    --mark: #A8431C;
+
+    --p: #35657F;
+    --d: #276B5C;
+    --c: #96680F;
+    --a: #7D4260;
+
+    --p-bg: #DDE8EE;
+    --d-bg: #D9E8E3;
+    --c-bg: #EFE4C9;
+    --a-bg: #EADCE4;
+
+    --bad: #A8332A;
+    --bad-bg: #F2DCD9;
+
+    --font-display: "Archivo", "PingFang TC", "Noto Sans TC", sans-serif;
+    --font-body: "Noto Sans TC", "PingFang TC", "Helvetica Neue", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --wrap: 1120px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E161B;
+      --surface: #16222A;
+      --surface-2: #1E2D36;
+      --ink: #DFE7EA;
+      --ink-2: #93A6AF;
+      --ink-3: #6B7F89;
+      --rule: #2B3B45;
+      --rule-soft: #22313A;
+      --mark: #DE7C4E;
+
+      --p: #74A6C4;
+      --d: #4CB59A;
+      --c: #D2A23C;
+      --a: #C286A4;
+
+      --p-bg: #1B2E39;
+      --d-bg: #16302B;
+      --c-bg: #322A15;
+      --a-bg: #2E1F28;
+
+      --bad: #E87A68;
+      --bad-bg: #331A17;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0E161B;
+    --surface: #16222A;
+    --surface-2: #1E2D36;
+    --ink: #DFE7EA;
+    --ink-2: #93A6AF;
+    --ink-3: #6B7F89;
+    --rule: #2B3B45;
+    --rule-soft: #22313A;
+    --mark: #DE7C4E;
+
+    --p: #74A6C4;
+    --d: #4CB59A;
+    --c: #D2A23C;
+    --a: #C286A4;
+
+    --p-bg: #1B2E39;
+    --d-bg: #16302B;
+    --c-bg: #322A15;
+    --a-bg: #2E1F28;
+
+    --bad: #E87A68;
+    --bad-bg: #331A17;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding-inline: 20px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding-block: 52px 36px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    max-width: 62ch;
+    font-size: 16px;
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  .standfirst strong { color: var(--ink); font-weight: 500; }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    margin-top: 26px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  .meta-row b { color: var(--ink-2); font-weight: 500; }
+
+  /* ---------- figure sections ---------- */
+
+  .fig {
+    padding-block: 46px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .fig:last-of-type { border-bottom: none; }
+
+  .fig-head { margin-bottom: 26px; }
+
+  .fig-no {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--mark);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(21px, 3.2vw, 27px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+
+  .question {
+    max-width: 68ch;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14.5px;
+  }
+
+  .question b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- fig 1: three layers ---------- */
+
+  .layers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .layer {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--ink-3);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .layer.is-focus { border-top-color: var(--mark); }
+
+  .layer-hd { padding: 16px 18px 12px; }
+
+  .layer-tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .layer.is-focus .layer-tag { color: var(--mark); }
+
+  .layer-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    margin: 4px 0 0;
+  }
+
+  .layer-q {
+    padding: 0 18px 14px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    font-style: italic;
+  }
+
+  .layer-art {
+    padding: 4px 18px 16px;
+    margin-top: auto;
+  }
+
+  .layer-art svg { display: block; width: 100%; height: auto; }
+
+  .layer-spec {
+    border-top: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0;
+  }
+
+  .layer-spec dt {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    padding: 9px 10px 9px 18px;
+    border-right: 1px solid var(--rule-soft);
+    white-space: nowrap;
+  }
+
+  .layer-spec dd {
+    margin: 0;
+    padding: 9px 18px 9px 12px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .layer-spec dt + dd + dt,
+  .layer-spec dt + dd + dt + dd { border-top: 1px solid var(--rule-soft); }
+
+  /* ---------- svg theming (class-driven, never var() in attributes) ---------- */
+
+  svg text { font-family: var(--font-mono); }
+  svg text.t-body { font-family: var(--font-body); }
+
+  .f-ink   { fill: var(--ink); }
+  .f-ink2  { fill: var(--ink-2); }
+  .f-ink3  { fill: var(--ink-3); }
+  .f-mark  { fill: var(--mark); }
+  .f-bad   { fill: var(--bad); }
+  .f-d     { fill: var(--d); }
+
+  .box      { fill: var(--surface); stroke: var(--rule); stroke-width: 1; }
+  .box-soft { fill: var(--surface-2); stroke: var(--rule); stroke-width: 1; }
+  .box-bad  { fill: var(--bad-bg); stroke: var(--bad); stroke-width: 1.5; }
+  .dashed   { stroke-dasharray: 3 3; }
+
+  .cyl-d   { fill: var(--d-bg); stroke: var(--d); stroke-width: 1.5; }
+  .cyl-bad { fill: var(--bad-bg); stroke: var(--bad); stroke-width: 1.5; }
+
+  .e      { fill: none; stroke: var(--ink-2); stroke-width: 1.2; }
+  .e-wide { fill: none; stroke: var(--ink-2); stroke-width: 1.5; }
+  .e-soft { fill: none; stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 3; }
+  .e-none { fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 2 5; }
+  .e-bad  { fill: none; stroke: var(--bad); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .e-bad-wide { fill: none; stroke: var(--bad); stroke-width: 2; stroke-dasharray: 6 4; }
+  .e-bad-solid { fill: none; stroke: var(--bad); stroke-width: 1.5; }
+  .band { stroke: var(--rule-soft); stroke-width: 1; }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    margin-top: 18px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--mark);
+    padding: 16px 20px;
+    font-size: 14.5px;
+  }
+
+  .callout p { margin: 0; }
+  .callout p + p { margin-top: 8px; }
+  .callout .who {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- fig 2: chain ---------- */
+
+  .chain-scroll { overflow-x: auto; padding-bottom: 6px; }
+
+  .chain {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(116px, 1fr));
+    gap: 8px;
+    min-width: 1040px;
+  }
+
+  .station {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 12px 12px 14px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .station::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -8px;
+    width: 8px;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .station:last-child::after { display: none; }
+
+  .station.is-gap {
+    border-color: var(--mark);
+    border-width: 2px;
+  }
+
+  .st-no {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+
+  .st-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .st-skill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    word-break: break-word;
+  }
+
+  .chip {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-top: auto;
+  }
+
+  .chip-p { background: var(--p-bg); color: var(--p); }
+  .chip-d { background: var(--d-bg); color: var(--d); }
+  .chip-c { background: var(--c-bg); color: var(--c); }
+  .chip-a { background: var(--a-bg); color: var(--a); }
+  .chip-x { background: var(--surface-2); color: var(--ink-3); }
+
+  .note-gap {
+    margin-top: 16px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .note-gap .flag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mark);
+    white-space: nowrap;
+  }
+
+  /* ---------- fig 3: matrix ---------- */
+
+  .matrix-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    min-width: 620px;
+    background: var(--surface);
+  }
+
+  caption {
+    caption-side: bottom;
+    text-align: left;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    padding-top: 12px;
+  }
+
+  th, td {
+    padding: 9px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  th[scope="row"] {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  th[scope="row"] span {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-left: 8px;
+  }
+
+  td.n { font-family: var(--font-mono); font-size: 13px; }
+  td.zero { color: var(--ink-3); }
+  td.miss { background: var(--bad-bg); color: var(--bad); font-weight: 500; }
+  td.total { font-family: var(--font-mono); font-weight: 500; }
+
+  tbody tr:hover { background: var(--surface-2); }
+
+  tfoot td, tfoot th {
+    border-top: 1px solid var(--rule);
+    border-bottom: none;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .col-p { border-top: 2px solid var(--p); }
+  .col-d { border-top: 2px solid var(--d); }
+  .col-c { border-top: 2px solid var(--c); }
+  .col-a { border-top: 2px solid var(--a); }
+
+  /* ---------- fig 4: dataflow ---------- */
+
+  .flow-scroll { overflow-x: auto; }
+  .flow { min-width: 860px; }
+  .flow svg { display: block; width: 100%; height: auto; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i {
+    width: 22px; height: 0;
+    border-top-width: 2px;
+    display: inline-block;
+  }
+  .legend i.solid { border-top-style: solid; border-top-color: var(--ink-2); }
+  .legend i.broken { border-top-style: dashed; border-top-color: var(--bad); }
+
+  /* ---------- evidence ---------- */
+
+  .evidence {
+    margin-top: 18px;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  .evidence-hd {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .evidence ul { margin: 0; padding: 14px 18px 16px 34px; }
+  .evidence li { margin-bottom: 7px; font-size: 13.5px; }
+  .evidence li:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 2px;
+    word-break: break-word;
+  }
+
+  /* ---------- footer ---------- */
+
+  .colophon {
+    padding-block: 32px 56px;
+    border-top: 2px solid var(--ink);
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+
+  .colophon p { margin: 0 0 8px; max-width: 70ch; }
+  .colophon p:last-child { margin-bottom: 0; }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 860px) {
+    .layers { grid-template-columns: 1fr; }
+    .layer { border-top-width: 3px; }
+  }
+
+  @media (max-width: 520px) {
+    .wrap { padding-inline: 16px; }
+    .masthead { padding-block: 34px 26px; }
+    .fig { padding-block: 34px; }
+    .layer-spec { grid-template-columns: 1fr; }
+    .layer-spec dt { border-right: none; padding: 9px 16px 0; }
+    .layer-spec dd { padding: 0 16px 10px; }
+    .layer-spec dt + dd + dt { border-top: 1px solid var(--rule-soft); }
+    .layer-spec dt + dd + dt + dd { border-top: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  :focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Rivendell · 2026-09-17 · 125 skills</p>
+    <h1>Rivendell 架構四圖</h1>
+    <p class="standfirst">
+      Jack 記得的那句話是對的：<strong>一般的 workflow 圖不夠，還要有資料讀寫那一層</strong>。
+      這四張圖就是照那個順序排的 —— 前三張講框架，第四張是框架抓到的一個真實缺陷，
+      而那個缺陷只有在第三層才看得見。
+    </p>
+    <div class="meta-row">
+      <span><b>repo</b> manibari/rivendell</span>
+      <span><b>commit</b> 3a0265c (v0.3.0)</span>
+      <span><b>循環</b> 8 條</span>
+      <span><b>排程 agent</b> 13 支</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ FIG 1 ============ -->
+    <section class="fig">
+      <div class="fig-head">
+        <span class="fig-no">圖 1 / 分層</span>
+        <h2>同一個系統，三個問題，三張節點種類不同的圖</h2>
+        <p class="question">
+          這張圖回答：<b>為什麼一張流程圖講不完一個系統。</b>
+          被退稿最多次的原因，就是想用一張圖同時回答三個問題 —— 但它們的節點根本不是同一種東西。
+        </p>
+      </div>
+
+      <div class="layers">
+
+        <article class="layer">
+          <div class="layer-hd">
+            <span class="layer-tag">Layer 1</span>
+            <p class="layer-name">模組全景</p>
+          </div>
+          <p class="layer-q">「有哪些模組？哪個還沒做？」</p>
+          <div class="layer-art">
+            <svg viewBox="0 0 260 78" role="img" aria-label="六個並排的模組方塊，之間沒有連線">
+              <rect class="box-soft" x="2" y="4" width="78" height="30"/>
+              <rect class="box-soft" x="91" y="4" width="78" height="30"/>
+              <rect class="box-soft" x="180" y="4" width="78" height="30"/>
+              <rect class="box-soft" x="2" y="44" width="78" height="30"/>
+              <rect class="box-soft" x="91" y="44" width="78" height="30"/>
+              <rect class="box-soft dashed" x="180" y="44" width="78" height="30"/>
+              <g class="f-ink3" font-size="9" text-anchor="middle">
+                <text x="41" y="23">scrape</text>
+                <text x="130" y="23">parse</text>
+                <text x="219" y="23">store</text>
+                <text x="41" y="63">report</text>
+                <text x="130" y="63">notify</text>
+                <text x="219" y="63">archive</text>
+              </g>
+            </svg>
+          </div>
+          <dl class="layer-spec">
+            <dt>節點</dt><dd>功能模組</dd>
+            <dt>邊</dt><dd>沒有邊 —— 這是清單，別假裝有流程</dd>
+          </dl>
+        </article>
+
+        <article class="layer">
+          <div class="layer-hd">
+            <span class="layer-tag">Layer 2</span>
+            <p class="layer-name">功能關係圖</p>
+          </div>
+          <p class="layer-q">「誰是誰的前置？交出去的是什麼？」</p>
+          <div class="layer-art">
+            <svg viewBox="0 0 260 78" role="img" aria-label="三個功能節點以標註識別碼的箭頭串接，並有一條回頭路">
+              <defs>
+                <marker id="ar1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+                  <path class="f-ink2" d="M0,0 L8,4 L0,8 z"/>
+                </marker>
+                <marker id="ar2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+                  <path class="f-ink3" d="M0,0 L8,4 L0,8 z"/>
+                </marker>
+              </defs>
+              <rect class="box-soft" x="2" y="26" width="64" height="26"/>
+              <rect class="box-soft" x="98" y="26" width="64" height="26"/>
+              <rect class="box-soft" x="194" y="26" width="64" height="26"/>
+              <g class="f-ink3" font-size="9" text-anchor="middle">
+                <text x="34" y="43">切分</text>
+                <text x="130" y="43">訓練</text>
+                <text x="226" y="43">註冊</text>
+              </g>
+              <path class="e" d="M66,39 L94,39" marker-end="url(#ar1)"/>
+              <path class="e" d="M162,39 L190,39" marker-end="url(#ar1)"/>
+              <g class="f-mark" font-size="8" text-anchor="middle">
+                <text x="80" y="33">split_id</text>
+                <text x="176" y="33">run_id</text>
+              </g>
+              <path class="e-soft" d="M226,52 C226,70 34,70 34,54" marker-end="url(#ar2)"/>
+              <text class="f-ink3 t-body" x="130" y="76" text-anchor="middle" font-size="8">不滿意 → 重訓（回頭路）</text>
+            </svg>
+          </div>
+          <dl class="layer-spec">
+            <dt>節點</dt><dd>功能</dd>
+            <dt>邊</dt><dd>傳遞的識別碼 —— 只有箭頭等於沒說</dd>
+          </dl>
+        </article>
+
+        <article class="layer is-focus">
+          <div class="layer-hd">
+            <span class="layer-tag">Layer 3 · Jack 記得的這層</span>
+            <p class="layer-name">資料流（實體）</p>
+          </div>
+          <p class="layer-q">「資料本身怎麼流？躺在哪張表？」</p>
+          <div class="layer-art">
+            <svg viewBox="0 0 260 78" role="img" aria-label="兩個資料實體以寫入與讀取動作串接，其中一條讀取線是壞的">
+              <defs>
+                <marker id="ar3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+                  <path class="f-ink2" d="M0,0 L8,4 L0,8 z"/>
+                </marker>
+                <marker id="ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+                  <path class="f-bad" d="M0,0 L8,4 L0,8 z"/>
+                </marker>
+              </defs>
+              <rect class="box-soft" x="2" y="28" width="52" height="24"/>
+              <text class="f-ink3" x="28" y="44" text-anchor="middle" font-size="9">writer</text>
+              <ellipse class="cyl-d" cx="130" cy="26" rx="28" ry="6"/>
+              <path class="cyl-d" d="M102,26 L102,50 A28,6 0 0,0 158,50 L158,26"/>
+              <text class="f-d" x="130" y="45" text-anchor="middle" font-size="9">table</text>
+              <rect class="box-soft" x="206" y="28" width="52" height="24"/>
+              <text class="f-ink3" x="232" y="44" text-anchor="middle" font-size="9">reader</text>
+              <path class="e" d="M54,40 L98,40" marker-end="url(#ar3)"/>
+              <text class="f-ink3" x="76" y="34" text-anchor="middle" font-size="8">INSERT</text>
+              <path class="e-bad" d="M202,40 L166,40" marker-end="url(#ar4)"/>
+              <text class="f-bad" x="184" y="34" text-anchor="middle" font-size="8">SELECT</text>
+              <text class="f-bad t-body" x="130" y="72" text-anchor="middle" font-size="8">讀到的是另一張表 → 永遠回 0</text>
+            </svg>
+          </div>
+          <dl class="layer-spec">
+            <dt>節點</dt><dd>資料實體</dd>
+            <dt>邊</dt><dd>產生下一個實體的動作（讀／寫）</dd>
+          </dl>
+        </article>
+
+      </div>
+
+      <div class="callout">
+        <span class="who">Jack 的原話</span>
+        <p>「我只記得一般的 workflow 還不夠，還要有從 SQL 的資料讀寫過程的事情。」</p>
+        <p>
+          對應的就是 Layer 3。前兩層畫得再漂亮，都看不出「這張表到底有沒有人在讀」——
+          因為那不是功能的屬性，是資料實體的屬性。<strong>圖 4 就是一個活的例子。</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ FIG 2 ============ -->
+    <section class="fig">
+      <div class="fig-head">
+        <span class="fig-no">圖 2 / 鏈路</span>
+        <h2>開發鏈路 0 到 8，每一站都有一支 skill 負責產出</h2>
+        <p class="question">
+          這張圖回答：<b>一個功能從「想做」到「上線」中間到底有幾站，誰在顧。</b>
+          底下的色塊是這條鏈的 PDCA 座標 —— 前六站都還在 plan，真正動手只有第 6 站。
+        </p>
+      </div>
+
+      <div class="chain-scroll">
+        <div class="chain">
+          <div class="station">
+            <span class="st-no">00</span>
+            <span class="st-name">Demand</span>
+            <span class="st-skill">/gstack-office-hours</span>
+            <span class="chip chip-x">gstack</span>
+          </div>
+          <div class="station">
+            <span class="st-no">01</span>
+            <span class="st-name">Requirement</span>
+            <span class="st-skill">/requirement</span>
+            <span class="chip chip-p">plan</span>
+          </div>
+          <div class="station">
+            <span class="st-no">02</span>
+            <span class="st-name">User Flow</span>
+            <span class="st-skill">/user-flow</span>
+            <span class="chip chip-p">plan</span>
+          </div>
+          <div class="station">
+            <span class="st-no">03</span>
+            <span class="st-name">Design</span>
+            <span class="st-skill">/gstack-design-consultation<br>/gstack-design-shotgun</span>
+            <span class="chip chip-x">gstack</span>
+          </div>
+          <div class="station">
+            <span class="st-no">04</span>
+            <span class="st-name">Mockup</span>
+            <span class="st-skill">/mockup<br>/gstack-design-html</span>
+            <span class="chip chip-p">plan</span>
+          </div>
+          <div class="station is-gap">
+            <span class="st-no">05</span>
+            <span class="st-name">System Design</span>
+            <span class="st-skill">/system-design</span>
+            <span class="chip chip-p">plan</span>
+          </div>
+          <div class="station">
+            <span class="st-no">06</span>
+            <span class="st-name">Development</span>
+            <span class="st-skill">/planning-with-files<br>/gstack-plan-eng-review</span>
+            <span class="chip chip-d">do</span>
+          </div>
+          <div class="station">
+            <span class="st-no">07</span>
+            <span class="st-name">QA</span>
+            <span class="st-skill">/gstack-qa<br>/qa-dataflow</span>
+            <span class="chip chip-c">check</span>
+          </div>
+          <div class="station">
+            <span class="st-no">08</span>
+            <span class="st-name">CI / CD</span>
+            <span class="st-skill">/ci-pipeline</span>
+            <span class="chip chip-a">act</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="note-gap">
+        <span class="flag">第 5 站 · 2026-09-09 才補上</span>
+        <span>
+          原本這站是空的：<code>/mockup</code> 做完就直接進實作規劃。
+          審查端（<code>/gstack-plan-eng-review</code>）一直存在，但它審的那份 SA/SD 文件<b>沒有任何 skill 負責產出</b>。
+          第 5 站畫的 target 資料流圖，就是第 7 站 <code>/qa-dataflow</code> 事後用來對帳 actual 的同一份規格 —— 閉環在這裡合上。
+        </span>
+      </p>
+    </section>
+
+    <!-- ============ FIG 3 ============ -->
+    <section class="fig">
+      <div class="fig-head">
+        <span class="fig-no">圖 3 / 覆蓋</span>
+        <h2>八條循環各自跑一圈 PDCA，空格是登記過的缺環</h2>
+        <p class="question">
+          這張圖回答：<b>125 支 skill 是怎麼被座標化的，以及哪裡還沒補。</b>
+          分類不是資料夾，是循環；每支 skill 的 <code>loop:</code> 和 <code>pdca:</code> 寫在 SKILL.md frontmatter 裡，機器可讀。
+        </p>
+      </div>
+
+      <div class="matrix-scroll">
+        <table>
+          <caption>資料來源：125 份 SKILL.md 的 frontmatter，2026-09-17 實查。標紅的格子是 ROADMAP 已登記的缺環，不是漏填。</caption>
+          <thead>
+            <tr>
+              <th scope="col" style="text-align:left">循環</th>
+              <th scope="col" class="col-p">Plan</th>
+              <th scope="col" class="col-d">Do</th>
+              <th scope="col" class="col-c">Check</th>
+              <th scope="col" class="col-a">Act</th>
+              <th scope="col">小計</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">dev <span>產品開發</span></th>
+              <td class="n">20</td><td class="n">21</td><td class="n">8</td><td class="n">8</td>
+              <td class="n total">57</td>
+            </tr>
+            <tr>
+              <th scope="row">platform <span>自我改善</span></th>
+              <td class="n">1</td><td class="n">13</td><td class="n">5</td><td class="n">5</td>
+              <td class="n total">24</td>
+            </tr>
+            <tr>
+              <th scope="row">shared <span>跨循環工具</span></th>
+              <td class="n">1</td><td class="n">14</td><td class="n">2</td><td class="n zero">0</td>
+              <td class="n total">17</td>
+            </tr>
+            <tr>
+              <th scope="row">sales <span>業務開發</span></th>
+              <td class="n">5</td><td class="n">4</td><td class="n">2</td><td class="n">1</td>
+              <td class="n total">12</td>
+            </tr>
+            <tr>
+              <th scope="row">knowledge <span>內容消化</span></th>
+              <td class="n">1</td><td class="n">5</td><td class="n zero">0</td><td class="n">1</td>
+              <td class="n total">7</td>
+            </tr>
+            <tr>
+              <th scope="row">gov <span>政府案件</span></th>
+              <td class="n">2</td><td class="n">2</td>
+              <td class="n miss">缺</td><td class="n miss">缺</td>
+              <td class="n total">4</td>
+            </tr>
+            <tr>
+              <th scope="row">invest <span>投資研究</span></th>
+              <td class="n">1</td><td class="n">1</td>
+              <td class="n miss">缺</td><td class="n miss">缺</td>
+              <td class="n total">2</td>
+            </tr>
+            <tr>
+              <th scope="row">hr <span>人資</span></th>
+              <td class="n zero">0</td><td class="n">1</td><td class="n">1</td><td class="n zero">0</td>
+              <td class="n total">2</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" style="text-align:left">合計</th>
+              <td>31</td><td>61</td><td>18</td><td>15</td><td>125</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p>
+          <strong>Do 佔了 61 支，Check + Act 加起來只有 33 支。</strong>
+          這個形狀本身就是診斷：做事的工具遠多於驗收和回饋的工具。
+          gov 和 invest 兩條循環完全沒有 C/A —— 標案命中率沒人檢討、投資建議沒人回測，
+          這兩格是<b>刻意登記不補</b>（YAGNI），不是忘了。
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ FIG 4 ============ -->
+    <section class="fig">
+      <div class="fig-head">
+        <span class="fig-no">圖 4 / 實況</span>
+        <h2>把 Layer 3 套在 rivendell 自己身上，抓到一條斷掉的讀取線</h2>
+        <p class="question">
+          這張圖回答：<b>agent 的執行紀錄寫進哪裡、誰去讀。</b>
+          這是 actual 圖，不是宣稱圖 —— 2026-06 的架構決策文件寫的是 PostgreSQL，實際跑的是兩個 SQLite 檔。
+        </p>
+      </div>
+
+      <div class="flow-scroll">
+        <div class="flow">
+          <svg viewBox="0 0 860 340" role="img"
+               aria-label="rivendell 實際資料讀寫圖：執行層寫入 sk-dashboard.db，但 dashboard API 讀取的是空的 rivendell.db">
+            <defs>
+              <marker id="a-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path class="f-ink2" d="M0,0 L10,5 L0,10 z"/>
+              </marker>
+              <marker id="a-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path class="f-bad" d="M0,0 L10,5 L0,10 z"/>
+              </marker>
+            </defs>
+
+            <!-- band labels -->
+            <g class="f-ink3" font-size="10" letter-spacing="1">
+              <text x="4" y="16">執行層 WRITE</text>
+              <text x="348" y="16">儲存層 SQLITE</text>
+              <text x="664" y="16">讀取層 READ</text>
+            </g>
+            <g class="band">
+              <line x1="0" y1="24" x2="860" y2="24"/>
+              <line x1="330" y1="24" x2="330" y2="340"/>
+              <line x1="648" y1="24" x2="648" y2="340"/>
+            </g>
+
+            <!-- writers -->
+            <rect class="box" x="6" y="52" width="290" height="52"/>
+            <text class="f-ink" x="20" y="74" font-size="12">bin/sk-exec-lib:751</text>
+            <text class="f-ink3 t-body" x="20" y="92" font-size="11">13 支排程 agent 每次執行後寫一列</text>
+
+            <rect class="box" x="6" y="168" width="290" height="52"/>
+            <text class="f-ink" x="20" y="190" font-size="12">bin/sk-token-snapshot</text>
+            <text class="f-ink3 t-body" x="20" y="208" font-size="11">每日結算 token 用量</text>
+
+            <rect class="box" x="6" y="266" width="290" height="52"/>
+            <text class="f-ink" x="20" y="288" font-size="12">agents → reports/*.md</text>
+            <text class="f-ink3 t-body" x="20" y="306" font-size="11">檔案，不進 DB</text>
+
+            <!-- store A: the one that is written -->
+            <ellipse class="cyl-d" cx="480" cy="62" rx="76" ry="11"/>
+            <path class="cyl-d" d="M404,62 L404,118 A76,11 0 0,0 556,118 L556,62"/>
+            <text class="f-d" x="480" y="88" text-anchor="middle" font-size="12">sk-dashboard.db</text>
+            <text class="f-d" x="480" y="106" text-anchor="middle" font-size="11">agent_runs · 229 列</text>
+
+            <!-- store B: the one that is read -->
+            <ellipse class="cyl-bad" cx="480" cy="178" rx="76" ry="11"/>
+            <path class="cyl-bad" d="M404,178 L404,248 A76,11 0 0,0 556,248 L556,178"/>
+            <text class="f-bad" x="480" y="204" text-anchor="middle" font-size="12">rivendell.db</text>
+            <text class="f-bad" x="480" y="221" text-anchor="middle" font-size="11">agent_runs · 0 列</text>
+            <text class="f-ink3" x="480" y="238" text-anchor="middle" font-size="10">token_usage · 26 列</text>
+
+            <!-- readers -->
+            <rect class="box" x="678" y="92" width="176" height="56"/>
+            <text class="f-ink" x="692" y="114" font-size="12">dashboard api</text>
+            <text class="f-ink3" x="692" y="132" font-size="11">:8000</text>
+
+            <rect class="box" x="678" y="192" width="176" height="56"/>
+            <text class="f-ink" x="692" y="214" font-size="12">dashboard web</text>
+            <text class="f-ink3" x="692" y="232" font-size="11">:3000</text>
+
+            <!-- write edges -->
+            <path class="e-wide" d="M296,78 L398,84" marker-end="url(#a-ok)"/>
+            <text class="f-ink3" x="336" y="66" text-anchor="middle" font-size="10">INSERT</text>
+
+            <path class="e-wide" d="M296,194 L398,200" marker-end="url(#a-ok)"/>
+            <text class="f-ink3" x="338" y="184" text-anchor="middle" font-size="10">UPSERT</text>
+
+            <!-- broken read edge -->
+            <path class="e-bad-wide" d="M674,120 L560,196" marker-end="url(#a-bad)"/>
+            <text class="f-bad" x="622" y="146" text-anchor="middle" font-size="10">SELECT agent_runs</text>
+            <text class="f-bad" x="620" y="162" text-anchor="middle" font-size="10">dashboard/lib/db.py:6</text>
+
+            <!-- the edge that does not exist -->
+            <path class="e-none" d="M556,92 L676,110"/>
+            <text class="f-ink3 t-body" x="612" y="86" text-anchor="middle" font-size="11">這條邊不存在</text>
+
+            <!-- api to web -->
+            <path class="e-wide" d="M766,150 L766,188" marker-end="url(#a-ok)"/>
+            <text class="f-ink3" x="790" y="174" font-size="10">JSON</text>
+
+            <!-- outcome -->
+            <rect class="box-bad" x="678" y="276" width="176" height="46"/>
+            <text class="f-bad t-body" x="766" y="296" text-anchor="middle" font-size="12">畫面顯示「沒有執行紀錄」</text>
+            <text class="f-bad" x="766" y="313" text-anchor="middle" font-size="10">/runs 回傳 []</text>
+            <path class="e-bad-solid" d="M766,250 L766,270" marker-end="url(#a-bad)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i class="solid"></i> 實際在跑的邊</span>
+        <span><i class="broken"></i> 讀到空表 / 壞掉的邊</span>
+      </div>
+
+      <div class="evidence">
+        <div class="evidence-hd">實查證據 · 2026-09-17 本機</div>
+        <ul>
+          <li>寫入端 <code>bin/sk-exec-lib:751</code>：<code>db_path=".../dashboard/data/sk-dashboard.db"</code></li>
+          <li>讀取端 <code>dashboard/lib/db.py:6</code>：<code>DB_PATH = ... / "data" / "rivendell.db"</code></li>
+          <li>同一個資料夾下兩個檔名：<code>sk-dashboard.db</code> 的 <code>agent_runs</code> 有 229 列，<code>rivendell.db</code> 的同名表 0 列</li>
+          <li>這條裂縫已被每週 retro 連續點名 6 個週期（W29、W31–W34、W36），修法明確（改一行檔名），至今未動</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <p>
+          <strong>重點不是這個 bug，是它為什麼活得下來。</strong>
+          功能關係圖上，「執行 agent」和「顯示執行紀錄」兩個功能之間有一條漂亮的邊，
+          測試綠燈、log 乾淨、畫面正常渲染 —— 它只是誠實地顯示 0。
+          要看見這條裂縫，必須把節點換成資料實體，問「這張表到底有沒有人在讀」。
+          這就是 Jack 那句「一般的 workflow 還不夠」的完整版本。
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="colophon">
+    <p>
+      圖 1 的分層規格出自 <code>skills/qa/qa-dataflow/references/diagram-spec.md</code>；
+      圖 2 的鏈路出自 <code>skills/workflow/dev-process-gate/SKILL.md</code>；
+      圖 3 的數字由 125 份 SKILL.md frontmatter 即時統計；
+      圖 4 為本機實查，非引用文件宣稱。
+    </p>
+    <p>
+      一張圖只解一個問題 —— 這四張刻意不合併。
+    </p>
+  </footer>
+
+</div>
