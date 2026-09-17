@@ -12,6 +12,22 @@
       "matcher": "Edit|Write|Bash",
       "command": "~/.claude/skills/qa-dataflow/scripts/dataflow-gate-hook.sh",
       "why": "Migration writes are blocked while the repo's qa-dataflow function map is older than 30 days. Escape: SK_SKIP_DATAFLOW_GATE=1 or .dataflow-gate-off"
+    },
+    {
+      "event": "Stop",
+      "command": "~/.claude/skills/context-journal/scripts/journal-stop-hook.sh",
+      "why": "context-journal: append this turn (request / git delta / summary) to ~/.claude/session-logs/<project>/<session>.md so compaction and session handoff are lossless."
+    },
+    {
+      "event": "SessionStart",
+      "matcher": "startup|resume|compact",
+      "command": "~/.claude/skills/context-journal/scripts/journal-sessionstart-hook.sh",
+      "why": "context-journal: re-inject the work-log tail after compact/resume, and inject a fresh HANDOFF.md on startup so 'close this session, open a new one' keeps continuity."
+    },
+    {
+      "event": "UserPromptSubmit",
+      "command": "~/.claude/skills/context-journal/scripts/journal-compact-reminder-hook.sh",
+      "why": "context-journal: two-tier context nudge — over .compact-threshold suggest /compact, over .restart-threshold suggest handoff + a fresh session. Tunable via ~/.claude/session-logs/.*-threshold."
     }
   ]
 }

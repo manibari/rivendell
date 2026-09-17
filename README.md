@@ -119,7 +119,7 @@ as release notes.
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
-| **context-journal** | `/context-journal` + hook | 每回合自動追加工作日誌到磁碟，讓 /compact 無損：操作/決策紀錄存在 context 之外、compact 後自動注回、context 超過門檻自動提醒壓縮 |
+| **context-journal** | `/context-journal` + hook | 每回合自動追加工作日誌到磁碟，讓回收 context 無損：紀錄存在 context 之外、compact 後自動注回；兩層門檻提醒 —— 先建議 /compact，更肥則建議產交接單、關掉 session 另開（新 session 自動吃交接單） |
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
 | **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |

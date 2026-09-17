@@ -120,6 +120,18 @@
     {
       "phrase": "模組怎麼拆",
       "expect": "system-design"
+    },
+    {
+      "phrase": "提醒我關閉 session",
+      "expect": "context-journal"
+    },
+    {
+      "phrase": "換手接續",
+      "expect": "context-journal"
+    },
+    {
+      "phrase": "交接單",
+      "expect": "context-journal"
     }
   ]
 }
