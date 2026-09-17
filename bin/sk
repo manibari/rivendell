@@ -543,7 +543,8 @@ hooks = settings.setdefault("hooks", {})
 
 missing, present, unreadable = [], [], []
 for want in manifest["hooks"]:
-    event, matcher, cmd = want["event"], want["matcher"], want["command"]
+    # matcher is optional: Stop / UserPromptSubmit / SessionEnd take no matcher.
+    event, matcher, cmd = want["event"], want.get("matcher", ""), want["command"]
     entries = hooks.setdefault(event, [])
     found = any(h.get("command") == cmd for e in entries for h in e.get("hooks", []))
     (present if found else missing).append(want)
@@ -553,20 +554,20 @@ for want in manifest["hooks"]:
 
 if action == "install" and missing:
     for want in missing:
-        hooks.setdefault(want["event"], []).append(
-            {"matcher": want["matcher"],
-             "hooks": [{"type": "command", "command": want["command"]}]}
-        )
+        entry = {"hooks": [{"type": "command", "command": want["command"]}]}
+        if want.get("matcher"):
+            entry = {"matcher": want["matcher"], **entry}
+        hooks.setdefault(want["event"], []).append(entry)
     with open(settings_path, "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
         f.write("\n")
     print(f"  installed {len(missing)} hook(s); restart Claude Code to load them")
     for w in missing:
-        print(f"    + {w['event']} {w['matcher']} -> {w['command']}")
+        print(f"    + {w['event']} {w.get('matcher') or '-'} -> {w['command']}")
 elif missing:
     print(f"  {len(missing)} hook(s) NOT registered — run: sk hooks install")
     for w in missing:
-        print(f"    - {w['event']} {w['matcher']} -> {w['command']}")
+        print(f"    - {w['event']} {w.get('matcher') or '-'} -> {w['command']}")
 else:
     print(f"  all {len(present)} manifest hook(s) registered")
 
