@@ -1,0 +1,571 @@
+<title>可觀測性資料層 SA/SD</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #EFF2F3;
+    --surface: #FFFFFF;
+    --surface-2: #E4E9EB;
+    --ink: #16232B;
+    --ink-2: #566B75;
+    --ink-3: #8397A0;
+    --rule: #C9D4D8;
+    --rule-soft: #DDE4E7;
+    --mark: #A8431C;
+    --ok: #276B5C;
+    --ok-bg: #D9E8E3;
+    --half: #96680F;
+    --half-bg: #EFE4C9;
+    --bad: #A8332A;
+    --bad-bg: #F2DCD9;
+    --font-display: "Archivo", "PingFang TC", "Noto Sans TC", sans-serif;
+    --font-body: "Noto Sans TC", "PingFang TC", "Helvetica Neue", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E161B; --surface: #16222A; --surface-2: #1E2D36;
+      --ink: #DFE7EA; --ink-2: #93A6AF; --ink-3: #6B7F89;
+      --rule: #2B3B45; --rule-soft: #22313A; --mark: #DE7C4E;
+      --ok: #4CB59A; --ok-bg: #16302B;
+      --half: #D2A23C; --half-bg: #322A15;
+      --bad: #E87A68; --bad-bg: #331A17;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0E161B; --surface: #16222A; --surface-2: #1E2D36;
+    --ink: #DFE7EA; --ink-2: #93A6AF; --ink-3: #6B7F89;
+    --rule: #2B3B45; --rule-soft: #22313A; --mark: #DE7C4E;
+    --ok: #4CB59A; --ok-bg: #16302B;
+    --half: #D2A23C; --half-bg: #322A15;
+    --bad: #E87A68; --bad-bg: #331A17;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--font-body); font-size: 15px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding-inline: 20px; }
+
+  .masthead { padding-block: 48px 30px; border-bottom: 2px solid var(--ink); }
+
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+    margin: 0 0 12px;
+  }
+
+  h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(27px, 5vw, 40px); line-height: 1.14;
+    letter-spacing: -.015em; margin: 0 0 16px; text-wrap: balance;
+  }
+
+  .standfirst { max-width: 64ch; color: var(--ink-2); margin: 0; font-size: 15.5px; }
+  .standfirst strong { color: var(--ink); font-weight: 500; }
+
+  .tier {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 20px; padding: 5px 12px;
+    background: var(--bad-bg); color: var(--bad);
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 500;
+    letter-spacing: .06em;
+  }
+
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 18px;
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3);
+  }
+  .meta-row b { color: var(--ink-2); font-weight: 500; }
+
+  section { padding-block: 38px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+
+  .sec-no {
+    display: inline-block; font-family: var(--font-mono); font-size: 11px;
+    font-weight: 500; letter-spacing: .12em; color: var(--mark); margin-bottom: 7px;
+  }
+
+  h2 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(20px, 3vw, 25px); line-height: 1.28;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--font-display); font-weight: 600; font-size: 16px;
+    margin: 28px 0 10px; color: var(--ink);
+  }
+
+  p { margin: 0 0 14px; max-width: 72ch; }
+  p:last-child { margin-bottom: 0; }
+
+  .lede { color: var(--ink-2); font-size: 14.5px; }
+  .lede b { color: var(--ink); font-weight: 500; }
+
+  .tbl-scroll { overflow-x: auto; margin: 16px 0; }
+
+  table {
+    width: 100%; border-collapse: collapse; background: var(--surface);
+    font-size: 13.5px; min-width: 560px; font-variant-numeric: tabular-nums;
+  }
+
+  th, td { padding: 9px 13px; text-align: left; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+
+  thead th {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+    border-bottom: 1px solid var(--rule); white-space: nowrap;
+  }
+
+  td.num { text-align: right; font-family: var(--font-mono); }
+  tbody tr:hover { background: var(--surface-2); }
+
+  .state {
+    display: inline-block; font-family: var(--font-mono); font-size: 11px;
+    font-weight: 500; padding: 1px 7px; white-space: nowrap;
+  }
+  .s-ok   { background: var(--ok-bg);   color: var(--ok); }
+  .s-half { background: var(--half-bg); color: var(--half); }
+  .s-bad  { background: var(--bad-bg);  color: var(--bad); }
+
+  code {
+    font-family: var(--font-mono); font-size: .87em; background: var(--surface-2);
+    padding: 1px 5px; border-radius: 2px; word-break: break-word;
+  }
+
+  pre.mermaid {
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 18px; margin: 18px 0; overflow-x: auto; text-align: center;
+  }
+
+  figcaption {
+    font-size: 13px; color: var(--ink-3); margin-top: -6px; margin-bottom: 20px;
+    max-width: 72ch;
+  }
+  figcaption b { color: var(--ink-2); font-weight: 500; }
+
+  figure { margin: 0; }
+
+  .callout {
+    margin: 18px 0; background: var(--surface-2);
+    border-left: 3px solid var(--mark); padding: 15px 19px; font-size: 14.5px;
+  }
+  .callout p { margin: 0; }
+  .callout p + p { margin-top: 8px; }
+
+  .delta {
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 15px 18px; margin: 16px 0; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.85;
+  }
+  .delta .add { color: var(--ok); }
+  .delta .chg { color: var(--half); }
+  .delta .del { color: var(--bad); }
+
+  ul { margin: 0 0 14px; padding-left: 22px; max-width: 72ch; }
+  li { margin-bottom: 6px; }
+
+  .colophon {
+    padding-block: 28px 52px; border-top: 2px solid var(--ink); margin-top: 10px;
+    font-size: 13px; color: var(--ink-2);
+  }
+  .colophon p { margin: 0 0 8px; }
+
+  @media (max-width: 520px) {
+    .wrap { padding-inline: 16px; }
+    .masthead { padding-block: 32px 24px; }
+    section { padding-block: 30px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  :focus-visible { outline: 2px solid var(--mark); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">SA / SD · rivendell · 2026-09-18</p>
+    <h1>可觀測性資料層</h1>
+    <p class="standfirst">
+      把「agent 跑了什麼、花了多少、結果如何」這條資料鏈收斂成單一 store、單一讀取路徑，
+      並讓<strong>「讀不到」變成會叫的失敗，而不是 0</strong>。
+    </p>
+    <span class="tier">檔位 FULL — 三條判準全中</span>
+    <div class="meta-row">
+      <span><b>資料寫入</b> agent_runs 換 DB 檔</span>
+      <span><b>跨模組傳遞</b> executor → store → API → web</span>
+      <span><b>新增 store</b> liveness_probe</span>
+    </div>
+  </header>
+
+  <main>
+
+    <section>
+      <span class="sec-no">起因</span>
+      <h2>三個安靜的失敗，形狀完全相同</h2>
+      <p class="lede">
+        2026-09-17 夜間連續撞到三條。共同形狀：<b>寫入端演進了、讀取端留在原地</b>，
+        而失敗表現為一個看起來合理的數字，不是錯誤。
+      </p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>#</th><th>root cause</th><th>證據</th><th>狀態</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>R1</code></td>
+              <td><code>agent_runs</code> 寫 <code>sk-dashboard.db</code>、讀 <code>rivendell.db</code>，同資料夾不同檔名</td>
+              <td><code>sk-exec-lib:751</code> vs <code>db.py:6</code>；讀取端 0 列、寫入端 233 列</td>
+              <td><span class="state s-ok">已修</span></td>
+            </tr>
+            <tr>
+              <td><code>R2</code></td>
+              <td><code>sk-registry-gen</code> 因系統 python3 無 PyYAML 失敗，錯誤被 <code>2&gt;/dev/null</code> 吞掉後回退到不存在的快取</td>
+              <td><code>sk check ssot</code> 報 19 drift、<code>agents</code> 報 13，皆為假</td>
+              <td><span class="state s-ok">已修</span></td>
+            </tr>
+            <tr>
+              <td><code>R3</code></td>
+              <td><code>next start</code> 服務預建 <code>.next</code>，陳舊偵測只在服務啟動時跑</td>
+              <td><code>.build-complete</code> 停在 08-21，36 個來源檔比它新</td>
+              <td><span class="state s-half">已重建，機制未建</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <span class="sec-no">§2</span>
+      <h2>資料模型</h2>
+      <p class="lede">
+        實查來源 <code>sqlite3 dashboard/data/rivendell.db .schema</code>。單一 SQLite 檔，WAL 模式，五張表。
+      </p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>表</th><th>列數</th><th>寫入端</th><th>讀取端</th><th>狀態</th></tr></thead>
+          <tbody>
+            <tr><td><code>agent_runs</code></td><td class="num">233</td><td><code>sk-exec-lib</code></td><td><code>db.py</code> → API</td><td><span class="state s-ok">活</span></td></tr>
+            <tr><td><code>token_usage</code></td><td class="num">27</td><td><code>tokens.py:194</code></td><td><code>tokens.py</code> → API</td><td><span class="state s-ok">活</span></td></tr>
+            <tr><td><code>token_project_usage</code></td><td class="num">68</td><td><code>tokens.py:236</code></td><td><code>tokens.py</code> → API</td><td><span class="state s-ok">活</span></td></tr>
+            <tr><td><code>jsonl_file_cache</code></td><td class="num">44</td><td><code>tokens.py:671</code></td><td><code>tokens.py</code></td><td><span class="state s-ok">活（快取）</span></td></tr>
+            <tr><td><code>settings</code></td><td class="num">0</td><td>無</td><td>無</td><td><span class="state s-bad">死表</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="delta">
+<span class="chg">~</span> agent_runs        DB 檔 sk-dashboard.db → rivendell.db（已執行，233 列已遷移）
+<span class="add">+</span> agent_runs.role   TEXT nullable   寫：sk-exec-lib   讀：lib/roles.py
+<span class="add">+</span> agent_runs.job    TEXT nullable   寫：sk-exec-lib   讀：lib/roles.py
+<span class="add">+</span> agent_runs.stage  TEXT nullable   寫：sk-exec-lib   讀：lib/roles.py
+<span class="del">-</span> settings          待決：刪除或啟用（Q1）
+<span class="add">+</span> liveness_probe    新表：probe PK / checked_at / ok / detail
+      </div>
+
+      <p>
+        <strong><code>agent_runs</code> 沒有任何索引，而且刻意不加。</strong>
+        查詢模式是 <code>WHERE agent_name=? ORDER BY started_at DESC</code>，233 列全表掃描無感。
+        用列數當證據推回過度設計；超過 ~50k 列再加 <code>(agent_name, started_at DESC)</code>。
+      </p>
+
+      <figure>
+        <pre class="mermaid">
+erDiagram
+    agent_runs {
+        int id PK
+        text agent_name "查詢鍵"
+        text project
+        text started_at "排序鍵"
+        int exit_code
+        text report_path "指向 reports/*.md"
+        text role_job_stage "Task object 三欄"
+    }
+    token_usage {
+        text date PK
+        int tokens_total
+        real cost_usd
+    }
+    token_project_usage {
+        text date PK "複合 PK"
+        text project PK
+        real cost_usd
+    }
+    jsonl_file_cache {
+        text path PK "~/.claude/projects/*.jsonl"
+        real mtime "失效判準"
+        text agg "預算結果"
+    }
+    liveness_probe {
+        text probe PK
+        text checked_at
+        int ok
+        text detail
+    }
+    token_usage ||--o{ token_project_usage : "同 date 拆 project"
+    jsonl_file_cache ||--o{ token_usage : "彙總來源"
+        </pre>
+        <figcaption>
+          <b>這張圖回答：哪些實體存在、誰跟誰有關係。</b>
+          注意 <code>agent_runs</code> 與 token 三表<b>沒有外鍵關係</b>——它們是兩條獨立的資料鏈，
+          只是共用一個檔案。畫在一起是因為同一個 store，不是同一個領域。
+        </figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <span class="sec-no">§3</span>
+      <h2>模組職責邊界</h2>
+      <p class="lede">
+        「不負責」那欄是這節的全部價值——它是日後爭議「這段邏輯該放哪」的唯一裁判。
+      </p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>模組</th><th>負責</th><th>不負責</th></tr></thead>
+          <tbody>
+            <tr><td><code>sk-agent-run</code></td><td>啟動一次執行、設定環境</td><td><b>不記錄結果</b>（那是 sk-exec-lib）</td></tr>
+            <tr><td><code>sk-exec-lib</code></td><td>把一次執行寫成 agent_runs 一列</td><td><b>不判斷成功的語意</b>（只存 exit_code）；不寫 reports/</td></tr>
+            <tr><td><code>sk-registry-gen</code></td><td>registry → agents.conf 格式</td><td>不安裝 plist；<b>不判斷 drift</b></td></tr>
+            <tr><td><code>sk-setup-agents</code></td><td>registry → launchd plist</td><td>不產生 registry；不執行 agent</td></tr>
+            <tr><td><code>lib/db.py</code></td><td>agent_runs 的連線與查詢</td><td><b>不碰 token 三表</b></td></tr>
+            <tr><td><code>lib/tokens.py</code></td><td>由 JSONL 算 token、快取、寫三表</td><td><b>不讀 agent_runs</b></td></tr>
+            <tr><td><code>lib/roles.py</code></td><td>角色 × PDCA 彙總</td><td><b>不寫任何表</b>（唯讀旁掛）</td></tr>
+            <tr><td><code>api/server.py</code></td><td>39 個端點、序列化</td><td><b>不含業務邏輯</b>；不寫 DB</td></tr>
+            <tr><td><code>sk check</code></td><td>對帳：宣稱 vs 實際</td><td><b>不修復</b>（只報告 + exit code）</td></tr>
+            <tr><td><code>sk-watchdog</code></td><td>服務存活重啟</td><td><b>不管內容是否新鮮</b>（R3 的缺口）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <p>
+          <strong>邊界爭議的裁判：</strong><code>sk-exec-lib</code> 不負責判斷語意——
+          這就是為什麼 <code>today_cost</code> 顯示 <code>0.0</code> 卻不算說謊（<code>cost_usd</code> 確實沒人寫）。
+          要改的是<b>新增一個寫入端</b>，不是讓讀取端去猜。
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <span class="sec-no">§5</span>
+      <h2>關鍵流程：一次執行的記錄與讀出</h2>
+      <p class="lede">只畫會出錯的那條。兩個 <code>alt</code> 區塊就是 R1 的實際失敗路徑。</p>
+      <figure>
+        <pre class="mermaid">
+sequenceDiagram
+    participant L as launchd
+    participant R as sk-agent-run
+    participant E as sk-exec-lib
+    participant D as rivendell.db
+    participant A as api:8000
+    participant W as web:3000
+
+    L->>R: 排程觸發 (label)
+    activate R
+    R->>R: 執行 agent 本體
+    R-->>E: record_run(exit_code, paths)
+    deactivate R
+    activate E
+    alt 寫入成功
+        E->>D: INSERT agent_runs
+        D-->>E: ok
+    else 寫入失敗（現況：靜默）
+        E-->>E: 吞掉錯誤，agent 仍 exit 0
+        Note over E,D: 契約修正：必須 stderr + 非 0 exit
+    end
+    deactivate E
+
+    W->>A: GET /api/agents/{label}/runs
+    activate A
+    A->>D: SELECT WHERE agent_name=?
+    alt store 可讀且有資料
+        D-->>A: rows
+        A-->>W: 200 [rows]
+    else store 可讀但無此 agent
+        D-->>A: 空結果
+        A-->>W: 200 []
+    else store 不可讀（R1 的實際路徑）
+        D-->>A: 空表 / 檔案不存在
+        A-->>W: 200 []
+        Note over A,W: 與「查無資料」無法分辨 — 潛伏 6 週的原因
+    end
+    deactivate A
+        </pre>
+        <figcaption>
+          <b>這張圖回答：一次執行的結果怎麼從 launchd 走到畫面上，以及哪一步會無聲地斷掉。</b>
+          第三個 <code>alt</code> 分支與第二個回傳同一個東西——這就是契約缺口。
+        </figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <span class="sec-no">§6</span>
+      <h2>功能關係圖（target）</h2>
+      <p class="lede">
+        節點是<b>功能</b>，邊是<b>傳遞的識別碼或資料形狀</b>。依 <code>qa-dataflow/references/diagram-spec.md</code>
+        同一份規格，畫的是設計意圖（target），之後 <code>/qa-dataflow</code> 會拿同一規格的 actual 圖來對帳。
+      </p>
+      <figure>
+        <pre class="mermaid">
+flowchart LR
+    subgraph SSOT["宣告層 — 帶進來的是排程意圖，執行結果不隨行"]
+        REG["agent registry<br/>agents/registry/*.md"]
+        GEN["sk-registry-gen"]
+        SETUP["sk-setup-agents"]
+        PLIST["launchd plist"]
+    end
+
+    subgraph EXEC["執行層"]
+        LD["launchd 觸發"]
+        RUN["sk-agent-run"]
+        BODY["agent 本體 13 支"]
+    end
+
+    subgraph STORE["落點層 — 三種不同性質，只有第一個能被查詢"]
+        DB[("agent_runs 233 列")]
+        RPT[/"reports/*.md"/]
+        LOG[/"logs/*.log"/]
+        JSONL[("~/.claude/projects/*.jsonl")]
+    end
+
+    subgraph AGG["匯總層"]
+        LDB["lib/db.py"]
+        LTOK["lib/tokens.py"]
+        LROLE["lib/roles.py 唯讀旁掛"]
+        TOKTBL[("token 三表")]
+    end
+
+    subgraph SERVE["呈現層"]
+        API["api:8000 · 39 端點"]
+        WEB["web:3000"]
+    end
+
+    subgraph RECON["對帳層 — 終點是人做了什麼"]
+        CHK["sk check<br/>ssot / agents / liveness"]
+        RETRO["workflow-retro"]
+        HUMAN(["人改 code"])
+    end
+
+    REG -->|"label, entry, schedule"| GEN
+    GEN -->|"label · project_rel"| SETUP
+    SETUP -->|"label"| PLIST
+    PLIST -->|"label"| LD
+    LD -->|"label"| RUN
+    RUN --> BODY
+    BODY -->|"exit_code, 產出路徑"| RUN
+    RUN -->|"agent_name, started_at,<br/>exit_code, report_path"| DB
+    BODY -->|"agent-YYYY-MM-DD-host.md"| RPT
+    RUN -->|"stdout / stderr"| LOG
+
+    JSONL -->|"session 逐筆"| LTOK
+    LTOK -->|"date · (date,project)"| TOKTBL
+    DB -->|"agent_name 查詢"| LDB
+    DB -.->|"唯讀"| LROLE
+    RPT -.->|"唯讀"| LROLE
+
+    LDB -->|"rows"| API
+    TOKTBL --> LTOK
+    LTOK -->|"彙總"| API
+    LROLE -->|"角色 × PDCA"| API
+    RPT -->|"檔案內容"| API
+    API -->|"JSON"| WEB
+
+    DB --> CHK
+    REG --> CHK
+    WEB --> CHK
+    CHK -->|"紅燈 + 修法"| HUMAN
+    DB --> RETRO
+    RPT --> RETRO
+    RETRO -->|"workflow-retro-*.md 含 action"| HUMAN
+    HUMAN -.->|"回頭路：改 registry / 改 code"| REG
+
+    SET[("settings 0 列")]
+    SET -.->|"無讀端 無寫端"| DEAD(["死表 — 待決"])
+        </pre>
+        <figcaption>
+          <b>這張圖要 argue 的：<code>agent_runs</code> 有一個寫入端、四個讀取端</b>
+          （<code>db.py</code>、<code>roles.py</code>、<code>sk check</code>、<code>workflow-retro</code>）。
+          所以換檔名是單點、跟隨是四點——R1 就是只改了一半的相反情況。
+          <code>RETRO → HUMAN</code> 那條虛線是目前<b>唯一沒有閘門的回頭路</b>。
+        </figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <span class="sec-no">§7</span>
+      <h2>反證關卡：三態，不是二態</h2>
+      <p class="lede">
+        每個閘門寫一句「它實際擋得住什麼」。<code>◐</code> 那態最有用——「只擋一半」是事後抽查最容易漏掉的狀態。
+      </p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>關卡</th><th>實際</th><th>怎麼被跨過去</th></tr></thead>
+          <tbody>
+            <tr><td><code>sk check</code> frontmatter 閘門</td><td><span class="state s-ok">✓ 有防護</span></td><td>無（負向測試過）</td></tr>
+            <tr><td><code>sk check</code> registry 可讀性</td><td><span class="state s-ok">✓ 有防護</span></td><td>無（2026-09-18 負向測試過，text + json 兩模式皆 exit 1）</td></tr>
+            <tr><td>storyline / dataflow hook</td><td><span class="state s-half">◐ 只做一半</span></td><td>有 <code>SK_SKIP_*</code> 逃生門；且只在檔案存在時觸發</td></tr>
+            <tr><td><code>sk-watchdog</code></td><td><span class="state s-half">◐ 只做一半</span></td><td><b>只看進程活著，不看內容新鮮。</b>R3 整整一個月它每次都回報健康</td></tr>
+            <tr><td><code>agent_runs</code> 寫入失敗</td><td><span class="state s-bad">✗ 無防護</span></td><td>錯誤被吞，agent 照樣 exit 0</td></tr>
+            <tr><td>retro action 未執行</td><td><span class="state s-bad">✗ 無防護</span></td><td>產出是一個 md 檔。不執行沒有代價——實測連續 6 週 <b>0/9</b> 執行</td></tr>
+            <tr><td><code>/runs</code> 回 <code>[]</code></td><td><span class="state s-bad">✗ 無防護</span></td><td>「查無資料」與「store 不可讀」共用同一個回應</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>新增探針 —— 每一個都先有失敗才有探針</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>探針</th><th>斷言</th><th>擋得住</th></tr></thead>
+          <tbody>
+            <tr><td><code>agent_runs_readable</code></td><td><code>/runs</code> 回非空，且最新一列在 48h 內</td><td><code>R1</code></td></tr>
+            <tr><td><code>build_fresh</code></td><td><code>.build-complete</code> 不比 src / public / config 任一檔舊</td><td><code>R3</code></td></tr>
+            <tr><td><code>registry_readable</code></td><td><code>sk-registry-gen generate</code> exit 0 且輸出非空</td><td><code>R2</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p>
+          <strong>量級推回過度設計：</strong><code>agent_runs</code> 233 列、約 4 個月，年增 ~700 列；
+          13 支 agent 錯開觸發、實測無重疊；讀取者 1 個。
+          <b>2026-06 決議的 PostgreSQL 在這個量級無法用列數辯護</b>——該文件自訂的「2 個月右尺寸檢查點」已於 2026-08 到期，逾期中。
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <span class="sec-no">§8</span>
+      <h2>未決事項</h2>
+      <p class="lede">這節非空是健康的；空的通常代表沒認真想邊界。全部待 Peter 拍板。</p>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>#</th><th>問題</th><th>目前假設</th><th>什麼時候必須決定</th></tr></thead>
+          <tbody>
+            <tr><td>Q1</td><td><code>settings</code> 表 0 列無讀寫端，刪還是啟用？</td><td><code>init_db()</code> 建了沒人用的殘留</td><td>下次動 schema 時</td></tr>
+            <tr><td>Q2</td><td><code>agent_runs</code> 無唯一鍵，重試會產生兩列</td><td>可接受（重試本來就是兩次執行）</td><td>要算「成功率」之前</td></tr>
+            <tr><td>Q3</td><td>2026-06 的 PostgreSQL 決議撤回還是續行？</td><td>撤回（列數不支持）</td><td><b>已逾期</b></td></tr>
+            <tr><td>Q4</td><td>retro action 的牙齒要多硬？</td><td>超過 3 個週期未執行 → <code>sk check</code> 轉紅</td><td>實作 liveness 層時</td></tr>
+            <tr><td>Q5</td><td><code>cost_usd</code> / <code>tokens_used</code> 全 null，誰負責寫？</td><td>由 <code>sk-exec-lib</code> 執行後從 JSONL 回填</td><td><code>today_cost</code> 要有意義之前</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="colophon">
+    <p>
+      依 2026-09-18 程式碼與資料庫實查。schema 出自 <code>sqlite3 dashboard/data/rivendell.db .schema</code>；
+      端點清單出自 <code>dashboard-next/api/server.py</code>；列數為當日實測。
+    </p>
+    <p>
+      下一步：<code>/gstack-plan-eng-review</code> 審設計 → <code>/planning-with-files</code> 拆任務 →
+      實作後 <code>/qa-dataflow</code> 拿 §6 的 target 圖對照 actual。
+    </p>
+  </footer>
+
+</div>
