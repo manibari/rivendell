@@ -214,7 +214,7 @@ for agent_name in maintain harvest tester doctor; do
 done
 
 # Check for recent runs in DB
-db_path="$REPO_DIR/dashboard/data/sk-dashboard.db"
+db_path="$REPO_DIR/dashboard/data/rivendell.db"
 if [ -f "$db_path" ]; then
   for agent_name in maintain harvest; do
     last_run=$(python3 -c "

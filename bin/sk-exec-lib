@@ -748,7 +748,12 @@ _sk_exec_record_run() {
   local commit_sha="${7:-}" files_changed="${8:-}"
   local qa_passed="${9:-}" branch_name="${10:-}" pr_url="${11:-}"
 
-  local db_path="${SK_EXEC_REPO_DIR}/dashboard/data/sk-dashboard.db"
+  # Single store. This used to write sk-dashboard.db while dashboard/lib/db.py
+  # read rivendell.db — same folder, same table name, different file — so every
+  # run landed somewhere the API never looked and the dashboard reported zero
+  # without erroring. Both sides now point here; the 233 rows written under the
+  # old name were migrated in 2026-09-18.
+  local db_path="${SK_EXEC_REPO_DIR}/dashboard/data/rivendell.db"
 
   # Ensure data dir exists
   mkdir -p "$(dirname "$db_path")"

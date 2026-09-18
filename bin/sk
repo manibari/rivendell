@@ -3535,14 +3535,50 @@ PROJECTS_JSON_FILE="$HOME/.claude/projects.json"
 # copy is a gitignored cache that goes stale once the registry changes, so drift
 # checks must compare against a FRESH generation, not the stale file. Best-effort:
 # on generation failure, fall back to whatever is on disk.
+# Set when generation fails, so callers report "SSOT unreadable" instead of
+# diffing against a file that is stale, empty, or absent. The old version
+# swallowed the error and fell back to whatever was on disk: on a machine where
+# agents.conf had never been generated, that meant "0 agents defined" and every
+# live launchd agent was reported as drift. A wrong number nobody can act on is
+# worse than a check that admits it could not run.
+AGENTS_CONF_GEN_ERR=""
+
 _ensure_agents_conf() {
-  local tmp
+  local tmp err py
+  AGENTS_CONF_GEN_ERR=""
   tmp="$(mktemp -t sk-agents-conf.XXXXXX)" || return 0
-  if python3 "$REPO_DIR/bin/sk-registry-gen" generate > "$tmp" 2>/dev/null; then
-    AGENTS_CONF_FILE="$tmp"
+  err="$tmp.err"
+  # The registry parser needs PyYAML. The system python3 usually lacks it; the
+  # api venv has it. Try each in turn rather than assuming either one.
+  for py in "$REPO_DIR/dashboard-next/api/.venv/bin/python" "$(command -v python3 || true)"; do
+    [ -n "$py" ] && [ -x "$py" ] || continue
+    if "$py" "$REPO_DIR/bin/sk-registry-gen" generate > "$tmp" 2>"$err"; then
+      AGENTS_CONF_FILE="$tmp"
+      rm -f "$err"
+      return 0
+    fi
+  done
+  AGENTS_CONF_GEN_ERR="$(tail -1 "$err" 2>/dev/null)"
+  [ -z "$AGENTS_CONF_GEN_ERR" ] && AGENTS_CONF_GEN_ERR="sk-registry-gen produced no output"
+  rm -f "$tmp" "$err"
+}
+
+# Report that the registry could not be read, in the caller's output mode, and
+# return 1. Printed even under --quiet: an unreadable SSOT is exactly the case
+# --quiet exists to surface.
+_agents_conf_unreadable() {
+  local mode="$1" title="$2"
+  if [ "$mode" = "json" ]; then
+    printf '{"error":"agents_registry_unreadable","detail":%s}\n' \
+      "$(printf '%s' "$AGENTS_CONF_GEN_ERR" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')"
   else
-    rm -f "$tmp"
+    echo -e "${CYAN}=== $title ===${NC}"
+    echo -e "  ${RED}agent registry unreadable — drift NOT computed${NC}"
+    echo "  SoT:    $REPO_DIR/agents/registry/*.md"
+    echo "  failed: $AGENTS_CONF_GEN_ERR"
+    echo "  fix:    $REPO_DIR/dashboard-next/api/.venv/bin/pip install pyyaml"
   fi
+  return 1
 }
 COMPOSE_FILE="$REPO_DIR/docker-compose.yml"
 ACTIVE_PROFILE_FILE="$REPO_DIR/.active-profile"
@@ -3561,6 +3597,7 @@ cmd_check_ssot() {
     esac
   done
   _ensure_agents_conf   # compare against a fresh generation, not the stale cache
+  [ -n "$AGENTS_CONF_GEN_ERR" ] && { _agents_conf_unreadable "$mode" "SSOT Drift Check"; return 1; }
 
   # Extract (project, agent_short_name) pairs from agents.conf labels
   # matching `com.sk.agent.<project>.<name>`. Service-style labels like
@@ -3955,6 +3992,7 @@ cmd_check_agents() {
     esac
   done
   _ensure_agents_conf   # compare against a fresh generation, not the stale cache
+  [ -n "$AGENTS_CONF_GEN_ERR" ] && { _agents_conf_unreadable "$mode" "Agent Schedule Health"; return 1; }
 
   # Active agent labels declared in agents.conf (skip comments/blanks).
   #
