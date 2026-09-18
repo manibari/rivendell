@@ -1,0 +1,318 @@
+<title>Rivendell 登記處現況</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --ground:#EFF2F3; --surface:#FFFFFF; --surface-2:#E4E9EB;
+    --ink:#16232B; --ink-2:#566B75; --ink-3:#8397A0;
+    --rule:#C9D4D8; --rule-soft:#DDE4E7; --mark:#A8431C;
+    --ok:#276B5C; --ok-bg:#D9E8E3;
+    --warn:#96680F; --warn-bg:#EFE4C9;
+    --bad:#A8332A; --bad-bg:#F2DCD9;
+    --font-display:"Archivo","PingFang TC","Noto Sans TC",sans-serif;
+    --font-body:"Noto Sans TC","PingFang TC","Helvetica Neue",sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --ground:#0E161B; --surface:#16222A; --surface-2:#1E2D36;
+    --ink:#DFE7EA; --ink-2:#93A6AF; --ink-3:#6B7F89;
+    --rule:#2B3B45; --rule-soft:#22313A; --mark:#DE7C4E;
+    --ok:#4CB59A; --ok-bg:#16302B; --warn:#D2A23C; --warn-bg:#322A15;
+    --bad:#E87A68; --bad-bg:#331A17;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#0E161B; --surface:#16222A; --surface-2:#1E2D36;
+    --ink:#DFE7EA; --ink-2:#93A6AF; --ink-3:#6B7F89;
+    --rule:#2B3B45; --rule-soft:#22313A; --mark:#DE7C4E;
+    --ok:#4CB59A; --ok-bg:#16302B; --warn:#D2A23C; --warn-bg:#322A15;
+    --bad:#E87A68; --bad-bg:#331A17;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+
+  .masthead{padding-block:46px 28px;border-bottom:2px solid var(--ink)}
+  .eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px}
+  h1{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5vw,42px);line-height:1.12;letter-spacing:-.015em;margin:0 0 16px;text-wrap:balance}
+  .standfirst{max-width:66ch;color:var(--ink-2);margin:0;font-size:15.5px}
+  .standfirst strong{color:var(--ink);font-weight:500}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-family:var(--font-mono);font-size:11px;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:9px;height:9px;display:inline-block}
+  .d-ok{background:var(--ok)} .d-warn{background:var(--warn)} .d-bad{background:var(--bad)}
+
+  .figwrap{overflow-x:auto;padding-block:30px 8px}
+  .fig{min-width:980px}
+
+  .hdr{display:grid;grid-template-columns:168px 1fr 1fr 1fr;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+  .hdr div{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+  .band{display:grid;grid-template-columns:168px 1fr 1fr 1fr;gap:10px;padding-block:14px;border-bottom:1px solid var(--rule-soft);align-items:stretch}
+  .band:last-child{border-bottom:none}
+
+  .cell{background:var(--surface);border:1px solid var(--rule);padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+  .cell.none{background:var(--bad-bg);border-color:var(--bad)}
+  .cell.has{background:var(--ok-bg);border-color:var(--ok)}
+  .cell.half{background:var(--warn-bg);border-color:var(--warn)}
+
+  .name{font-family:var(--font-display);font-weight:600;font-size:16px;line-height:1.25}
+  .name small{display:block;font-family:var(--font-mono);font-size:10.5px;font-weight:400;color:var(--ink-3);margin-top:3px;letter-spacing:.04em}
+
+  .tag{align-self:flex-start;font-family:var(--font-mono);font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px}
+  .t-ok{background:var(--ok);color:var(--ground)}
+  .t-bad{background:var(--bad);color:var(--ground)}
+  .t-half{background:var(--warn);color:var(--ground)}
+
+  .path{font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--ink);word-break:break-word}
+  .note{font-size:12.5px;color:var(--ink-2);line-height:1.55}
+  .note b{color:var(--ink);font-weight:500}
+
+  .edge{font-family:var(--font-mono);font-size:10.5px;color:var(--mark);letter-spacing:.02em}
+
+  .band-label{display:flex;flex-direction:column;justify-content:center;gap:4px;padding-right:4px}
+
+  .sec{padding-block:36px;border-top:2px solid var(--ink);margin-top:26px}
+  h2{font-family:var(--font-display);font-weight:600;font-size:clamp(19px,3vw,24px);margin:0 0 14px;text-wrap:balance}
+  p{margin:0 0 14px;max-width:74ch}
+  .sec p:last-child{margin-bottom:0}
+
+  .callout{margin:18px 0;background:var(--surface-2);border-left:3px solid var(--mark);padding:15px 19px;font-size:14.5px}
+  .callout p{margin:0;max-width:none}
+  .callout p+p{margin-top:8px}
+
+  table{width:100%;border-collapse:collapse;background:var(--surface);font-size:13.5px;min-width:520px}
+  .tscroll{overflow-x:auto;margin:16px 0}
+  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  thead th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;border-bottom:1px solid var(--rule)}
+  code{font-family:var(--font-mono);font-size:.87em;background:var(--surface-2);padding:1px 5px;border-radius:2px;word-break:break-word}
+
+  .colophon{padding-block:26px 50px;border-top:1px solid var(--rule);margin-top:22px;font-size:12.5px;color:var(--ink-2)}
+  .colophon p{margin:0 0 7px}
+
+  @media (max-width:520px){.wrap{padding-inline:16px}.masthead{padding-block:32px 22px}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  :focus-visible{outline:2px solid var(--mark);outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">actual · 2026-09-18 · 實查，非宣稱</p>
+    <h1>Rivendell 登記處現況</h1>
+    <p class="standfirst">
+      六個概念，<strong>只有兩個有登記處加 schema</strong>。其餘四個沒有 SSOT，
+      所以讀寫兩端各自寫死路徑——今晚撞到的每一個靜默失敗，都發生在紅色那幾帶。
+    </p>
+    <div class="legend">
+      <span><i class="dot d-ok"></i> 有登記處 + schema</span>
+      <span><i class="dot d-warn"></i> 半個（有機制、不完整或不在版控）</span>
+      <span><i class="dot d-bad"></i> 無登記處，路徑寫死</span>
+    </div>
+  </header>
+
+  <div class="figwrap">
+    <div class="fig">
+
+      <div class="hdr">
+        <div>概念</div>
+        <div>登記處（SSOT）</div>
+        <div>實際落點</div>
+        <div>誰讀它 · 傳遞什麼</div>
+      </div>
+
+      <!-- 1 模型 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">模型<small>AIOS slide 34</small></div>
+        </div>
+        <div class="cell none">
+          <span class="tag t-bad">無</span>
+          <div class="note">沒有任何檔案說「哪個工作用哪個模型」。模型字串直接寫在腳本裡。</div>
+        </div>
+        <div class="cell">
+          <div class="path">bin/sk<br>bin/sk-harvest-cron<br>bin/sk-workflow-retro-cron<br>&nbsp;&nbsp;→ <b>--model sonnet</b></div>
+          <div class="path">bin/sk-token-analysis-cron<br>&nbsp;&nbsp;→ <b>claude-haiku-4-5-20251001</b></div>
+        </div>
+        <div class="cell">
+          <div class="note"><b>兩種命名法並存</b>：三支用別名、一支用完整 ID。</div>
+          <div class="edge">邊：模型字串（字面值，無驗證）</div>
+          <div class="note">沒有預算上限、沒有用途對照、改模型要逐支腳本找。</div>
+        </div>
+      </div>
+
+      <!-- 2 工具 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">工具<small>AIOS slide 33</small></div>
+        </div>
+        <div class="cell half">
+          <span class="tag t-half">半個</span>
+          <div class="note"><b>39 / 125</b> 支 SKILL.md 宣告 <code>allowed-tools</code>。另外 86 支沒有。</div>
+        </div>
+        <div class="cell">
+          <div class="path">~/.claude/settings.json<br>&nbsp;&nbsp;hooks: PreToolUse · Stop<br>&nbsp;&nbsp;SessionStart · UserPromptSubmit</div>
+          <div class="path">~/.claude.json → MCP: <b>0 個</b></div>
+        </div>
+        <div class="cell">
+          <div class="note"><b>兩個落點都在 $HOME，不在任何 repo。</b>換機器就全掉。</div>
+          <div class="edge">邊：hook command 字串（指向 deploy symlink）</div>
+          <div class="note">CLAUDE.md 已記過這個坑：「global hooks 只提交了一半」。</div>
+        </div>
+      </div>
+
+      <!-- 3 提示詞 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">提示詞<small>AIOS slide 20</small></div>
+        </div>
+        <div class="cell half">
+          <span class="tag t-half">半個</span>
+          <div class="note"><code>profiles/personas</code> 存在；agent registry 的 <code>mission:</code> 欄 <b>25 支只有 2 支填</b>。</div>
+        </div>
+        <div class="cell">
+          <div class="path">skills/**/SKILL.md ×125<br>&nbsp;&nbsp;<b>檔案本身就是提示詞</b></div>
+          <div class="path">profiles/personas/</div>
+        </div>
+        <div class="cell">
+          <div class="note"><b>Dify 也沒有獨立的 prompt registry</b>——提示詞住在工作流節點裡。這一軸可能不該獨立。</div>
+          <div class="edge">邊：整份 SKILL.md 正文（無範本化）</div>
+        </div>
+      </div>
+
+      <!-- 4 知識庫 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">知識庫<small>AIOS slide 28</small></div>
+        </div>
+        <div class="cell none">
+          <span class="tag t-bad">無統一索引</span>
+          <div class="note">四個落點各自為政，沒有一張表說哪件事該寫哪裡。</div>
+        </div>
+        <div class="cell">
+          <div class="path">knowledge/videos &nbsp;<b>30 檔</b><br>&nbsp;&nbsp;git-tracked</div>
+          <div class="path">~/.claude/knowledge &nbsp;<b>63 檔</b><br>&nbsp;&nbsp;companies · people · projects<br>&nbsp;&nbsp;<b>不在版控</b></div>
+          <div class="path">.learnings &nbsp;<b>2 檔</b></div>
+          <div class="path">docs/ &nbsp;<b>38 檔</b></div>
+        </div>
+        <div class="cell">
+          <div class="note">寫入端各自不同：<code>save_note.sh</code> / knowledge-graph skill / self-improving-agent / 人。</div>
+          <div class="edge">邊：無共用識別碼——四邊互不認識</div>
+          <div class="note"><b>兩個落點在 $HOME</b>，跟工具帶同一個問題。</div>
+        </div>
+      </div>
+
+      <!-- 5 工作流 -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">工作流<small>AIOS slide 24-27</small></div>
+        </div>
+        <div class="cell none">
+          <span class="tag t-bad">無</span>
+          <div class="note"><b>三套不相干的機制都叫 workflow</b>，彼此不知道對方存在。</div>
+        </div>
+        <div class="cell">
+          <div class="path">dev-process-gate<br>&nbsp;&nbsp;markdown 鏈 0→8，<b>不可執行</b></div>
+          <div class="path">dispatch/ &nbsp;<b>7 個</b><br>&nbsp;&nbsp;真狀態機（payload hash）</div>
+          <div class="path">frontmatter <code>pdca:</code><br>&nbsp;&nbsp;標籤，8 條循環</div>
+        </div>
+        <div class="cell">
+          <div class="note">只有 <code>dispatch/</code> 有狀態；另外兩個是文件與標籤。</div>
+          <div class="edge">邊：無——三者之間沒有任何資料傳遞</div>
+          <div class="note">AIOS slide 9 的五步（Trigger→Process→Tool→Output→Optimization）在這裡沒有對應物。</div>
+        </div>
+      </div>
+
+      <!-- 6 skills + agents -->
+      <div class="band">
+        <div class="band-label">
+          <div class="name">skills + agents<small>AIOS slide 35 / 23</small></div>
+        </div>
+        <div class="cell has">
+          <span class="tag t-ok">有 schema</span>
+          <div class="note"><code>SKILL.md</code> frontmatter ×125<br>（<code>loop:</code> + <code>pdca:</code> 全填）</div>
+          <div class="note"><code>agents/registry/*.md</code> ×25<br><code>schema_version: 2</code></div>
+        </div>
+        <div class="cell">
+          <div class="path">skills/ → 15 分類 → 125 支</div>
+          <div class="path">agents/registry → sk-registry-gen<br>&nbsp;&nbsp;→ launchd plist ×13</div>
+        </div>
+        <div class="cell">
+          <div class="note"><b>唯二可以被機器對帳的兩帶。</b><code>sk check</code> 能驗 routing、frontmatter、schedule drift。</div>
+          <div class="edge">邊：<code>name</code> · <code>label</code> · <code>loop/pdca</code>（有型別、可驗證）</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="sec">
+    <h2>這張圖要 argue 的事</h2>
+    <p>
+      <strong>靜默失敗只發生在沒有登記處的帶。</strong>
+      今晚三個 root cause 全部落在紅色與黃色帶上，沒有一個落在綠色帶：
+    </p>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>今晚的失敗</th><th>發生在哪一帶</th><th>為什麼那裡會出事</th></tr></thead>
+        <tbody>
+          <tr><td>R1 兩個 <code>.db</code> 檔分裂</td><td>（資料落點，同樣無登記處）</td><td>寫入端與讀取端各自寫死檔名，沒有一張表說「這個表住哪」</td></tr>
+          <tr><td>R2 registry 產生器失敗被吞</td><td>工具帶</td><td>相依的 PyYAML 不在任何宣告裡，錯誤回退到不存在的快取</td></tr>
+          <tr><td>R3 服務跑一個月舊建置</td><td>工作流帶</td><td>沒有任何機制知道「建置」和「服務」之間該有什麼保證</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <p>
+        反過來說也成立：<strong>skills 和 agents 那兩帶今晚一個問題都沒有出</strong>，
+        而它們是唯二有 schema 的。registry v2 上個月才落地，`sk check agents` 就已經能抓到排程漂移。
+      </p>
+      <p>
+        所以「重新整理架構」的具體動作不是搬檔案，是<b>把 registry v2 這個模式複製到另外四帶</b>。
+      </p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>跟外面的東西比</h2>
+    <p>
+      最接近的公開架構是 <b>Dify</b>：Model Providers / Tools(Plugins) / Knowledge Base / Workflow / Node System。
+      每個域都是 DB 支撐 + manifest schema。rivendell 是同一個形狀的<b>檔案原生版本</b>——
+      <code>agents/registry/*.md</code> 加 <code>schema_version</code> 就是 Dify plugin manifest 的 git 版。
+    </p>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>概念</th><th>Dify</th><th>rivendell 現況</th></tr></thead>
+        <tbody>
+          <tr><td>模型</td><td>Model Providers，workspace 層憑證管理</td><td>寫死在 4 支腳本</td></tr>
+          <tr><td>工具</td><td>Plugin 六型 + manifest schema</td><td>allowed-tools 39/125 + $HOME 的 hooks</td></tr>
+          <tr><td>知識庫</td><td>向量庫 + PG metadata，一個 RAG pipeline</td><td>四個落點，無索引</td></tr>
+          <tr><td>工作流</td><td>版本化、PG 支撐、可回滾</td><td>三套機制，只有一套有狀態</td></tr>
+          <tr><td>提示詞</td><td><b>沒有獨立登記處</b>，住在 node config 裡</td><td>SKILL.md 本身即提示詞</td></tr>
+          <tr><td>skills</td><td><b>沒有這個概念</b></td><td>125 支，有 schema，可對帳</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <p>
+        兩件事值得注意：<b>提示詞不該獨立成一軸</b>（Dify 把它放進節點，rivendell 放進 SKILL.md，兩邊結論一樣）；
+        <b>skills 是 rivendell 有而 Dify 沒有的</b>——那是差異化，不是缺口。
+      </p>
+      <p>
+        所以要補的其實是 <b>三</b> 帶，不是四帶：模型、工具、知識庫。
+      </p>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <p>
+      依 2026-09-18 實查：模型字串出自 <code>grep -rnoE</code> over <code>bin/</code>；
+      工具數字出自 <code>~/.claude/settings.json</code> 與 125 份 SKILL.md；
+      知識庫檔數為當日 <code>find</code> 實測；agents 為 <code>agents/registry/</code> 實數。
+    </p>
+    <p>
+      這是 actual 圖。target 圖尚未繪製——要先決定補幾帶、補成什麼形狀。
+    </p>
+  </footer>
+
+</div>
