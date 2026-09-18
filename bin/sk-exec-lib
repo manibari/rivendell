@@ -758,6 +758,9 @@ _sk_exec_record_run() {
   # Ensure data dir exists
   mkdir -p "$(dirname "$db_path")"
 
+  local _rec_err _rec_failed=""
+  _rec_err="$(mktemp -t sk-exec-rec.XXXXXX)"
+
   python3 -c "
 import sqlite3, json, sys
 from datetime import datetime
@@ -824,7 +827,23 @@ conn.execute('''INSERT INTO agent_runs
      task_role, task_job, task_stage))
 conn.commit()
 conn.close()
-" 2>/dev/null || true
+" 2>"$_rec_err" || _rec_failed=1
+
+  # Never silent. The old form was `2>/dev/null || true`, so a run that
+  # executed fine but recorded nothing was indistinguishable from a clean run
+  # — the same shape of bug as reading the wrong .db file.
+  #
+  # Deliberately NOT returning non-zero: callers run under `set -euo pipefail`
+  # and sk-mail-triage-cron calls this mid-script, so a non-zero return would
+  # abort before its Telegram push and lose real work. The teeth live in
+  # `sk check liveness` (agent_runs_readable), which catches this class
+  # systemically instead of per-call.
+  if [ -n "${_rec_failed:-}" ]; then
+    echo "sk-exec-lib: FAILED to record run for '${agent_name}' into ${db_path}" >&2
+    [ -s "$_rec_err" ] && sed 's/^/sk-exec-lib:   /' "$_rec_err" >&2
+    echo "sk-exec-lib: the run itself is unaffected; observability is. Check: sk check liveness" >&2
+  fi
+  rm -f "$_rec_err"
 }
 
 _sk_exec_log_event() {

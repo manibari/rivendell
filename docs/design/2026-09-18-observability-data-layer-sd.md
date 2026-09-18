@@ -365,6 +365,30 @@ flowchart LR
 
 ---
 
+## §9 實作偏離（2026-09-18 實作後補記）
+
+實作過程有三處偏離本文設計，都是實作時才看見的約束，記在這裡而不是默默改掉。
+
+| # | 設計說 | 實作做 | 為什麼 |
+|---|---|---|---|
+| D1 | §4.2 寫入失敗要讓 agent exit 非 0 | **只寫 stderr，回傳 0** | 呼叫端全是 `set -euo pipefail`，而 `sk-mail-triage-cron:209` 在腳本中段呼叫——回非 0 會在 Telegram 推送之前中止，丟掉真正的工作。牙齒改由 `agent_runs_readable` 探針系統性地抓 |
+| D2 | §7 `agent_runs_readable` 斷言「`/runs` 回非空」 | **差分探針：先問 store 有幾列，再要求 API 同意** | 直接讀 store 在 R1 當下會**通過**——store 一直是好的，錯的是讀取端指向別處。不走 API 就抓不到讀寫分裂 |
+| D3 | （未設計） | **`get_probes()` 加 36h 過期判定；`cmd_maintain` 加第 8 步** | 探針只在有人跑時更新，而全艦隊沒有任何排程跑 `sk check`。不補這兩處，`/api/health` 會永遠顯示上一次的綠燈——正是本文要修的那個病，只是上移了一層 |
+
+**負向測試**（證明探針會叫，不是加了段不觸發的程式碼）：
+
+| 模擬 | 結果 |
+|---|---|
+| API 回 `[]` 但 store 有 233 列 | `FAIL … READER/WRITER SPLIT`，exit 1 |
+| API 連不上 | `FAIL … api:8000 unreachable`，exit 1 |
+| sentinel 指向 2020 年的檔案 | `FAIL … 92 source file(s) newer` |
+| venv python 指向不存在的執行檔 | `FAIL … ModuleNotFoundError: No module named 'yaml'` |
+| 36h 前的 `ok=1` 探針 | 強制轉 `ok=0`，標 `STALE (418.5h old)` |
+
+第二項第一次測時**沒有輸出且 exit=7**——`set -e` 在 `api_rc=$?` 之前就把腳本打死了。改用 `if !` 包住才修好。這是負向測試抓到的實作 bug，不是設計問題。
+
+---
+
 ## 下一步
 
 | 下一步 | Skill | 做什麼 |

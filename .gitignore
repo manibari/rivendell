@@ -13,6 +13,10 @@ reports/.harvest-state
 reports/.harvest-done
 scripts/__pycache__/
 dashboard/data/*.db
+# SQLite sidecars (-wal/-shm) and retired/backup copies: the bare *.db
+# pattern misses them, and a retired store is still a store.
+dashboard/data/*.db-*
+dashboard/data/*.db.*
 dashboard/data/*.db-wal
 dashboard/data/*.db-shm
 data/*.db

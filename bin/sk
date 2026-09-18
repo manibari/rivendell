@@ -822,6 +822,22 @@ cmd_check() {
     fi
   fi
 
+  # Liveness. Every section above this one is STRUCTURAL — it asks whether
+  # things are wired, not whether they still deliver. All of them were green
+  # on 2026-09-17 while the dashboard served a month-old build, the API read
+  # an empty table and the SSOT checks reported invented drift. This section
+  # is the one that would have been red.
+  echo ""
+  echo -e "${CYAN}[Liveness]${NC}"
+  # Run ONCE: each probe curls the API and upserts liveness_probe, so calling
+  # it twice would double the work and skew checked_at.
+  local _lv_out=""
+  if _lv_out="$(cmd_check_liveness --quiet 2>&1)"; then
+    echo -e "  ${GREEN}all probes pass${NC}"
+  else
+    printf '%s\n' "$_lv_out" | grep -v '=== Liveness ===' || true
+  fi
+
   echo ""
 }
 
@@ -2152,7 +2168,7 @@ cmd_maintain() {
   echo -e "${CYAN}=== Nightly Maintenance — $today ===${NC}\n"
 
   # 1. Deploy check: auto-deploy new skills, clean dangling symlinks
-  echo -e "${CYAN}[1/7] Deploy Check${NC}"
+  echo -e "${CYAN}[1/8] Deploy Check${NC}"
   while IFS= read -r deploy_target; do
     mkdir -p "$deploy_target"
   done < <(deploy_targets)
@@ -2193,7 +2209,7 @@ cmd_maintain() {
   echo ""
 
   # 2. Permissions sync across all projects
-  echo -e "${CYAN}[2/7] Permissions Sync${NC}"
+  echo -e "${CYAN}[2/8] Permissions Sync${NC}"
   if [ -d "$PROJECTS_DIR" ]; then
     local proj_count=0
     for proj_dir in "$PROJECTS_DIR"/*/; do
@@ -2224,7 +2240,7 @@ cmd_maintain() {
   echo ""
 
   # 3. Agent health check
-  echo -e "${CYAN}[3/7] Agent Health${NC}"
+  echo -e "${CYAN}[3/8] Agent Health${NC}"
   local agent_count=0
   agent_count="$(agent_scan_all | wc -l | tr -d ' ')"
   if [ "$agent_count" -gt 0 ]; then
@@ -2241,26 +2257,34 @@ cmd_maintain() {
   echo ""
 
   # 4. Audit report
-  echo -e "${CYAN}[4/7] Audit Report${NC}"
+  echo -e "${CYAN}[4/8] Audit Report${NC}"
   cmd_audit
   echo ""
 
   # 5. Disk capacity — alert via Telegram at WARN/CRIT so it reaches a human
-  echo -e "${CYAN}[5/7] Disk Check${NC}"
+  echo -e "${CYAN}[5/8] Disk Check${NC}"
   cmd_check_disk --notify || true
   echo ""
 
   # 6. Portability guard. Runs nightly so a hardcoded path or a pipefail trap
   #    is caught the day it lands, not on the next machine six months later.
-  echo -e "${CYAN}[6/7] Portability${NC}"
+  echo -e "${CYAN}[6/8] Portability${NC}"
   cmd_check_portability || true
   echo ""
 
   # 6. Port drift. Catches a listener nobody registered regardless of who
   #    started it — launchd, docker, or a stray `npm run dev`. No hook can do
   #    that, because a hook only sees this agent's own tool calls.
-  echo -e "${CYAN}[7/7] Port Drift${NC}"
+  echo -e "${CYAN}[7/8] Port Drift${NC}"
   cmd_check_ports || true
+
+  # Liveness LAST, because it probes the things the steps above may have just
+  # changed. Nothing else in the fleet runs `sk check liveness`, so without
+  # this step the probe rows would go stale and /api/health would keep
+  # reporting the last run's green forever.
+  echo ""
+  echo -e "${CYAN}[8/8] Liveness${NC}"
+  cmd_check_liveness || true
 }
 
 # ─── sk dispatch — 模糊指令/事件 → 提案 → 分級確認 → 執行 ───────────────
@@ -3826,6 +3850,148 @@ cmd_check_ports() {
 #   2. A shell script that only parses under the shell you happened to test in.
 #   3. `var=$(... | grep ...)` under `set -o pipefail`, where a non-match takes
 #      down the whole script with an empty log and no error text.
+# ── Liveness checks ──────────────────────────────────────────────────
+#
+# Structural checks (symlinks, frontmatter, routing) stayed green through a
+# month-old build, an unreadable agent_runs table and a swallowed registry
+# error, because none of them assert that a thing still DELIVERS. Every probe
+# below traces to a failure that actually happened — none is hypothetical.
+cmd_check_liveness() {
+  local mode="text" quiet=false
+  for arg in "$@"; do
+    case "$arg" in
+      --json)  mode="json" ;;
+      --quiet) quiet=true ;;
+    esac
+  done
+
+  local db_path="$REPO_DIR/dashboard/data/rivendell.db"
+  local names=() oks=() details=()
+
+  _probe() { names+=("$1"); oks+=("$2"); details+=("$3"); }
+
+  # ── Probe 1: agent_runs_readable (catches R1) ──
+  # Differential on purpose: reading the store directly would have PASSED during
+  # R1, because the store was fine — it was the reader that pointed elsewhere.
+  # So we ask the store what it holds, then require the API to agree.
+  local newest_name newest_at row_count
+  row_count="$(sqlite3 "$db_path" "select count(*) from agent_runs" 2>/dev/null || echo "")"
+  newest_name="$(sqlite3 "$db_path" "select agent_name from agent_runs order by started_at desc limit 1" 2>/dev/null || echo "")"
+  newest_at="$(sqlite3 "$db_path" "select started_at from agent_runs order by started_at desc limit 1" 2>/dev/null || echo "")"
+
+  if [ -z "$row_count" ]; then
+    _probe "agent_runs_readable" 0 "store unreadable: $db_path"
+  elif [ "$row_count" -eq 0 ]; then
+    _probe "agent_runs_readable" 0 "store holds 0 runs — nothing has been recorded"
+  else
+    local age_h
+    age_h="$(python3 -c "
+from datetime import datetime
+try:
+    d = datetime.fromisoformat('$newest_at')
+    print(int((datetime.now() - d).total_seconds() // 3600))
+except Exception:
+    print(-1)
+" 2>/dev/null)"
+    # `if !` (not `cmd; rc=$?`) because this script runs under `set -e`: a
+    # curl that cannot connect would abort the whole check before the probe
+    # could report the very condition it exists to report.
+    local api_out=""
+    if ! api_out="$(curl -s --max-time 6 "http://localhost:8000/api/agents/com.sk.agent.x.${newest_name}/runs?limit=1" 2>/dev/null)"; then
+      api_out=""
+    fi
+    if [ -z "$api_out" ]; then
+      _probe "agent_runs_readable" 0 "api:8000 unreachable — runs cannot be seen even though the store holds $row_count"
+    elif [ "$api_out" = "[]" ]; then
+      _probe "agent_runs_readable" 0 "READER/WRITER SPLIT: store holds $row_count runs (newest '$newest_name'), api returns [] for it"
+    elif [ "$age_h" -lt 0 ] 2>/dev/null; then
+      _probe "agent_runs_readable" 0 "newest started_at unparseable: '$newest_at'"
+    elif [ "$age_h" -gt 48 ]; then
+      _probe "agent_runs_readable" 0 "newest run is ${age_h}h old (>48h) — agents may have stopped firing"
+    else
+      _probe "agent_runs_readable" 1 "$row_count runs, newest '$newest_name' ${age_h}h ago, api agrees"
+    fi
+  fi
+
+  # ── Probe 2: build_fresh (catches R3) ──
+  # next start serves a prebuilt .next; start-web.sh only re-checks staleness at
+  # launch, so a service that never restarts serves an arbitrarily old UI while
+  # reporting healthy.
+  local nd="$REPO_DIR/dashboard-next" sentinel="$REPO_DIR/dashboard-next/.next/.build-complete"
+  if [ ! -f "$sentinel" ]; then
+    _probe "build_fresh" 0 "no build sentinel — dashboard-next has never completed a build"
+  else
+    local stale_n
+    stale_n="$(find "$nd/src" "$nd/public" "$nd/next.config.ts" "$nd/package.json" -newer "$sentinel" 2>/dev/null | wc -l | tr -d ' ')"
+    if [ "$stale_n" -gt 0 ]; then
+      _probe "build_fresh" 0 "$stale_n source file(s) newer than the served build — restart com.sk.dashboard.web to rebuild"
+    else
+      _probe "build_fresh" 1 "served build is current"
+    fi
+  fi
+
+  # ── Probe 3: registry_readable (catches R2) ──
+  _ensure_agents_conf
+  if [ -n "$AGENTS_CONF_GEN_ERR" ]; then
+    _probe "registry_readable" 0 "sk-registry-gen failed: $AGENTS_CONF_GEN_ERR"
+  else
+    local defined_n
+    defined_n="$(grep -cE '^com\.sk\.' "$AGENTS_CONF_FILE" 2>/dev/null || echo 0)"
+    if [ "$defined_n" -eq 0 ]; then
+      _probe "registry_readable" 0 "generator succeeded but declared 0 agents — registry is empty or unparsed"
+    else
+      _probe "registry_readable" 1 "$defined_n agent(s) declared"
+    fi
+  fi
+
+  # ── Persist + report ──
+  local failed=0 i
+  for i in "${!names[@]}"; do
+    [ "${oks[$i]}" -eq 0 ] && failed=$((failed + 1))
+    python3 - "$db_path" "${names[$i]}" "${oks[$i]}" "${details[$i]}" <<'PY' 2>/dev/null || true
+import sqlite3, sys
+from datetime import datetime
+db, probe, ok, detail = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
+c = sqlite3.connect(db)
+c.execute("CREATE TABLE IF NOT EXISTS liveness_probe (probe TEXT PRIMARY KEY, "
+          "checked_at TEXT NOT NULL, ok INTEGER NOT NULL, detail TEXT)")
+c.execute("INSERT INTO liveness_probe(probe, checked_at, ok, detail) VALUES (?,?,?,?) "
+          "ON CONFLICT(probe) DO UPDATE SET checked_at=excluded.checked_at, "
+          "ok=excluded.ok, detail=excluded.detail",
+          (probe, datetime.now().isoformat(timespec="seconds"), ok, detail))
+c.commit(); c.close()
+PY
+  done
+
+  if [ "$mode" = "json" ]; then
+    python3 - "$failed" "${names[@]}" --sep "${oks[@]}" --sep "${details[@]}" <<'PY'
+import json, sys
+failed = int(sys.argv[1])
+rest = sys.argv[2:]
+a = rest.index("--sep"); b = rest.index("--sep", a + 1)
+names, oks, details = rest[:a], rest[a+1:b], rest[b+1:]
+print(json.dumps({
+    "failed": failed,
+    "probes": [{"probe": n, "ok": int(o), "detail": d}
+               for n, o, d in zip(names, oks, details)],
+}, ensure_ascii=False))
+PY
+  else
+    if $quiet && [ "$failed" -eq 0 ]; then return 0; fi
+    echo -e "${CYAN}=== Liveness ===${NC}"
+    for i in "${!names[@]}"; do
+      if [ "${oks[$i]}" -eq 1 ]; then
+        echo -e "  ${GREEN}ok  ${NC} ${names[$i]} — ${details[$i]}"
+      else
+        echo -e "  ${RED}FAIL${NC} ${names[$i]} — ${details[$i]}"
+      fi
+    done
+  fi
+
+  [ "$failed" -gt 0 ] && return 1
+  return 0
+}
+
 cmd_check_portability() {
   local mode="text" quiet=false
   for arg in "$@"; do
@@ -4713,6 +4879,7 @@ case "${1:-help}" in
       agents) shift; cmd_check_agents "$@" ;;
       portability) shift; cmd_check_portability "$@" ;;
       ports)  shift; cmd_check_ports "$@" ;;
+      liveness) shift; cmd_check_liveness "$@" ;;
       *)    cmd_check "${1:-}" ;;
     esac
     ;;

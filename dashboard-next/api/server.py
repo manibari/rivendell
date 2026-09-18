@@ -30,7 +30,14 @@ from lib.agents import (  # noqa: E402
     update_schedule,
     get_recent_commit,
 )
-from lib.db import init_db, get_conn, get_today_agent_cost, get_last_success_time  # noqa: E402
+from lib.db import (  # noqa: E402
+    init_db,
+    get_today_agent_cost,
+    get_last_success_time,
+    read_agent_runs,
+    get_probes,
+    StoreUnreadable,
+)
 from lib.projects import (  # noqa: E402
     load_projects,
     get_project,
@@ -478,22 +485,19 @@ def api_agent_live(agent_label: str, offset: int = 0) -> dict[str, Any]:
 
 @app.get("/api/agents/{agent_label}/runs", tags=["Agents"])
 def api_agent_runs(agent_label: str, limit: int = 10) -> list[dict[str, Any]]:
-    conn = get_conn()
     parts = agent_label.split(".")
     agent_name = parts[-1] if len(parts) > 4 else parts[-1]
 
-    rows = conn.execute(
-        """
-        SELECT started_at, finished_at, exit_code, tokens_used, cost_usd,
-               commit_sha, files_changed, qa_passed, branch_name, pr_url
-        FROM agent_runs
-        WHERE agent_name = ?
-        ORDER BY started_at DESC
-        LIMIT ?
-        """,
-        (agent_name, limit),
-    ).fetchall()
-    conn.close()
+    # An unreadable store is a 503, never an empty list. Returning [] for both
+    # is what let the agent_runs file split sit unnoticed for six weeks: the
+    # page rendered "no runs" and nothing anywhere raised.
+    try:
+        rows = read_agent_runs(agent_name, limit)
+    except StoreUnreadable as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "store_unreadable", "detail": str(exc)},
+        ) from exc
 
     return [
         {
@@ -2334,9 +2338,9 @@ def api_health() -> dict[str, Any]:
     """System health metrics.
 
     Surfaces:
-    - SSOT drift between `agents/agents.conf` (agent identity SSOT) and
-      `~/.claude/projects.json` (project metadata SSOT). See README
-      "Agent SSOT vs project metadata" section.
+    - SSOT drift between the agent registry (`agents/registry/*.md`, the
+      identity SoT since registry v2 — agents.conf is a generated cache) and
+      `~/.claude/projects.json` (project metadata SSOT).
     - Disk capacity of the data volume backing `$HOME` (WARN ≥90%, CRIT ≥95%).
     """
     repo_dir = Path(__file__).resolve().parent.parent.parent
@@ -2378,10 +2382,19 @@ def api_health() -> dict[str, Any]:
         {"total_drift": -1, "defined": 0, "loaded": 0, "not_loaded": [], "loaded_not_in_conf": []},
     )
 
+    # Liveness is read from the store, not computed here: the probes are run by
+    # `sk check liveness` (scheduled), so a probe that has never run is absent
+    # from this list rather than silently reported as passing.
+    try:
+        liveness = get_probes()
+    except Exception as exc:  # noqa: BLE001 - health must not 500 on a sub-check
+        liveness = [{"probe": "_store", "ok": 0, "detail": str(exc), "checked_at": None}]
+
     return {
         "ssot_drift": ssot_drift,
         "disk": disk,
         "agent_drift": agent_drift,
+        "liveness": liveness,
         "checked_at": datetime.now(timezone.utc).isoformat(),
     }
 
