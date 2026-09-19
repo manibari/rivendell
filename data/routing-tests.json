@@ -132,6 +132,18 @@
     {
       "phrase": "交接單",
       "expect": "context-journal"
+    },
+    {
+      "phrase": "統一語言",
+      "expect": "requirement"
+    },
+    {
+      "phrase": "術語表",
+      "expect": "requirement"
+    },
+    {
+      "phrase": "名詞對齊",
+      "expect": "requirement"
     }
   ]
 }

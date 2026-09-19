@@ -107,7 +107,7 @@ as release notes.
 | **executing-plans** | 自動 | Execute detailed plans in batches with review checkpoints |
 | **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
 | **planning-with-files** | `/planning-with-files` 或自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
-| **requirement** | `/requirement` 或自動 | Define structured requirements, user stories |
+| **requirement** | `/requirement` 或自動 | 需求定義：先釘統一語言表（ubiquitous language，一個概念一個名字），再寫 user stories 與驗收標準 |
 | **system-design** | `/system-design` 或自動 | SA/SD 環節 — 在「畫面定了 / 需求定了」之後、「拆成實作任務」之前，把系統設計 |
 | **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
