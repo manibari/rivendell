@@ -108,7 +108,7 @@ as release notes.
 | **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
 | **planning-with-files** | `/planning-with-files` 或自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | 需求定義：先釘統一語言表（ubiquitous language，一個概念一個名字），再寫 user stories 與驗收標準 |
-| **system-design** | `/system-design` 或自動 | SA/SD 環節 — 在「畫面定了 / 需求定了」之後、「拆成實作任務」之前，把系統設計 |
+| **system-design** | `/system-design` 或自動 | SA/SD：資料模型、介面契約、關鍵流程、功能關係圖(target)；職責邊界分三面向——邏輯(bounded context)、實體(目錄結構)、資料(aggregate root 唯一寫入者) |
 | **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
 

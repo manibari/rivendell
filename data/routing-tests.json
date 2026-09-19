@@ -144,6 +144,14 @@
     {
       "phrase": "名詞對齊",
       "expect": "requirement"
+    },
+    {
+      "phrase": "聚合根",
+      "expect": "system-design"
+    },
+    {
+      "phrase": "誰能寫這張表",
+      "expect": "system-design"
     }
   ]
 }

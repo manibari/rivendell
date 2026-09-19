@@ -5,14 +5,16 @@ pdca: plan
 description: >
   SA/SD 環節 — 在「畫面定了 / 需求定了」之後、「拆成實作任務」之前，把系統設計
   一次講清楚並畫出來：資料模型、模組職責邊界、介面契約、關鍵流程時序、功能關係圖
-  (target 版)、NFR 與反證關卡。Flow-agnostic：有畫面的專案接在 mockup 之後，
+  (target 版)、NFR 與反證關卡。職責邊界分三個面向：邏輯（不負責什麼＝bounded context）、
+  實體（目錄結構）、資料（唯一寫入者＝aggregate root）。Flow-agnostic：有畫面的專案接在 mockup 之後，
   沒畫面的 backend / refactor 專案接在 requirement / investigate 之後，兩條都走這裡。
   產出 docs/design/YYYY-MM-DD-<feature>-sd.md + 圖檔；每張圖 sub-call chart-design
   (system-architecture 類)；功能關係圖沿用 qa-dataflow 的 diagram-spec 同一規格，
   讓事後 qa-dataflow 能拿同一張圖對照 actual，形成閉環。
   TRIGGER when: mockup / design-html 完成要進實作規劃；backend-only 功能或 refactor
   要動 schema / 跨模組傳遞 / 新增 store；使用者說「系統設計」「SA SD」「先把架構定下來」
-  「資料表怎麼設計」「API 怎麼切」「模組怎麼拆」；或 planning-with-files / writing-plans
+  「資料表怎麼設計」「API 怎麼切」「模組怎麼拆」「聚合根」「誰能寫這張表」「目錄怎麼分」；
+  或 planning-with-files / writing-plans
   發現手上沒有可依據的設計文件。
   DO NOT TRIGGER when: 純樣式 / 文案 / 複製貼上級小改（無 schema、無跨模組契約變動）；
   設計文件已存在且未過期（改去 gstack-plan-eng-review 審它）；還在問「該不該做」
@@ -158,6 +160,34 @@ src/                          src/
 - 不是每次都要動目錄。**沒有新模組、沒有邊界變動時，寫「目錄結構不變」一句話就好** ——
   為了填欄位而搬檔案會製造無謂的 diff。
 
+#### §3.2 寫入權責（聚合 / aggregate）
+
+§3 切的是邏輯邊界、§3.1 是實體邊界，**這節是資料邊界**：每個資料落點只能有一個主人。
+
+每個落點（表 / 集合 / 檔案）一列：
+
+| 資料落點 | **唯一寫入者** | 讀取者 | 交易邊界 | 不變式 |
+|---|---|---|---|---|
+| `agent_runs` | `sk-exec-lib` | `lib/db.py` · `lib/roles.py` · `sk check` · retro | 單列 insert | 一次執行一列，寫入後不再更新 |
+
+規則：
+
+- **一個落點只能有一個寫入者。這就是聚合根（aggregate root）**：所有寫入走同一個門。
+  填出兩個名字 → 要嘛合併成一個模組，要嘛其中一個其實該呼叫前者的介面，而不是自己動手寫。
+- **讀多寫一是健康的，寫多是日後資料打架的來源。** 讀取者那欄很長不是問題；
+  寫入者那欄超過一個才是。
+- **「不變式」寫這個落點永遠為真的規則**（一次執行一列 / 狀態只能前進不能倒退 /
+  同一天只有一列）。**寫不出不變式的落點，通常是個沒有主人的資料袋** ——
+  rivendell 的 `settings` 表就是活例子：0 列、沒有寫入者、沒有讀取者，
+  由 `init_db()` 建出來之後沒人記得它為什麼存在。
+- **交易邊界 = 一個聚合一個交易。** 跨聚合要一致 → 用事件或補償，
+  不要開一個橫跨兩個聚合的交易（那等於把兩個邊界又黏回去）。
+- 這張表跟 §2「每個新欄位：誰寫它、誰讀它」是同一個問題的**不同尺度** ——
+  §2 問欄位，這裡問整個落點。兩邊對不上就是有人在繞過主人寫入。
+
+**這張表直接決定 `planning-with-files` 的任務切法**：一個聚合一個任務邊界。
+一個任務同時改兩個落點的寫入邏輯，就是跨了聚合，該拆成兩個。
+
 ### §4 介面契約
 
 對每個新增/修改的介面（HTTP 端點、事件、跨模組函式簽章）：
@@ -272,6 +302,8 @@ node skills/docs/chart-design/references/check-html-figure.mjs <fig.html> \
 - [ ] **§3 每個模組都寫了「不負責什麼」**
 - [ ] **§3.1 兩棵目錄樹並排**（現況實查、非憑印象），或明寫「目錄結構不變」
 - [ ] **§3.1 通過新人判準**：看資料夾名就知道一個需求要開哪個檔
+- [ ] **§3.2 每個資料落點的「唯一寫入者」欄只有一個名字**（兩個 = 邊界沒切好，回 §3）
+- [ ] **§3.2 每個落點寫得出不變式**（寫不出來 = 沒有主人的資料袋）
 - [ ] **§4 每個介面都寫了錯誤形狀 + 冪等性**
 - [ ] **§6 功能關係圖的每條邊都標了傳遞的識別碼**（只有箭頭 = 沒做）
 - [ ] **§6 畫了回頭路**（沒有回頭路的圖幾乎一定是漏了，真實系統都是循環）
@@ -295,7 +327,7 @@ node skills/docs/chart-design/references/check-html-figure.mjs <fig.html> \
 > | 下一步 | Skill | 做什麼 |
 > |--------|-------|--------|
 > | 審設計 | `/gstack-plan-eng-review` | 架構、邊界條件、測試策略 —— **現在它有東西可審了** |
-> | 拆任務 | `/planning-with-files` 或 `/writing-plans` | 依這份 SD 拆 bite-sized task |
+> | 拆任務 | `/planning-with-files` 或 `/writing-plans` | 依這份 SD 拆 bite-sized task ——**用 §3.2 的聚合當任務邊界**，一個任務不跨兩個寫入者 |
 > | UI 任務 | `/gstack-plan-design-review` | UX 落差（有畫面才跑）|
 > | 大功能 | `/gstack-autoplan` | 三審一次跑完 |
 >
