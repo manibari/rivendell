@@ -12,18 +12,21 @@ services:
     profiles: ["dashboard"]
     build:
       context: .
-      dockerfile: dockerfiles/dashboard-api.Dockerfile
+      dockerfile: platform/deployment/dockerfiles/dashboard-api.Dockerfile
     container_name: sk-dashboard-api
     environment:
       - REPORTS_DIR=/data/reports
+      - WORKFLOW_MAP_FILE=/data/workflow-map.json
       - COMPOSE_FILE=/app/docker-compose.yml
+      - RIVENDELL_SKILLS_DIR=${PWD}/skills
     ports:
       - "8000:8000"
     volumes:
       - ./reports:/data/reports
       - ./logs:/data/logs:ro
-      - ./data:/dashboard/data
-      - ./data/skill-summaries-zh.tsv:/data/skill-summaries-zh.tsv:ro
+      - ./apps/dashboard-legacy/data:/dashboard/data
+      - ./platform/skill_catalog/skill-summaries-zh.tsv:/data/skill-summaries-zh.tsv:ro
+      - ./platform/workflows/workflow-map.json:/data/workflow-map.json
       - ./docker-compose.yml:/app/docker-compose.yml:ro
       - ${HOME}/Library/LaunchAgents:/root/Library/LaunchAgents:ro
       - ${HOME}/.claude/projects:/root/.claude/projects:ro
@@ -40,8 +43,8 @@ services:
   dashboard-web:
     profiles: ["dashboard"]
     build:
-      context: ./dashboard-next
-      dockerfile: ../dockerfiles/dashboard-web.Dockerfile
+      context: ./apps/dashboard-web
+      dockerfile: ../../platform/deployment/dockerfiles/dashboard-web.Dockerfile
     container_name: sk-dashboard-web
     ports:
       - "3000:3000"
@@ -96,7 +99,7 @@ services:
     profiles: ["marketing"]
     build:
       context: ${PROJECTS_DIR:-..}/Marketing-Pal/web
-      dockerfile: ${PWD}/dockerfiles/marketing-web.Dockerfile
+      dockerfile: ${PWD}/platform/deployment/dockerfiles/marketing-web.Dockerfile
     container_name: sk-marketing-web
     ports:
       - "3004:3000"

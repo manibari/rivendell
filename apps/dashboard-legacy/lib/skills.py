@@ -1,0 +1,1 @@
+../../../platform/skill_catalog/skills.py

@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: dashboard-next
+        working-directory: apps/dashboard-web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: dashboard-next/package-lock.json
+          cache-dependency-path: apps/dashboard-web/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run build
@@ -34,16 +34,18 @@ jobs:
         with:
           python-version: "3.12"
       # Pinned: an unpinned ruff means the lint bar moves without a commit here.
-      # Bump deliberately, and run `ruff check dashboard-next/api/` locally at
-      # the same version before you do. Rule set lives in api/ruff.toml.
-      - run: pip install -r dashboard-next/api/requirements.txt ruff==0.16.6
-      - run: ruff check dashboard-next/api/
+      # Bump deliberately, and run `ruff check apps/dashboard-api/` locally at
+      # the same version before you do. Rule set lives in apps/dashboard-api/ruff.toml.
+      - run: pip install -r apps/dashboard-api/requirements.txt ruff==0.16.6
+      - run: ruff check apps/dashboard-api/
       - name: Run backend tests
-        working-directory: dashboard-next
-        run: python -m unittest discover -s api/tests -p 'test_*.py'
+        working-directory: apps/dashboard-api
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Run shared library tests
+        run: PYTHONPATH=apps/dashboard-legacy python -m unittest discover -s apps/dashboard-legacy/tests -p 'test_*.py'
       - name: Smoke test — verify server imports
-        working-directory: dashboard-next
-        run: python -c "from api.server import app; print('OK')"
+        working-directory: apps/dashboard-api
+        run: python -c "from server import app; print('OK')"
 
   skills:
     name: Skill structure validation

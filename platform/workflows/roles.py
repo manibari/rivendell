@@ -1,0 +1,289 @@
+"""Parse docs/skills-by-role.md (角色 → 工作 → PDCA) into a structure the dashboard can render.
+
+The markdown stays the source of truth (`sk check` guards that every skill
+appears in it); this module only reads the conventions it is written in:
+
+    ## N. 角色名            role
+    你在做：...             role intro (first paragraph after the heading)
+    ### 1a 工作名 [→ 展開見 [x](loops/y.md)]   job, optional deep-dive link
+    | Plan | 用誰 | 說明 |   one row per PDCA stage
+    `skill-name`            skill reference (links to /skills/<name>)
+    ★ **text** / ★ text     a step with no skill (gap)
+    (gstack)                external skill marker
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+REPO_DIR = Path(__file__).resolve().parent.parent.parent
+ROLE_DOC = Path(os.environ.get(
+    "RIVENDELL_ROLE_DOC", str(REPO_DIR / "docs" / "skills-by-role.md")
+))
+
+_ROLE_RE = re.compile(r"^## (\d+)\. (.+?)\s*$")
+_JOB_RE = re.compile(r"^### (\d+[a-z]) (.+?)\s*$")
+_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+_CODE_RE = re.compile(r"`([^`]+)`")
+_STAGES = ("Plan", "Do", "Check", "Act")
+
+
+def _cells(line: str) -> list[str]:
+    inner = line.strip().strip("|")
+    return [c.strip() for c in inner.split("|")]
+
+
+def _strip_md(text: str) -> str:
+    text = _LINK_RE.sub(r"\1", text)
+    text = text.replace("**", "")
+    return text.strip()
+
+
+def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
+    """Split a 用誰 cell into skill refs, gap labels, and the readable form.
+
+    `known` limits skill refs to deployed skill names, so code spans like
+    `status: signed-off` or `check-html-figure.mjs` stay plain text.
+    """
+    codes = _CODE_RE.findall(cell)
+    skills = [c for c in codes if known is None or c in known]
+    # Three segments separated by ｜: main line, "視情況：" (conditional),
+    # "自動：" (hooks / gates that fire on their own). Skill refs are bucketed
+    # by which segment they sit in so the UI can style them apart.
+    core: list[str] = []
+    conditional: list[str] = []
+    automatic: list[str] = []
+    for part in cell.split("｜"):
+        stripped = part.strip()
+        bucket = core
+        if stripped.startswith("視情況"):
+            bucket = conditional
+        elif stripped.startswith("自動"):
+            bucket = automatic
+        for c in _CODE_RE.findall(part):
+            if (known is None or c in known) and c not in bucket:
+                bucket.append(c)
+    gaps: list[str] = []
+    # Segments are separated by · or →; a segment starting with ★ is a gap.
+    # (Do not split on "/" — gap text such as "won / lost / no-bid" uses it.)
+    for seg in re.split(r"\s*[·→｜]\s*", cell):
+        seg = seg.strip()
+        if seg.startswith("★"):
+            g = _strip_md(seg.lstrip("★").strip()).replace("`", "")
+            gaps.append(g)
+    external = [s for s in skills if s.startswith("gstack")]
+    return {
+        "text": _strip_md(cell).replace("`", ""),
+        "skills": skills,
+        "core": core,
+        "conditional": conditional,
+        "automatic": automatic,
+        "gaps": gaps,
+        "external": external,
+    }
+
+
+_DATA_DIR = Path(os.environ.get(
+    "RIVENDELL_DB_DIR", str(REPO_DIR / "apps" / "dashboard-legacy" / "data")
+))
+_SESSION_LOGS = Path.home() / ".claude" / "session-logs"
+
+
+def _telemetry() -> dict[str, dict[str, Any]]:
+    """job id → {runs, by_stage, last_run, sources} from two places:
+
+    - agent_runs.role/job/stage (scheduled runs via `sk run --job … --stage …`);
+      both db files are read because sk-exec-lib and the dashboard have
+      historically written to different ones.
+    - ~/.claude/session-logs/<repo>/tasks.jsonl (interactive sessions tagged by
+      task-brief's task-tag.sh).
+    """
+    out: dict[str, dict[str, Any]] = {}
+
+    def bump(job: str, stage: str, ts: str, source: str) -> None:
+        if not job:
+            return
+        rec = out.setdefault(job, {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
+        rec["runs"] += 1
+        if stage:
+            rec["by_stage"][stage] = rec["by_stage"].get(stage, 0) + 1
+        if ts and ts > rec["last_run"]:
+            rec["last_run"] = ts[:10]
+        rec["sources"][source] = rec["sources"].get(source, 0) + 1
+
+    for name in ("rivendell.db", "sk-dashboard.db"):
+        db = _DATA_DIR / name
+        if not db.is_file():
+            continue
+        try:
+            conn = sqlite3.connect(str(db))
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(agent_runs)")}
+            if {"job", "stage"} <= cols:
+                for job, stage, ts in conn.execute("SELECT job, stage, started_at FROM agent_runs WHERE job IS NOT NULL AND job != ''"):
+                    bump(job, stage or "", ts or "", "agent_runs")
+            conn.close()
+        except sqlite3.Error:
+            continue
+
+    if _SESSION_LOGS.is_dir():
+        for f in _SESSION_LOGS.glob("*/tasks.jsonl"):
+            try:
+                for line in f.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    rec = json.loads(line)
+                    bump(str(rec.get("job", "")), str(rec.get("stage", "")), str(rec.get("ts", "")), "session")
+            except (OSError, json.JSONDecodeError):
+                continue
+    return out
+
+
+def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict[str, Any]:
+    p = path or ROLE_DOC
+    text = p.read_text(encoding="utf-8")
+    lines = text.splitlines()
+
+    updated = ""
+    m = re.search(r"更新：(\d{4}-\d{2}-\d{2})", text)
+    if m:
+        updated = m.group(1)
+
+    roles: list[dict[str, Any]] = []
+    role: dict[str, Any] | None = None
+    job: dict[str, Any] | None = None
+    shared: list[str] = []
+    in_index = False
+    # From the index table: role id → (tier label, authority one-liner).
+    # A blank first cell continues the previous tier (rowspan by convention).
+    tiers: dict[str, tuple[str, str]] = {}
+    tier_order: list[str] = []
+    current_tier = ""
+
+    for raw in lines:
+        line = raw.rstrip()
+        if line.startswith("## 角色索引"):
+            in_index = True
+            continue
+        if line.startswith("## 覆蓋檢查"):
+            role = None
+            job = None
+            in_index = False
+            continue
+
+        rm = _ROLE_RE.match(line)
+        if rm:
+            in_index = False
+            role = {"id": rm.group(1), "title": rm.group(2), "intro": "", "notes": [], "jobs": []}
+            roles.append(role)
+            job = None
+            continue
+
+        if in_index:
+            if line.startswith("橫向共用") or line.startswith("畫圖") or line.startswith("收發信"):
+                shared.append(_strip_md(line).replace("`", ""))
+            elif line.startswith("|"):
+                cells = _cells(line)
+                is_separator = bool(cells[0]) and set(cells[0]) <= {"-", ":"}
+                if len(cells) >= 3 and not is_separator and cells[0] not in ("職權層",):
+                    tier_cell = _strip_md(cells[0])
+                    if tier_cell:
+                        # "**決策**：一句話" → label before the colon
+                        current_tier = tier_cell.split("：", 1)[0].strip()
+                        if current_tier not in tier_order:
+                            tier_order.append(current_tier)
+                    rid_m = re.search(r"\[(\d+)\.", cells[1])
+                    if rid_m:
+                        tiers[rid_m.group(1)] = (current_tier, _strip_md(cells[2]))
+            continue
+
+        if role is None:
+            continue
+
+        jm = _JOB_RE.match(line)
+        if jm:
+            title = jm.group(2)
+            deep = None
+            lm = _LINK_RE.search(title)
+            if lm:
+                deep = {"label": lm.group(1), "href": lm.group(2)}
+                title = re.sub(r"\s*→\s*展開見\s*\[.*?\]\(.*?\)\s*$", "", title).strip()
+            job = {"id": jm.group(1), "title": title, "deep_dive": deep, "stages": []}
+            role["jobs"].append(job)
+            continue
+
+        if line.startswith("|") and job is not None:
+            cells = _cells(line)
+            if not cells or cells[0] in ("", "---", "—") or set(cells[0]) <= {"-"}:
+                continue
+            stage = cells[0]
+            if stage not in _STAGES:
+                continue
+            who = cells[1] if len(cells) > 1 else ""
+            note = cells[2] if len(cells) > 2 else ""
+            entry = _parse_who(who, known)
+            entry["stage"] = stage
+            entry["note"] = _strip_md(note).replace("`", "")
+            job["stages"].append(entry)
+            continue
+
+        if job is None and line and not line.startswith(("|", "#", "![", "<", "*")):
+            # Role-level prose: first paragraph is the intro, later ones are notes.
+            clean = _strip_md(line.lstrip("> ").strip()).replace("`", "")
+            if not clean:
+                continue
+            if not role["intro"]:
+                role["intro"] = clean
+            else:
+                role["notes"].append(clean)
+            continue
+
+        if job is not None and line and not line.startswith(("|", "#", "---", "![", "<", "*")):
+            # Prose after a job table: how the jobs connect, 常搭配, caveats.
+            role["notes"].append(_strip_md(line.lstrip("> ").strip()).replace("`", ""))
+
+    for r in roles:
+        tier, authority = tiers.get(r["id"], ("", ""))
+        r["tier"] = tier
+        r["authority"] = authority
+
+    # Telemetry: has this job ever actually run? (docs ★ vs runtime silence)
+    tele = _telemetry()
+    for r in roles:
+        r["runs"] = 0
+        for j in r["jobs"]:
+            t = tele.get(j["id"], {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
+            j["runs"] = t["runs"]
+            j["by_stage"] = t["by_stage"]
+            j["last_run"] = t["last_run"]
+            r["runs"] += t["runs"]
+
+    # Fill missing stages so the UI always has four columns.
+    for r in roles:
+        for j in r["jobs"]:
+            have = {s["stage"] for s in j["stages"]}
+            for st in _STAGES:
+                if st not in have:
+                    j["stages"].append({"stage": st, "text": "", "skills": [], "core": [], "conditional": [], "automatic": [], "gaps": [], "external": [], "note": "", "empty": True})
+            j["stages"].sort(key=lambda s: _STAGES.index(s["stage"]))
+            j["gap_count"] = sum(len(s["gaps"]) for s in j["stages"])
+        r["job_count"] = len(r["jobs"])
+        r["gap_count"] = sum(j["gap_count"] for j in r["jobs"])
+
+    return {
+        "path": str(p),
+        "updated": updated,
+        "shared": shared,
+        "tiers": tier_order,
+        "roles": roles,
+        "totals": {
+            "roles": len(roles),
+            "jobs": sum(r["job_count"] for r in roles),
+            "gaps": sum(r["gap_count"] for r in roles),
+            "jobs_run": sum(1 for r in roles for j in r["jobs"] if j["runs"]),
+            "runs": sum(r["runs"] for r in roles),
+        },
+    }

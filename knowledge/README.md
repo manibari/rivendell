@@ -6,20 +6,29 @@
 
 ```
 knowledge/
-└── videos/                          # 影片摘要（video-transcript skill 產出）
+├── content/
+│   └── videos/                      # 影片摘要（video-transcript skill 產出）
+└── entities/
+    └── kg.py                        # 實體知識讀寫 API；資料仍在 ~/.claude/knowledge/
+```
+
+影片目錄內的檔案：
+
+```
+content/videos/
     ├── INDEX.md                     # 可瀏覽索引（save_note 自動重生；按日期排序 + 可信度）
     └── YYYY-MM-DD-<標題>/
         ├── note.md                  # frontmatter（title/url/source/reliability/date/tags）+ 摘要
         └── transcript.txt           # 完整逐字稿
 ```
 
-**先看 `videos/INDEX.md`** 找筆記；它是從各 note.md frontmatter 衍生的視圖，`save_note.sh` 每次寫入自動重生。
+**先看 `content/videos/INDEX.md`** 找筆記；它是從各 note.md frontmatter 衍生的視圖，`save_note.sh` 每次寫入自動重生。`knowledge/videos/` 暫時是指向同一目錄的相容連結。
 
-未來可長 `knowledge/articles/`、`knowledge/papers/` 等同構子目錄。
+未來可長 `knowledge/content/articles/`、`knowledge/content/papers/` 等同構子目錄。
 
 ## 怎麼寫入
 
-`skills/knowledge/_shared/scripts/save_note.sh <transcript> <meta|-> <summary.md|->` 會自動存到這裡（預設路徑從 script 位置推回 repo root）。`video-transcript` skill 抓完+摘要後呼叫它歸檔。
+`skills/knowledge/_shared/scripts/save_note.sh <transcript> <meta|-> <summary.md|->` 會自動存到這裡（預設路徑經相容連結指向 `content/videos/`）。`video-transcript` skill 抓完+摘要後呼叫它歸檔。實體事實由 `knowledge/entities/kg.py` 管理；`scripts/kg.py` 是既有 CLI 的相容連結。
 
 ## frontmatter 欄位
 

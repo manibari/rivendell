@@ -16,7 +16,8 @@ feature/fix 一條 bullet 帶短 hash;不把多個修正捲成一條模糊敘述
 
 ## Unreleased
 
-（空）
+- 資料夾架構第一階段：應用、Agent、部署設定、助理通道、知識內容及部分平台規則移到各自模組；舊路徑保留相容入口，CI 與 Compose 改讀新位置。後續仍需抽離 `dashboard-legacy/lib` 剩餘規則與 `bin/sk` 的跨模組邏輯。
+- 資料夾架構第二階段：API 路由按 Agent、專案、技能目錄、工作流程、協作、Harvest、部署及監控子功能拆模組，主檔只組裝應用；`sk` 部署與狀態指令回到所屬平台模組；工作流程設定由 Compose 掛載新位置，修正技能角色文件路徑並保留原本 API 路徑。
 
 ## 0.3.0 — skill loop 分類法 × 個人助理層 × agent registry v2 — 2026-09-16
 

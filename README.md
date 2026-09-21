@@ -1,6 +1,22 @@
-# Skills Library
+# Rivendell
 
-Personal Claude Code and Codex skills library — manage, version control, and deploy custom skills.
+An automation platform for skills, agents, the personal assistant, and a shared knowledge base.
+
+## Repository layout
+
+The repository is organized by ownership. See [repository layout](docs/architecture/repository-layout.md) for the current paths and compatibility entries.
+
+| Area | Owns |
+|------|------|
+| `platform/` | Agent fleet, deployment, projects, skill catalog, workflows, monitoring, release policy |
+| `assistant/` | Personas, conversation data, dispatch rules |
+| `knowledge/` | Content notes and entity knowledge API |
+| `apps/` | Dashboard web, Dashboard API, avatar gateway, legacy dashboard |
+| `skills/` | Canonical ability packages and their private tools |
+| `bin/` | Stable command and scheduler entry points |
+| `docs/` | Design, operations, mockups, and archived plans |
+
+`VERSION`, `CHANGELOG.md`, and `ROADMAP.md` remain the canonical release files at the repository root. `reports/` and `dispatch/` remain runtime data owned by their writers. Old app and configuration paths are compatibility links during migration.
 
 ## Structure
 
@@ -61,7 +77,7 @@ cd ~/any-project && claude
 |------|---------|
 | `VERSION` | Current human-managed Rivendell baseline version |
 | `CHANGELOG.md` | Notable human-authored changes by version/date |
-| `docs/ROADMAP.md` | Development priorities and release checklist |
+| `ROADMAP.md` | Development priorities and release checklist |
 
 Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
