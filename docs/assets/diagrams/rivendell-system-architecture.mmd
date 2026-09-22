@@ -1,0 +1,54 @@
+%% Rivendell system architecture, 2026-09-22.
+%% Claim: ability packages, workflow definitions, assistant state, and knowledge
+%% have different owners; deployment and release are separate platform modules.
+flowchart LR
+  classDef entry fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef platform fill:#dbeafe,stroke:#2563eb,color:#1f2937
+  classDef domain fill:#ddd6fe,stroke:#6d28d9,color:#1f2937
+  classDef source fill:#fef3c7,stroke:#b45309,color:#1f2937
+  classDef external fill:#e5e7eb,stroke:#6b7280,color:#1f2937
+
+  User(["使用者 / 維護者"]):::entry
+
+  subgraph Entry["操作入口"]
+    direction LR
+    Web["Dashboard Web<br/>apps/dashboard-web"]:::entry
+    CLI["sk CLI<br/>bin/sk"]:::entry
+  end
+
+  subgraph Platform["平台 platform/"]
+    direction LR
+    API["Dashboard API<br/>apps/dashboard-api"]:::platform
+    Catalog["Capabilities Catalog<br/>技能索引、觸發、安裝狀態"]:::platform
+    Workflows["Capabilities Workflows<br/>角色 → 工作 → PDCA → 技能引用"]:::platform
+    Fleet["Agent Fleet<br/>排程與執行"]:::platform
+    Monitoring["Monitoring<br/>健康、用量、錯誤"]:::platform
+    Deployment["Deployment<br/>服務與環境"]:::platform
+    Release["Release<br/>版本與變更紀錄"]:::platform
+  end
+
+  subgraph Domains["獨立領域與能力包"]
+    direction LR
+    Assistant["Assistant<br/>對話、派工、核准"]:::domain
+    Knowledge[("Knowledge<br/>知識內容與實體")]:::domain
+    Skills["skills/*/*/SKILL.md<br/>能力包本體"]:::source
+  end
+
+  Tools(["外部工具<br/>Playwright、Whisper 等"]):::external
+  Gstack(["外部技能包<br/>gstack repo"]):::external
+
+  User --> Web
+  User --> CLI
+  Web -->|"HTTP API"| API
+  API -->|"讀取技能"| Catalog
+  API -->|"讀取流程"| Workflows
+  Workflows -.->|"引用 Skill ID"| Catalog
+  Catalog -.->|"索引 SKILL.md"| Skills
+  Catalog -.->|"辨識外部來源"| Gstack
+  CLI -->|"管理 agent"| Fleet
+  CLI -->|"管理服務"| Deployment
+  Release -.->|"版本與變更紀錄"| Deployment
+  Monitoring -->|"觀測執行"| Fleet
+  Assistant -->|"查詢事實"| Knowledge
+  Assistant -->|"呼叫技能"| Skills
+  Skills -->|"使用專用工具"| Tools

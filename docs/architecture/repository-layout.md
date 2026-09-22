@@ -2,6 +2,14 @@
 
 The physical folders follow the owner of each rule or piece of data. Web, API, and CLI code call these modules through stable entry points.
 
+## System architecture
+
+![Rivendell system architecture](../assets/diagrams/rivendell-system-architecture.png)
+
+The main read path is Dashboard Web → API → workflow definitions → skill catalog → `SKILL.md`. Solid arrows show runtime calls; dotted arrows show definition references or indexes. Assistant and Knowledge are separate domains. Deployment, Release, Monitoring, and Agent Fleet are separate platform modules. The [Mermaid source](../assets/diagrams/rivendell-system-architecture.mmd) can be edited with the architecture.
+
+## Folder layout
+
 ```text
 rivendell/
 ├── apps/
