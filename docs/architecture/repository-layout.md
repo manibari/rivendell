@@ -10,9 +10,23 @@ The main read path is Dashboard Web → API → workflow definitions → skill c
 
 ## System data flow
 
+The QA-checked [actual function map](../verification/dataflow-functions-2026-09.html) is the current reference for data handoffs and gates:
+
+![QA-checked actual function map](../verification/dataflow-functions-2026-09.png)
+
+The [dataflow index](../verification/INDEX.md) links the store map, writer/reader evidence, isolated probes, and the separate consolidation target. The current system uses separate stores by domain. New scheduled runs write one `rivendell.db`; interactive session tags stay in JSONL. Knowledge notes and entity facts are separate stores; Dispatch state is stored under `dispatch/<id>`.
+
+### Earlier overview
+
 ![Rivendell system data flow](../assets/diagrams/rivendell-system-data-flow.png)
 
-The [system data flow source](../assets/diagrams/rivendell-system-data-flow.mmd) shows three domain paths. `SKILL.md` and workflow JSON feed Capabilities; Agent Fleet writes execution evidence, while interactive sessions write `tasks.jsonl`. Capabilities and Monitoring project those sources through Dashboard API to the web UI. Knowledge owns content ingestion: `video-transcript` reads video or audio, uses Whisper when needed, and passes material to `save_note.sh` for storage under `knowledge/content/videos/`. Separately, `sk-facts-cron` extracts durable facts from Claude Code session JSONL and writes through `kg.py` to `~/.claude/knowledge/`. The assistant gateway reads active entity facts for its tool-less model; it does not load video notes into the prompt. It appends chat history and creates a Dispatch proposal when a reply contains a dispatch marker. Dispatch persists proposal, decision, and result files; actions run only after the required confirmation level and payload hash check.
+The [earlier system data flow source](../assets/diagrams/rivendell-system-data-flow.mmd) is a high-level overview of three domain paths. The QA check found two important limits to its arrows: failed telemetry reads become zero counts, and the assistant gateway starts proposal creation in the background without confirming that a proposal was saved. The verified map and [audit](../verification/dataflow-audit-2026-09-22.md) show those states explicitly. `video-transcript` archives notes under `knowledge/content/videos/`; `sk-facts-cron` extracts durable facts from Claude Code session JSONL into the separate `~/.claude/knowledge/` repo. The assistant prompt reads active entity facts, not video notes. Dispatch checks approval, confirmation level, and payload hash before executing an action.
+
+### Consolidation target
+
+![Data consolidation target](../verification/dataflow-stores-target-2026-09.png)
+
+This [target diagram](../verification/dataflow-stores-target-2026-09.html) describes planned contracts, not deployed behavior: one platform execution-evidence query, a Knowledge read/write interface, and a proposal submission that returns an ID or an error. Each domain keeps ownership of its data.
 
 Deployment and release are control data paths:
 

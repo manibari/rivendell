@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<title>Rivendell 實際功能關係圖</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; margin: 0; overflow: hidden; background: #f7f8f5; }
+  svg { display: block; width: 1600px; height: 900px; font-family: "PingFang TC", "Noto Sans TC", Arial, sans-serif; }
+  .title { font-size: 34px; font-weight: 700; fill: #14241e; }
+  .subtitle { font-size: 16px; fill: #54645d; }
+  .band-title { font-size: 20px; font-weight: 700; fill: #183d36; }
+  .band-sub { font-size: 13px; fill: #63726b; }
+  .node-title { font-size: 17px; font-weight: 700; fill: #172b25; }
+  .node-sub { font-size: 12px; fill: #51625b; }
+  .edge-label { font-size: 12px; font-weight: 700; fill: #3a5147; }
+  .note { font-size: 12px; fill: #654920; }
+  .gate-h { font-size: 12px; font-weight: 700; fill: #5d431a; }
+  .gate { font-size: 12px; fill: #2f3c35; }
+  .footer { font-size: 11px; fill: #6b7770; }
+  .edge { fill: none; stroke: #46675a; stroke-width: 2.4; marker-end: url(#arrow); }
+  .optional { fill: none; stroke: #b98236; stroke-width: 2.2; stroke-dasharray: 7 5; marker-end: url(#arrow-optional); }
+  .soft { fill: none; stroke: #749085; stroke-width: 2; marker-end: url(#arrow); }
+</style>
+<svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rivendell 實際功能關係圖，平台、知識、助理三條流程和關卡實況">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#46675a"/></marker>
+    <marker id="arrow-optional" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#b98236"/></marker>
+  </defs>
+
+  <text class="title" x="34" y="49">Rivendell 實際功能關係圖</text>
+  <text class="subtitle" x="35" y="78">箭頭標示交給下一步的資料；虛線代表可缺席的讀取。這張圖依程式碼與隔離反證繪製。</text>
+  <line x1="34" y1="94" x2="1566" y2="94" stroke="#244c3e" stroke-width="3"/>
+
+  <rect x="30" y="108" width="1540" height="203" rx="15" fill="#edf4f1" stroke="#c5d7cf"/>
+  <text class="band-title" x="48" y="136">平台：從技能與工作定義，到看板可讀的清單</text>
+  <text class="band-sub" x="48" y="155">執行紀錄是附加統計；遺失時清單仍可顯示，次數會退為零。</text>
+
+  <rect x="48" y="179" width="238" height="71" rx="9" fill="#fff" stroke="#628879" stroke-width="2"/>
+  <text class="node-title" x="64" y="207">維護技能與工作定義</text>
+  <text class="node-sub" x="64" y="230">repo SKILL.md · roles/jobs JSON</text>
+  <rect x="351" y="179" width="238" height="71" rx="9" fill="#fff" stroke="#628879" stroke-width="2"/>
+  <text class="node-title" x="367" y="207">部署技能</text>
+  <text class="node-sub" x="367" y="230">~/.claude/skills 連結</text>
+  <rect x="654" y="179" width="238" height="71" rx="9" fill="#fffaf1" stroke="#c89143" stroke-width="2.5"/>
+  <text class="node-title" x="670" y="207">組合技能與角色清單</text>
+  <text class="node-sub" x="670" y="230">catalog + workflow projection</text>
+  <rect x="957" y="179" width="238" height="71" rx="9" fill="#fff" stroke="#628879" stroke-width="2"/>
+  <text class="node-title" x="973" y="207">提供看板 API</text>
+  <text class="node-sub" x="973" y="230">/api/skills · /api/skills/roles</text>
+  <rect x="1260" y="179" width="238" height="71" rx="9" fill="#fff" stroke="#628879" stroke-width="2"/>
+  <text class="node-title" x="1276" y="207">瀏覽技能與角色</text>
+  <text class="node-sub" x="1276" y="230">Dashboard Web</text>
+  <path class="edge" d="M286 215 H343"/><text class="edge-label" x="315" y="202" text-anchor="middle">路徑</text>
+  <path class="edge" d="M589 215 H646"/><text class="edge-label" x="618" y="202" text-anchor="middle">SKILL</text>
+  <path class="edge" d="M892 215 H949"/><text class="edge-label" x="920" y="202" text-anchor="middle">清單</text>
+  <path class="edge" d="M1195 215 H1252"/><text class="edge-label" x="1224" y="202" text-anchor="middle">JSON</text>
+  <path class="soft" d="M286 185 V169 H772 V178"/>
+  <text class="edge-label" x="523" y="167" text-anchor="middle">roles / jobs 定義直接讀取</text>
+  <text class="note" x="654" y="274">agent_runs SQLite + tasks.jsonl → 執行次數；讀取失敗會變成 0</text>
+  <text class="band-sub" x="48" y="294">相容旁路：GET/PUT /api/workflow 讀寫 workflow-map.json；不更新上方 roles/jobs 定義。</text>
+
+  <rect x="30" y="326" width="1540" height="185" rx="15" fill="#f1f1fa" stroke="#d5d2e4"/>
+  <text class="band-title" x="48" y="354">知識庫：影音筆記與 entity facts 各自寫入、各自儲存</text>
+  <text class="band-sub" x="48" y="373">影音筆記不會自動進入助理的 active facts prompt。</text>
+  <rect x="48" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="64" y="427">取得影音內容</text><text class="node-sub" x="64" y="450">字幕 / Whisper 逐字稿</text>
+  <rect x="307" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="323" y="427">歸檔影音筆記</text><text class="node-sub" x="323" y="450">save_note.sh</text>
+  <rect x="566" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="582" y="427">筆記與索引</text><text class="node-sub" x="582" y="450">knowledge/content/videos</text>
+  <path class="edge" d="M262 435 H299"/><text class="edge-label" x="281" y="417" text-anchor="middle">文字</text>
+  <path class="edge" d="M521 435 H558"/><text class="edge-label" x="540" y="417" text-anchor="middle">note</text>
+
+  <rect x="826" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="842" y="427">互動 session</text><text class="node-sub" x="842" y="450">~/.claude/projects JSONL</text>
+  <rect x="1085" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="1101" y="427">提取持久事實</text><text class="node-sub" x="1101" y="450">sk-facts-cron → kg.py</text>
+  <rect x="1344" y="399" width="214" height="72" rx="9" fill="#fff" stroke="#8276a6" stroke-width="2"/>
+  <text class="node-title" x="1360" y="427">entity facts</text><text class="node-sub" x="1360" y="450">~/.claude/knowledge</text>
+  <path class="edge" d="M1040 435 H1077"/><text class="edge-label" x="1059" y="417" text-anchor="middle">JSONL</text>
+  <path class="edge" d="M1299 435 H1336"/><text class="edge-label" x="1318" y="417" text-anchor="middle">facts</text>
+
+  <rect x="30" y="526" width="1540" height="219" rx="15" fill="#f4f0ea" stroke="#dfcdb4"/>
+  <text class="band-title" x="48" y="554">助理：對話可以讀 facts；派工先產生提案，再經核准執行</text>
+  <path class="optional" d="M1451 471 V516 H392 V581"/>
+  <rect x="722" y="501" width="323" height="20" rx="5" fill="#fff8e9"/>
+  <text class="note" x="883" y="516" text-anchor="middle">active facts；失敗時會顯示空知識庫</text>
+
+  <rect x="46" y="582" width="198" height="66" rx="9" fill="#fff" stroke="#aa8659" stroke-width="2"/>
+  <text class="node-title" x="62" y="609">提出需求</text><text class="node-sub" x="62" y="630">使用者訊息</text>
+  <rect x="300" y="582" width="198" height="66" rx="9" fill="#fffaf1" stroke="#c89143" stroke-width="2.5"/>
+  <text class="node-title" x="316" y="609">助理回覆</text><text class="node-sub" x="316" y="630">Gateway 讀 facts、呼叫模型</text>
+  <rect x="554" y="582" width="198" height="66" rx="9" fill="#fffaf1" stroke="#c89143" stroke-width="2.5"/>
+  <text class="node-title" x="570" y="609">背景啟動派工</text><text class="node-sub" x="570" y="630">Popen 後未核對提案落地</text>
+  <rect x="808" y="582" width="198" height="66" rx="9" fill="#fff" stroke="#aa8659" stroke-width="2"/>
+  <text class="node-title" x="824" y="609">保存提案與決定</text><text class="node-sub" x="824" y="630">dispatch/&lt;id&gt; JSON</text>
+  <rect x="1062" y="582" width="198" height="66" rx="9" fill="#fff" stroke="#628879" stroke-width="2"/>
+  <text class="node-title" x="1078" y="609">檢查核准再執行</text><text class="node-sub" x="1078" y="630">確認等級 + payload hash</text>
+  <rect x="1316" y="582" width="198" height="66" rx="9" fill="#fff" stroke="#aa8659" stroke-width="2"/>
+  <text class="node-title" x="1332" y="609">動作與結果</text><text class="node-sub" x="1332" y="630">Mail / Calendar / Agent 等</text>
+  <path class="edge" d="M244 615 H292"/><text class="edge-label" x="268" y="598" text-anchor="middle">訊息</text>
+  <path class="edge" d="M498 615 H546"/><text class="edge-label" x="522" y="598" text-anchor="middle">marker</text>
+  <path class="edge" d="M752 615 H800"/><text class="edge-label" x="776" y="598" text-anchor="middle">請求</text>
+  <path class="edge" d="M1006 615 H1054"/><text class="edge-label" x="1030" y="598" text-anchor="middle">決定</text>
+  <path class="edge" d="M1260 615 H1308"/><text class="edge-label" x="1284" y="598" text-anchor="middle">payload</text>
+  <path class="soft" d="M399 648 V675"/>
+  <text class="band-sub" x="303" y="702">對話回覆 + chat-log JSONL；使用者看到回覆</text>
+  <path class="soft" d="M1415 648 V675"/>
+  <text class="band-sub" x="1320" y="702">結果狀態 + 通知使用者</text>
+  <text class="band-sub" x="48" y="728">回頭路：提案可退回、拒絕、補充說明；核准後 payload 改動會拒絕執行。</text>
+
+  <rect x="30" y="758" width="1540" height="112" rx="13" fill="#fff9ec" stroke="#d3ae6c"/>
+  <text class="band-title" x="48" y="783" fill="#6c4d19">關卡實況</text>
+  <text class="gate-h" x="50" y="807">關卡</text><text class="gate-h" x="332" y="807">看起來</text><text class="gate-h" x="583" y="807">實際</text><text class="gate-h" x="884" y="807">怎麼跨過去</text>
+  <line x1="48" y1="814" x2="1552" y2="814" stroke="#d7ba86"/>
+  <text class="gate" x="50" y="831">工作定義驗證</text><text class="gate" x="332" y="831">每次 API 都檢查</text><text class="gate" x="583" y="831">僅清單端點檢查</text><text class="gate" x="884" y="831">單筆 workflow / playbook 端點直接讀檔</text>
+  <text class="gate" x="50" y="850">角色執行紀錄</text><text class="gate" x="332" y="850">反映真實執行次數</text><text class="gate" x="583" y="850">缺資料時顯示 0</text><text class="gate" x="884" y="850">SQLite / JSONL 讀取錯誤被略過</text>
+  <text class="gate" x="50" y="867">Dispatch 執行</text><text class="gate" x="332" y="867">核准才執行</text><text class="gate" x="583" y="867">確認會擋</text><text class="gate" x="884" y="867">未核准或 payload hash 不符會在動作前退出</text>
+
+  <text class="footer" x="34" y="891">依 2026-09-22 程式碼實查及隔離測試；細節、證據與未驗證範圍見 dataflow-audit-2026-09-22.md。</text>
+</svg>
+</html>

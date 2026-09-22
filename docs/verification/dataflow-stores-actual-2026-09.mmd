@@ -1,0 +1,51 @@
+%% Rivendell actual stores, checked 2026-09-22.
+%% Nodes are persisted entities; edge labels identify writers and readers.
+flowchart TB
+  classDef source fill:#fef3c7,stroke:#b45309,color:#1f2937
+  classDef store fill:#ede9fe,stroke:#7c3aed,color:#1f2937
+  classDef reader fill:#dcfce7,stroke:#15803d,color:#1f2937
+  classDef warn fill:#fff7ed,stroke:#c2410c,color:#1f2937
+
+  subgraph P["平台資料"]
+    direction TB
+    PSource["repo 技能包與流程定義"]:::source
+    PDeploy[("~/.claude/skills/SKILL.md")]:::store
+    PWorkflow[("roles/jobs/playbooks JSON")]:::store
+    PEvidence[("rivendell.db / agent_runs<br/>session tasks.jsonl")]:::store
+    PReader["技能清單與角色 API"]:::reader
+    PLegacy[("workflow-map.json")]:::warn
+    PLegacyAPI["舊 /api/workflow GET/PUT"]:::warn
+    PSource -->|"sk deploy 建立連結"| PDeploy
+    PSource -->|"維護定義"| PWorkflow
+    PDeploy -->|"list_skills 讀；缺檔跳過"| PReader
+    PWorkflow -->|"load_definitions / playbook 讀"| PReader
+    PEvidence -.->|"_telemetry 讀；另讀舊 sk-dashboard.db；失敗視為 0"| PReader
+    PLegacy <-->|"獨立讀寫；不更新新定義"| PLegacyAPI
+  end
+
+  subgraph K["知識資料"]
+    direction TB
+    KMedia["字幕或語音逐字稿"]:::source
+    KNotes[("knowledge/content/videos/<id><br/>note.md + transcript.txt + INDEX.md")]:::store
+    KSessions[("~/.claude/projects/*.jsonl")]:::store
+    KFacts[("~/.claude/knowledge/<type>/<slug><br/>facts.jsonl + summary.md")]:::store
+    KGateway["Gateway prompt"]:::reader
+    KMedia -->|"save_note.sh 寫筆記及索引"| KNotes
+    KSessions -->|"sk-facts-cron 擷取；kg.py add 寫"| KFacts
+    KFacts -.->|"kg.py dump active facts；失敗當空"| KGateway
+  end
+
+  subgraph A["助理與派工資料"]
+    direction TB
+    AChat["使用者訊息與模型回覆"]:::source
+    ALog[("assistant/conversation/chat-log/*.jsonl")]:::store
+    AProposal[("dispatch/<id>/proposal.json")]:::store
+    ADecision[("dispatch/<id>/decisions.json")]:::store
+    AResult[("dispatch/<id>/results/*.json 或 *-agent.md")]:::store
+    AAction["動作執行與使用者通知"]:::reader
+    AChat -->|"Gateway append"| ALog
+    AChat -.->|"dispatch marker 啟動背景程序；未核對結果"| AProposal
+    AProposal -->|"init-decisions / approve 寫"| ADecision
+    ADecision -->|"execute 檢查狀態、確認等級與 hash"| AAction
+    AAction -->|"內建動作寫 JSON；agent/crm 寫 Markdown 並 mark"| AResult
+  end

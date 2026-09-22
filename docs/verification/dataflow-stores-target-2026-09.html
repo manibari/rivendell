@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<title>Rivendell 資料整合目標圖</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: 1600px; height: 900px; margin: 0; overflow: hidden; background: #f8f9f7; }
+  svg { display: block; width: 1600px; height: 900px; font-family: "PingFang TC", "Noto Sans TC", Arial, sans-serif; }
+  .title { font-size: 34px; font-weight: 700; fill: #14241e; }
+  .subtitle { font-size: 16px; fill: #52645b; }
+  .band-title { font-size: 20px; font-weight: 700; fill: #183d36; }
+  .band-sub { font-size: 13px; fill: #617168; }
+  .node-title { font-size: 17px; font-weight: 700; fill: #172b25; }
+  .node-sub { font-size: 12px; fill: #53635b; }
+  .edge { fill: none; stroke: #527766; stroke-width: 2.3; marker-end: url(#arrow); }
+  .edge-soft { fill: none; stroke: #a06d30; stroke-width: 2.2; stroke-dasharray: 7 5; marker-end: url(#soft-arrow); }
+  .edge-label { font-size: 12px; font-weight: 700; fill: #52645b; }
+  .note { font-size: 13px; fill: #5c4931; }
+  .footer { font-size: 11px; fill: #6c7771; }
+</style>
+<svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rivendell 資料整合目標圖，按平台、知識庫、助理三個領域統一存取契約">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#527766"/></marker>
+    <marker id="soft-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#a06d30"/></marker>
+  </defs>
+  <text class="title" x="34" y="49">Rivendell 資料整合目標圖</text>
+  <text class="subtitle" x="35" y="78">按領域統一讀寫契約；每條路徑要回報成功、空資料或不可用。此圖是遷移目標，尚未實作。</text>
+  <line x1="34" y1="94" x2="1566" y2="94" stroke="#244c3e" stroke-width="3"/>
+
+  <rect x="30" y="113" width="1540" height="194" rx="15" fill="#edf4f1" stroke="#c5d7cf"/>
+  <text class="band-title" x="48" y="143">平台：排程與互動任務共用執行事件契約</text>
+  <text class="band-sub" x="48" y="163">現有 agent run 寫入已在 rivendell.db；目標是讓互動紀錄也可查，並讓讀取錯誤可見。</text>
+  <rect x="48" y="188" width="240" height="74" rx="9" fill="#fff" stroke="#64907e" stroke-width="2"/>
+  <text class="node-title" x="64" y="217">排程 run + 互動 tag</text><text class="node-sub" x="64" y="241">sk_exec · tasks.jsonl</text>
+  <rect x="354" y="188" width="240" height="74" rx="9" fill="#fff" stroke="#64907e" stroke-width="2"/>
+  <text class="node-title" x="370" y="217">統一匯入與去重</text><text class="node-sub" x="370" y="241">source_id · schema · cursor</text>
+  <rect x="660" y="188" width="240" height="74" rx="9" fill="#fff" stroke="#73669c" stroke-width="2"/>
+  <text class="node-title" x="676" y="217">平台事件儲存</text><text class="node-sub" x="676" y="241">rivendell.db / execution_event</text>
+  <rect x="966" y="188" width="240" height="74" rx="9" fill="#fff" stroke="#64907e" stroke-width="2"/>
+  <text class="node-title" x="982" y="217">執行證據查詢介面</text><text class="node-sub" x="982" y="241">ok · empty · unavailable</text>
+  <rect x="1272" y="188" width="240" height="74" rx="9" fill="#fff" stroke="#64907e" stroke-width="2"/>
+  <text class="node-title" x="1288" y="217">角色與監控看板</text><text class="node-sub" x="1288" y="241">共用一份查詢結果</text>
+  <path class="edge" d="M288 225 H346"/><text class="edge-label" x="317" y="207" text-anchor="middle">事件</text>
+  <path class="edge" d="M594 225 H652"/><text class="edge-label" x="623" y="207" text-anchor="middle">去重</text>
+  <path class="edge" d="M900 225 H958"/><text class="edge-label" x="929" y="207" text-anchor="middle">查詢</text>
+  <path class="edge" d="M1206 225 H1264"/><text class="edge-label" x="1235" y="207" text-anchor="middle">狀態</text>
+  <text class="note" x="48" y="287">遷移：核對歷史 sk-dashboard.db 與 rivendell.db 筆數、job/stage 分布及時間，再移除舊檔讀取分支。</text>
+
+  <rect x="30" y="324" width="1540" height="199" rx="15" fill="#f2f0fa" stroke="#d4cfe3"/>
+  <text class="band-title" x="48" y="354">知識庫：筆記與 entity facts 維持各自儲存，由 Knowledge 介面負責來源與讀取狀態</text>
+  <text class="band-sub" x="48" y="374">從筆記生成持久事實必須明確觸發、保留來源並覆核；session facts extraction 也走同一寫入契約。</text>
+  <rect x="48" y="399" width="240" height="74" rx="9" fill="#fff" stroke="#8778aa" stroke-width="2"/>
+  <text class="node-title" x="64" y="428">影音來源</text><text class="node-sub" x="64" y="451">transcript · summary</text>
+  <rect x="354" y="399" width="240" height="74" rx="9" fill="#fff" stroke="#8778aa" stroke-width="2"/>
+  <text class="node-title" x="370" y="428">內容筆記 vault</text><text class="node-sub" x="370" y="451">knowledge/content/videos</text>
+  <rect x="660" y="399" width="240" height="74" rx="9" fill="#fff" stroke="#8778aa" stroke-width="2"/>
+  <text class="node-title" x="676" y="428">事實整理與覆核</text><text class="node-sub" x="676" y="451">來源 · 去重 · 決定寫入</text>
+  <rect x="966" y="399" width="240" height="74" rx="9" fill="#fff" stroke="#8778aa" stroke-width="2"/>
+  <text class="node-title" x="982" y="428">Entity facts repo</text><text class="node-sub" x="982" y="451">~/.claude/knowledge</text>
+  <rect x="1272" y="399" width="240" height="74" rx="9" fill="#fff" stroke="#8778aa" stroke-width="2"/>
+  <text class="node-title" x="1288" y="428">Knowledge 讀取介面</text><text class="node-sub" x="1288" y="451">active facts + 健康狀態</text>
+  <path class="edge" d="M288 436 H346"/><text class="edge-label" x="317" y="418" text-anchor="middle">歸檔</text>
+  <path class="edge-soft" d="M594 436 H652"/><text class="edge-label" x="623" y="418" text-anchor="middle">覆核</text>
+  <path class="edge" d="M900 436 H958"/><text class="edge-label" x="929" y="418" text-anchor="middle">事實</text>
+  <path class="edge" d="M1206 436 H1264"/><text class="edge-label" x="1235" y="418" text-anchor="middle">查詢</text>
+  <text class="note" x="48" y="500">Knowledge 保有自己的實體資料；平台和助理只使用它公開的資料契約，不直接編輯 facts.jsonl。</text>
+
+  <rect x="30" y="540" width="1540" height="194" rx="15" fill="#f7f0e9" stroke="#dbc5ab"/>
+  <text class="band-title" x="48" y="570">助理：提交提案後取得 ID，再告知使用者；Dispatch 保有核准與結果狀態</text>
+  <path class="edge-soft" d="M1392 473 V531 H474 V604"/>
+  <rect x="674" y="518" width="340" height="18" rx="5" fill="#fff9ed"/>
+  <text class="edge-label" x="844" y="531" text-anchor="middle">active facts 或 unavailable 狀態</text>
+  <rect x="48" y="604" width="240" height="74" rx="9" fill="#fff" stroke="#ad875c" stroke-width="2"/>
+  <text class="node-title" x="64" y="633">使用者需求</text><text class="node-sub" x="64" y="656">對話訊息</text>
+  <rect x="354" y="604" width="240" height="74" rx="9" fill="#fff" stroke="#ad875c" stroke-width="2"/>
+  <text class="node-title" x="370" y="633">助理 Gateway</text><text class="node-sub" x="370" y="656">對話與回覆</text>
+  <rect x="660" y="604" width="240" height="74" rx="9" fill="#fff" stroke="#ad875c" stroke-width="2"/>
+  <text class="node-title" x="676" y="633">同步提交派工</text><text class="node-sub" x="676" y="656">回傳 proposal_id 或錯誤</text>
+  <rect x="966" y="604" width="240" height="74" rx="9" fill="#fff" stroke="#73669c" stroke-width="2"/>
+  <text class="node-title" x="982" y="633">Dispatch 狀態儲存</text><text class="node-sub" x="982" y="656">proposal · decision · result</text>
+  <rect x="1272" y="604" width="240" height="74" rx="9" fill="#fff" stroke="#ad875c" stroke-width="2"/>
+  <text class="node-title" x="1288" y="633">核准、執行與回報</text><text class="node-sub" x="1288" y="656">保留確認等級及 hash gate</text>
+  <path class="edge" d="M288 641 H346"/><text class="edge-label" x="317" y="623" text-anchor="middle">訊息</text>
+  <path class="edge" d="M594 641 H652"/><text class="edge-label" x="623" y="623" text-anchor="middle">請求</text>
+  <path class="edge" d="M900 641 H958"/><text class="edge-label" x="929" y="623" text-anchor="middle">ID</text>
+  <path class="edge" d="M1206 641 H1264"/><text class="edge-label" x="1235" y="623" text-anchor="middle">決定</text>
+  <text class="note" x="48" y="712">結果：提交成功才告知 proposal_id；動作結果或失敗原因回到使用者。跨領域只交換 ID、內容與狀態。</text>
+
+  <rect x="30" y="752" width="1540" height="109" rx="13" fill="#fff" stroke="#cdd9d1"/>
+  <text class="band-title" x="48" y="780">驗收條件</text>
+  <text class="note" x="50" y="807">平台：互動與排程紀錄同查詢；重跑匯入不重複；不可讀與零筆可分辨。</text>
+  <text class="note" x="50" y="830">知識：每個 fact 可追到來源；空資料和讀取故障可分辨；筆記不會無聲寫進 facts。</text>
+  <text class="note" x="800" y="807">助理：提案提交失敗時不宣稱成功；成功時回傳可查的 proposal_id。</text>
+  <text class="note" x="800" y="830">Dispatch：未核准與 payload 改動仍阻擋動作，結果狀態可追蹤。</text>
+  <text class="footer" x="34" y="891">2026-09-22 規劃；依 dataflow-audit-2026-09-22.md 現況落差提出。尚未遷移任何資料。</text>
+</svg>
+</html>
