@@ -1,0 +1,88 @@
+{
+  "id": "7b",
+  "role_id": "7",
+  "title": "單支影片／錄音消化",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "決定要摘要、繁中文章、翻譯、字幕檔還是片段",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "四種輸出各一支",
+      "id": "7b-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "四種輸出各一支",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "video-transcript（線上，抓真字幕）· local-media-transcribe（本機錄影錄音，離線）· subtitle-file（srt / vtt 保留時間軸）· video-clip-extract（只要一段）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "7b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "video-transcript",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "local-media-transcribe",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "subtitle-file",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "video-clip-extract",
+          "mode": "core"
+        }
+      ],
+      "action": "video-transcript（線上，抓真字幕）· local-media-transcribe（本機錄影錄音，離線）· subtitle-file（srt / vtt 保留時間軸）· video-clip-extract（只要一段）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "reliability 標記",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "7b-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "reliability 標記",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph · 可以做成 skill 的交 session-harvest",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "7b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "session-harvest",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph · 可以做成 skill 的交 session-harvest",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

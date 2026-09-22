@@ -29,19 +29,19 @@ Lives at `src/app/projects/[name]/workflow/[flow]/page.tsx` (currently only
 permanent redirect for legacy bookmarks. Sub-routes per flow:
 `/projects/rivendell/workflow/{ui,backend,slide,maintenance}`.
 
-Source of truth is `src/app/projects/[name]/workflow/playbook-data.ts` —
-a TypeScript module, not a JSON file. Edit it directly; the page re-renders
-on next build. Mirrors `~/.claude/CLAUDE.md`'s "Development Workflow"
-section. When that doc changes substantively, update playbook-data.ts to
-match.
+Source of truth is `platform/capabilities/workflows/playbooks/*.json` in the
+repo root. The page loads each playbook through `/api/capabilities/playbooks/{id}`;
+`playbook-data.ts` contains display types only. The current local
+`~/.claude/CLAUDE.md` has no "Development Workflow" section, so it is not a
+mirror of the playbooks on this host.
 
 `FlowView.tsx` renders one flow as a vertical step list with `↳` branch
 lines for `optionals`. `[flow]/page.tsx` wires the breadcrumb, title, and
 the active flow. Slide branch tabs (A/B/C/D) are in-page state inside
 FlowView.
 
-Skill detail (trigger / SKIP) shows in a modal via `skillDetails` in the
-same module. Click any chip to open.
+Skill detail (trigger / SKIP) shows in a modal via `platform/capabilities/catalog/playbook-skill-details.json` from
+the same API. Click any chip to open.
 
 **Reverted experiments** (see DESIGN.md Decisions Log for context):
 - Read-only React Flow + dagre DAG view (commit b7c54d0, reverted 791c7d5).

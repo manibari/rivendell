@@ -1,0 +1,73 @@
+{
+  "id": "6c",
+  "role_id": "6",
+  "title": "內部公告",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "誰要知道、什麼時候、走哪個管道",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "目前寫在 internal-comms 的模板選擇裡",
+      "id": "6c-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "目前寫在 internal-comms 的模板選擇裡",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "internal-comms",
+      "gaps": [],
+      "stage": "Do",
+      "note": "公告、newsletter、FAQ 模板",
+      "id": "6c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "internal-comms",
+          "mode": "core"
+        }
+      ],
+      "action": "公告、newsletter、FAQ 模板",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "say-it-plain → de-slopify",
+      "gaps": [],
+      "stage": "Check",
+      "note": "結論先行、去 AI 腔",
+      "id": "6c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        }
+      ],
+      "action": "結論先行、去 AI 腔",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "—",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "6c-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "—",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

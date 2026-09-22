@@ -86,6 +86,9 @@ as release notes.
 ## Skills Catalog (125 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
+
+技能包本體仍在 `skills/*/*/SKILL.md`；技能索引與觸發規則在 `platform/capabilities/catalog/`，角色工作與四頁 playbook 定義在 `platform/capabilities/workflows/`。Dashboard 透過 API 讀流程定義；舊 `/api/workflow` 的 JSON 僅供相容用途。
+修改工作定義後執行 `./bin/sk check workflows`，確認角色文件、技能引用與本地技能覆蓋一致。
 > 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。
 
 ### platform/ — 平台自我改善

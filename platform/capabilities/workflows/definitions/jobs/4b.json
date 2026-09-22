@@ -1,0 +1,105 @@
+{
+  "id": "4b",
+  "role_id": "4",
+  "title": "政府補助計畫",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "gov-subsidy-scraper · gov-subsidy-writer Phase 1（官方文件先行、目錄 framing）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "先讀官方 SOT 全文再用章節代碼",
+      "id": "4b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gov-subsidy-scraper",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "gov-subsidy-writer",
+          "mode": "core"
+        }
+      ],
+      "action": "先讀官方 SOT 全文再用章節代碼",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gov-subsidy-writer Phase 2–5（分項架構 → 逐題拍板 → 內文 → 效益量化）· chart-design · office-docx",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "4b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gov-subsidy-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-docx",
+          "mode": "core"
+        }
+      ],
+      "action": "gov-subsidy-writer Phase 2–5（分項架構 → 逐題拍板 → 內文 → 效益量化）· chart-design · office-docx",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gov-subsidy-writer Phase 6（紅字▲歸零 + 文體掃描）· de-slopify 審查文體 · say-it-plain",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "4b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gov-subsidy-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "gov-subsidy-writer Phase 6（紅字▲歸零 + 文體掃描）· de-slopify 審查文體 · say-it-plain",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "Phase 7 輸出 → Phase 8 書面審查意見 → 審查會議簡報 · knowledge-graph（委員、意見）",
+      "gaps": [],
+      "stage": "Act",
+      "note": "這條線的 Check / Act 是完整的，標案線可以抄它",
+      "id": "4b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "這條線的 Check / Act 是完整的，標案線可以抄它",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

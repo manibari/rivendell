@@ -1,0 +1,94 @@
+{
+  "id": "2b",
+  "role_id": "2",
+  "title": "功能完成後的 QA",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "qa-planner",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "從 diff 推影響、測試案例、風險",
+      "id": "2b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-planner",
+          "mode": "core"
+        }
+      ],
+      "action": "從 diff 推影響、測試案例、風險",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-auto · qa-testing · gstack-qa / gstack-qa-only (gstack)",
+      "gaps": [],
+      "stage": "Do",
+      "note": "產測試並跑；手寫測試；headless 瀏覽器跑 UI",
+      "id": "2b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-auto",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "qa-testing",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-qa",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-qa-only",
+          "mode": "core"
+        }
+      ],
+      "action": "產測試並跑；手寫測試；headless 瀏覽器跑 UI",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-review · gstack-cso (gstack)",
+      "gaps": [],
+      "stage": "Check",
+      "note": "diff 審查；安全",
+      "id": "2b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-review",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-cso",
+          "mode": "core"
+        }
+      ],
+      "action": "diff 審查；安全",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "覆蓋缺口回 1b / 1c",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "2b-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "覆蓋缺口回 1b / 1c",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

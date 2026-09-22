@@ -1,1 +1,1 @@
-../../../platform/skill_catalog/hooks.py
+../../../platform/capabilities/catalog/hooks.py

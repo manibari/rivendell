@@ -1,0 +1,128 @@
+{
+  "id": "11b",
+  "role_id": "11",
+  "title": "內容產製（文章、貼文、案例研究）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 內容日曆（主題、管道、頻率、負責人）｜ 視情況：yt-channel-scraper → video-transcript（看同業在講什麼）、sales-keyword-discovery（關鍵字）",
+      "gaps": [
+        "內容日曆（主題、管道、頻率、負責人）"
+      ],
+      "stage": "Plan",
+      "note": "",
+      "id": "11b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "yt-channel-scraper",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "video-transcript",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-keyword-discovery",
+          "mode": "conditional"
+        }
+      ],
+      "action": "★ 內容日曆（主題、管道、頻率、負責人）｜ 視情況：yt-channel-scraper → video-transcript（看同業在講什麼）、sales-keyword-discovery（關鍵字）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "doc-coauthoring → de-slopify ｜ 視情況：chart-design（圖）、excalidraw-diagram（示意）、video-clip-extract（短片段）｜ ★ 案例研究模板（去識別化規矩：身分匿名、技術數字留具體）",
+      "gaps": [
+        "案例研究模板（去識別化規矩：身分匿名、技術數字留具體）"
+      ],
+      "stage": "Do",
+      "note": "案例研究是行銷最強的素材，但每次都從頭寫",
+      "id": "11b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "doc-coauthoring",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "excalidraw-diagram",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "video-clip-extract",
+          "mode": "conditional"
+        }
+      ],
+      "action": "案例研究是行銷最強的素材，但每次都從頭寫",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "de-slopify → say-it-plain ｜ ★ 發布前檢核（客戶同意、去識別化、數字來源）",
+      "gaps": [
+        "發布前檢核（客戶同意、去識別化、數字來源）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "11b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "de-slopify → say-it-plain ｜ ★ 發布前檢核（客戶同意、去識別化、數字來源）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "案例進 sales-material · knowledge-graph ｜ ★ 成效回填（哪篇帶來名單）",
+      "gaps": [
+        "成效回填（哪篇帶來名單）"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "11b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-material",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "案例進 sales-material · knowledge-graph ｜ ★ 成效回填（哪篇帶來名單）",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

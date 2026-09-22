@@ -1,0 +1,90 @@
+{
+  "id": "3c",
+  "role_id": "3",
+  "title": "簽約與 kickoff",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "gov-rfq-writer → sow-writer",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "報價 → 工作說明書（12 節、Gantt、驗收、人天）",
+      "id": "3c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gov-rfq-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "core"
+        }
+      ],
+      "action": "報價 → 工作說明書（12 節、Gantt、驗收、人天）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sales-client-kickoff-docs",
+      "gaps": [],
+      "stage": "Do",
+      "note": "NDA 簽完，讀客戶 homework 建三件套",
+      "id": "3c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-client-kickoff-docs",
+          "mode": "core"
+        }
+      ],
+      "action": "NDA 簽完，讀客戶 homework 建三件套",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "de-slopify 審查文體 · say-it-plain",
+      "gaps": [],
+      "stage": "Check",
+      "note": "合約給客戶老闆看",
+      "id": "3c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "合約給客戶老闆看",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "presales-pipeline won · 轉顧問（第 4 節）或開發者（第 1 節）",
+      "gaps": [],
+      "stage": "Act",
+      "note": "案子從 presales 變專案",
+      "id": "3c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        }
+      ],
+      "action": "案子從 presales 變專案",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

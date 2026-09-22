@@ -1,0 +1,143 @@
+{
+  "id": "maintenance",
+  "label": "Recurring Maintenance",
+  "heading": "Recurring Maintenance",
+  "lead": {
+    "tone": "info",
+    "text": "遇到固定情境直接 trigger 對應 skill，不需走完整 workflow"
+  },
+  "maintenance": [
+    {
+      "when": "遇到不明 bug",
+      "chips": [
+        {
+          "key": "gstack-investigate",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "每次 ship 前",
+      "chips": [
+        {
+          "key": "gstack-careful",
+          "category": "critical"
+        }
+      ],
+      "sequence": [
+        {
+          "connector": "arrow",
+          "chips": [
+            {
+              "key": "gstack-review",
+              "category": "gstack"
+            }
+          ]
+        },
+        {
+          "connector": "arrow",
+          "chips": [
+            {
+              "key": "gstack-qa",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "when": "每次 ship 後",
+      "chips": [
+        {
+          "key": "gstack-canary",
+          "category": "gstack"
+        }
+      ],
+      "sequence": [
+        {
+          "connector": "arrow",
+          "chips": [
+            {
+              "key": "gstack-document-release",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "when": "定期 UI 健檢（不修）",
+      "chips": [
+        {
+          "key": "gstack-qa-only",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "重構時保護穩定區域",
+      "chips": [
+        {
+          "key": "gstack-freeze",
+          "category": "gstack"
+        }
+      ],
+      "sequence": [
+        {
+          "connector": "then",
+          "chips": [
+            {
+              "key": "gstack-unfreeze",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "when": "需要獨立第二意見",
+      "chips": [
+        {
+          "key": "gstack-codex",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "每週 retro",
+      "chips": [
+        {
+          "key": "gstack-retro",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "安全審計（上線前）",
+      "chips": [
+        {
+          "key": "gstack-cso",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "gstack 有 UPGRADE_AVAILABLE",
+      "chips": [
+        {
+          "key": "gstack-upgrade",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "when": "學到新東西 / 踩坑",
+      "chips": [
+        {
+          "key": "gstack-learn",
+          "category": "gstack"
+        }
+      ]
+    }
+  ]
+}

@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from lib.skills import list_skills
-from lib.roles import parse_roles
+from lib.capabilities import project_roles, skill_workflows
 
 router = APIRouter()
 REPO_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -36,7 +36,7 @@ def api_skills() -> list[dict[str, Any]]:
 
 @router.get("/api/skills/roles", tags=["Skills"])
 def api_skills_roles() -> dict[str, Any]:
-    """角色 → 工作 → PDCA, parsed from docs/skills-by-role.md (the SoT).
+    """角色 → 工作 → PDCA, projected from capability definitions.
 
     Declared before /api/skills/{name} so the static segment wins. `content`
     is the raw markdown for a "原文" view; `roles` is the parsed structure.
@@ -44,8 +44,7 @@ def api_skills_roles() -> dict[str, Any]:
     path = REPO_DIR / "docs" / "skills-by-role.md"
     if not path.is_file():
         raise HTTPException(404, "docs/skills-by-role.md not found")
-    known = {s.name for s in list_skills()}
-    data = parse_roles(path, known)
+    data = project_roles()
     data["content"] = path.read_text(encoding="utf-8")
     return data
 
@@ -203,10 +202,10 @@ def api_skill_content(name: str) -> dict[str, Any]:
             f"meant to be modified by users.\n\n"
             f"See README.md → \"Built-in Claude Code Skills\" section for the full inventory.\n"
         )
-        return {"name": name, "content": content, **meta}
+        return {"name": name, "content": content, "workflows": skill_workflows(name), **meta}
 
     skill_md = Path.home() / ".claude" / "skills" / name / "SKILL.md"
     if not skill_md.is_file():
         raise HTTPException(404, f"Skill '{name}' not found")
     content = skill_md.read_text(encoding="utf-8")
-    return {"name": name, "content": content, **meta}
+    return {"name": name, "content": content, "workflows": skill_workflows(name), **meta}

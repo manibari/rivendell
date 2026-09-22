@@ -19,8 +19,11 @@ rivendell/
 │   │   └── cli.sh             Cross-service status command
 │   ├── projects/              Project data and synchronization
 │   ├── release/               Release policy; canonical files still at root
-│   ├── skill_catalog/         Hook, routing, and catalog rules and metadata
-│   └── workflows/             Workflow map and role view
+│   ├── capabilities/
+│   │   ├── catalog/           Hook, routing, and skill catalog metadata
+│   │   └── workflows/         Role/job definitions, playbooks, and legacy map
+│   ├── skill_catalog -> capabilities/catalog
+│   └── workflows -> capabilities/workflows
 ├── assistant/
 │   ├── conversation/          Chat log
 │   ├── dispatch/              Proposal and decision state machine
@@ -41,8 +44,10 @@ rivendell/
 
 `dashboard-next`, `dashboard`, `gateway`, `agents`, and `dockerfiles` at the root are compatibility links. `profiles/` and `data/` contain links for old consumers. `apps/dashboard-web/api` points to the separate `apps/dashboard-api` folder for the existing API start script. The old `scripts/` paths for knowledge, dispatch, mail, and calendar, plus `bin/sk-projects-sync` and `bin/sk-disk-snapshot`, remain stable entry paths that point to their owners.
 
-The API keeps its route modules in `apps/dashboard-api/routes/`; `server.py` assembles the app. Monitoring has health, disk, errors, Git, issues, and token usage subroutes. Agent, project, skill catalog, deployment, workflow, collaboration, and harvest routes have their own modules. The workflow map lives in `platform/workflows/` and is mounted into the API container for edits. The API still imports through `apps/dashboard-legacy/lib`. Agent, project, skill catalog, workflow role, and token usage implementations now live in their platform modules; the old library import paths link to them. Some agent and harvest behavior remains in the route modules and can move into domain services separately. Shared SQLite access still lives in the legacy library. `bin/sk` sources deployment and service status commands from their owning modules; other commands still share the main file. Release files, dispatch data, and generated reports retain their existing storage paths until their producers and consumers can move together.
+The API keeps its route modules in `apps/dashboard-api/routes/`; `server.py` assembles the app. Monitoring has health, disk, errors, Git, issues, and token usage subroutes. Agent, project, skill catalog, deployment, workflow, collaboration, and harvest routes have their own modules. Capability definitions live in `platform/capabilities/workflows/definitions/` and the four UI playbooks in `playbooks/`. The legacy `workflow-map.json` stays writable only for `/api/workflow` compatibility and is not a source for the new workflow API. The API still imports through `apps/dashboard-legacy/lib` links. Shared SQLite access still lives in the legacy library. `bin/sk` sources deployment and service status commands from their owning modules; other commands still share the main file. Release files, dispatch data, and generated reports retain their existing storage paths until their producers and consumers can move together.
 
 `platform/` is a filesystem boundary, not a Python package name: importing it as `platform` would collide with Python's standard library module. Extracted Python implementations need a distinct import package name.
 
 Ability packages stay under `skills/<category>/<name>/SKILL.md`. A script used only by one package stays with that package. Shared tools go to their owning module. External tools such as Playwright and Whisper are dependencies of the packages that use them.
+
+The role document keeps its human-written explanation and is checked against the structured definitions. The dashboard role API and four playbook pages read the capability definitions. See [the consolidation plan](../plans/2026-09-22-capabilities-workflows-consolidation.md).

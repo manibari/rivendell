@@ -1,0 +1,100 @@
+{
+  "id": "5a",
+  "role_id": "5",
+  "title": "投資研究",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "mops-financial-scraper · tw-company-lookup",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "財務三表、月營收 → SQLite / DuckDB",
+      "id": "5a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "mops-financial-scraper",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "tw-company-lookup",
+          "mode": "core"
+        }
+      ],
+      "action": "財務三表、月營收 → SQLite / DuckDB",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "invest-research · chart-design（data 類）· office-xlsx",
+      "gaps": [],
+      "stage": "Do",
+      "note": "持股追蹤、回測、風險；圖走 R1–R4",
+      "id": "5a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "invest-research",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-xlsx",
+          "mode": "core"
+        }
+      ],
+      "action": "持股追蹤、回測、風險；圖走 R1–R4",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "repro-exam · env-doctor",
+      "gaps": [],
+      "stage": "Check",
+      "note": "兩台機器算出來要一樣",
+      "id": "5a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "repro-exam",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "env-doctor",
+          "mode": "core"
+        }
+      ],
+      "action": "兩台機器算出來要一樣",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph · 報告交付走 4c",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "5a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph · 報告交付走 4c",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

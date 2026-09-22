@@ -88,7 +88,7 @@ export default function ProjectWorkflowFlowPage() {
             fontSize: 12,
           }}
         >
-          ~/.claude/CLAUDE.md · click any chip for trigger / skip
+          platform/capabilities/workflows · click any chip for trigger / skip
         </div>
 
         {/* Flow switching now lives in the sidebar (workflow.NAV nested

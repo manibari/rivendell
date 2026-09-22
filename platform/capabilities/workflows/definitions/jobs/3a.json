@@ -1,0 +1,145 @@
+{
+  "id": "3a",
+  "role_id": "3",
+  "title": "陌生開發到第一次拜訪（B2B 首拜）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "presales-pipeline（建 client 檔）→ tw-company-lookup → sales-customer-intel → metadata-workshop（猜製程）· gstack-office-hours (gstack)",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "公司登記；情蒐要 operator-level 猜製程與業務流程，不是轉述公開資料；值不值得追",
+      "id": "3a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "tw-company-lookup",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-customer-intel",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "metadata-workshop",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-office-hours",
+          "mode": "core"
+        }
+      ],
+      "action": "公司登記；情蒐要 operator-level 猜製程與業務流程，不是轉述公開資料；值不值得追",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "storyline.md（你寫，AI 補洞）→ slide-office-hours → slide-workflow → office-pptx → de-slopify ｜ 視情況：chart-design（deck 有圖才進，它再轉 excalidraw-diagram / mermaid-diagram）、gdoc-report-builder（要出 Google Slides）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "通用流程 D：storyline 紅隊過了才生成；繁中打磨",
+      "id": "3a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "slide-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "slide-workflow",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-pptx",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "excalidraw-diagram",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "mermaid-diagram",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "gdoc-report-builder",
+          "mode": "conditional"
+        }
+      ],
+      "action": "通用流程 D：storyline 紅隊過了才生成；繁中打磨",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "slide-office-hours（status: signed-off 才准生成）· gstack-design-review (gstack) · check-html-figure.mjs",
+      "gaps": [],
+      "stage": "Check",
+      "note": "硬閘門；視覺一致；圖檔切版與字級",
+      "id": "3a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "slide-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-design-review",
+          "mode": "core"
+        }
+      ],
+      "action": "硬閘門；視覺一致；圖檔切版與字級",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "presales-pipeline（active → 下一步）· knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "狀態流轉；人與決策記成事實",
+      "id": "3a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "狀態流轉；人與決策記成事實",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

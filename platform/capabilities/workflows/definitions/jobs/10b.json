@@ -1,0 +1,95 @@
+{
+  "id": "10b",
+  "role_id": "10",
+  "title": "客戶交付管理（kickoff 到驗收）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "sales-client-kickoff-docs → sow-writer 的驗收與變更條款",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "kickoff 三件套裡有時程與範圍",
+      "id": "10b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-client-kickoff-docs",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "core"
+        }
+      ],
+      "action": "kickoff 三件套裡有時程與範圍",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 交付追蹤（里程碑、變更單、客戶待辦）｜ 交付物本身走第 1 節（產品）或第 4 節（報告）",
+      "gaps": [
+        "交付追蹤（里程碑、變更單、客戶待辦）"
+      ],
+      "stage": "Do",
+      "note": "",
+      "id": "10b-do",
+      "order": 2,
+      "skill_refs": [],
+      "action": "★ 交付追蹤（里程碑、變更單、客戶待辦）｜ 交付物本身走第 1 節（產品）或第 4 節（報告）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-journey / qa-dataflow（交付前驗收）｜ ★ 驗收單（客戶簽什麼、憑什麼請款）",
+      "gaps": [
+        "驗收單（客戶簽什麼、憑什麼請款）"
+      ],
+      "stage": "Check",
+      "note": "驗收單是請款的前置",
+      "id": "10b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-journey",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "qa-dataflow",
+          "mode": "core"
+        }
+      ],
+      "action": "驗收單是請款的前置",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 結案回顧（做對什麼、下次不接什麼）→ knowledge-graph ｜ sales-material（案例進素材庫）",
+      "gaps": [
+        "結案回顧（做對什麼、下次不接什麼）"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "10b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-material",
+          "mode": "core"
+        }
+      ],
+      "action": "★ 結案回顧（做對什麼、下次不接什麼）→ knowledge-graph ｜ sales-material（案例進素材庫）",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

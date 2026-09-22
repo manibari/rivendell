@@ -1,0 +1,109 @@
+{
+  "id": "8c",
+  "role_id": "8",
+  "title": "session 與環境",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "setup-permissions · settings-audit",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "只放用到的權限；清無效設定",
+      "id": "8c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "setup-permissions",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "settings-audit",
+          "mode": "core"
+        }
+      ],
+      "action": "只放用到的權限；清無效設定",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "context-journal · context-recovery · claude-to-telegram · auto-stage · protect-secrets",
+      "gaps": [],
+      "stage": "Do",
+      "note": "長 session 不掉 context；手機遙控；hook 自動 stage、擋 .env",
+      "id": "8c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "context-journal",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "context-recovery",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "claude-to-telegram",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "auto-stage",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "protect-secrets",
+          "mode": "core"
+        }
+      ],
+      "action": "長 session 不掉 context；手機遙控；hook 自動 stage、擋 .env",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sk check",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "8c-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "sk check",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "session-wrap · self-improving-agent · learnings-promotion-sprint",
+      "gaps": [],
+      "stage": "Act",
+      "note": "收工；踩坑分流到對的 vault；升進 CLAUDE.md",
+      "id": "8c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "session-wrap",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "self-improving-agent",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "learnings-promotion-sprint",
+          "mode": "core"
+        }
+      ],
+      "action": "收工；踩坑分流到對的 vault；升進 CLAUDE.md",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

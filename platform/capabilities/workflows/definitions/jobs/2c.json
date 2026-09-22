@@ -1,0 +1,74 @@
+{
+  "id": "2c",
+  "role_id": "2",
+  "title": "使用者旅程測試",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "user-flow（讀）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "旅程劇本來源",
+      "id": "2c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "user-flow",
+          "mode": "core"
+        }
+      ],
+      "action": "旅程劇本來源",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-journey",
+      "gaps": [],
+      "stage": "Do",
+      "note": "模擬沒耐心的真使用者，記 friction ledger",
+      "id": "2c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-journey",
+          "mode": "core"
+        }
+      ],
+      "action": "模擬沒耐心的真使用者，記 friction ledger",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-design-review (gstack)",
+      "gaps": [],
+      "stage": "Check",
+      "note": "視覺一致性",
+      "id": "2c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-design-review",
+          "mode": "core"
+        }
+      ],
+      "action": "視覺一致性",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "friction 回 1b",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "2c-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "friction 回 1b",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

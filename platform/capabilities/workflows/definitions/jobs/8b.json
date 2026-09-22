@@ -1,0 +1,89 @@
+{
+  "id": "8b",
+  "role_id": "8",
+  "title": "排程 agent",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "agent-persona",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "tester / maintainer / reviewer 的 prompt",
+      "id": "8b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "agent-persona",
+          "mode": "core"
+        }
+      ],
+      "action": "tester / maintainer / reviewer 的 prompt",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "agent-launchd · agent-headless · agent-observability · agent-dispatch",
+      "gaps": [],
+      "stage": "Do",
+      "note": "plist（bootout / bootstrap，不要 kill）；無人值守；dashboard 看得到；平行修",
+      "id": "8b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "agent-launchd",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "agent-headless",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "agent-observability",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "agent-dispatch",
+          "mode": "core"
+        }
+      ],
+      "action": "plist（bootout / bootstrap，不要 kill）；無人值守；dashboard 看得到；平行修",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "系統健康「排程健康」· sk check agents",
+      "gaps": [],
+      "stage": "Check",
+      "note": "agents.conf 與 launchd 對帳",
+      "id": "8b-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "agents.conf 與 launchd 對帳",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "workflow-retro",
+      "gaps": [],
+      "stage": "Act",
+      "note": "每週讀 telemetry 找下一個瓶頸",
+      "id": "8b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "workflow-retro",
+          "mode": "core"
+        }
+      ],
+      "action": "每週讀 telemetry 找下一個瓶頸",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

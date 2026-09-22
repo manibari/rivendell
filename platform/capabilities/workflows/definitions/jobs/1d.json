@@ -1,0 +1,120 @@
+{
+  "id": "1d",
+  "role_id": "1",
+  "title": "部署與上線",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "deploy ｜ 視情況：ci-pipeline（還沒有 CI）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "選平台、生設定",
+      "id": "1d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "deploy",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "ci-pipeline",
+          "mode": "conditional"
+        }
+      ],
+      "action": "選平台、生設定",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "cloudflare-tunnel-provision → tunnel-proxy-deploy ｜ 視情況：docker-compose-setup",
+      "gaps": [],
+      "stage": "Do",
+      "note": "從零開網域；FastAPI + Next.js 走 tunnel 的反代坑",
+      "id": "1d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "cloudflare-tunnel-provision",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "tunnel-proxy-deploy",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "docker-compose-setup",
+          "mode": "conditional"
+        }
+      ],
+      "action": "從零開網域；FastAPI + Next.js 走 tunnel 的反代坑",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-canary (gstack) → env-doctor ｜ 視情況：gstack-cso (gstack，上線前安全審計)",
+      "gaps": [],
+      "stage": "Check",
+      "note": "上線後回歸；環境一致",
+      "id": "1d-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-canary",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "env-doctor",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-cso",
+          "mode": "conditional"
+        }
+      ],
+      "action": "上線後回歸；環境一致",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "cloudflare-tunnel-ops ｜ 自動：spine-versioning、doc-drift-sync ｜ 視情況：gstack-document-release (gstack)",
+      "gaps": [],
+      "stage": "Act",
+      "note": "tunnel 掛了／搬機器",
+      "id": "1d-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "cloudflare-tunnel-ops",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "spine-versioning",
+          "mode": "automatic"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-drift-sync",
+          "mode": "automatic"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-document-release",
+          "mode": "conditional"
+        }
+      ],
+      "action": "tunnel 掛了／搬機器",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

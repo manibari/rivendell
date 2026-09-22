@@ -1,0 +1,94 @@
+{
+  "id": "6a",
+  "role_id": "6",
+  "title": "開缺",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief（決定階段）｜ ★ 職缺需求單：為什麼開、headcount 與預算、職級、報告線、成功 90 天長什麼樣",
+      "gaps": [
+        "職缺需求單：為什麼開、headcount 與預算、職級、報告線、成功 90 天長什麼樣"
+      ],
+      "stage": "Plan",
+      "note": "hr-jd-writer 的 Discovery Questions 只問職稱與組織位置，是寫 JD 的輸入，不回答「要不要開」",
+      "id": "6a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        }
+      ],
+      "action": "hr-jd-writer 的 Discovery Questions 只問職稱與組織位置，是寫 JD 的輸入，不回答「要不要開」",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "hr-jd-writer ｜ 視情況：tw-company-lookup（對標同業職缺）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "結構化 JD、招募文",
+      "id": "6a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "hr-jd-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "tw-company-lookup",
+          "mode": "conditional"
+        }
+      ],
+      "action": "結構化 JD、招募文",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "de-slopify → say-it-plain",
+      "gaps": [],
+      "stage": "Check",
+      "note": "對外前去 AI 腔；一句話講得出這個缺在做什麼",
+      "id": "6a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "對外前去 AI 腔；一句話講得出這個缺在做什麼",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph ｜ ★ 錄取後回頭改 JD（哪些必備其實不必備）",
+      "gaps": [
+        "錄取後回頭改 JD（哪些必備其實不必備）"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "6a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph ｜ ★ 錄取後回頭改 JD（哪些必備其實不必備）",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

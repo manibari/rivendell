@@ -1,0 +1,69 @@
+{
+  "id": "7c",
+  "role_id": "7",
+  "title": "Drive 文件變 skill",
+  "deep_dive": null,
+  "steps": [
+    {
+      "stage": "Plan",
+      "text": "",
+      "gaps": [],
+      "note": "",
+      "empty": true,
+      "id": "7c-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gdrive-to-skills",
+      "gaps": [],
+      "stage": "Do",
+      "note": "讀 Drive、分類、建 knowledge skill",
+      "id": "7c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gdrive-to-skills",
+          "mode": "core"
+        }
+      ],
+      "action": "讀 Drive、分類、建 knowledge skill",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sk check（gdrive 段）",
+      "gaps": [],
+      "stage": "Check",
+      "note": "過期匯入",
+      "id": "7c-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "過期匯入",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sync-readme",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "7c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sync-readme",
+          "mode": "core"
+        }
+      ],
+      "action": "sync-readme",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "id": "9d",
+  "role_id": "9",
+  "title": "關鍵人事（開缺、合夥、外包）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 職缺需求單（為什麼開、headcount 與預算、職級、成功 90 天）— 同 6a Plan，決定權在這裡",
+      "gaps": [
+        "職缺需求單（為什麼開、headcount 與預算、職級、成功 90 天）— 同 6a Plan，決定權在這裡"
+      ],
+      "stage": "Plan",
+      "note": "人資（第 6 節）執行，CEO 決定",
+      "id": "9d-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "人資（第 6 節）執行，CEO 決定",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "交第 6 節 hr-jd-writer → hr-candidate-analysis ｜ 視情況：sow-writer（外包用 SOW 綁範圍）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "9d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "hr-jd-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "hr-candidate-analysis",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "conditional"
+        }
+      ],
+      "action": "交第 6 節 hr-jd-writer → hr-candidate-analysis ｜ 視情況：sow-writer（外包用 SOW 綁範圍）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 面試回饋彙整（同 6b Check）",
+      "gaps": [
+        "面試回饋彙整（同 6b Check）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "9d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 面試回饋彙整（同 6b Check）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph（人、決定、為什麼）",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "9d-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph（人、決定、為什麼）",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

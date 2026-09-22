@@ -5,14 +5,51 @@ import os
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from lib.capabilities import load_definitions, load_playbook, skill_details, validate
 
 router = APIRouter()
+
+
+@router.get("/api/capabilities/workflows", tags=["Workflow"])
+def api_capability_workflows(role_id: str | None = None, job_id: str | None = None) -> dict[str, Any]:
+    errors = validate()
+    if errors:
+        raise HTTPException(500, {"definition_errors": errors})
+    roles, jobs = load_definitions()
+    if role_id and role_id not in {role["id"] for role in roles["roles"]}:
+        raise HTTPException(404, f"Role '{role_id}' not found")
+    if job_id and job_id not in jobs:
+        raise HTTPException(404, f"Workflow '{job_id}' not found")
+    items = [
+        {"id": job["id"], "title": job["title"], "role_id": job["role_id"], "step_count": len(job["steps"])}
+        for job in jobs.values()
+        if (not role_id or job["role_id"] == role_id) and (not job_id or job["id"] == job_id)
+    ]
+    return {"version": roles["version"], "workflows": items}
+
+
+@router.get("/api/capabilities/workflows/{workflow_id}", tags=["Workflow"])
+def api_capability_workflow(workflow_id: str) -> dict[str, Any]:
+    roles, jobs = load_definitions()
+    if workflow_id not in jobs:
+        raise HTTPException(404, f"Workflow '{workflow_id}' not found")
+    job = jobs[workflow_id]
+    role = next(role for role in roles["roles"] if role["id"] == job["role_id"])
+    return {"version": roles["version"], "role": {key: role[key] for key in ("id", "title", "tier", "authority")}, "workflow": job}
+
+
+@router.get("/api/capabilities/playbooks/{flow_id}", tags=["Workflow"])
+def api_capability_playbook(flow_id: str) -> dict[str, Any]:
+    try:
+        return {"version": 1, "workflow": load_playbook(flow_id), "skill_details": skill_details()}
+    except KeyError:
+        raise HTTPException(404, f"Playbook '{flow_id}' not found") from None
 
 # ── Workflow Map ──────────────────────────────────────────────────────────────
 
 REPO_DIR = Path(__file__).resolve().parent.parent.parent.parent
-_WORKFLOW_JSON = Path(os.environ.get("WORKFLOW_MAP_FILE", str(REPO_DIR / "platform" / "workflows" / "workflow-map.json")))
+_WORKFLOW_JSON = Path(os.environ.get("WORKFLOW_MAP_FILE", str(REPO_DIR / "platform" / "capabilities" / "workflows" / "workflow-map.json")))
 
 
 def _load_workflow() -> dict[str, Any]:

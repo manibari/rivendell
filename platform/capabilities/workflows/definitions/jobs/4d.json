@@ -1,0 +1,84 @@
+{
+  "id": "4d",
+  "role_id": "4",
+  "title": "客戶資料梳理",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "discovery-interview",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "找最痛的手工流程",
+      "id": "4d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "discovery-interview",
+          "mode": "core"
+        }
+      ],
+      "action": "找最痛的手工流程",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "metadata-workshop · doc-to-structured-data",
+      "gaps": [],
+      "stage": "Do",
+      "note": "業務知識 → YAML schema；舊文件 → 結構資料",
+      "id": "4d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "metadata-workshop",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-to-structured-data",
+          "mode": "core"
+        }
+      ],
+      "action": "業務知識 → YAML schema；舊文件 → 結構資料",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "第二個同業客戶能重用七成才算成功",
+      "gaps": [],
+      "stage": "Check",
+      "note": "metadata-workshop 的護城河定義",
+      "id": "4d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "metadata-workshop 的護城河定義",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "schema 進 markdown-file-ssot 或客戶 repo · knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "4d-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "markdown-file-ssot",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "schema 進 markdown-file-ssot 或客戶 repo · knowledge-graph",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

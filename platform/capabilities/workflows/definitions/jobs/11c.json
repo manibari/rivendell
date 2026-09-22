@@ -1,0 +1,114 @@
+{
+  "id": "11c",
+  "role_id": "11",
+  "title": "網站與 landing page",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "11a 的定位一頁 → requirement → user-flow",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "頁面要讓人做什麼動作",
+      "id": "11c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "requirement",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "user-flow",
+          "mode": "core"
+        }
+      ],
+      "action": "頁面要讓人做什麼動作",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "chimesflow-design → mockup → system-design → frontend-design ｜ 視情況：ui-ux-pro-max",
+      "gaps": [],
+      "stage": "Do",
+      "note": "走第 1 節 1b 的做法",
+      "id": "11c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "chimesflow-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "mockup",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "system-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "frontend-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "ui-ux-pro-max",
+          "mode": "conditional"
+        }
+      ],
+      "action": "走第 1 節 1b 的做法",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-landing-report (gstack) → gstack-design-review (gstack) → check-html-figure.mjs ｜ ★ SEO 基本檢核",
+      "gaps": [
+        "SEO 基本檢核"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "11c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-landing-report",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-design-review",
+          "mode": "core"
+        }
+      ],
+      "action": "gstack-landing-report (gstack) → gstack-design-review (gstack) → check-html-figure.mjs ｜ ★ SEO 基本檢核",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "deploy ｜ ★ 流量與轉換追蹤",
+      "gaps": [
+        "流量與轉換追蹤"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "11c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "deploy",
+          "mode": "core"
+        }
+      ],
+      "action": "deploy ｜ ★ 流量與轉換追蹤",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

@@ -20,7 +20,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-REPO_DIR = Path(__file__).resolve().parent.parent.parent
+REPO_DIR = Path(__file__).resolve().parents[3]
 ROLE_DOC = Path(os.environ.get(
     "RIVENDELL_ROLE_DOC", str(REPO_DIR / "docs" / "skills-by-role.md")
 ))

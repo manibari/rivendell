@@ -366,6 +366,7 @@ export interface DocContent {
 
 export interface SkillDetail extends SkillInfo {
   content: string;
+  workflows?: { workflow_id: string; role_id: string; title: string; step_id: string; stage: string }[];
 }
 
 export interface SkillUsageDay {

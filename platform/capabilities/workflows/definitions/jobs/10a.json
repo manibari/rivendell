@@ -1,0 +1,83 @@
+{
+  "id": "10a",
+  "role_id": "10",
+  "title": "營運節奏（週會、月檢視、跨案子進度）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 週檢視清單（每個案子：狀態、下一個里程碑、卡點、負責人）",
+      "gaps": [
+        "週檢視清單（每個案子：狀態、下一個里程碑、卡點、負責人）"
+      ],
+      "stage": "Plan",
+      "note": "沒有清單，週會變成各自報流水帳",
+      "id": "10a-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "沒有清單，週會變成各自報流水帳",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "internal-comms（週報、3P）→ presales-pipeline（funnel）→ sales-crm-projection ｜ 視情況：workflow-retro（只涵蓋 rivendell 的 skill 與 agent）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "現有零件各管一塊，沒有一張表把案子、客戶、錢串起來",
+      "id": "10a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "internal-comms",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-crm-projection",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "workflow-retro",
+          "mode": "conditional"
+        }
+      ],
+      "action": "現有零件各管一塊，沒有一張表把案子、客戶、錢串起來",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 跨案子進度儀表（dashboard 現在的 projects 頁是 agent 視角，不是交付視角）",
+      "gaps": [
+        "跨案子進度儀表（dashboard 現在的 projects 頁是 agent 視角，不是交付視角）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "10a-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 跨案子進度儀表（dashboard 現在的 projects 頁是 agent 視角，不是交付視角）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 公司層 retro（本週卡在哪、下週改什麼）→ 回 9a",
+      "gaps": [
+        "公司層 retro（本週卡在哪、下週改什麼）"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "10a-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "★ 公司層 retro（本週卡在哪、下週改什麼）→ 回 9a",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

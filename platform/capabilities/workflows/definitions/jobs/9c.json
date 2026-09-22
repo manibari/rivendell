@@ -1,0 +1,75 @@
+{
+  "id": "9c",
+  "role_id": "9",
+  "title": "現金與定價",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 現金流與跑道（未來 6 個月進出、最壞情況）",
+      "gaps": [
+        "現金流與跑道（未來 6 個月進出、最壞情況）"
+      ],
+      "stage": "Plan",
+      "note": "沒有這張表，9a 的取捨沒有分母",
+      "id": "9c-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "沒有這張表，9a 的取捨沒有分母",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 定價與報價策略（人天費率、專案 vs 訂閱）→ gov-rfq-writer / sow-writer 吃它的數字",
+      "gaps": [
+        "定價與報價策略（人天費率、專案 vs 訂閱）"
+      ],
+      "stage": "Do",
+      "note": "現在報價單裡的費率是每次現想",
+      "id": "9c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "gov-rfq-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "core"
+        }
+      ],
+      "action": "現在報價單裡的費率是每次現想",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 月結：應收、已收、逾期",
+      "gaps": [
+        "月結：應收、已收、逾期"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "9c-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 月結：應收、已收、逾期",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 調價或砍支出的決定 → 回 9a",
+      "gaps": [
+        "調價或砍支出的決定"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "9c-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "★ 調價或砍支出的決定 → 回 9a",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "10c",
+  "role_id": "10",
+  "title": "合約與法遵（NDA、MOU、合約版本、個資）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 合約清單（每個客戶：NDA 日期、合約期限、續約點）",
+      "gaps": [
+        "合約清單（每個客戶：NDA 日期、合約期限、續約點）"
+      ],
+      "stage": "Plan",
+      "note": "",
+      "id": "10c-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "★ 合約清單（每個客戶：NDA 日期、合約期限、續約點）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "doc-coauthoring + 樣板（~/.claude/CLAUDE.md 已標 NDA／MOU 暫無 skill）→ sow-writer",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "10c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "doc-coauthoring",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "core"
+        }
+      ],
+      "action": "doc-coauthoring + 樣板（~/.claude/CLAUDE.md 已標 NDA／MOU 暫無 skill）→ sow-writer",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "de-slopify 審查文體 ｜ ★ 條款檢核（付款、智財、責任上限）",
+      "gaps": [
+        "條款檢核（付款、智財、責任上限）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "10c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        }
+      ],
+      "action": "de-slopify 審查文體 ｜ ★ 條款檢核（付款、智財、責任上限）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 到期提醒與續約 → 回 10a 週檢視",
+      "gaps": [
+        "到期提醒與續約"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "10c-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "★ 到期提醒與續約 → 回 10a 週檢視",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

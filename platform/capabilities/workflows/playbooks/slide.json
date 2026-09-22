@@ -1,0 +1,199 @@
+{
+  "id": "slide",
+  "label": "Slide / Deck Building",
+  "heading": "Slide / Deck Building — 先分流",
+  "lead": {
+    "tone": "warn",
+    "text": "接到「做 X 簡報 / 準備 Y 提案 / 幫我做 deck」要先問：「哪一類 deck？投資人 BP / 客戶客製提案 / B2B 首次拜訪 / IoT 廠務報告 / 高階主管通用」"
+  },
+  "branches": [
+    {
+      "id": "branch-a",
+      "label": "A. 投資人 BP",
+      "steps": [
+        {
+          "num": "A",
+          "action": "投資人 BP / Pitch Deck",
+          "detail": "含 discovery interview，內部完整 skill flow",
+          "chips": [
+            {
+              "key": "pitch-deck",
+              "category": "core"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "branch-b",
+      "label": "B. 客戶客製提案",
+      "steps": [
+        {
+          "num": "B",
+          "action": "客戶客製提案",
+          "detail": "從素材庫組裝，匹配 sales-customer-intel + case studies + solutions + 補助",
+          "chips": [
+            {
+              "key": "sales-material",
+              "category": "core"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "branch-c",
+      "label": "C. IoT / 廠務報告",
+      "steps": [
+        {
+          "num": "C",
+          "action": "IoT / 廠務時序資料報告",
+          "detail": "CSV/Excel → 視覺化報告 + PPTX；UPW/RO/壓縮機/冷凍機",
+          "chips": [
+            {
+              "key": "iot-factory-report",
+              "category": "core"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "branch-d",
+      "label": "D. B2B 首拜 / 通用",
+      "lead": "D. B2B 首次拜訪 / 高階主管通用 — 8 步驟通用流程",
+      "steps": [
+        {
+          "num": "1",
+          "action": "情蒐",
+          "detail": "operator-level 猜製程 / 業務流程 > 公開資料推測（B2B first-call 尤甚）",
+          "chips": [
+            {
+              "key": "sales-customer-intel",
+              "category": "core"
+            },
+            {
+              "key": "metadata-workshop",
+              "category": "core"
+            }
+          ],
+          "optionals": [
+            {
+              "label": "能與客戶對話:",
+              "chips": [
+                {
+                  "key": "discovery-interview",
+                  "category": "core"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "num": "2",
+          "action": "Storyline 草稿",
+          "detail": "USER-OWNED — Peter 寫 storyline.md，AI 補洞"
+        },
+        {
+          "num": "3",
+          "action": "Storyline Red Team",
+          "chips": [
+            {
+              "key": "slide-office-hours",
+              "category": "core"
+            }
+          ],
+          "hardGate": "硬 gate — storyline.md 需 status: signed-off 才能往下"
+        },
+        {
+          "num": "4",
+          "action": "風格鎖定",
+          "optionals": [
+            {
+              "label": "有參考 PPTX:",
+              "chips": [
+                {
+                  "key": "slide-template-extractor",
+                  "category": "core"
+                }
+              ],
+              "secondLabel": "從零開始:",
+              "secondChips": [
+                {
+                  "key": "ui-ux-pro-max",
+                  "category": "core"
+                },
+                {
+                  "key": "gstack-design-consultation",
+                  "category": "gstack"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "num": "5",
+          "action": "大綱 → 內容（7 階段）",
+          "chips": [
+            {
+              "key": "slide-workflow",
+              "category": "core"
+            }
+          ]
+        },
+        {
+          "num": "6",
+          "action": "生成",
+          "optionals": [
+            {
+              "label": "PPTX:",
+              "chips": [
+                {
+                  "key": "office-pptx",
+                  "category": "core"
+                }
+              ],
+              "secondLabel": "Google Slides:",
+              "secondChips": [
+                {
+                  "key": "gdoc-report-builder",
+                  "category": "core"
+                }
+              ]
+            },
+            {
+              "label": "HTML deck:",
+              "chips": [
+                {
+                  "key": "gstack-design-html",
+                  "category": "gstack"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "num": "7",
+          "action": "文字打磨",
+          "chips": [
+            {
+              "key": "de-slopify",
+              "category": "core"
+            }
+          ],
+          "inlineNote": "繁中模式 + 講者備註"
+        },
+        {
+          "num": "8",
+          "action": "審查視覺一致性",
+          "chips": [
+            {
+              "key": "gstack-design-review",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -187,6 +187,26 @@ export default function SkillDetailPage() {
         </p>
       )}
 
+      {detail.workflows && detail.workflows.length > 0 && (
+        <div className="mt-6 p-4" style={cardStyle}>
+          <h2 className="mb-2 text-sm" style={{ color: "var(--text)", fontWeight: 500 }}>
+            使用此技能的工作
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {detail.workflows.map((use) => (
+              <Link
+                key={use.step_id}
+                href={`/skills/roles?role=${encodeURIComponent(use.role_id)}`}
+                className="rounded px-2 py-1 text-xs"
+                style={{ border: "1px solid var(--border)", color: "var(--accent)" }}
+              >
+                {use.workflow_id} {use.title} · {use.stage}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Usage metrics */}
       <div className="mt-6 grid grid-cols-3 gap-3">
         {[

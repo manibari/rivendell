@@ -1,0 +1,68 @@
+{
+  "id": "5e",
+  "role_id": "5",
+  "title": "自動迭代實驗",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "定目標、指標、驗證指令",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "可量測才能迭代",
+      "id": "5e-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "可量測才能迭代",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "autoresearch",
+      "gaps": [],
+      "stage": "Do",
+      "note": "modify → verify → keep / discard，夜間跑",
+      "id": "5e-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "autoresearch",
+          "mode": "core"
+        }
+      ],
+      "action": "modify → verify → keep / discard，夜間跑",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "指標曲線 · agent-observability",
+      "gaps": [],
+      "stage": "Check",
+      "note": "dashboard 看得到",
+      "id": "5e-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "agent-observability",
+          "mode": "core"
+        }
+      ],
+      "action": "dashboard 看得到",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "留下的改動進 commit",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "5e-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "留下的改動進 commit",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

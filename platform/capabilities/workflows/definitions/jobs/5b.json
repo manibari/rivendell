@@ -1,0 +1,90 @@
+{
+  "id": "5b",
+  "role_id": "5",
+  "title": "廠務時序分析",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "metadata-workshop（PI tag 梳理）· doc-to-structured-data",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "先弄清楚 tag 是什麼",
+      "id": "5b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "metadata-workshop",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-to-structured-data",
+          "mode": "core"
+        }
+      ],
+      "action": "先弄清楚 tag 是什麼",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "iot-factory-report · chart-design",
+      "gaps": [],
+      "stage": "Do",
+      "note": "週期偵測、異常標記、趨勢 → 圖 + PPTX",
+      "id": "5b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "iot-factory-report",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        }
+      ],
+      "action": "週期偵測、異常標記、趨勢 → 圖 + PPTX",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "chart-design Post-check（R3 同軸同單位）· check-html-figure.mjs",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "5b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        }
+      ],
+      "action": "chart-design Post-check（R3 同軸同單位）· check-html-figure.mjs",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "報告交付走 4c · knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "5b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "報告交付走 4c · knowledge-graph",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

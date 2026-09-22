@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "updated": "2026-09-07",
+  "shared": [
+    "橫向共用（每個角色、每件工作都會碰到）：task-brief（開工前先定義任務、判斷階段）、say-it-plain（把話講清楚）、knowledge-graph（記住人／公司／專案的事實）、context-journal / context-recovery（長 session 不掉 context）、session-wrap（收工）、self-improving-agent（踩坑就記）。",
+    "收發信不分角色，走助理層而不是 skill：bin/sk-mail-triage-cron 每天唯讀抓信、分類、重要的推 Telegram、可疑的貼 sk-junk（可逆）、要動作的開 sk dispatch 提案；寄信只有 scripts/send-mail.py，且只在提案確認後由 dispatch 執行，模型不能直接寄。各角色目前沒有任何信件模板（業務跟進、交付通知、催款、候選人回覆、投資人更新），要寄信時是每次現寫再走 dispatch。",
+    "畫圖不分角色，一律從 chart-design 進：它 triage 後轉 mermaid-diagram（工程師看）或 excalidraw-diagram（簡報用）；使用者旅程用 user-flow；要驗證資料流用 qa-dataflow。"
+  ],
+  "tiers": [
+    "決策",
+    "營運",
+    "市場",
+    "交付",
+    "驗證",
+    "支援"
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "title": "產品開發者",
+      "intro": "你在做：蓋新產品、加功能、修 bug、重構、部署。對應 ~/.claude/CLAUDE.md 的「UI Feature / New Page」與「Backend-only / Bug Fix」。",
+      "notes": [
+        "工作之間怎麼接：1a 只跑一次，產出的是 repo（骨架接好 spine、CLAUDE.md、權限、CI、第一次部署），之後 1b 與 1c 都在它裡面反覆跑。1b 的計畫（writing-plans 任務清單）裡「要一個 endpoint」就是 1c 的輸入；1c 的 qa-dataflow 反證結果回到 1b 的 Check。1d 是每一輪 1b／1c 的 Act 都會經過的那段，獨立成一件工作是因為開網域、搬機器不綁任何功能。接縫都是檔案：requirement → user-flow 圖 → 任務清單 → QA 計畫（交 2b）→ 版本號與 CHANGELOG（spine-versioning 閘門擋沒 bump 的 push）→ 下一輪 1b。",
+        "常搭配：QA／驗收者（第 2 節）、平台維護者 8b（要排程時）。"
+      ],
+      "tier": "交付",
+      "authority": "技術選型、實作方式；對 10b 的里程碑負責",
+      "jobs": [
+        "1a",
+        "1b",
+        "1c",
+        "1d",
+        "1e"
+      ]
+    },
+    {
+      "id": "2",
+      "title": "QA／驗收者",
+      "intro": "你在做：驗收一包程式碼，不管是自己寫的、外包的、還是 AI 生的。重點不是「跑得起來」，是「走的路對不對、關卡擋不擋得住」。",
+      "notes": [],
+      "tier": "驗證",
+      "authority": "能擋出貨，不能改實作；對落差報告的真實性負責",
+      "jobs": [
+        "2a",
+        "2b",
+        "2c",
+        "2d"
+      ]
+    },
+    {
+      "id": "3",
+      "title": "業務／Presales",
+      "intro": "你在做：從一家公司的名字開始，到第一次拜訪、客製提案、簽約 kickoff，加上素材庫維護。對應 CLAUDE.md「Slide / Deck Building」的 B、D 兩類，storyline-first 是硬閘門。四條路徑各走各的，不要混。（投資人募資不在這裡，那是第 9 節 CEO 的事。）",
+      "notes": [],
+      "tier": "市場",
+      "authority": "提案內容、報價（在 9c 策略內）、案子接不接的建議；對成交負責，簽約後交營運",
+      "jobs": [
+        "3a",
+        "3b",
+        "3c",
+        "3d"
+      ]
+    },
+    {
+      "id": "4",
+      "title": "顧問／報告與標案撰寫",
+      "intro": "你在做：政府標案與補助、SOW、廠務報告、給委員或客戶老闆看的文字交付物。對應 CLAUDE.md「Text Report Generation」。",
+      "notes": [],
+      "tier": "交付",
+      "authority": "文件內容與框架、投標文件；對委員或客戶老闆的閱讀負責",
+      "jobs": [
+        "4a",
+        "4b",
+        "4c",
+        "4d"
+      ]
+    },
+    {
+      "id": "5",
+      "title": "分析師／投資研究",
+      "intro": "你在做：從資料算出東西，畫數據圖，做財報或製程分析；或在建 ML／AutoML 平台。",
+      "notes": [],
+      "tier": "交付",
+      "authority": "方法與數字的正確性；對結論負責，不對決策負責",
+      "jobs": [
+        "5a",
+        "5b",
+        "5c",
+        "5d",
+        "5e"
+      ]
+    },
+    {
+      "id": "6",
+      "title": "人資",
+      "intro": "你在做：開缺、看履歷、發內部公告。三件工作的 Plan 目前都是人腦在做，沒有 skill；hr-jd-writer 與 hr-candidate-analysis 都是 Do。",
+      "notes": [],
+      "tier": "支援",
+      "authority": "招募流程、JD、公告；開缺與否由 9d 決定",
+      "jobs": [
+        "6a",
+        "6b",
+        "6c"
+      ]
+    },
+    {
+      "id": "7",
+      "title": "知識工作者",
+      "intro": "你在做：消化外部內容，變成 knowledge/ 裡可查的筆記。knowledge/ 是內容摘要庫，knowledge-graph 是實體事實庫。",
+      "notes": [],
+      "tier": "支援",
+      "authority": "看什麼、記什麼；對筆記可信度標記負責",
+      "jobs": [
+        "7a",
+        "7b",
+        "7c"
+      ]
+    },
+    {
+      "id": "8",
+      "title": "平台維護者",
+      "intro": "你在做：維護 rivendell 本身。這是 platform 循環。",
+      "notes": [],
+      "tier": "支援",
+      "authority": "rivendell 本身：skill、agent、hook；對其他角色叫得到工具負責",
+      "jobs": [
+        "8a",
+        "8b",
+        "8c",
+        "8d"
+      ]
+    },
+    {
+      "id": "9",
+      "title": "CEO／創辦人",
+      "intro": "你在做：決定公司往哪走、錢從哪來、誰上車。這一層的 skill 最少：整個庫是從做事的角色長出來的，經營層的工作大多還在人腦和試算表裡。下面每一個 ★ 都是真的沒有，不是漏標。",
+      "notes": [],
+      "tier": "決策",
+      "authority": "方向、資源、人事；對投資人與全公司負責",
+      "jobs": [
+        "9a",
+        "9b",
+        "9c",
+        "9d"
+      ]
+    },
+    {
+      "id": "10",
+      "title": "COO／營運",
+      "intro": "你在做：讓公司每週照節奏轉：案子有沒有照進度交、錢有沒有收到、合約有沒有簽對。這一層跟 CEO 一樣幾乎沒有 skill；現有的零件是 funnel（presales-pipeline）、週報模板（internal-comms）、CRM 投影，和只看 rivendell 自己的 workflow-retro。",
+      "notes": [],
+      "tier": "營運",
+      "authority": "節奏、合約、請款、交付承諾；對 CEO 負責",
+      "jobs": [
+        "10a",
+        "10b",
+        "10c",
+        "10d"
+      ]
+    },
+    {
+      "id": "11",
+      "title": "行銷",
+      "intro": "你在做：讓還不認識你的人找到你、看懂你、留下聯絡方式交給業務。這一層也幾乎沒有 skill：現有的是對外文字打磨、landing page 產生與稽核、看同業內容的工具，沒有定位、內容日曆、案例研究、SEO、成效追蹤。",
+      "notes": [],
+      "tier": "市場",
+      "authority": "對外訊息、內容、名單；把 lead 交給業務",
+      "jobs": [
+        "11a",
+        "11b",
+        "11c",
+        "11d"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "id": "1c",
+  "role_id": "1",
+  "title": "後端功能／修 bug／重構",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief → gstack-investigate (gstack，bug 才要) → system-design（動到 schema / 跨模組傳遞 / 新增 store 時 HARD GATE；純內部邏輯小改由它自己判 Skip）｜ 視情況：backend-async-jobs（慢工作先決定同步 / job / pipeline）、spine-rbac（權限先選 tier）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "先找根因再動手；沒畫面也要有 SA/SD —— 它產出的 target 功能關係圖就是事後 qa-dataflow 的對照基準",
+      "id": "1c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-investigate",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "system-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "backend-async-jobs",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "spine-rbac",
+          "mode": "conditional"
+        }
+      ],
+      "action": "先找根因再動手；沒畫面也要有 SA/SD —— 它產出的 target 功能關係圖就是事後 qa-dataflow 的對照基準",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "對應功能的那一支 ｜ 視情況：spine-auth · rbac-permissions · db-migration · sqlite-to-postgres · vector-search-setup · imap-smtp-integration · oauth-token-vault · telegram-bot · mcp-builder · firebase-backend · audio-transcription-flow · ai-vision-extract · large-file-refactor（500 行以上）· concurrent-session-git（多 session 共用 tree）· resolving-merge-conflicts（卡衝突）· agent-dispatch（3 個以上獨立問題）｜ 自動：gstack-careful (gstack，破壞性指令前)",
+      "gaps": [],
+      "stage": "Do",
+      "note": "一次只會用到其中一兩支，看功能是什麼",
+      "id": "1c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "spine-auth",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "rbac-permissions",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "db-migration",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "sqlite-to-postgres",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "vector-search-setup",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "imap-smtp-integration",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "oauth-token-vault",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "telegram-bot",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "mcp-builder",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "firebase-backend",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "audio-transcription-flow",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "ai-vision-extract",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "large-file-refactor",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "concurrent-session-git",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "resolving-merge-conflicts",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "agent-dispatch",
+          "mode": "conditional"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-careful",
+          "mode": "automatic"
+        }
+      ],
+      "action": "一次只會用到其中一兩支，看功能是什麼",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-testing → gstack-review (gstack) ｜ 視情況：qa-dataflow（資料流反證）、gstack-codex (gstack，第二意見)、repro-exam（要給人標準考題）",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "1c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-testing",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-review",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "qa-dataflow",
+          "mode": "conditional"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-codex",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "repro-exam",
+          "mode": "conditional"
+        }
+      ],
+      "action": "qa-testing → gstack-review (gstack) ｜ 視情況：qa-dataflow（資料流反證）、gstack-codex (gstack，第二意見)、repro-exam（要給人標準考題）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "deploy → gstack-canary (gstack) ｜ 視情況：gstack-benchmark (gstack，動到請求路徑) ｜ 自動：doc-drift-sync",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "1c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "deploy",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-canary",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-benchmark",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-drift-sync",
+          "mode": "automatic"
+        }
+      ],
+      "action": "deploy → gstack-canary (gstack) ｜ 視情況：gstack-benchmark (gstack，動到請求路徑) ｜ 自動：doc-drift-sync",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

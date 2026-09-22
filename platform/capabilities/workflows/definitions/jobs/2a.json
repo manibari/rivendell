@@ -1,0 +1,105 @@
+{
+  "id": "2a",
+  "role_id": "2",
+  "title": "接手或驗收別人／AI 的 code",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief · github-repo-audit",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "完成定義要是「看得到證據」；先打 repo 健康分",
+      "id": "2a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "github-repo-audit",
+          "mode": "core"
+        }
+      ],
+      "action": "完成定義要是「看得到證據」；先打 repo 健康分",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-dataflow · skill-apply",
+      "gaps": [],
+      "stage": "Do",
+      "note": "畫地圖 → 拔依賴反證 → 只釘重要接縫；有 docs/design/*-sd.md 就拿它的 §6 target 圖當對照，不要重畫；拿外部 skill 集當 review 鏡片",
+      "id": "2a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-dataflow",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "skill-apply",
+          "mode": "core"
+        }
+      ],
+      "action": "畫地圖 → 拔依賴反證 → 只釘重要接縫；有 docs/design/*-sd.md 就拿它的 §6 target 圖當對照，不要重畫；拿外部 skill 集當 review 鏡片",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "chart-design 的 check-html-figure.mjs · de-slopify（報告給人看時）",
+      "gaps": [],
+      "stage": "Check",
+      "note": "功能關係圖的機械檢查；報告文字",
+      "id": "2a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        }
+      ],
+      "action": "功能關係圖的機械檢查；報告文字",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-dataflow gap-report（含「不要動壞的東西」）· large-file-refactor（建議）· doc-drift-sync",
+      "gaps": [],
+      "stage": "Act",
+      "note": "落差報告交回開發者；文件對齊",
+      "id": "2a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-dataflow",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "large-file-refactor",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-drift-sync",
+          "mode": "core"
+        }
+      ],
+      "action": "落差報告交回開發者；文件對齊",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

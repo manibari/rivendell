@@ -11,10 +11,14 @@ COPY platform/agent_fleet/agent_registry.py /platform/agent_fleet/agent_registry
 COPY platform/agent_fleet/agents.py /platform/agent_fleet/agents.py
 COPY platform/monitoring/usage/token_usage.py /platform/monitoring/usage/token_usage.py
 COPY platform/projects/projects.py /platform/projects/projects.py
-COPY platform/skill_catalog/skills.py /platform/skill_catalog/skills.py
-COPY platform/skill_catalog/hooks.py /platform/skill_catalog/hooks.py
-COPY platform/workflows/roles.py /platform/workflows/roles.py
-COPY platform/workflows/workflow-map.json /platform/workflows/workflow-map.json
+COPY platform/capabilities/catalog/skills.py /platform/capabilities/catalog/skills.py
+COPY platform/capabilities/catalog/hooks.py /platform/capabilities/catalog/hooks.py
+COPY platform/capabilities/catalog/playbook-skill-details.json /platform/capabilities/catalog/playbook-skill-details.json
+COPY platform/capabilities/workflows/roles.py /platform/capabilities/workflows/roles.py
+COPY platform/capabilities/workflows/model.py /platform/capabilities/workflows/model.py
+COPY platform/capabilities/workflows/definitions/ /platform/capabilities/workflows/definitions/
+COPY platform/capabilities/workflows/playbooks/ /platform/capabilities/workflows/playbooks/
+COPY platform/capabilities/workflows/workflow-map.json /platform/capabilities/workflows/workflow-map.json
 COPY docs/skills-by-role.md /docs/skills-by-role.md
 ENV RIVENDELL_LIB_DIR=/dashboard
 ENV RIVENDELL_DB_PATH=/dashboard/data/rivendell.db

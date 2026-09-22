@@ -1,0 +1,95 @@
+{
+  "id": "9a",
+  "role_id": "9",
+  "title": "方向與優先序（季度目標、做／不做、槓桿）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief（思考／探索階段）→ gstack-office-hours (gstack) ｜ 視情況：invest-research（市場與同業數字）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "思考階段用反問，不要急著出草稿",
+      "id": "9a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "invest-research",
+          "mode": "conditional"
+        }
+      ],
+      "action": "思考階段用反問，不要急著出草稿",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 季度目標與優先序文件（3 條槓桿、明確不做清單、每條掛負責角色）",
+      "gaps": [
+        "季度目標與優先序文件（3 條槓桿、明確不做清單、每條掛負責角色）"
+      ],
+      "stage": "Do",
+      "note": "增量接線優於重寫；先找 2–3 條槓桿",
+      "id": "9a-do",
+      "order": 2,
+      "skill_refs": [],
+      "action": "增量接線優於重寫；先找 2–3 條槓桿",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-plan-ceo-review (gstack) → say-it-plain ｜ ★ 月檢視：目標 vs 實際",
+      "gaps": [
+        "月檢視：目標 vs 實際"
+      ],
+      "stage": "Check",
+      "note": "一句話講不出「這是什麼」代表還沒想清",
+      "id": "9a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-plan-ceo-review",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "一句話講不出「這是什麼」代表還沒想清",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 公司層決策紀錄（做了什麼決定、為什麼不做另一個）→ knowledge-graph",
+      "gaps": [
+        "公司層決策紀錄（做了什麼決定、為什麼不做另一個）"
+      ],
+      "stage": "Act",
+      "note": "決策交給第 1 節（產品）、第 3 節（客戶）、第 10 節（營運）執行",
+      "id": "9a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "決策交給第 1 節（產品）、第 3 節（客戶）、第 10 節（營運）執行",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

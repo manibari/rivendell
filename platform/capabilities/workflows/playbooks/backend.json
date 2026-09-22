@@ -1,0 +1,78 @@
+{
+  "id": "backend",
+  "label": "Backend / Bug Fix / Refactor",
+  "heading": "Backend-only / Bug Fix / Refactor — 5 步驟",
+  "lead": {
+    "tone": "info",
+    "text": "Exceptions: 使用者明確說「直接實作」或「skip design」→ 跳到 step 2"
+  },
+  "steps": [
+    {
+      "num": "1",
+      "action": "Root cause first（bugs）",
+      "chips": [
+        {
+          "key": "gstack-investigate",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "2",
+      "action": "實作"
+    },
+    {
+      "num": "3",
+      "action": "Diff review",
+      "chips": [
+        {
+          "key": "gstack-review",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "4",
+      "action": "破壞性命令前確認",
+      "chips": [
+        {
+          "key": "gstack-careful",
+          "category": "critical"
+        }
+      ],
+      "inlineNote": "drop table / rm / force push 前"
+    },
+    {
+      "num": "5",
+      "action": "部署",
+      "chips": [
+        {
+          "key": "gstack-land-and-deploy",
+          "category": "gstack"
+        },
+        {
+          "key": "gstack-ship",
+          "category": "gstack"
+        }
+      ],
+      "optionals": [
+        {
+          "label": "效能敏感:",
+          "chips": [
+            {
+              "key": "gstack-benchmark",
+              "category": "gstack"
+            }
+          ],
+          "secondLabel": "部署後監控:",
+          "secondChips": [
+            {
+              "key": "gstack-canary",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

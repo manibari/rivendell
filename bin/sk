@@ -37,6 +37,7 @@ Commands:
   check [--verbose]   Health check: symlinks, reviews, gdrive, frontmatter
   hooks [install]     Global Claude Code hooks: report or register (data/global-hooks.json)
   check routing       Trigger phrases route to exactly one skill (data/routing-tests.json)
+  check workflows     Validate capability workflows and role documentation
   check hooks         Global hooks in data/global-hooks.json are registered in ~/.claude
   check ssot          SSOT drift: diff agents.conf vs ~/.claude/projects.json
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
@@ -4534,6 +4535,7 @@ case "${1:-help}" in
     shift
     case "${1:-}" in
       routing) shift; python3 "$REPO_DIR/scripts/check-routing.py" "$@" ;;
+      workflows) shift; python3 "$REPO_DIR/scripts/check-capability-workflows.py" "$@" ;;
       hooks)  shift; cmd_hooks "$@" ;;
       ssot)   shift; cmd_check_ssot "$@" ;;
       disk)   shift; cmd_check_disk "$@" ;;

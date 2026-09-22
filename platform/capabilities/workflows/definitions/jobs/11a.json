@@ -1,0 +1,104 @@
+{
+  "id": "11a",
+  "role_id": "11",
+  "title": "定位與訊息",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief（思考／探索）→ gstack-office-hours (gstack) ｜ 視情況：sales-customer-intel（目標客戶長什麼樣）、tw-company-lookup",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "先講清楚給誰、解什麼痛、跟誰不一樣",
+      "id": "11a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-customer-intel",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "tw-company-lookup",
+          "mode": "conditional"
+        }
+      ],
+      "action": "先講清楚給誰、解什麼痛、跟誰不一樣",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 定位一頁（目標客群、痛點、一句話價值、三個證據）→ say-it-plain",
+      "gaps": [
+        "定位一頁（目標客群、痛點、一句話價值、三個證據）"
+      ],
+      "stage": "Do",
+      "note": "這一頁是所有文案的上游",
+      "id": "11a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "這一頁是所有文案的上游",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "slide-office-hours 的紅隊形狀 ｜ ★ 拿三個真客戶驗訊息",
+      "gaps": [
+        "拿三個真客戶驗訊息"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "11a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "slide-office-hours",
+          "mode": "core"
+        }
+      ],
+      "action": "slide-office-hours 的紅隊形狀 ｜ ★ 拿三個真客戶驗訊息",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "定位一頁進 sales-material 素材庫 · knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "業務與行銷共用同一句話",
+      "id": "11a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-material",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "業務與行銷共用同一句話",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

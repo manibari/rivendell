@@ -17,10 +17,10 @@ from pathlib import Path
 from typing import Any
 
 SKILLS_DIR = Path.home() / ".claude" / "skills"
-REPO_DIR = Path(__file__).resolve().parent.parent.parent
+REPO_DIR = Path(__file__).resolve().parents[3]
 TSV_PATH = Path(os.environ.get(
     "RIVENDELL_SKILL_SUMMARIES",
-    str(REPO_DIR / "platform" / "skill_catalog" / "skill-summaries-zh.tsv"),
+    str(REPO_DIR / "platform" / "capabilities" / "catalog" / "skill-summaries-zh.tsv"),
 ))
 
 # Descriptions for built-ins where the binary stores them via getter / split string

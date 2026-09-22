@@ -8,7 +8,7 @@
 > `★` 代表這一步還沒有 skill（缺環）。標 `(gstack)` 的是外部 gstack skill。
 > 同一支 skill 出現在多個角色、多件工作是正常的。
 >
-> 維護規則：新 skill 進來要在這頁至少出現一次；`sk check` 會列出沒被收編的 skill。
+> 維護規則：角色、工作、PDCA 與技能引用的結構化來源在 `platform/capabilities/workflows/definitions/`；這頁保留人工說明與圖。更新流程時同步此頁，`sk check workflows` 會比對兩者並檢查技能覆蓋。
 > 某件工作需要更細的展開（狀態機、資料欄位、缺口優先序），另開 `docs/loops/<loop>-<工作>.md`，這裡只連過去。
 > 更新：2026-09-07。
 

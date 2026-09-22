@@ -1,0 +1,115 @@
+{
+  "id": "1e",
+  "role_id": "1",
+  "title": "iOS app",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "requirement → user-flow → mockup → system-design",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "同 1b",
+      "id": "1e-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "requirement",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "user-flow",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "mockup",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "system-design",
+          "mode": "core"
+        }
+      ],
+      "action": "同 1b",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "swiftui-patterns ｜ 視情況：ios-integration（Extension、Deep Link、地圖）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "MVVM 為主",
+      "id": "1e-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "swiftui-patterns",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "ios-integration",
+          "mode": "conditional"
+        }
+      ],
+      "action": "MVVM 為主",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-testing（Swift Testing）→ gstack-ios-qa (gstack) ｜ 視情況：gstack-ios-design-review (gstack)",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "1e-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-testing",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-ios-qa",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-ios-design-review",
+          "mode": "conditional"
+        }
+      ],
+      "action": "qa-testing（Swift Testing）→ gstack-ios-qa (gstack) ｜ 視情況：gstack-ios-design-review (gstack)",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-ios-sync ｜ 視情況：gstack-ios-clean (gstack)",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "1e-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-ios-sync",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-ios-clean",
+          "mode": "conditional"
+        }
+      ],
+      "action": "gstack-ios-sync ｜ 視情況：gstack-ios-clean (gstack)",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

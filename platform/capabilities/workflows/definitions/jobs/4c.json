@@ -1,0 +1,145 @@
+{
+  "id": "4c",
+  "role_id": "4",
+  "title": "顧問案交付文件（SOW、廠務報告、週報、通用文件）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief · metadata-workshop · discovery-interview",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "五欄位 brief；先梳理客戶知識",
+      "id": "4c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "metadata-workshop",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "discovery-interview",
+          "mode": "core"
+        }
+      ],
+      "action": "五欄位 brief；先梳理客戶知識",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sow-writer · iot-factory-report（UPW／壓縮機／冷凍機）· internal-comms（週報、3P、事故）· doc-coauthoring（多方長文件）· gdoc-report-builder · office-docx / office-pdf / office-xlsx · chart-design → mermaid-diagram / excalidraw-diagram",
+      "gaps": [],
+      "stage": "Do",
+      "note": "Word 內嵌圖不是 slide，尺寸另算",
+      "id": "4c-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sow-writer",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "iot-factory-report",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "internal-comms",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-coauthoring",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "gdoc-report-builder",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-docx",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-pdf",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-xlsx",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "mermaid-diagram",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "excalidraw-diagram",
+          "mode": "core"
+        }
+      ],
+      "action": "Word 內嵌圖不是 slide，尺寸另算",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "de-slopify 審查文體 · say-it-plain · check-html-figure.mjs",
+      "gaps": [],
+      "stage": "Check",
+      "note": "三欄收據：機械檢查／截圖／人眼分開寫",
+      "id": "4c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "say-it-plain",
+          "mode": "core"
+        }
+      ],
+      "action": "三欄收據：機械檢查／截圖／人眼分開寫",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph · 沒 skill 的報告類型（市調、EHS、排程）記 .learnings/FEATURE_REQUESTS.md，接到真案子再抽",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "4c-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph · 沒 skill 的報告類型（市調、EHS、排程）記 .learnings/FEATURE_REQUESTS.md，接到真案子再抽",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

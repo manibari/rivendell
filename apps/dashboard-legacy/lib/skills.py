@@ -1,1 +1,1 @@
-../../../platform/skill_catalog/skills.py
+../../../platform/capabilities/catalog/skills.py

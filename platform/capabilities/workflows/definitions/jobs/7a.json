@@ -1,0 +1,68 @@
+{
+  "id": "7a",
+  "role_id": "7",
+  "title": "訂閱與掃描（排程）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "決定訂閱哪些頻道、UP 主、podcast",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "",
+      "id": "7a-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "決定訂閱哪些頻道、UP 主、podcast",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "yt-channel-scraper",
+      "gaps": [],
+      "stage": "Do",
+      "note": "掃到新集就歸檔",
+      "id": "7a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "yt-channel-scraper",
+          "mode": "core"
+        }
+      ],
+      "action": "掃到新集就歸檔",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge/videos/INDEX.md（自動重生）· 筆記 reliability 標記",
+      "gaps": [],
+      "stage": "Check",
+      "note": "手動字幕 ✅ / 自動字幕 ⚠️ / whisper 🤖",
+      "id": "7a-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "手動字幕 ✅ / 自動字幕 ⚠️ / whisper 🤖",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "7a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

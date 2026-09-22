@@ -1,0 +1,213 @@
+{
+  "id": "ui",
+  "label": "UI Feature / New Page",
+  "heading": "UI Feature / New Page — 10 步驟",
+  "lead": {
+    "tone": "warn",
+    "text": "若使用者說「幫我做 X / 新增 Y / build Z page」要先問：「要從哪個步驟開始？requirement → design → plan → 直接實作？」"
+  },
+  "steps": [
+    {
+      "num": "1",
+      "action": "驗證「why」、user story、acceptance criteria",
+      "chips": [
+        {
+          "key": "requirement",
+          "category": "core"
+        },
+        {
+          "key": "gstack-office-hours",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "2",
+      "action": "畫螢幕轉換 + 分支",
+      "chips": [
+        {
+          "key": "user-flow",
+          "category": "core"
+        }
+      ]
+    },
+    {
+      "num": "3",
+      "action": "Design system / brand direction",
+      "chips": [
+        {
+          "key": "gstack-design-consultation",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "4",
+      "action": "產生 design variants，挑一個",
+      "chips": [
+        {
+          "key": "gstack-design-shotgun",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "5",
+      "action": "Mockup → 定靜態 HTML",
+      "chips": [
+        {
+          "key": "mockup",
+          "category": "core"
+        },
+        {
+          "key": "gstack-design-html",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "6",
+      "action": "實作任務清單 + Plan Review",
+      "chips": [
+        {
+          "key": "planning-with-files",
+          "category": "core"
+        }
+      ],
+      "optionals": [
+        {
+          "label": "Plan reviews:",
+          "chips": [
+            {
+              "key": "gstack-plan-eng-review",
+              "category": "gstack"
+            },
+            {
+              "key": "gstack-plan-design-review",
+              "category": "gstack"
+            },
+            {
+              "key": "gstack-plan-ceo-review",
+              "category": "gstack"
+            },
+            {
+              "key": "gstack-autoplan",
+              "category": "gstack"
+            }
+          ],
+          "inlineNote": "大功能用 /gstack-autoplan 一鍵跑全部"
+        }
+      ]
+    },
+    {
+      "num": "7",
+      "action": "實作（implement）",
+      "optionals": [
+        {
+          "label": "遇到 bug:",
+          "chips": [
+            {
+              "key": "gstack-investigate",
+              "category": "gstack"
+            }
+          ],
+          "secondLabel": "重構時 lock 穩定區:",
+          "secondChips": [
+            {
+              "key": "gstack-freeze",
+              "category": "gstack"
+            },
+            {
+              "key": "gstack-unfreeze",
+              "category": "gstack"
+            }
+          ]
+        },
+        {
+          "label": "破壞性命令前:",
+          "chips": [
+            {
+              "key": "gstack-careful",
+              "category": "critical"
+            }
+          ],
+          "secondLabel": "獨立第二意見:",
+          "secondChips": [
+            {
+              "key": "gstack-codex",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "num": "8",
+      "action": "Pre-commit diff review",
+      "chips": [
+        {
+          "key": "gstack-review",
+          "category": "gstack"
+        }
+      ]
+    },
+    {
+      "num": "9",
+      "action": "QA — headless browser UI flow test",
+      "chips": [
+        {
+          "key": "gstack-qa",
+          "category": "gstack"
+        }
+      ],
+      "optionals": [
+        {
+          "label": "Report-only mode:",
+          "chips": [
+            {
+              "key": "gstack-qa-only",
+              "category": "gstack"
+            }
+          ],
+          "secondLabel": "視覺一致性:",
+          "secondChips": [
+            {
+              "key": "gstack-design-review",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "num": "10",
+      "action": "部署",
+      "chips": [
+        {
+          "key": "gstack-land-and-deploy",
+          "category": "gstack"
+        },
+        {
+          "key": "gstack-ship",
+          "category": "gstack"
+        }
+      ],
+      "inlineNote": "land-and-deploy = CI/CD 環境，ship = 非 CI 環境",
+      "optionals": [
+        {
+          "label": "部署後:",
+          "chips": [
+            {
+              "key": "gstack-canary",
+              "category": "gstack"
+            },
+            {
+              "key": "gstack-document-release",
+              "category": "gstack"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

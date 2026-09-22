@@ -1,0 +1,117 @@
+{
+  "id": "9b",
+  "role_id": "9",
+  "title": "投資人募資 BP",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "task-brief → pitch-deck 的 discovery interview ｜ 視情況：gstack-office-hours (gstack)、invest-research（同業估值）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "敘事先於投影片；數字要有來源",
+      "id": "9b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "pitch-deck",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-office-hours",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "invest-research",
+          "mode": "conditional"
+        }
+      ],
+      "action": "敘事先於投影片；數字要有來源",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "pitch-deck → office-pptx ｜ 視情況：chart-design（數據頁）、excalidraw-diagram（產品示意）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "9b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "pitch-deck",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "office-pptx",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "excalidraw-diagram",
+          "mode": "conditional"
+        }
+      ],
+      "action": "pitch-deck → office-pptx ｜ 視情況：chart-design（數據頁）、excalidraw-diagram（產品示意）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "slide-office-hours → de-slopify",
+      "gaps": [],
+      "stage": "Check",
+      "note": "紅隊審敘事；他案引用要去識別化（身分匿名、技術數字留具體）",
+      "id": "9b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "slide-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "de-slopify",
+          "mode": "core"
+        }
+      ],
+      "action": "紅隊審敘事；他案引用要去識別化（身分匿名、技術數字留具體）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph（投資人、回饋、條件）｜ ★ 募資進度表（誰、階段、下一步）",
+      "gaps": [
+        "募資進度表（誰、階段、下一步）"
+      ],
+      "stage": "Act",
+      "note": "每一輪 pitch 的回饋沉澱，下一版 deck 從這裡改",
+      "id": "9b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "每一輪 pitch 的回饋沉澱，下一版 deck 從這裡改",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

@@ -3,11 +3,12 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import {
-  workflows,
-  skillDetails,
   type Chip as ChipData,
   type WorkflowId,
+  type Workflow,
+  type SkillDetail,
   type Step as StepData,
   type OptionalRow,
   type MaintenanceRow,
@@ -323,9 +324,11 @@ function DetailBlock({
 
 function SkillModal({
   skillKey,
+  details,
   onClose,
 }: {
   skillKey: string | null;
+  details: Record<string, SkillDetail>;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -338,7 +341,7 @@ function SkillModal({
   }, [skillKey, onClose]);
 
   if (!skillKey) return null;
-  const data = skillDetails[skillKey];
+  const data = details[skillKey];
 
   return (
     <div
@@ -419,16 +422,34 @@ export default function FlowView(props: { flowId: WorkflowId }) {
 
 function FlowViewInner({ flowId }: { flowId: WorkflowId }) {
   const [openSkill, setOpenSkill] = useState<string | null>(null);
+  const [current, setCurrent] = useState<Workflow | null>(null);
+  const [details, setDetails] = useState<Record<string, SkillDetail>>({});
+  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   // Slide branch is URL-driven now (sidebar children navigate via
   // ?branch=...). Default to the first branch when no param is set.
   const branchParam = searchParams.get("branch");
 
-  const current = workflows.find((w) => w.id === flowId);
-  if (!current) {
+  useEffect(() => {
+    let active = true;
+    apiFetch<{ workflow: Workflow; skill_details: Record<string, SkillDetail> }>(
+      `/api/capabilities/playbooks/${flowId}`,
+    ).then((data) => {
+      if (active) {
+        setCurrent(data.workflow);
+        setDetails(data.skill_details);
+        setError(null);
+      }
+    }).catch((reason: Error) => {
+      if (active) setError(reason.message);
+    });
+    return () => { active = false; };
+  }, [flowId]);
+  if (error) return <p role="alert" style={{ color: "var(--status-err)" }}>{error}</p>;
+  if (!current || current.id !== flowId) {
     return (
       <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
-        Unknown workflow id: <code>{flowId}</code>
+        載入工作流程中...
       </p>
     );
   }
@@ -535,7 +556,7 @@ function FlowViewInner({ flowId }: { flowId: WorkflowId }) {
         </div>
       )}
 
-      <SkillModal skillKey={openSkill} onClose={() => setOpenSkill(null)} />
+      <SkillModal skillKey={openSkill} details={details} onClose={() => setOpenSkill(null)} />
     </>
   );
 }

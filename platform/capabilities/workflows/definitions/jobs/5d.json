@@ -1,0 +1,73 @@
+{
+  "id": "5d",
+  "role_id": "5",
+  "title": "製造領域資料",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "ic-lot-normalization · odb-dfm-reference",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "批號標準化；ODB++ 解析與 DFM 的坑",
+      "id": "5d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "ic-lot-normalization",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "odb-dfm-reference",
+          "mode": "core"
+        }
+      ],
+      "action": "批號標準化；ODB++ 解析與 DFM 的坑",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "走 1c",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "5d-do",
+      "order": 2,
+      "skill_refs": [],
+      "action": "走 1c",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "repro-exam",
+      "gaps": [],
+      "stage": "Check",
+      "note": "一張真板子當考題",
+      "id": "5d-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "repro-exam",
+          "mode": "core"
+        }
+      ],
+      "action": "一張真板子當考題",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "領域學到的回寫 reference skill",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "5d-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "領域學到的回寫 reference skill",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "id": "8d",
+  "role_id": "8",
+  "title": "repo 維運",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "doc-drift-sync（偵測）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "CHANGELOG / ROADMAP / CLAUDE.md 對不齊",
+      "id": "8d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "doc-drift-sync",
+          "mode": "core"
+        }
+      ],
+      "action": "CHANGELOG / ROADMAP / CLAUDE.md 對不齊",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "repo-rename · doc-drift-sync（修）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "plist、settings、sibling repo 全掃",
+      "id": "8d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "repo-rename",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "doc-drift-sync",
+          "mode": "core"
+        }
+      ],
+      "action": "plist、settings、sibling repo 全掃",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sk check portability · sk check ports",
+      "gaps": [],
+      "stage": "Check",
+      "note": "硬編碼路徑、port 漂移",
+      "id": "8d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "硬編碼路徑、port 漂移",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "gstack-upgrade · gstack-learn (gstack) · autoresearch（指標型改善）",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "8d-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "gstack",
+          "name": "gstack-upgrade",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-learn",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "autoresearch",
+          "mode": "core"
+        }
+      ],
+      "action": "gstack-upgrade · gstack-learn (gstack) · autoresearch（指標型改善）",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

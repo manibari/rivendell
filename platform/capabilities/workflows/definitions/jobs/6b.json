@@ -1,0 +1,79 @@
+{
+  "id": "6b",
+  "role_id": "6",
+  "title": "履歷篩選",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 篩選標準與面試流程：從 JD 抽 must-have 打分表、定面試關卡與面試官、每關問什麼",
+      "gaps": [
+        "篩選標準與面試流程：從 JD 抽 must-have 打分表、定面試關卡與面試官、每關問什麼"
+      ],
+      "stage": "Plan",
+      "note": "沒有標準就會每份履歷重新想一次",
+      "id": "6b-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "沒有標準就會每份履歷重新想一次",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "hr-candidate-analysis ｜ 視情況：github-repo-audit（有 repo 的候選人）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "PDF 履歷抽結構、看 GitHub 程式品質",
+      "id": "6b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "hr-candidate-analysis",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "github-repo-audit",
+          "mode": "conditional"
+        }
+      ],
+      "action": "PDF 履歷抽結構、看 GitHub 程式品質",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 面試回饋彙整（多位面試官對同一候選人的評分對齊）",
+      "gaps": [
+        "面試回饋彙整（多位面試官對同一候選人的評分對齊）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "6b-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 面試回饋彙整（多位面試官對同一候選人的評分對齊）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "knowledge-graph（候選人、面試決策）｜ ★ 錄取後回饋 6a 的 JD",
+      "gaps": [
+        "錄取後回饋 6a 的 JD"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "6b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "knowledge-graph（候選人、面試決策）｜ ★ 錄取後回饋 6a 的 JD",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

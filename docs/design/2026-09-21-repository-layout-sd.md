@@ -10,6 +10,8 @@ status: in-progress
 
 # Rivendell 功能邊界與目標資料夾
 
+> 2026-09-22 更新：技能目錄與技能組成的工作流程將整合於 `platform/capabilities/{catalog,workflows}`。本文件原有 `skill_catalog/`、`workflows/` 樹為前一階段目標；後續細節以 [整合計畫](../plans/2026-09-22-capabilities-workflows-consolidation.md) 為準。
+
 > 一句話：平台、個人助理、知識庫各有責任；平台內的部署、版本和監控各自成模組；能力包及工具按擁有者管理。
 > 依 2026-09-21 程式碼實查與本次討論。這是目標結構；已搬移的路徑與相容入口見 [目前目錄](../architecture/repository-layout.md)。本輪無 schema 或 HTTP 契約變更，採 Light。
 
@@ -61,7 +63,7 @@ Light 檔略。第一階段維持 agents/registry、dispatch、reports、knowled
 ```text
 rivendell/
 ├── platform/
-│   ├── skill_catalog/       技能目錄、路由、部署、Harvest
+│   ├── capabilities/        技能目錄與工作流程；細節見 2026-09-22 整合計畫
 │   ├── agent_fleet/         registry、排程、執行
 │   ├── projects/            專案資料
 │   ├── deployment/          profiles、環境、服務、ports、Docker
@@ -96,7 +98,7 @@ rivendell/
 └── README.md · AGENTS.md · package.json 等必要根層入口
 ```
 
-skills 保留根層，因部署器與 CI 掃描 skills/*/*/SKILL.md；platform/skill_catalog 放管理規則，不複製能力包。bin 保留公開命令，實作逐步回到擁有者。沒有兩個獨立領域確實共用的程式，不新建全域 tools 目錄。
+skills 保留根層，因部署器與 CI 掃描 skills/*/*/SKILL.md；platform/capabilities/catalog 放管理規則，不複製能力包。bin 保留公開命令，實作逐步回到擁有者。沒有兩個獨立領域確實共用的程式，不新建全域 tools 目錄。
 
 ### §3.3 根目錄去向
 
@@ -109,8 +111,8 @@ skills 保留根層，因部署器與 CI 掃描 skills/*/*/SKILL.md；platform/s
 | dispatch、profiles/personas、data/persona.conf、data/chat-log | assistant |
 | knowledge、scripts/kg.py | knowledge；實體資料仍在 repo 外的獨立 store |
 | reports | artifacts/reports；由排程產生者遷移 |
-| data/global-hooks.json、routing-tests.json、skill-summaries-zh.tsv | platform/skill_catalog |
-| data/workflow-map.json | platform/workflows |
+| data/global-hooks.json、routing-tests.json、skill-summaries-zh.tsv | platform/capabilities/catalog |
+| data/workflow-map.json | platform/capabilities/workflows（舊 API 相容資料） |
 | scripts、bin/sk 的內部實作 | 依命令責任分回各模組；bin 保留薄入口 |
 | mockups、根層 task_plan.md、findings.md、progress.md | docs；先處理 skill 對預設路徑的依賴 |
 

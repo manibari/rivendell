@@ -1,0 +1,125 @@
+{
+  "id": "3b",
+  "role_id": "3",
+  "title": "客戶客製提案（已接觸，要提案）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "discovery-interview · metadata-workshop · sales-customer-intel（更新）",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "挖最痛的手工流程；業務知識變 schema",
+      "id": "3b-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "discovery-interview",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "metadata-workshop",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-customer-intel",
+          "mode": "core"
+        }
+      ],
+      "action": "挖最痛的手工流程；業務知識變 schema",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sales-material → sales-deck-design → slide-workflow ｜ 視情況：slide-template-extractor（有參考 PPTX 要鎖風格）、gov-rfq-writer（要附報價）、chart-design（有圖）",
+      "gaps": [],
+      "stage": "Do",
+      "note": "從素材庫組裝；客製提案要像企業提案；報價比 SOW 輕",
+      "id": "3b-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-material",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "slide-workflow",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "slide-template-extractor",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "gov-rfq-writer",
+          "mode": "conditional"
+        },
+        {
+          "source": "rivendell",
+          "name": "chart-design",
+          "mode": "conditional"
+        }
+      ],
+      "action": "從素材庫組裝；客製提案要像企業提案；報價比 SOW 輕",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "slide-office-hours · sales-material-health（素材沒過期）· gstack-design-review (gstack)",
+      "gaps": [],
+      "stage": "Check",
+      "note": "",
+      "id": "3b-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "slide-office-hours",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sales-material-health",
+          "mode": "core"
+        },
+        {
+          "source": "gstack",
+          "name": "gstack-design-review",
+          "mode": "core"
+        }
+      ],
+      "action": "slide-office-hours · sales-material-health（素材沒過期）· gstack-design-review (gstack)",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "won → 3c；lost → presales-pipeline lost + 原因 · knowledge-graph",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "3b-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "knowledge-graph",
+          "mode": "core"
+        }
+      ],
+      "action": "won → 3c；lost → presales-pipeline lost + 原因 · knowledge-graph",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

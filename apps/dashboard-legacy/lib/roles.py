@@ -1,1 +1,1 @@
-../../../platform/workflows/roles.py
+../../../platform/capabilities/workflows/roles.py

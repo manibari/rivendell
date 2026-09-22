@@ -1,0 +1,68 @@
+{
+  "id": "11d",
+  "role_id": "11",
+  "title": "名單與成效（交給業務）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 名單定義（什麼叫一個可交給業務的 lead）",
+      "gaps": [
+        "名單定義（什麼叫一個可交給業務的 lead）"
+      ],
+      "stage": "Plan",
+      "note": "",
+      "id": "11d-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "★ 名單定義（什麼叫一個可交給業務的 lead）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 名單表（來源、時間、狀態）→ presales-pipeline（進業務 funnel）",
+      "gaps": [
+        "名單表（來源、時間、狀態）"
+      ],
+      "stage": "Do",
+      "note": "現在沒有從行銷到業務的交接點",
+      "id": "11d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "presales-pipeline",
+          "mode": "core"
+        }
+      ],
+      "action": "現在沒有從行銷到業務的交接點",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 每月：哪個管道帶來名單、成本",
+      "gaps": [
+        "每月：哪個管道帶來名單、成本"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "11d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 每月：哪個管道帶來名單、成本",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "回 11b 內容日曆與 9a 優先序",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "11d-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "回 11b 內容日曆與 9a 優先序",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

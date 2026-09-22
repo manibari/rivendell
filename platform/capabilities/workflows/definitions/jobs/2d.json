@@ -1,0 +1,68 @@
+{
+  "id": "2d",
+  "role_id": "2",
+  "title": "跨機器重現",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "repro-exam",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "先出一組標準考題",
+      "id": "2d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "repro-exam",
+          "mode": "core"
+        }
+      ],
+      "action": "先出一組標準考題",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "env-doctor",
+      "gaps": [],
+      "stage": "Do",
+      "note": "比環境、依賴 hash、模型檔",
+      "id": "2d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "env-doctor",
+          "mode": "core"
+        }
+      ],
+      "action": "比環境、依賴 hash、模型檔",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "逐 key 比覆蓋，不看總量",
+      "gaps": [],
+      "stage": "Check",
+      "note": "CLAUDE.md gotcha：一個角落少一列是常見根因",
+      "id": "2d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "CLAUDE.md gotcha：一個角落少一列是常見根因",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "doctor 腳本進 repo",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "2d-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "doctor 腳本進 repo",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

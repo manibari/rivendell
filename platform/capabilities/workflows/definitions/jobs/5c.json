@@ -1,0 +1,78 @@
+{
+  "id": "5c",
+  "role_id": "5",
+  "title": "ML／AutoML 平台",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "ml-eval-quality · ml-model-registry · backend-async-jobs",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "領域參考：指標分派、小資料 CV 閘門、登錄與治理、訓練要不要丟 pipeline",
+      "id": "5c-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "ml-eval-quality",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "ml-model-registry",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "backend-async-jobs",
+          "mode": "core"
+        }
+      ],
+      "action": "領域參考：指標分派、小資料 CV 閘門、登錄與治理、訓練要不要丟 pipeline",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "走 1c 後端",
+      "gaps": [],
+      "stage": "Do",
+      "note": "",
+      "id": "5c-do",
+      "order": 2,
+      "skill_refs": [],
+      "action": "走 1c 後端",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "qa-dataflow",
+      "gaps": [],
+      "stage": "Check",
+      "note": "治理欄位有沒有牙齒（retired 的模型還能不能推論）",
+      "id": "5c-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "qa-dataflow",
+          "mode": "core"
+        }
+      ],
+      "action": "治理欄位有沒有牙齒（retired 的模型還能不能推論）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "走 1d 部署",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "5c-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "走 1d 部署",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

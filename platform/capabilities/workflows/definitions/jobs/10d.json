@@ -1,0 +1,70 @@
+{
+  "id": "10d",
+  "role_id": "10",
+  "title": "財務營運（請款、發票、費用、對帳）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "★ 請款排程（哪個案子哪個里程碑何時開票）",
+      "gaps": [
+        "請款排程（哪個案子哪個里程碑何時開票）"
+      ],
+      "stage": "Plan",
+      "note": "吃 10b 的驗收單",
+      "id": "10d-plan",
+      "order": 1,
+      "skill_refs": [],
+      "action": "吃 10b 的驗收單",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "office-xlsx ｜ ★ 請款單與發票流程",
+      "gaps": [
+        "請款單與發票流程"
+      ],
+      "stage": "Do",
+      "note": "",
+      "id": "10d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "office-xlsx",
+          "mode": "core"
+        }
+      ],
+      "action": "office-xlsx ｜ ★ 請款單與發票流程",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 對帳（開出的、收到的、逾期的）→ 9c 月結",
+      "gaps": [
+        "對帳（開出的、收到的、逾期的）"
+      ],
+      "stage": "Check",
+      "note": "",
+      "id": "10d-check",
+      "order": 3,
+      "skill_refs": [],
+      "action": "★ 對帳（開出的、收到的、逾期的）→ 9c 月結",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "★ 逾期催收與現金決策 → 回 9c",
+      "gaps": [
+        "逾期催收與現金決策"
+      ],
+      "stage": "Act",
+      "note": "",
+      "id": "10d-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "★ 逾期催收與現金決策 → 回 9c",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

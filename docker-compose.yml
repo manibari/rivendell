@@ -25,8 +25,8 @@ services:
       - ./reports:/data/reports
       - ./logs:/data/logs:ro
       - ./apps/dashboard-legacy/data:/dashboard/data
-      - ./platform/skill_catalog/skill-summaries-zh.tsv:/data/skill-summaries-zh.tsv:ro
-      - ./platform/workflows/workflow-map.json:/data/workflow-map.json
+      - ./platform/capabilities/catalog/skill-summaries-zh.tsv:/data/skill-summaries-zh.tsv:ro
+      - ./platform/capabilities/workflows/workflow-map.json:/data/workflow-map.json
       - ./docker-compose.yml:/app/docker-compose.yml:ro
       - ${HOME}/Library/LaunchAgents:/root/Library/LaunchAgents:ro
       - ${HOME}/.claude/projects:/root/.claude/projects:ro

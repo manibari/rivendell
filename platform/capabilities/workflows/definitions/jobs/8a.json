@@ -1,0 +1,105 @@
+{
+  "id": "8a",
+  "role_id": "8",
+  "title": "新增或修改 skill",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "skill-scout（外面有沒有現成）· writing-great-skills（先讀原則）· task-brief",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "",
+      "id": "8a-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "skill-scout",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "writing-great-skills",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "task-brief",
+          "mode": "core"
+        }
+      ],
+      "action": "skill-scout（外面有沒有現成）· writing-great-skills（先讀原則）· task-brief",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "skill-creator · skill-apply · sync-readme",
+      "gaps": [],
+      "stage": "Do",
+      "note": "建、改、評測；README 目錄（描述改了要手動改那列）",
+      "id": "8a-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "skill-creator",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "skill-apply",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "sync-readme",
+          "mode": "core"
+        }
+      ],
+      "action": "建、改、評測；README 目錄（描述改了要手動改那列）",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sk lint · sk check（symlink、frontmatter、Role coverage）· audit-fix",
+      "gaps": [],
+      "stage": "Check",
+      "note": "新 skill 沒進角色頁會被抓",
+      "id": "8a-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "audit-fix",
+          "mode": "core"
+        }
+      ],
+      "action": "新 skill 沒進角色頁會被抓",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "session-harvest · learnings-promotion-sprint",
+      "gaps": [],
+      "stage": "Act",
+      "note": "告一段落收割；跨專案蒸餾",
+      "id": "8a-act",
+      "order": 4,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "session-harvest",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "learnings-promotion-sprint",
+          "mode": "core"
+        }
+      ],
+      "action": "告一段落收割；跨專案蒸餾",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}

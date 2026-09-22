@@ -1,0 +1,74 @@
+{
+  "id": "3d",
+  "role_id": "3",
+  "title": "素材庫與 CRM 維護（排程）",
+  "deep_dive": null,
+  "steps": [
+    {
+      "text": "sales-keyword-discovery",
+      "gaps": [],
+      "stage": "Plan",
+      "note": "爬蟲關鍵字一直漏就跑",
+      "id": "3d-plan",
+      "order": 1,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-keyword-discovery",
+          "mode": "core"
+        }
+      ],
+      "action": "爬蟲關鍵字一直漏就跑",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sales-crm-projection",
+      "gaps": [],
+      "stage": "Do",
+      "note": "CRM 投影到本機 markdown，每日",
+      "id": "3d-do",
+      "order": 2,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-crm-projection",
+          "mode": "core"
+        }
+      ],
+      "action": "CRM 投影到本機 markdown，每日",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "sales-material-health",
+      "gaps": [],
+      "stage": "Check",
+      "note": "過期補助、缺 frontmatter、孤兒檔",
+      "id": "3d-check",
+      "order": 3,
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "sales-material-health",
+          "mode": "core"
+        }
+      ],
+      "action": "過期補助、缺 frontmatter、孤兒檔",
+      "condition": null,
+      "gate": null
+    },
+    {
+      "text": "修素材、更新 keywords",
+      "gaps": [],
+      "stage": "Act",
+      "note": "",
+      "id": "3d-act",
+      "order": 4,
+      "skill_refs": [],
+      "action": "修素材、更新 keywords",
+      "condition": null,
+      "gate": null
+    }
+  ]
+}
