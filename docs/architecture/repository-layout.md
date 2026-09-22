@@ -6,7 +6,27 @@ The physical folders follow the owner of each rule or piece of data. Web, API, a
 
 ![Rivendell system architecture](../assets/diagrams/rivendell-system-architecture.png)
 
-The main read path is Dashboard Web → API → workflow definitions → skill catalog → `SKILL.md`. Solid arrows show runtime calls; dotted arrows show definition references or indexes. Assistant and Knowledge are separate domains. Deployment, Release, Monitoring, and Agent Fleet are separate platform modules. The [Mermaid source](../assets/diagrams/rivendell-system-architecture.mmd) can be edited with the architecture.
+The main read path is Dashboard Web → API → workflow definitions → skill catalog → `SKILL.md`. Solid arrows show runtime calls; dotted arrows show references or indirect control paths. Assistant and Knowledge are separate domains. Deployment, Release, Monitoring, and Agent Fleet are separate platform modules. The [Mermaid source](../assets/diagrams/rivendell-system-architecture.mmd) can be edited with the architecture.
+
+## System data flow
+
+![Rivendell system data flow](../assets/diagrams/rivendell-system-data-flow.png)
+
+The [system data flow source](../assets/diagrams/rivendell-system-data-flow.mmd) shows three domain paths. `SKILL.md` and workflow JSON feed Capabilities; Agent Fleet writes execution evidence, while interactive sessions write `tasks.jsonl`. Capabilities and Monitoring project those sources through Dashboard API to the web UI. Knowledge owns content ingestion: `video-transcript` reads video or audio, uses Whisper when needed, and passes material to `save_note.sh` for storage under `knowledge/content/videos/`. Separately, `sk-facts-cron` extracts durable facts from Claude Code session JSONL and writes through `kg.py` to `~/.claude/knowledge/`. The assistant gateway reads active entity facts for its tool-less model; it does not load video notes into the prompt. It appends chat history and creates a Dispatch proposal when a reply contains a dispatch marker. Dispatch persists proposal, decision, and result files; actions run only after the required confirmation level and payload hash check.
+
+Deployment and release are control data paths:
+
+| Source | Owner and destination |
+|---|---|
+| `docker-compose.yml`, `profiles/` | `platform/deployment/` reads service configuration and starts or stops services. |
+| `VERSION`, `CHANGELOG.md` | `platform/release/` owns version and change history policy. |
+| `agent_runs`, session tags, logs, generated `reports/` | `platform/monitoring/` and workflow telemetry read runtime evidence; generated reports are not edited by the Dashboard. |
+
+### Capability read path
+
+![Capability workflow data flow](../assets/diagrams/rivendell-capabilities-data-flow.png)
+
+The [capability data flow source](../assets/diagrams/rivendell-capabilities-data-flow.mmd) expands the first path. The old `workflow-map.json` remains a separate GET/PUT compatibility store; it does not update the canonical role, job, or playbook definitions. Dotted lines in this detail view show validation inputs, while thick lines show the main read projection.
 
 ## Folder layout
 

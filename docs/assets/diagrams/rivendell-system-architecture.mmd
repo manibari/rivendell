@@ -27,12 +27,9 @@ flowchart LR
     Release["Release<br/>版本與變更紀錄"]:::platform
   end
 
-  subgraph Domains["獨立領域與能力包"]
-    direction LR
-    Assistant["Assistant<br/>對話、派工、核准"]:::domain
-    Knowledge[("Knowledge<br/>知識內容與實體")]:::domain
-    Skills["skills/*/*/SKILL.md<br/>能力包本體"]:::source
-  end
+  Assistant["Assistant<br/>對話、派工、核准"]:::domain
+  Knowledge[("Knowledge<br/>獨立內容與實體資料")]:::domain
+  Skills["skills/*/*/SKILL.md<br/>能力包本體"]:::source
 
   Tools(["外部工具<br/>Playwright、Whisper 等"]):::external
   Gstack(["外部技能包<br/>gstack repo"]):::external
@@ -50,5 +47,5 @@ flowchart LR
   Release -.->|"版本與變更紀錄"| Deployment
   Monitoring -->|"觀測執行"| Fleet
   Assistant -->|"查詢事實"| Knowledge
-  Assistant -->|"呼叫技能"| Skills
+  Assistant -.->|"經 Dispatch 派工"| Skills
   Skills -->|"使用專用工具"| Tools

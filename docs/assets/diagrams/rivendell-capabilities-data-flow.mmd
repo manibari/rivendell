@@ -1,0 +1,47 @@
+%% Capability data flow: definitions are read projections; legacy writes are isolated.
+flowchart LR
+  classDef source fill:#fef3c7,stroke:#b45309,color:#1f2937
+  classDef transform fill:#dbeafe,stroke:#2563eb,color:#1f2937
+  classDef interface fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef legacy fill:#e5e7eb,stroke:#6b7280,color:#1f2937
+
+  subgraph Sources["定義與執行事實"]
+    direction TB
+    SkillFiles[("skills/*/*/SKILL.md<br/>部署到 ~/.claude/skills")]:::source
+    CatalogFiles[("catalog metadata<br/>TSV、chip 說明")]:::source
+    Definitions[("roles.json + jobs/*.json<br/>playbooks/*.json")]:::source
+    Telemetry[("agent_runs SQLite<br/>tasks.jsonl")]:::source
+    RoleDoc[("docs/skills-by-role.md<br/>人工敘述與表格")]:::source
+  end
+
+  subgraph Platform["platform/capabilities 與 Dashboard API"]
+    direction TB
+    Catalog["Catalog reader<br/>skills.py"]:::transform
+    Model["Workflow model<br/>model.py"]:::transform
+    RoleProjection["Role projection<br/>job ID + PDCA + 執行次數"]:::transform
+    API["Dashboard API<br/>/api/skills · /api/skills/roles<br/>/api/capabilities/playbooks"]:::interface
+    Check["sk check workflows<br/>引用與文件漂移檢查"]:::transform
+  end
+
+  Dashboard["Dashboard Web<br/>技能頁、角色頁、四頁 playbook"]:::interface
+
+  subgraph Legacy["獨立相容路徑，不更新新定義"]
+    direction LR
+    LegacyAPI["GET / PUT /api/workflow"]:::legacy
+    LegacyJSON[("workflow-map.json")]:::legacy
+  end
+
+  SkillFiles -->|"SKILL.md metadata"| Catalog
+  CatalogFiles -->|"分類與說明"| Catalog
+  Definitions ==>|"角色、工作、步驟"| Model
+  Model -->|"定義"| RoleProjection
+  Telemetry -->|"job + stage + runs"| RoleProjection
+  Catalog ==>|"技能清單"| API
+  Model ==>|"playbook / workflow"| API
+  RoleProjection ==>|"角色投影"| API
+  RoleDoc -->|"原文 content"| API
+  API ==>|"HTTP JSON"| Dashboard
+  Model -.->|"定義"| Check
+  RoleDoc -.->|"對照"| Check
+  SkillFiles -.->|"覆蓋與引用"| Check
+  LegacyAPI <-->|"GET / PUT"| LegacyJSON

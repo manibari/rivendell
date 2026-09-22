@@ -1,0 +1,65 @@
+%% Rivendell system data flow, 2026-09-22.
+%% Claim: platform reads project definitions and execution evidence; the
+%% assistant's side-effect path is persisted and gated by a user decision.
+flowchart LR
+  classDef source fill:#fef3c7,stroke:#b45309,color:#1f2937
+  classDef process fill:#dbeafe,stroke:#2563eb,color:#1f2937
+  classDef store fill:#ddd6fe,stroke:#6d28d9,color:#1f2937
+  classDef view fill:#e8efea,stroke:#2d4a3e,color:#0a0a0a
+  classDef action fill:#fecaca,stroke:#b91c1c,color:#1f2937
+
+  subgraph Platform["平台讀取與觀測"]
+    direction LR
+    Definitions[("SKILL.md + workflow JSON<br/>技能與流程定義")]:::source
+    Capabilities["Capabilities<br/>Catalog + Workflows"]:::process
+    Fleet["Agent Fleet<br/>排程與執行"]:::process
+    Evidence[("agent_runs SQLite<br/>reports + logs")]:::store
+    SessionTags[("互動 session<br/>tasks.jsonl")]:::store
+    Monitoring["Monitoring<br/>健康與用量投影"]:::process
+    API["Dashboard API<br/>技能、角色、流程、監控"]:::process
+  end
+
+  subgraph KnowledgeDomain["知識庫 knowledge/：獨立的寫入與儲存"]
+    direction LR
+    SessionHistory[("~/.claude/projects<br/>session JSONL")]:::source
+    MediaSource(["影片或音訊來源"]):::source
+    EntityFacts[("~/.claude/knowledge<br/>人、公司、專案事實")]:::store
+    KnowledgeIngest["知識寫入<br/>facts-cron / kg.py add"]:::process
+    MediaIngest["內容消化<br/>video-transcript；必要時 Whisper"]:::process
+    ContentStore[("knowledge/content/videos<br/>逐字稿、筆記、索引")]:::store
+  end
+
+  subgraph AssistantDomain["個人助理 assistant/：對話與派工"]
+    direction LR
+    ChatInput(["使用者訊息"]):::source
+    Gateway["Avatar Gateway<br/>讀 active facts；模型無工具"]:::process
+    ChatLog[("assistant/conversation/chat-log<br/>對話紀錄")]:::store
+    Dispatch["Dispatch<br/>提案、核准、執行 gate"]:::process
+    Decision(["人工核准或允許自動"]):::source
+    DispatchStore[("dispatch/&lt;id&gt;<br/>proposal / decisions / results")]:::store
+    Actions["Mail / Calendar / Agent task<br/>外部或內部動作"]:::action
+  end
+
+  Dashboard["Dashboard Web<br/>技能、角色、監控、助理畫面"]:::view
+
+  Definitions ==>|"建立索引與流程模型"| Capabilities
+  Fleet -->|"寫執行事實"| Evidence
+  Evidence -->|"排程 job / stage / runs"| Capabilities
+  SessionTags -->|"互動 job / stage"| Capabilities
+  Evidence -->|"服務與用量訊號"| Monitoring
+  Capabilities ==>|"技能與流程投影"| API
+  Monitoring -->|"健康狀態"| API
+  API ==>|"HTTP JSON"| Dashboard
+
+  SessionHistory -->|"擷取可持久事實"| KnowledgeIngest
+  KnowledgeIngest -->|"kg.py add"| EntityFacts
+  MediaSource -->|"字幕或音訊"| MediaIngest
+  MediaIngest -->|"save_note.sh"| ContentStore
+  EntityFacts -->|"kg.py dump --active-only"| Gateway
+  ChatInput -->|"chat request"| Gateway
+  Gateway -->|"chat reply"| Dashboard
+  Gateway -->|"append JSONL"| ChatLog
+  Gateway -->|"dispatch marker"| Dispatch
+  Decision -->|"確認等級"| Dispatch
+  Dispatch -->|"保存狀態與結果"| DispatchStore
+  Dispatch -->|"確認等級與 payload hash 通過後"| Actions
