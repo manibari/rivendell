@@ -15,7 +15,7 @@
 | 領域 | 模組 | 資料所有權 |
 |---|---|---|
 | 平台能力 | `platform/capabilities/catalog/`、`platform/capabilities/workflows/`、Dashboard API/Web | 技能部署清單、角色與工作定義、playbook；舊 `workflow-map.json` 是相容支線。 |
-| 平台執行與監控 | `bin/sk-exec-lib`、`platform/agent_fleet/`、`platform/monitoring/`（含 `evidence/`） | `rivendell.db` 的 agent run 與 `execution_event`；互動 session tag 仍由 `tasks.jsonl` 寫入，再匯入 `execution_event`。 |
+| 平台執行與監控 | `bin/sk-exec-lib`、`platform/agent_fleet/`、`platform/monitoring/`（含 `evidence/`、`system/` 感測器） | `rivendell.db` 的 agent run 與 `execution_event`；互動 session tag 仍由 `tasks.jsonl` 寫入，再匯入 `execution_event`。 |
 | 知識庫 | `knowledge/`、`skills/knowledge/`、`bin/sk-facts-cron` | repo 內影音筆記；獨立 `~/.claude/knowledge` 的 entity facts。 |
 | 個人助理 | `apps/avatar-gateway/`、`assistant/conversation/`、`assistant/dispatch/` | 對話 log、提案、核准決定、執行結果。 |
 | 系統周邊 | `platform/deployment/`、`platform/release/` | 部署與版本政策；這次只核對位置，沒有深入測試控制流程。 |

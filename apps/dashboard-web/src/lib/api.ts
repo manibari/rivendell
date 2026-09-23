@@ -545,3 +545,44 @@ export function docAssetUrl(docPath: string, src: string): string {
   }
   return `${API_BASE}/api/docs-asset/${parts.join("/")}`;
 }
+
+/** GET /api/health/sensors — SMC temperatures / fans + IOReport power (no root). */
+export interface SensorGroup {
+  id: string;
+  label: string;
+  avg: number;
+  max: number;
+  sensors: Record<string, number>;
+}
+
+export interface SensorFan {
+  id: number;
+  rpm: number;
+  min: number | null;
+  max: number | null;
+  target: number | null;
+  mode: "auto" | "forced";
+  percent: number | null;
+}
+
+export interface SensorPower {
+  id: string;
+  label: string;
+  watts: number;
+}
+
+export type SensorsData =
+  | { status: "unavailable"; error: string }
+  | {
+      status: "ok";
+      temperatures: { groups: SensorGroup[]; other: Record<string, number> };
+      fans: SensorFan[];
+      power: {
+        system: SensorPower[];
+        components: SensorPower[];
+        clusters: Record<string, number>;
+        rails: Record<string, number>;
+        energy_error: string | null;
+        interval_ms: number | null;
+      };
+    };
