@@ -101,10 +101,11 @@ def validate() -> list[str]:
 
 def project_roles() -> dict[str, Any]:
     """Preserve the existing /api/skills/roles response shape and telemetry join."""
-    from lib.roles import _telemetry
+    from lib.roles import _evidence_meta, _telemetry
 
     definitions, jobs = load_definitions()
-    telemetry = _telemetry()
+    tele = _telemetry()
+    telemetry = tele["jobs"]
     result_roles = []
     for role in definitions["roles"]:
         item = {key: value for key, value in role.items() if key != "jobs"}
@@ -138,6 +139,7 @@ def project_roles() -> dict[str, Any]:
         "shared": definitions["shared"],
         "tiers": definitions["tiers"],
         "roles": result_roles,
+        "evidence": _evidence_meta(tele),
         "totals": {
             "roles": len(result_roles),
             "jobs": sum(role["job_count"] for role in result_roles),

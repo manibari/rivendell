@@ -147,7 +147,7 @@ function StageCell({ stage, runs }: { stage: RoleStage; runs?: number }) {
   );
 }
 
-function JobCard({ job }: { job: RoleJob }) {
+function JobCard({ job, unavailable = false }: { job: RoleJob; unavailable?: boolean }) {
   const deep = job.deep_dive;
   const deepHref = deep ? `/docs/${deep.href.replace(/\.md$/, "")}` : null;
   return (
@@ -172,10 +172,10 @@ function JobCard({ job }: { job: RoleJob }) {
         )}
         <span
           className="font-mono text-[10px] px-1.5 py-0.5"
-          title="來源：agent_runs（sk run --job）與 session-logs/*/tasks.jsonl（task-tag）"
-          style={{ color: job.runs ? "var(--accent)" : "var(--text-subtle)", background: job.runs ? "var(--accent-bg)" : "transparent", border: "1px solid var(--border)", borderRadius: 99 }}
+          title="來源：rivendell.db execution_event（匯入 agent_runs 與 session-logs/*/tasks.jsonl）"
+          style={{ color: unavailable ? "var(--status-warn)" : job.runs ? "var(--accent)" : "var(--text-subtle)", background: job.runs ? "var(--accent-bg)" : "transparent", border: "1px solid var(--border)", borderRadius: 99 }}
         >
-          {job.runs ? `跑過 ${job.runs} 次 · ${job.last_run}` : "沒有執行紀錄"}
+          {job.runs ? `跑過 ${job.runs} 次 · ${job.last_run}${unavailable ? "（不完整）" : ""}` : unavailable ? "執行紀錄無法讀取" : "沒有執行紀錄"}
         </span>
         {deepHref && (
           <Link
@@ -215,7 +215,13 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--text-muted)" }}>
         <span className="font-mono">
           {data.totals.roles} 角色 · {data.totals.jobs} 工作 · <span style={{ color: "var(--status-warn)" }}>★ {data.totals.gaps} 缺環</span> ·{" "}
-          <span title="有執行紀錄的工作數 / 總執行次數">{data.totals.jobs_run} 件跑過 · {data.totals.runs} 次</span>
+          {data.evidence?.status === "unavailable" ? (
+            <span style={{ color: "var(--status-warn)" }} title={data.evidence.error ?? Object.entries(data.evidence.sources).filter(([, s]) => s.status === "unavailable").map(([n, s]) => `${n}: ${s.error ?? ""}`).join("\n")}>
+              執行紀錄無法完整讀取 · 已知 {data.totals.runs} 次
+            </span>
+          ) : (
+            <span title="有執行紀錄的工作數 / 總執行次數">{data.totals.jobs_run} 件跑過 · {data.totals.runs} 次</span>
+          )}
         </span>
         <span className="font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
           source: docs/skills-by-role.md · {data.updated}
@@ -328,7 +334,7 @@ export default function RolePdca({ initialRole }: { initialRole?: string }) {
           </div>
           <div className="flex flex-col gap-3">
             {role.jobs.map((j) => (
-              <JobCard key={j.id} job={j} />
+              <JobCard key={j.id} job={j} unavailable={data.evidence?.status === "unavailable"} />
             ))}
           </div>
         </div>

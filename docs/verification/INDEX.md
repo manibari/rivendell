@@ -15,7 +15,7 @@
 | 領域 | 模組 | 資料所有權 |
 |---|---|---|
 | 平台能力 | `platform/capabilities/catalog/`、`platform/capabilities/workflows/`、Dashboard API/Web | 技能部署清單、角色與工作定義、playbook；舊 `workflow-map.json` 是相容支線。 |
-| 平台執行與監控 | `bin/sk-exec-lib`、`platform/agent_fleet/`、`platform/monitoring/` | `rivendell.db` 的 agent run；互動 session tag 目前留在 `tasks.jsonl`。 |
+| 平台執行與監控 | `bin/sk-exec-lib`、`platform/agent_fleet/`、`platform/monitoring/`（含 `evidence/`） | `rivendell.db` 的 agent run 與 `execution_event`；互動 session tag 仍由 `tasks.jsonl` 寫入，再匯入 `execution_event`。 |
 | 知識庫 | `knowledge/`、`skills/knowledge/`、`bin/sk-facts-cron` | repo 內影音筆記；獨立 `~/.claude/knowledge` 的 entity facts。 |
 | 個人助理 | `apps/avatar-gateway/`、`assistant/conversation/`、`assistant/dispatch/` | 對話 log、提案、核准決定、執行結果。 |
 | 系統周邊 | `platform/deployment/`、`platform/release/` | 部署與版本政策；這次只核對位置，沒有深入測試控制流程。 |
@@ -24,4 +24,4 @@
 
 改動資料寫入者、讀取者或跨領域 handoff 時，先更新主表、儲存圖與稽核表的對應列。圖中「實際」必須有程式碼或隔離測試依據；目標變更只更新目標圖。完成遷移後重新反證，才把目標路徑移入實際圖。每張圖保留實查日期。
 
-目前最需要追蹤的落差：角色統計把讀取錯誤顯示為 0；Gateway 把背景派工啟動當作提案成功；單筆 workflow API 沒有執行與清單端點相同的定義檢查。細節見 [稽核表](dataflow-audit-2026-09-22.md)。
+目前最需要追蹤的落差（角色統計把讀取錯誤顯示為 0 已於 2026-09-23 改為 `ok / empty / unavailable`）：Gateway 把背景派工啟動當作提案成功；單筆 workflow API 沒有執行與清單端點相同的定義檢查。細節見 [稽核表](dataflow-audit-2026-09-22.md)。

@@ -1,4 +1,4 @@
-%% Rivendell actual stores, checked 2026-09-22.
+%% Rivendell actual stores, checked 2026-09-22; platform evidence path re-checked 2026-09-23.
 %% Nodes are persisted entities; edge labels identify writers and readers.
 flowchart TB
   classDef source fill:#fef3c7,stroke:#b45309,color:#1f2937
@@ -11,7 +11,8 @@ flowchart TB
     PSource["repo 技能包與流程定義"]:::source
     PDeploy[("~/.claude/skills/SKILL.md")]:::store
     PWorkflow[("roles/jobs/playbooks JSON")]:::store
-    PEvidence[("rivendell.db / agent_runs<br/>session tasks.jsonl")]:::store
+    PRuns[("rivendell.db / agent_runs<br/>session tasks.jsonl")]:::source
+    PEvidence[("rivendell.db / execution_event<br/>UNIQUE(source, source_id)")]:::store
     PReader["技能清單與角色 API"]:::reader
     PLegacy[("workflow-map.json")]:::warn
     PLegacyAPI["舊 /api/workflow GET/PUT"]:::warn
@@ -19,7 +20,8 @@ flowchart TB
     PSource -->|"維護定義"| PWorkflow
     PDeploy -->|"list_skills 讀；缺檔跳過"| PReader
     PWorkflow -->|"load_definitions / playbook 讀"| PReader
-    PEvidence -.->|"_telemetry 讀；另讀舊 sk-dashboard.db；失敗視為 0"| PReader
+    PRuns -->|"evidence.sync 可重跑匯入：run 用 cursor，tag 用行雜湊"| PEvidence
+    PEvidence -->|"job_summary 回傳 ok / empty / unavailable"| PReader
     PLegacy <-->|"獨立讀寫；不更新新定義"| PLegacyAPI
   end
 

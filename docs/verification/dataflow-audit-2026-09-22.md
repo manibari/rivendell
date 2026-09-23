@@ -48,7 +48,7 @@
 |---|---|---|
 | `cmd_execute()` 核准、確認等級、payload hash | 有效；隔離反證擋下兩種不合法狀態 | 保留，並把各任務型別的結果格式明確定義。 |
 | 工作定義 `validate()` | 部分；清單端點會擋，單筆與 playbook 端點沒有同一個 gate | 共用一次載入與驗證結果，讓所有新 API 同樣回報定義錯誤。 |
-| 角色執行紀錄 | 觀測，不是 gate；錯誤被當成 0 | 讓「沒有執行」與「來源不可讀」成為不同狀態。 |
+| 角色執行紀錄 | 觀測，不是 gate；2026-09-23 起回傳 `ok / empty / unavailable` | 已處理，見下方「2026-09-23 平台執行證據」。 |
 | Entity facts 讀取 | 非必要；錯誤被當成空知識庫 | 讓 Gateway 區分空資料和讀取失敗。 |
 | 提案建立確認 | 無；背景啟動後即宣稱成功 | 取得提案 ID 並驗證落地後再回覆使用者。 |
 | 舊 workflow PUT | 只寫舊檔；不驗證新定義 | 在 UI 與 API 說清楚相容用途，或完成遷移後收斂到新定義編輯流程。 |
@@ -59,5 +59,14 @@
 2. **知識庫介面。** `knowledge` 保有自己的筆記 vault 與 entity facts repo。提供統一的寫入、查詢、來源欄位與健康狀態；從筆記提取 entity fact 應是可追溯的明確動作，包含來源、去重與覆核。助理讀取這個介面，並把不可用狀態呈現給使用者。
 3. **助理派工。** Gateway 以可回傳 ID 的提交介面建立提案，收到持久化確認後才宣稱成功。Dispatch 繼續擁有提案、核准與結果；執行前 gate 保留。用一致的結果契約描述 JSON 與 agent Markdown 兩種結果檔。
 4. **跨領域界線。** 平台、知識、助理以 API 或事件交換 ID 與狀態，不共同寫另一領域的資料檔。這是邏輯整合；實體儲存依領域維持分離。
+
+## 2026-09-23 平台執行證據（整合方向 1 已實作）
+
+- **儲存。** `rivendell.db` 新增 `execution_event`，唯一鍵 `(source, source_id)`：`agent_runs` 列以 `id` 為 `source_id` 並記錄匯入 cursor；`tasks.jsonl` 每行以「repo slug + 原始行」的 SHA-256 為 `source_id`，整檔重讀也不會重複。兩個寫入者（`sk-exec-lib`、`task-tag.sh`）不變。
+- **查詢服務。** `platform/monitoring/evidence/execution_evidence.py`（API 經 `lib/evidence.py` 連結載入）的 `job_summary()` 先同步再只讀 `execution_event`，回傳 `status`、各來源狀態與筆數、每個工作的次數。任一來源不可讀即為 `unavailable`；壞行列在 `bad_lines`。
+- **讀取端。** `roles._telemetry()` 與 `project_roles()` 改用此服務，回應多一個 `evidence` 欄位；不再讀已退役的 `sk-dashboard.db`。角色頁在 `unavailable` 時顯示「執行紀錄無法讀取」，不顯示 0。監控頁的單一 agent run 列表原本就以 `StoreUnreadable` 區分，未改動。
+- **切換前核對。** `execution_evidence.py reconcile sk-dashboard.db.retired-2026-09-18`：舊庫 233 筆、最新 2026-09-18T03:30:04；新庫 264 筆、最新 2026-09-23T03:47:36；以 `agent_name + started_at` 比對，舊庫缺漏 0 筆。兩邊都沒有帶 job/stage 的 run，本機也沒有 `tasks.jsonl`，所以角色頁的 0 是 `empty`，不是讀取失敗。
+- **隔離反證**（`apps/dashboard-api/tests/test_execution_evidence.py`，全在暫存目錄）：空庫回 `empty`；兩來源合併且重跑兩次結果相同、第二次匯入 0 筆；cursor 之後的新 run 會被匯入；非 SQLite 檔回 `unavailable`；無讀取權的 `tasks.jsonl` 使來源與整體為 `unavailable`；壞行被計入 `bad_lines`；reconcile 找出舊庫獨有列；角色投影在庫損壞時帶出 `unavailable`。後端 14 個測試通過，前端 `tsc`、`eslint` 通過。本機沒有 ruff，lint 未在本機驗證。
+- **副作用。** 角色 API 每次讀取會對真實 `rivendell.db` 執行冪等匯入；既有 `test_workflows` 因此也會建立兩張新表。
 
 目標圖是 [dataflow-stores-target-2026-09.html](dataflow-stores-target-2026-09.html)；它描述待實作契約，不代表現況。現況以 [功能關係圖](dataflow-functions-2026-09.html) 及 [實際儲存圖](dataflow-stores-actual-2026-09.mmd) 為準。

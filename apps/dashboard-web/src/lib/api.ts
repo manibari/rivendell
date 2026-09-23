@@ -355,6 +355,12 @@ export interface SkillRolesData {
   /** tier labels in display order */
   tiers: string[];
   roles: Role[];
+  /** unavailable = a source could not be read; run counts are partial, not zero */
+  evidence: {
+    status: "ok" | "empty" | "unavailable";
+    error?: string;
+    sources: Record<string, { status: string; events?: number; error?: string; bad_lines?: string[] }>;
+  };
   totals: { roles: number; jobs: number; gaps: number; jobs_run: number; runs: number };
   content: string;
 }

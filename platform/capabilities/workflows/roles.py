@@ -13,10 +13,8 @@ appears in it); this module only reads the conventions it is written in:
 """
 from __future__ import annotations
 
-import json
 import os
 import re
-import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -87,59 +85,27 @@ def _parse_who(cell: str, known: set[str] | None = None) -> dict[str, Any]:
     }
 
 
-_DATA_DIR = Path(os.environ.get(
-    "RIVENDELL_DB_DIR", str(REPO_DIR / "apps" / "dashboard-legacy" / "data")
-))
-_SESSION_LOGS = Path.home() / ".claude" / "session-logs"
+def _telemetry() -> dict[str, Any]:
+    """Execution evidence for the role view: {status, sources, jobs}.
 
-
-def _telemetry() -> dict[str, dict[str, Any]]:
-    """job id → {runs, by_stage, last_run, sources} from two places:
-
-    - agent_runs.role/job/stage (scheduled runs via `sk run --job … --stage …`);
-      both db files are read because sk-exec-lib and the dashboard have
-      historically written to different ones.
-    - ~/.claude/session-logs/<repo>/tasks.jsonl (interactive sessions tagged by
-      task-brief's task-tag.sh).
+    Scheduled runs (agent_runs) and interactive tags (tasks.jsonl) are merged
+    by lib.evidence into rivendell.db execution_event. `status` separates
+    "never ran" (empty) from "could not read" (unavailable); callers must pass
+    it on rather than render unavailable as zero runs.
     """
-    out: dict[str, dict[str, Any]] = {}
+    from lib.evidence import job_summary
 
-    def bump(job: str, stage: str, ts: str, source: str) -> None:
-        if not job:
-            return
-        rec = out.setdefault(job, {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
-        rec["runs"] += 1
-        if stage:
-            rec["by_stage"][stage] = rec["by_stage"].get(stage, 0) + 1
-        if ts and ts > rec["last_run"]:
-            rec["last_run"] = ts[:10]
-        rec["sources"][source] = rec["sources"].get(source, 0) + 1
+    return job_summary()
 
-    for name in ("rivendell.db", "sk-dashboard.db"):
-        db = _DATA_DIR / name
-        if not db.is_file():
-            continue
-        try:
-            conn = sqlite3.connect(str(db))
-            cols = {r[1] for r in conn.execute("PRAGMA table_info(agent_runs)")}
-            if {"job", "stage"} <= cols:
-                for job, stage, ts in conn.execute("SELECT job, stage, started_at FROM agent_runs WHERE job IS NOT NULL AND job != ''"):
-                    bump(job, stage or "", ts or "", "agent_runs")
-            conn.close()
-        except sqlite3.Error:
-            continue
 
-    if _SESSION_LOGS.is_dir():
-        for f in _SESSION_LOGS.glob("*/tasks.jsonl"):
-            try:
-                for line in f.read_text(encoding="utf-8").splitlines():
-                    if not line.strip():
-                        continue
-                    rec = json.loads(line)
-                    bump(str(rec.get("job", "")), str(rec.get("stage", "")), str(rec.get("ts", "")), "session")
-            except (OSError, json.JSONDecodeError):
-                continue
-    return out
+def _evidence_meta(tele: dict[str, Any]) -> dict[str, Any]:
+    # Per-call "imported" counts are left out: they describe this request's
+    # sync, not the evidence, and would differ between two identical reads.
+    sources = {name: {k: v for k, v in s.items() if k != "imported"} for name, s in tele["sources"].items()}
+    meta = {"status": tele["status"], "sources": sources}
+    if "error" in tele:
+        meta["error"] = tele["error"]
+    return meta
 
 
 def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict[str, Any]:
@@ -255,7 +221,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
     for r in roles:
         r["runs"] = 0
         for j in r["jobs"]:
-            t = tele.get(j["id"], {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
+            t = tele["jobs"].get(j["id"], {"runs": 0, "by_stage": {}, "last_run": "", "sources": {}})
             j["runs"] = t["runs"]
             j["by_stage"] = t["by_stage"]
             j["last_run"] = t["last_run"]
@@ -279,6 +245,7 @@ def parse_roles(path: Path | None = None, known: set[str] | None = None) -> dict
         "shared": shared,
         "tiers": tier_order,
         "roles": roles,
+        "evidence": _evidence_meta(tele),
         "totals": {
             "roles": len(roles),
             "jobs": sum(r["job_count"] for r in roles),
