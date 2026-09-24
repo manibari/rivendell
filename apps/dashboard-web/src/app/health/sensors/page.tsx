@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, type SensorsData } from "@/lib/api";
+import type { Trend } from "@/components/Sparkline";
 import BatteryPanel from "@/components/sensors/BatteryPanel";
 import CpuCores from "@/components/sensors/CpuCores";
 import GpuPanel from "@/components/sensors/GpuPanel";
@@ -17,7 +18,8 @@ const POLL_SEC = 2;
 const HISTORY = 90;
 
 type Ok = Extract<SensorsData, { status: "ok" }>;
-type Series = Record<string, number[]>;
+type Series = Record<string, Trend>;
+const EMPTY: Trend = { v: [], t: [] };
 
 function points(d: Ok): Record<string, number> {
   const p: Record<string, number> = {};
@@ -27,10 +29,7 @@ function points(d: Ok): Record<string, number> {
   for (const c of d.cpu.clusters) for (const core of c.cores) if (core.active !== null) p[`c:${core.id}`] = core.active;
   if (d.cpu.total_active !== null) p["cpu"] = d.cpu.total_active;
   if (d.gpu.device_util !== null) p["gpu"] = d.gpu.device_util;
-  if (d.battery.status === "ok") {
-    if (d.battery.percent !== null) p["b:pct"] = d.battery.percent;
-    if (d.battery.battery_watts !== null) p["b:w"] = d.battery.battery_watts;
-  }
+  if (d.battery.status === "ok" && d.battery.battery_watts !== null) p["b:w"] = d.battery.battery_watts;
   return p;
 }
 
@@ -52,7 +51,11 @@ export default function SensorsPage() {
           const point = points(d);
           setSeries((prev) => {
             const next: Series = {};
-            for (const [k, v] of Object.entries(point)) next[k] = [...(prev[k] ?? []), v].slice(-HISTORY);
+            const now = Date.now();
+            for (const [k, v] of Object.entries(point)) {
+              const old = prev[k] ?? EMPTY;
+              next[k] = { v: [...old.v, v].slice(-HISTORY), t: [...old.t, now].slice(-HISTORY) };
+            }
             return next;
           });
         }
@@ -96,15 +99,15 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
   return (
     <>
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
-        <Tile title="CPU 使用率" value={d.cpu.total_active} unit="%" digits={0} stepSec={POLL_SEC}
-          sub={`${d.cpu.core_count} 核平均`} series={series["cpu"] ?? []} />
-        <Tile title="GPU 使用率" value={d.gpu.device_util} unit="%" digits={0} stepSec={POLL_SEC}
-          sub={`${d.gpu.core_count ?? "?"} 核 · ${d.gpu.watts?.toFixed(2) ?? "—"} W`} series={series["gpu"] ?? []} />
-        {groups.cpu && <Tile title="CPU 溫度" value={groups.cpu.avg} unit="°C" stepSec={POLL_SEC}
-          sub={`最高 ${groups.cpu.max}°C`} series={series["t:cpu"] ?? []} flag={heat(groups.cpu.max)} />}
-        {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" stepSec={POLL_SEC} series={series["p:PSTR"] ?? []} />}
-        {bat && <Tile title="電池" value={bat.percent} unit="%" digits={0} stepSec={POLL_SEC}
-          sub={bat.state_label} series={series["b:pct"] ?? []} />}
+        <Tile title="CPU 使用率" value={d.cpu.total_active} unit="%" digits={0}
+          sub={`${d.cpu.core_count} 核平均`} series={series["cpu"] ?? EMPTY} />
+        <Tile title="GPU 使用率" value={d.gpu.device_util} unit="%" digits={0}
+          sub={`${d.gpu.core_count ?? "?"} 核 · ${d.gpu.watts?.toFixed(2) ?? "—"} W`} series={series["gpu"] ?? EMPTY} />
+        {groups.cpu && <Tile title="CPU 溫度" value={groups.cpu.avg} unit="°C"
+          sub={`最高 ${groups.cpu.max}°C`} series={series["t:cpu"] ?? EMPTY} flag={heat(groups.cpu.max)} />}
+        {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" series={series["p:PSTR"] ?? EMPTY} />}
+        {bat && <Tile title="電池" value={bat.percent} unit="%" digits={0}
+          sub={bat.state_label} />}
       </div>
 
       <Section title="機身溫度分布">
@@ -112,7 +115,7 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
       </Section>
 
       <Section title="CPU 每核心" note="使用率 · 頻率 · 功耗">
-        <CpuCores clusters={d.cpu.clusters} series={series} stepSec={POLL_SEC} />
+        <CpuCores clusters={d.cpu.clusters} series={series} />
       </Section>
 
       <Section title="GPU">
@@ -120,7 +123,7 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
       </Section>
 
       <Section title="電池">
-        <BatteryPanel b={d.battery} systemWatts={sys?.watts ?? null} series={series} stepSec={POLL_SEC} />
+        <BatteryPanel b={d.battery} systemWatts={sys?.watts ?? null} series={series} />
       </Section>
 
       <Section title="歷史紀錄">

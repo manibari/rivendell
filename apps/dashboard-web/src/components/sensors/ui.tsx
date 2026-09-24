@@ -1,4 +1,4 @@
-import Sparkline from "@/components/Sparkline";
+import Sparkline, { type Trend } from "@/components/Sparkline";
 
 // Shared building blocks for the system monitor page (/health/sensors).
 
@@ -39,13 +39,13 @@ export function fmt(v: number | null | undefined, digits = 1, unit = ""): string
   return `${v.toFixed(digits)}${unit}`;
 }
 
-export function Tile({ title, value, unit, sub, series, stepSec, flag, digits = 1 }: {
+export function Tile({ title, value, unit, sub, series, flag, digits = 1 }: {
   title: string;
   value: number | null;
   unit: string;
   sub?: string;
-  series: number[];
-  stepSec: number;
+  /** omit for slow-moving values (battery %): a 3-minute line is flat noise */
+  series?: Trend;
   flag?: Flag;
   digits?: number;
 }) {
@@ -60,7 +60,7 @@ export function Tile({ title, value, unit, sub, series, stepSec, flag, digits = 
         <span className="ml-1 text-sm" style={{ color: "var(--text-muted)" }}>{unit}</span>
       </div>
       <div className="mb-2 h-4 truncate font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>{sub}</div>
-      <Sparkline values={series} unit={unit} label={title} stepSec={stepSec} />
+      {series ? <Sparkline trend={series} unit={unit} label={title} /> : <div style={{ height: 36 }} aria-hidden />}
     </div>
   );
 }

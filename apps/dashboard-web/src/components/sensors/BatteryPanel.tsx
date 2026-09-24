@@ -1,4 +1,4 @@
-import Sparkline from "@/components/Sparkline";
+import Sparkline, { type Trend } from "@/components/Sparkline";
 import type { BatteryReading } from "@/lib/api";
 import { card, fmt, Stat } from "./ui";
 
@@ -34,11 +34,10 @@ function Meter({ value, max = 100, label }: { value: number; max?: number; label
 
 const big = { fontSize: 30, color: "var(--text)", fontWeight: 500 } as const;
 
-export default function BatteryPanel({ b, systemWatts, series, stepSec }: {
+export default function BatteryPanel({ b, systemWatts, series }: {
   b: BatteryReading;
   systemWatts: number | null;
-  series: Record<string, number[]>;
-  stepSec: number;
+  series: Record<string, Trend>;
 }) {
   if (b.status !== "ok") {
     return <p className="text-xs" style={{ color: "var(--text-muted)" }}>● {b.error}</p>;
@@ -83,7 +82,7 @@ export default function BatteryPanel({ b, systemWatts, series, stepSec }: {
           <Stat label="電流 / 電壓" value={`${fmt(b.amperage_ma, 0)} mA`} sub={fmt(b.voltage_v, 2, " V")} />
         </div>
         <div className="mt-2">
-          <Sparkline values={series["b:w"] ?? []} unit="W" label="電池充放電功率" stepSec={stepSec} height={30} />
+          <Sparkline trend={series["b:w"] ?? { v: [], t: [] }} unit="W" label="電池充放電功率" height={30} />
         </div>
       </div>
 

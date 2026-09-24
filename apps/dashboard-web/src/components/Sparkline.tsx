@@ -2,23 +2,28 @@
 
 import { useId, useState } from "react";
 
+/** One series with the wall-clock time (epoch ms) each value was read. */
+export type Trend = { v: number[]; t: number[] };
+
+const clock = (ms: number) =>
+  new Date(ms).toLocaleTimeString("zh-TW", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
 // Single-series trend line for a stat tile. One series means one color (the
 // accent token) and no legend; the tile title names the series. Hover shows
-// the value at the nearest sample, so the line never has to carry labels.
+// the value and the actual time it was read, so gaps (hidden tab, slow poll)
+// never make the readout lie about how long ago it was.
 export default function Sparkline({
-  values,
+  trend,
   unit,
   label,
-  stepSec,
   height = 36,
 }: {
-  values: number[];
+  trend: Trend;
   unit: string;
   label: string;
-  /** seconds between samples, for the hover readout */
-  stepSec: number;
   height?: number;
 }) {
+  const values = trend.v;
   const [hover, setHover] = useState<number | null>(null);
   const gradId = useId();
   const W = 200;
@@ -78,7 +83,7 @@ export default function Sparkline({
             whiteSpace: "nowrap",
           }}
         >
-          {values[at].toFixed(1)} {unit} · {last - at === 0 ? "現在" : `${(last - at) * stepSec}s 前`}
+          {clock(trend.t[at])}　{values[at].toFixed(1)} {unit}
         </span>
       )}
     </div>
