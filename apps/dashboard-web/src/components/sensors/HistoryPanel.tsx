@@ -76,8 +76,9 @@ function MetricChart({ h, spec, range }: { h: Ok; spec: Spec; range: Range }) {
   const lo = Math.min(...all);
   const hi = Math.max(...all);
   // A near-flat series (full battery, idle temp) would otherwise zoom into noise.
+  const narrow = !spec.pct && hi - lo < 2;
   const domain: [number | string, number | string] = spec.pct ? [0, 100]
-    : hi - lo < 2 ? [Math.floor(lo - 1), Math.ceil(hi + 1)] : ["auto", "auto"];
+    : narrow ? [Math.floor(lo - 1), Math.ceil(hi + 1)] : ["auto", "auto"];
   const fmt = timeFmt(range);
   return (
     <div className="p-3" style={card}>
@@ -93,7 +94,7 @@ function MetricChart({ h, spec, range }: { h: Ok; spec: Spec; range: Range }) {
             <CartesianGrid stroke={BORDER} vertical={false} />
             <XAxis dataKey="ts" tickFormatter={fmt} tick={{ fontSize: 9, fill: TEXT_SUBTLE }} minTickGap={40} stroke={BORDER} />
             <YAxis tick={{ fontSize: 9, fill: TEXT_SUBTLE }} stroke={BORDER} width={48} tickFormatter={tick}
-              domain={domain} />
+              domain={domain} allowDecimals={!narrow} tickCount={narrow ? 4 : 5} />
             {spec.zero && <ReferenceLine y={0} stroke={TEXT_SUBTLE} />}
             <Tooltip
               labelFormatter={(ts) => new Date(Number(ts) * 1000).toLocaleString("zh-TW")}
