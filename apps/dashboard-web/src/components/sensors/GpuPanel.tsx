@@ -13,10 +13,10 @@ export default function GpuPanel({ gpu, temps }: { gpu: GpuReading; temps?: Sens
   return (
     <div className="p-4" style={card}>
       <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
-        <Stat label="GPU 使用率" value={fmt(gpu.device_util, 0, "%")} sub="AGX Device Utilization" />
+        <Stat label="GPU 使用率" value={fmt(gpu.device_util, 0, "%")} />
         <Stat label="Renderer / Tiler" value={`${fmt(gpu.renderer_util, 0, "%")} / ${fmt(gpu.tiler_util, 0, "%")}`} />
-        <Stat label="作用時間" value={fmt(gpu.active, 1, "%")} sub="IOReport 非 OFF 狀態" />
-        <Stat label="頻率" value={gpu.freq_mhz ? `${gpu.freq_mhz} MHz` : "—"} sub={gpu.freq_mhz ? undefined : "頻率表與狀態數對不上"} />
+        <Stat label="喚醒時間" value={fmt(gpu.active, 1, "%")} />
+        <Stat label="頻率" value={gpu.freq_mhz ? `${gpu.freq_mhz} MHz` : "—"} sub={gpu.freq_mhz ? undefined : "此晶片讀不到"} />
         <Stat label="功耗" value={fmt(gpu.watts, 2, " W")} />
         <Stat label="顯示記憶體使用" value={gpu.memory_in_use ? `${(gpu.memory_in_use / 2 ** 30).toFixed(2)} GB` : "—"} />
       </div>

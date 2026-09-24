@@ -73,7 +73,7 @@ export default function SensorsPage() {
         系統監控
       </h1>
       <p className="mb-5 font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
-        AppleSMC + IOReport + AppleSmartBattery，免 root · 即時每 {POLL_SEC}s 更新 · 歷史由背景收集程式每 5s 記錄
+        即時每 {POLL_SEC} 秒更新 · 背景每 5 秒記錄歷史
       </p>
 
       {err && <p style={{ color: "var(--status-err)" }}>API 錯誤：{err}</p>}
@@ -107,11 +107,11 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
           sub={bat.state_label} series={series["b:pct"] ?? []} />}
       </div>
 
-      <Section title="機身溫度分布" note="滑過方塊看感測器明細">
+      <Section title="機身溫度分布">
         <LaptopMap groups={d.temperatures.groups} fans={d.fans} otherCount={Object.keys(d.temperatures.other).length} />
       </Section>
 
-      <Section title="CPU 每核心" note="IOReport DVFS 停留時間 → 使用率 / 頻率；Energy Model → 每核功耗">
+      <Section title="CPU 每核心" note="使用率 · 頻率 · 功耗">
         <CpuCores clusters={d.cpu.clusters} series={series} stepSec={POLL_SEC} />
       </Section>
 
@@ -119,11 +119,11 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
         <GpuPanel gpu={d.gpu} temps={groups.gpu} />
       </Section>
 
-      <Section title="電池與充放電" note="AppleSmartBattery">
+      <Section title="電池">
         <BatteryPanel b={d.battery} systemWatts={sys?.watts ?? null} series={series} stepSec={POLL_SEC} />
       </Section>
 
-      <Section title="歷史紀錄" note="5 秒資料留 7 天 · 每分鐘彙整留 90 天 · 每小時彙整永久">
+      <Section title="歷史紀錄">
         <HistoryPanel clusters={d.cpu.clusters} />
       </Section>
 
