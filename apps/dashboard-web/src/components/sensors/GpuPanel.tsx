@@ -1,5 +1,5 @@
 import type { GpuReading, SensorGroup } from "@/lib/api";
-import { card, fmt, onRamp, ramp, Stat } from "./ui";
+import { card, fmt, ramp, Stat } from "./ui";
 
 // Whole-GPU load (AGX driver + IOReport residency) and every GPU die
 // temperature probe. macOS exposes no per-GPU-core load; the reason from the
@@ -21,28 +21,25 @@ export default function GpuPanel({ gpu, temps }: { gpu: GpuReading; temps?: Sens
         <Stat label="顯示記憶體使用" value={gpu.memory_in_use ? `${(gpu.memory_in_use / 2 ** 30).toFixed(2)} GB` : "—"} />
       </div>
 
-      <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-        {gpu.core_count ?? "?"} 核 GPU · 每核心使用率：<span style={{ color: "var(--status-warn)" }}>●</span> {gpu.per_core_reason}
-      </p>
-
       {probes.length > 0 && (
-        <div className="mt-3">
-          <div className="mb-1 font-mono text-[10px]" style={{ color: "var(--text-subtle)" }}>
-            GPU 晶片溫度探針 {probes.length} 個（SMC Tg**，平均 {temps?.avg}°C · 最高 {temps?.max}°C；探針與核心的對應 Apple 未公開）
+        <div className="mt-5">
+          <div className="mb-1.5 flex flex-wrap justify-between gap-x-4 text-[11px]" style={{ color: "var(--text-muted)" }}>
+            <span>GPU 晶片溫度（{probes.length} 個探針）</span>
+            <span className="font-mono tabular-nums">
+              最低 {Math.min(...probes.map(([, v]) => v)).toFixed(1)}° · 平均 {temps?.avg}° · 最高 {temps?.max}°
+            </span>
           </div>
-          <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))" }}>
-            {probes.map(([k, v]) => {
-              const t = (v - T_LO) / (T_HI - T_LO);
-              return (
-                <div key={k} title={`${k} ${v}°C`} className="px-1 py-0.5 text-center font-mono text-[10px] tabular-nums"
-                  style={{ background: ramp(t), color: onRamp(t), borderRadius: 2 }}>
-                  {v.toFixed(0)}°
-                </div>
-              );
-            })}
+          <div className="flex h-4 gap-px overflow-hidden" style={{ borderRadius: 3 }}>
+            {probes.map(([k, v]) => (
+              <div key={k} title={`${k} ${v}°C`} className="flex-1" style={{ background: ramp((v - T_LO) / (T_HI - T_LO)) }} />
+            ))}
           </div>
         </div>
       )}
+
+      <p className="mt-4 text-[11px]" style={{ color: "var(--text-subtle)" }}>
+        {gpu.core_count ?? "?"} 核 GPU。每核心使用率 macOS 不提供（系統只回報整顆 GPU），探針與核心的對應 Apple 也未公開。
+      </p>
     </div>
   );
 }
