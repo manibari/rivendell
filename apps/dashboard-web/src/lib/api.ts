@@ -571,6 +571,70 @@ export interface SensorPower {
   watts: number;
 }
 
+export interface CpuCore {
+  id: string;
+  core: number;
+  /** % of the window in a running DVFS state; null when unreadable */
+  active: number | null;
+  /** residency-weighted clock while running; null when the pmgr table is ambiguous */
+  freq_mhz: number | null;
+  freq_max_mhz: number | null;
+  watts: number | null;
+}
+
+export interface CpuCluster {
+  id: string;
+  kind: string;
+  label: string;
+  cores: CpuCore[];
+  active: number | null;
+  watts: number | null;
+}
+
+export interface GpuReading {
+  core_count: number | null;
+  device_util: number | null;
+  renderer_util: number | null;
+  tiler_util: number | null;
+  memory_in_use: number | null;
+  active: number | null;
+  freq_mhz: number | null;
+  freq_max_mhz: number | null;
+  watts: number | null;
+  per_core: null;
+  per_core_reason: string;
+}
+
+export type BatteryReading =
+  | { status: "unavailable"; error: string }
+  | {
+      status: "ok";
+      percent: number | null;
+      state: "charging" | "discharging" | "assisting" | "full" | "not_charging";
+      state_label: string;
+      external_connected: boolean;
+      /** + into the battery, - out of it */
+      amperage_ma: number | null;
+      voltage_v: number | null;
+      battery_watts: number | null;
+      system_watts: number | null;
+      adapter_in_watts: number | null;
+      adapter: { watts: number | null; description: string | null; voltage_v: number | null; current_ma: number | null } | null;
+      minutes_to_full: number | null;
+      minutes_to_empty: number | null;
+      capacity_mah: number | null;
+      full_capacity_mah: number | null;
+      design_capacity_mah: number | null;
+      health_percent: number | null;
+      cycle_count: number | null;
+      design_cycle_count: number | null;
+      temperature_c: number | null;
+      cell_voltages_v: number[];
+      charger: { charging_current_ma: number | null; charging_voltage_mv: number | null };
+      daily_soc: { min: number | null; max: number | null };
+      permanent_failure: boolean;
+    };
+
 export type SensorsData =
   | { status: "unavailable"; error: string }
   | {
@@ -585,4 +649,22 @@ export type SensorsData =
         energy_error: string | null;
         interval_ms: number | null;
       };
+      cpu: { clusters: CpuCluster[]; core_count: number; total_active: number | null };
+      gpu: GpuReading;
+      battery: BatteryReading;
+    };
+
+/** GET /api/health/metrics/history — collector store, bucketed server-side. */
+export type MetricsHistory =
+  | { status: "unavailable"; error: string }
+  | {
+      status: "ok" | "empty";
+      tier: "5s" | "1m" | "1h";
+      step: number;
+      since: number;
+      until: number;
+      ts: number[];
+      avg: Record<string, (number | null)[]>;
+      max: Record<string, (number | null)[]>;
+      collector: { last_sample: number | null; running: boolean };
     };

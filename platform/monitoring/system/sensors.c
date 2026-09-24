@@ -6,6 +6,9 @@
 //     P* rails (flt, W; PSTR = system total).
 //   - IOReport "Energy Model" counters: per-block energy, sampled twice and
 //     divided by the interval to get CPU / GPU / ANE / DRAM watts.
+//   - IOReport "CPU Core Performance States" and "GPU Performance States":
+//     per-core (and whole-GPU) time spent in each DVFS state over the same
+//     window, from which cores.py derives active % and frequency.
 // Classification into CPU/GPU/... happens in sensors.py; this binary only
 // reports raw keys so a new chip's key layout never needs a rebuild.
 //
@@ -149,6 +152,23 @@ extern CFDictionaryRef IOReportCreateSamplesDelta(CFDictionaryRef, CFDictionaryR
 extern int64_t IOReportSimpleGetIntegerValue(CFDictionaryRef, int32_t);
 extern CFStringRef IOReportChannelGetChannelName(CFDictionaryRef);
 extern CFStringRef IOReportChannelGetUnitLabel(CFDictionaryRef);
+extern CFStringRef IOReportChannelGetGroup(CFDictionaryRef);
+extern void IOReportMergeChannels(CFDictionaryRef, CFDictionaryRef, CFTypeRef);
+extern int32_t IOReportStateGetCount(CFDictionaryRef);
+extern CFStringRef IOReportStateGetNameForIndex(CFDictionaryRef, int32_t);
+extern int64_t IOReportStateGetResidency(CFDictionaryRef, int32_t);
+
+static void put_escaped(const char *s) {
+  for (const char *c = s; *c; c++) {
+    if (*c == '"' || *c == '\\') putchar('\\');
+    putchar(*c >= 32 ? *c : '?');
+  }
+}
+
+static int cstr(CFStringRef ref, char *out, size_t n) {
+  out[0] = 0;
+  return ref && CFStringGetCString(ref, out, n, kCFStringEncodingUTF8);
+}
 
 static double unit_to_joules(CFStringRef unit) {
   char u[16] = "";
@@ -159,12 +179,44 @@ static double unit_to_joules(CFStringRef unit) {
   return 0;  // unknown unit: skip rather than report a wrong scale
 }
 
+// Residency per DVFS state, one object per channel: {"PCPU0":{"IDLE":n,...}}.
+static void emit_residency(CFArrayRef items) {
+  printf("\"residency\":{");
+  int first = 1;
+  for (CFIndex i = 0; items && i < CFArrayGetCount(items); i++) {
+    CFDictionaryRef item = CFArrayGetValueAtIndex(items, i);
+    char group[64], name[128];
+    if (!cstr(IOReportChannelGetGroup(item), group, sizeof group) || !strcmp(group, "Energy Model")) continue;
+    if (!cstr(IOReportChannelGetChannelName(item), name, sizeof name)) continue;
+    printf("%s\"", first ? "" : ",");
+    put_escaped(name);
+    printf("\":{");
+    int n = IOReportStateGetCount(item);
+    for (int k = 0; k < n; k++) {
+      char state[64];
+      if (!cstr(IOReportStateGetNameForIndex(item, k), state, sizeof state)) continue;
+      printf("%s\"", k ? "," : "");
+      put_escaped(state);
+      printf("\":%lld", (long long)IOReportStateGetResidency(item, k));
+    }
+    printf("}");
+    first = 0;
+  }
+  printf("}");
+}
+
 static void emit_energy(int interval_ms) {
   CFDictionaryRef chans = IOReportCopyChannelsInGroup(CFSTR("Energy Model"), NULL, 0, 0, 0);
   if (!chans) {
     printf("\"energy\":{\"error\":\"no Energy Model channels\"}");
     return;
   }
+  // Core / GPU DVFS residency rides the same subscription so every number in
+  // one reading covers the same window. Missing groups just add nothing.
+  CFDictionaryRef cpu = IOReportCopyChannelsInGroup(CFSTR("CPU Stats"), CFSTR("CPU Core Performance States"), 0, 0, 0);
+  CFDictionaryRef gpu = IOReportCopyChannelsInGroup(CFSTR("GPU Stats"), CFSTR("GPU Performance States"), 0, 0, 0);
+  if (cpu) { IOReportMergeChannels(chans, cpu, NULL); CFRelease(cpu); }
+  if (gpu) { IOReportMergeChannels(chans, gpu, NULL); CFRelease(gpu); }
   CFMutableDictionaryRef mchans = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, chans);
   CFRelease(chans);
   CFMutableDictionaryRef subbed = NULL;
@@ -183,22 +235,20 @@ static void emit_energy(int interval_ms) {
   int first = 1;
   for (CFIndex i = 0; items && i < CFArrayGetCount(items); i++) {
     CFDictionaryRef item = CFArrayGetValueAtIndex(items, i);
+    char group[64], name[128];
+    if (!cstr(IOReportChannelGetGroup(item), group, sizeof group) || strcmp(group, "Energy Model")) continue;
     double scale = unit_to_joules(IOReportChannelGetUnitLabel(item));
-    char name[128] = "";
-    CFStringRef cname = IOReportChannelGetChannelName(item);
-    if (!scale || !cname || !CFStringGetCString(cname, name, sizeof name, kCFStringEncodingUTF8)) continue;
+    if (!scale || !cstr(IOReportChannelGetChannelName(item), name, sizeof name)) continue;
     // Per-frequency-level (DTL) channels: hundreds of rows, no reader.
     if (strstr(name, "DTL")) continue;
     double watts = IOReportSimpleGetIntegerValue(item, 0) * scale / (interval_ms / 1000.0);
     printf("%s\"", first ? "" : ",");
-    for (char *c = name; *c; c++) {
-      if (*c == '"' || *c == '\\') putchar('\\');
-      putchar(*c >= 32 ? *c : '?');
-    }
+    put_escaped(name);
     printf("\":%.4f", watts);
     first = 0;
   }
-  printf("}}");
+  printf("}},");
+  emit_residency(items);
   if (delta) CFRelease(delta);
   if (a) CFRelease(a);
   if (b) CFRelease(b);

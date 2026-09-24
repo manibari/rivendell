@@ -35,7 +35,7 @@ class SensorsTest(unittest.TestCase):
         groups = {g["id"]: g for g in temps["groups"]}
         self.assertEqual(groups["cpu"]["avg"], 50.0)
         self.assertEqual(groups["cpu"]["max"], 60.0)
-        self.assertEqual(sorted(groups), ["airflow", "battery", "cpu", "gpu", "ssd"])
+        self.assertEqual(sorted(groups), ["airflow_l", "battery", "cpu", "gpu", "ssd"])
         # Placeholder values are dropped; unknown live keys stay raw.
         self.assertEqual(temps["other"], {"TZZZ": 41.0})
 

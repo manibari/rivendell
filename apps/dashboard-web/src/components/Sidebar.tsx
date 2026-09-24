@@ -57,7 +57,7 @@ const NAV: NavNode[] = [
     icon: Activity,
     children: [
       { kind: "link", href: "/health/disk", label: "磁碟容量", icon: HardDrive },
-      { kind: "link", href: "/health/sensors", label: "溫度與功耗", icon: Thermometer },
+      { kind: "link", href: "/health/sensors", label: "系統監控", icon: Thermometer },
       { kind: "link", href: "/health/ssot", label: "SSOT 漂移", icon: GitCompare },
       { kind: "link", href: "/health/agents", label: "排程健康", icon: CalendarClock },
       { kind: "link", href: "/health/errors", label: "最近錯誤", icon: FileWarning },

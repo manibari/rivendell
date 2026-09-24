@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Resident system-metrics collector (keepalive under launchd).
+# Samples CPU per-core load, GPU, temperatures, fans, power and battery every
+# 5 s into apps/dashboard-legacy/data/system-metrics.db, rolls up to 1 m / 1 h
+# and prunes by retention. Stdlib-only Python, so no venv is needed.
+# Registry: agents/registry/metrics-collector.md
+set -euo pipefail
+
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+exec python3 -u "$REPO_DIR/platform/monitoring/system/collector.py"

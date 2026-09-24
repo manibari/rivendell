@@ -16,12 +16,19 @@ import os
 import platform
 import re
 import subprocess
+import sys
 import threading
 from pathlib import Path
 from statistics import mean
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
+# Sibling modules; this file is also loaded through the dashboard's lib/ symlink.
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+import battery  # noqa: E402
+import cores  # noqa: E402
+
 SOURCE = HERE / "sensors.c"
 BINARY = Path(os.environ.get("SK_SENSORS_BIN", str(HERE / "build" / "sk-sensors")))
 BUILD = ["clang", "-O2", "-framework", "IOKit", "-framework", "CoreFoundation", "-lIOReport"]
@@ -34,7 +41,8 @@ TEMP_GROUPS: list[tuple[str, str, re.Pattern[str]]] = [
     ("gpu", "GPU", re.compile(r"^Tg\w\w$")),
     ("ssd", "SSD (NAND)", re.compile(r"^TH0\w$")),
     ("battery", "電池", re.compile(r"^TB\dT$")),
-    ("airflow", "出風口", re.compile(r"^Ta[LR][PTFW]$")),
+    ("airflow_l", "左出風口", re.compile(r"^TaL[PTFW]$")),
+    ("airflow_r", "右出風口", re.compile(r"^TaR[PTFW]$")),
     ("wifi", "Wi-Fi", re.compile(r"^TW0P$")),
     ("palm", "掌托", re.compile(r"^Ts[01]P$")),
 ]
@@ -142,7 +150,10 @@ def _power(smc: dict[str, float], energy: dict[str, Any]) -> dict[str, Any]:
 
 
 def snapshot(interval_ms: int = 250) -> dict[str, Any]:
-    """{status, temperatures, fans, power} or {status: unavailable, error}."""
+    """{status, temperatures, fans, power, cpu, gpu, battery} or {status: unavailable, error}.
+
+    battery carries its own status (a desktop Mac has none).
+    """
     try:
         raw = read_raw(interval_ms)
     except SensorsUnavailable as exc:
@@ -150,11 +161,17 @@ def snapshot(interval_ms: int = 250) -> dict[str, Any]:
     smc = raw.get("smc", {})
     if "error" in smc:
         return {"status": "unavailable", "error": smc["error"]}
+    energy = raw.get("energy", {})
+    watts = energy.get("watts", {})
+    residency = raw.get("residency", {})
     return {
         "status": "ok",
         "temperatures": _temps(smc),
         "fans": _fans(smc),
-        "power": _power(smc, raw.get("energy", {})),
+        "power": _power(smc, energy),
+        "cpu": cores.cpu(residency, watts),
+        "gpu": cores.gpu(residency, watts),
+        "battery": battery.snapshot(),
     }
 
 

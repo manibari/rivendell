@@ -2,99 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, type SensorsData } from "@/lib/api";
-import Sparkline from "@/components/Sparkline";
+import BatteryPanel from "@/components/sensors/BatteryPanel";
+import CpuCores from "@/components/sensors/CpuCores";
+import GpuPanel from "@/components/sensors/GpuPanel";
+import HistoryPanel from "@/components/sensors/HistoryPanel";
+import LaptopMap from "@/components/sensors/LaptopMap";
+import { card, heat, RawList, Rows, Section, Tile } from "@/components/sensors/ui";
 
-// Live temperatures, fans and power — phase 1 of exelban/stats parity.
-// History lives in the browser only (last HISTORY samples while the page is
-// open); persistent history comes with the CPU/memory/network modules.
+// System monitor (exelban/stats parity): live readings every POLL_SEC with
+// in-page trend lines, plus persisted history from the metrics collector
+// (agents/registry/metrics-collector.md) that keeps recording when this page
+// is closed.
 const POLL_SEC = 2;
 const HISTORY = 90;
 
 type Ok = Extract<SensorsData, { status: "ok" }>;
 type Series = Record<string, number[]>;
 
-// Status colors are reserved for state and always ship with a text label.
-function heat(c: number): { label: string; color: string } | null {
-  if (c >= 95) return { label: "過熱", color: "var(--status-err)" };
-  if (c >= 85) return { label: "偏高", color: "var(--status-warn)" };
-  return null;
-}
-
-const card = {
-  background: "var(--surface)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius-md)",
-} as const;
-
-function Tile({ title, value, unit, sub, series, flag }: {
-  title: string;
-  value: number;
-  unit: string;
-  sub?: string;
-  series: number[];
-  flag?: { label: string; color: string } | null;
-}) {
-  return (
-    <div className="p-4" style={card}>
-      <div className="flex items-center justify-between text-xs" style={{ color: "var(--text-muted)" }}>
-        <span>{title}</span>
-        {flag && <span className="font-mono text-[10px]" style={{ color: flag.color }}>● {flag.label}</span>}
-      </div>
-      <div className="mt-1 font-mono tabular-nums" style={{ fontSize: 26, color: "var(--text)", fontWeight: 500 }}>
-        {value.toFixed(unit === "RPM" ? 0 : 1)}
-        <span className="ml-1 text-sm" style={{ color: "var(--text-muted)" }}>{unit}</span>
-      </div>
-      <div className="mb-2 h-4 font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>{sub}</div>
-      <Sparkline values={series} unit={unit} label={title} stepSec={POLL_SEC} />
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h2 className="mb-2 text-sm" style={{ color: "var(--text)", fontWeight: 500 }}>{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Rows({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
-  return (
-    <div className="overflow-x-auto" style={card}>
-      <table className="w-full text-sm">
-        <thead>
-          <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            {head.map((h) => (
-              <th key={h} className="px-4 py-2 text-left font-mono text-[10px] uppercase" style={{ color: "var(--text-subtle)", letterSpacing: "0.08em" }}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} style={{ borderBottom: i < rows.length - 1 ? "1px solid var(--border)" : undefined }}>
-              {r.map((c, j) => (
-                <td key={j} className={`px-4 py-2 text-xs ${j ? "font-mono tabular-nums" : ""}`} style={{ color: j ? "var(--text)" : "var(--text-muted)" }}>{c}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RawList({ title, values, unit }: { title: string; values: Record<string, number>; unit: string }) {
-  const entries = Object.entries(values);
-  if (!entries.length) return null;
-  return (
-    <details className="mt-2 px-4 py-2 text-xs" style={card}>
-      <summary className="cursor-pointer" style={{ color: "var(--text-muted)" }}>{title}（{entries.length}）</summary>
-      <div className="mt-2 grid gap-x-4 gap-y-1 font-mono tabular-nums" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", color: "var(--text)" }}>
-        {entries.map(([k, v]) => <span key={k}><span style={{ color: "var(--text-subtle)" }}>{k}</span> {v}{unit}</span>)}
-      </div>
-    </details>
-  );
+function points(d: Ok): Record<string, number> {
+  const p: Record<string, number> = {};
+  for (const g of d.temperatures.groups) p[`t:${g.id}`] = g.avg;
+  for (const x of [...d.power.system, ...d.power.components]) p[`p:${x.id}`] = x.watts;
+  for (const f of d.fans) p[`f:${f.id}`] = f.rpm;
+  for (const c of d.cpu.clusters) for (const core of c.cores) if (core.active !== null) p[`c:${core.id}`] = core.active;
+  if (d.cpu.total_active !== null) p["cpu"] = d.cpu.total_active;
+  if (d.gpu.device_util !== null) p["gpu"] = d.gpu.device_util;
+  if (d.battery.status === "ok") {
+    if (d.battery.percent !== null) p["b:pct"] = d.battery.percent;
+    if (d.battery.battery_watts !== null) p["b:w"] = d.battery.battery_watts;
+  }
+  return p;
 }
 
 export default function SensorsPage() {
@@ -112,10 +49,7 @@ export default function SensorsPage() {
         setData(d);
         setErr(null);
         if (d.status === "ok") {
-          const point: Record<string, number> = {};
-          for (const g of d.temperatures.groups) point[`t:${g.id}`] = g.avg;
-          for (const p of [...d.power.system, ...d.power.components]) point[`p:${p.id}`] = p.watts;
-          for (const f of d.fans) point[`f:${f.id}`] = f.rpm;
+          const point = points(d);
           setSeries((prev) => {
             const next: Series = {};
             for (const [k, v] of Object.entries(point)) next[k] = [...(prev[k] ?? []), v].slice(-HISTORY);
@@ -136,10 +70,10 @@ export default function SensorsPage() {
   return (
     <div>
       <h1 className="mb-1 tracking-tight" style={{ fontSize: 28, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.02em" }}>
-        溫度與功耗
+        系統監控
       </h1>
       <p className="mb-5 font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
-        AppleSMC + IOReport，免 root · 每 {POLL_SEC}s 更新 · 趨勢線保留本頁最近 {HISTORY} 次取樣
+        AppleSMC + IOReport + AppleSmartBattery，免 root · 即時每 {POLL_SEC}s 更新 · 歷史由背景收集程式每 5s 記錄
       </p>
 
       {err && <p style={{ color: "var(--status-err)" }}>API 錯誤：{err}</p>}
@@ -158,26 +92,42 @@ export default function SensorsPage() {
 function Readings({ d, series }: { d: Ok; series: Series }) {
   const groups = Object.fromEntries(d.temperatures.groups.map((g) => [g.id, g]));
   const sys = d.power.system.find((p) => p.id === "PSTR");
-  const comp = Object.fromEntries(d.power.components.map((p) => [p.id, p]));
+  const bat = d.battery.status === "ok" ? d.battery : null;
   return (
     <>
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
-        {(["cpu", "gpu"] as const).map((id) => groups[id] && (
-          <Tile key={id} title={`${groups[id].label} 溫度`} value={groups[id].avg} unit="°C"
-            sub={`最高 ${groups[id].max}°C · ${Object.keys(groups[id].sensors).length} 個感測器`}
-            series={series[`t:${id}`] ?? []} flag={heat(groups[id].max)} />
-        ))}
-        {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" series={series["p:PSTR"] ?? []} />}
-        {(["CPU Energy", "GPU Energy"] as const).map((id) => comp[id] && (
-          <Tile key={id} title={`${comp[id].label} 功耗`} value={comp[id].watts} unit="W" series={series[`p:${id}`] ?? []} />
-        ))}
-        {d.fans.map((f) => (
-          <Tile key={f.id} title={`風扇 ${f.id + 1}`} value={f.rpm} unit="RPM"
-            sub={`${f.percent ?? "—"}% · ${f.mode === "auto" ? "自動" : "手動設定"}`} series={series[`f:${f.id}`] ?? []} />
-        ))}
+        <Tile title="CPU 使用率" value={d.cpu.total_active} unit="%" digits={0} stepSec={POLL_SEC}
+          sub={`${d.cpu.core_count} 核平均`} series={series["cpu"] ?? []} />
+        <Tile title="GPU 使用率" value={d.gpu.device_util} unit="%" digits={0} stepSec={POLL_SEC}
+          sub={`${d.gpu.core_count ?? "?"} 核 · ${d.gpu.watts?.toFixed(2) ?? "—"} W`} series={series["gpu"] ?? []} />
+        {groups.cpu && <Tile title="CPU 溫度" value={groups.cpu.avg} unit="°C" stepSec={POLL_SEC}
+          sub={`最高 ${groups.cpu.max}°C`} series={series["t:cpu"] ?? []} flag={heat(groups.cpu.max)} />}
+        {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" stepSec={POLL_SEC} series={series["p:PSTR"] ?? []} />}
+        {bat && <Tile title="電池" value={bat.percent} unit="%" digits={0} stepSec={POLL_SEC}
+          sub={bat.state_label} series={series["b:pct"] ?? []} />}
       </div>
 
-      <Section title="溫度">
+      <Section title="機身溫度分布" note="滑過方塊看感測器明細">
+        <LaptopMap groups={d.temperatures.groups} fans={d.fans} otherCount={Object.keys(d.temperatures.other).length} />
+      </Section>
+
+      <Section title="CPU 每核心" note="IOReport DVFS 停留時間 → 使用率 / 頻率；Energy Model → 每核功耗">
+        <CpuCores clusters={d.cpu.clusters} series={series} stepSec={POLL_SEC} />
+      </Section>
+
+      <Section title="GPU">
+        <GpuPanel gpu={d.gpu} temps={groups.gpu} />
+      </Section>
+
+      <Section title="電池與充放電" note="AppleSmartBattery">
+        <BatteryPanel b={d.battery} series={series} stepSec={POLL_SEC} />
+      </Section>
+
+      <Section title="歷史紀錄" note="5 秒資料留 7 天 · 每分鐘彙整留 90 天 · 每小時彙整永久">
+        <HistoryPanel clusters={d.cpu.clusters} />
+      </Section>
+
+      <Section title="溫度明細">
         <Rows head={["部位", "平均", "最高", "感測器"]} rows={d.temperatures.groups.map((g) => {
           const h = heat(g.max);
           return [g.label, `${g.avg}°C`, `${g.max}°C${h ? ` ${h.label}` : ""}`, Object.keys(g.sensors).length];
@@ -191,12 +141,12 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>這台機器沒有回報風扇（FNum = 0）。</p>
         ) : (
           <Rows head={["風扇", "轉速", "目標", "範圍", "模式"]} rows={d.fans.map((f) => [
-            `風扇 ${f.id + 1}`, `${f.rpm} RPM (${f.percent ?? "—"}%)`, f.target ?? "—", `${f.min ?? "—"}–${f.max ?? "—"}`, f.mode === "auto" ? "自動" : "手動設定",
+            `F${f.id}`, `${f.rpm} RPM (${f.percent ?? "—"}%)`, f.target ?? "—", `${f.min ?? "—"}–${f.max ?? "—"}`, f.mode === "auto" ? "自動" : "手動設定",
           ])} />
         )}
       </Section>
 
-      <Section title="功耗">
+      <Section title="功耗明細">
         <Rows head={["來源", "項目", "瓦數"]} rows={[
           ...d.power.system.map((p) => ["SMC", p.label, `${p.watts} W`]),
           ...d.power.components.map((p) => ["IOReport", p.label, `${p.watts} W`]),
