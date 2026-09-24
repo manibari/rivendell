@@ -102,6 +102,8 @@ def flatten(snap: dict[str, Any]) -> dict[str, float]:
         put("bat.sys_w", bat.get("system_watts"))
         put("bat.in_w", bat.get("adapter_in_watts"))
         put("bat.ac", 1 if bat.get("external_connected") else 0)
+        put("bat.health", bat.get("health_percent"))
+        put("bat.cycles", bat.get("cycle_count"))
     return out
 
 

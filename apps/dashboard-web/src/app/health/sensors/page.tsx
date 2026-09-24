@@ -120,7 +120,7 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
       </Section>
 
       <Section title="電池與充放電" note="AppleSmartBattery">
-        <BatteryPanel b={d.battery} series={series} stepSec={POLL_SEC} />
+        <BatteryPanel b={d.battery} systemWatts={sys?.watts ?? null} series={series} stepSec={POLL_SEC} />
       </Section>
 
       <Section title="歷史紀錄" note="5 秒資料留 7 天 · 每分鐘彙整留 90 天 · 每小時彙整永久">

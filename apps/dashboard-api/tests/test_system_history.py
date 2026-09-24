@@ -87,7 +87,8 @@ class HistoryTest(unittest.TestCase):
             "cpu": {"total_active": 12.5, "clusters": [{"id": "PCPU", "active": 20.0, "watts": None, "cores": [
                 {"id": "PCPU0", "active": 20.0, "freq_mhz": None, "watts": 0.5}]}]},
             "gpu": {"device_util": 3, "active": None, "freq_mhz": None, "watts": 0.1},
-            "battery": {"status": "ok", "percent": 80, "amperage_ma": -1200, "external_connected": False},
+            "battery": {"status": "ok", "percent": 80, "amperage_ma": -1200, "external_connected": False,
+                        "health_percent": 96.5, "cycle_count": 120},
             "fans": [{"id": 0, "rpm": 2300}],
         }
         flat = history.flatten(snap)
@@ -98,6 +99,7 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(flat["bat.ma"], -1200.0)
         self.assertEqual(flat["bat.ac"], 0.0)
         self.assertEqual(flat["fan.0"], 2300.0)
+        self.assertEqual((flat["bat.health"], flat["bat.cycles"]), (96.5, 120.0))
 
 
 if __name__ == "__main__":
