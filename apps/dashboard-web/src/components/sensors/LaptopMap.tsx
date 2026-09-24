@@ -18,7 +18,7 @@ function Spot({ x, y, w, h, label, value, sub }: {
     return (
       <g>
         <rect x={x} y={y} width={w} height={h} rx={8} fill="var(--surface)" stroke="var(--border-strong)" strokeDasharray="4 4" />
-        <text x={x + w / 2} y={y + h / 2 + 6} textAnchor="middle" fontSize={16} fill="var(--text-subtle)">{label} 無讀數</text>
+        <text x={x + w / 2} y={y + h / 2 + 7} textAnchor="middle" fontSize={20} fill="var(--text-subtle)">{label} 無讀數</text>
       </g>
     );
   }
@@ -30,12 +30,12 @@ function Spot({ x, y, w, h, label, value, sub }: {
       <title>{`${label} ${value.toFixed(1)}°C${sub ? `\n${sub}` : ""}`}</title>
       <rect x={x} y={y} width={w} height={h} rx={8} fill={ramp(k)}
         stroke={flag ? flag.color : "var(--border-strong)"} strokeWidth={flag ? 4 : 1} />
-      <text x={x + w / 2} y={y + h / 2 - (sub ? 8 : 0)} textAnchor="middle" fontSize={16} fill={ink}>{label}</text>
-      <text x={x + w / 2} y={y + h / 2 + (sub ? 16 : 22)} textAnchor="middle" fontSize={22} fontWeight={600} fill={ink}
+      <text x={x + w / 2} y={y + h / 2 - (sub ? 14 : 6)} textAnchor="middle" fontSize={20} fill={ink}>{label}</text>
+      <text x={x + w / 2} y={y + h / 2 + (sub ? 16 : 24)} textAnchor="middle" fontSize={28} fontWeight={600} fill={ink}
         style={{ fontVariantNumeric: "tabular-nums" }}>
         {value.toFixed(1)}°{flag ? ` ${flag.label}` : ""}
       </text>
-      {sub && <text x={x + w / 2} y={y + h / 2 + 38} textAnchor="middle" fontSize={13} fill={ink}>{sub}</text>}
+      {sub && <text x={x + w / 2} y={y + h / 2 + 40} textAnchor="middle" fontSize={17} fill={ink}>{sub}</text>}
     </g>
   );
 }
@@ -49,10 +49,10 @@ function Fan({ cx, cy, fan }: { cx: number; cy: number; fan?: SensorFan }) {
         <path key={a} d={`M${cx},${cy - 24} Q${cx + 34},${cy - 52} ${cx + 8},${cy - 88}`} fill="none"
           stroke="var(--border)" strokeWidth={2} transform={`rotate(${a} ${cx} ${cy})`} />
       ))}
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize={15} fill="var(--text-muted)">
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize={20} fill="var(--text-muted)">
         {fan ? `風扇 F${fan.id}` : "風扇"}
       </text>
-      <text x={cx} y={cy + 18} textAnchor="middle" fontSize={18} fontWeight={600} fill="var(--text)"
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize={24} fontWeight={600} fill="var(--text)"
         style={{ fontVariantNumeric: "tabular-nums" }}>
         {fan ? `${fan.rpm} RPM` : "—"}
       </text>
@@ -75,11 +75,11 @@ export default function LaptopMap({ groups, fans, otherCount }: {
         style={{ display: "block", fontFamily: "var(--font-sans)" }}>
         {/* chassis and trackpad outline for orientation */}
         <rect x={20} y={30} width={960} height={530} rx={40} fill="var(--bg)" stroke="var(--border-strong)" strokeWidth={2} />
-        <text x={500} y={20} textAnchor="middle" fontSize={15} fill="var(--text-subtle)">↑ 螢幕轉軸（後側）</text>
+        <text x={500} y={20} textAnchor="middle" fontSize={18} fill="var(--text-subtle)">↑ 螢幕轉軸（後側）</text>
 
         {/* logic board with SoC, SSD and Wi-Fi */}
         <rect x={275} y={55} width={450} height={250} rx={12} fill="var(--accent-bg)" stroke="var(--border-strong)" />
-        <text x={285} y={296} fontSize={13} fill="var(--text-subtle)">主機板</text>
+        <text x={285} y={297} fontSize={16} fill="var(--text-subtle)">主機板</text>
         <Spot x={420} y={85} w={170} h={98} label="CPU" value={g.cpu?.max}
           sub={g.cpu ? `平均 ${g.cpu.avg}°` : undefined} />
         <Spot x={420} y={190} w={170} h={98} label="GPU" value={g.gpu?.max}
@@ -100,10 +100,10 @@ export default function LaptopMap({ groups, fans, otherCount }: {
             fill={bat ? ramp(t(bat.avg)) : "var(--surface)"} fillOpacity={0.45} stroke="var(--border-strong)" />
         ))}
         <rect x={345} y={420} width={310} height={110} rx={12} fill="none" stroke="var(--border-strong)" strokeDasharray="6 6" />
-        <text x={500} y={404} textAnchor="middle" fontSize={17} fill="var(--text)">
+        <text x={500} y={406} textAnchor="middle" fontSize={22} fill="var(--text)">
           電池 {bat ? `${bat.avg}°` : "無讀數"}
         </text>
-        <text x={500} y={482} textAnchor="middle" fontSize={13} fill="var(--text-subtle)">觸控板</text>
+        <text x={500} y={482} textAnchor="middle" fontSize={17} fill="var(--text-subtle)">觸控板</text>
 
         {/* palm rest surface probes */}
         {palm.slice(0, 2).map(([k, v], i) => (
