@@ -40,19 +40,23 @@ export default function CpuCores({ clusters, series, stepSec }: {
     return <p className="text-xs" style={{ color: "var(--status-warn)" }}>● 讀不到每核心的效能狀態（IOReport CPU Core Performance States 無資料）</p>;
   }
   return (
-    <div className="grid gap-3">
-      {clusters.map((c) => {
+    <div style={card}>
+      {clusters.map((c, i) => {
         const maxMhz = c.cores.find((x) => x.freq_max_mhz)?.freq_max_mhz;
         return (
-          <div key={c.id} className="p-4" style={card}>
-            <div className="mb-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span className="text-sm" style={{ color: "var(--text)", fontWeight: 500 }}>{c.label}</span>
-              <span className="font-mono text-[11px] tabular-nums" style={{ color: "var(--text-muted)" }}>
-                {c.cores.length} 核 · 平均 {fmt(c.active, 0, "%")} · 叢集 {fmt(c.watts, 2, " W")}
-                {maxMhz ? ` · 最高 ${(maxMhz / 1000).toFixed(2)} GHz` : ""}
-              </span>
+          <div key={c.id} className="grid gap-3 p-4 md:grid-cols-[9rem_minmax(0,1fr)]"
+            style={{ borderTop: i ? "1px solid var(--border)" : undefined }}>
+            <div>
+              <div className="text-sm" style={{ color: "var(--text)", fontWeight: 500 }}>{c.label}</div>
+              <div className="mt-1 font-mono tabular-nums" style={{ fontSize: 22, color: "var(--text)", fontWeight: 500 }}>
+                {fmt(c.active, 0)}<span className="ml-0.5 text-xs" style={{ color: "var(--text-muted)" }}>%</span>
+              </div>
+              <div className="font-mono text-[10px] leading-relaxed tabular-nums" style={{ color: "var(--text-subtle)" }}>
+                {c.cores.length} 核 · {fmt(c.watts, 1, " W")}
+                {maxMhz ? <><br />最高 {(maxMhz / 1000).toFixed(2)} GHz</> : null}
+              </div>
             </div>
-            <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(128px, 1fr))" }}>
+            <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))" }}>
               {c.cores.map((core) => (
                 <CoreCell key={core.id} core={core} series={series[`c:${core.id}`] ?? []} stepSec={stepSec} />
               ))}
