@@ -25,17 +25,25 @@ const TIER_LABEL = { "5s": "5 秒原始資料", "1m": "每分鐘彙整", "1h": "
 const HEAT_COLS = 120;
 const tick = (v: number) => (Math.abs(v) >= 100 ? v.toFixed(0) : String(Number(v.toFixed(1))));
 
-const CHARTS: { key: string; title: string; unit: string; peak?: boolean; zero?: boolean; second?: string; pct?: boolean }[] = [
-  { key: "cpu.total", title: "CPU 總使用率", unit: "%", peak: true, pct: true },
-  { key: "gpu.util", title: "GPU 使用率", unit: "%", peak: true, pct: true },
-  { key: "temp.cpu", title: "CPU 溫度（平均 / 峰值）", unit: "°C", peak: true },
-  { key: "temp.gpu", title: "GPU 溫度（平均 / 峰值）", unit: "°C", peak: true },
-  { key: "power.PSTR", title: "系統總功耗", unit: "W", peak: true },
-  { key: "power.CPU Energy", title: "CPU 功耗", unit: "W", peak: true },
-  { key: "bat.pct", title: "電池電量", unit: "%", pct: true },
-  { key: "bat.w", title: "電池充放電（+ 充入 / − 放電）", unit: "W", zero: true },
-  { key: "bat.temp", title: "電池溫度", unit: "°C" },
-  { key: "fan.0", title: "風扇 F0 實線 / F1 虛線", unit: "RPM", second: "fan.1" },
+type Spec = { key: string; title: string; unit: string; peak?: boolean; zero?: boolean; second?: string; pct?: boolean };
+const GROUPS: { title: string; charts: Spec[] }[] = [
+  { title: "運算與功耗", charts: [
+    { key: "cpu.total", title: "CPU 使用率", unit: "%", peak: true, pct: true },
+    { key: "gpu.util", title: "GPU 使用率", unit: "%", peak: true, pct: true },
+    { key: "power.PSTR", title: "系統總功耗", unit: "W", peak: true },
+    { key: "power.CPU Energy", title: "CPU 功耗", unit: "W", peak: true },
+  ] },
+  { title: "溫度與散熱", charts: [
+    { key: "temp.cpu", title: "CPU 溫度（實線平均 / 虛線峰值）", unit: "°C", peak: true },
+    { key: "temp.gpu", title: "GPU 溫度（實線平均 / 虛線峰值）", unit: "°C", peak: true },
+    { key: "fan.0", title: "風扇（實線 F0 / 虛線 F1）", unit: "RPM", second: "fan.1" },
+  ] },
+  { title: "電池", charts: [
+    { key: "bat.pct", title: "電量", unit: "%", pct: true },
+    { key: "bat.w", title: "充放電（+ 充入 / − 放出）", unit: "W", zero: true },
+    { key: "bat.temp", title: "電池溫度", unit: "°C" },
+    { key: "bat.health", title: "健康度（看長期請選 90 天 / 1 年）", unit: "%" },
+  ] },
 ];
 
 type Ok = Extract<MetricsHistory, { status: "ok" | "empty" }>;
@@ -49,7 +57,7 @@ function timeFmt(range: Range) {
   };
 }
 
-function MetricChart({ h, spec, range }: { h: Ok; spec: (typeof CHARTS)[number]; range: Range }) {
+function MetricChart({ h, spec, range }: { h: Ok; spec: Spec; range: Range }) {
   const avg = h.avg[spec.key];
   if (!avg || avg.every((v) => v === null)) {
     return (
@@ -214,12 +222,16 @@ export default function HistoryPanel({ clusters }: { clusters: CpuCluster[] }) {
       )}
       {h && h.status !== "unavailable" && (
         <>
-          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
-            {CHARTS.map((spec) => <MetricChart key={spec.key} h={h} spec={spec} range={range} />)}
-          </div>
-          <div className="mt-3">
-            <CoreHeatmap h={h} clusters={clusters} range={range} />
-          </div>
+          {GROUPS.map((g) => (
+            <div key={g.title} className="mb-5">
+              <h3 className="mb-2 text-xs" style={{ color: "var(--text-muted)", fontWeight: 500 }}>{g.title}</h3>
+              <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+                {g.charts.map((spec) => <MetricChart key={spec.key} h={h} spec={spec} range={range} />)}
+              </div>
+            </div>
+          ))}
+          <h3 className="mb-2 text-xs" style={{ color: "var(--text-muted)", fontWeight: 500 }}>每核心</h3>
+          <CoreHeatmap h={h} clusters={clusters} range={range} />
         </>
       )}
     </div>
