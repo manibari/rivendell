@@ -68,23 +68,22 @@ export default function LaptopMap({ groups, fans, otherCount }: {
   const g = Object.fromEntries(groups.map((x) => [x.id, x]));
   const bat = g.battery;
   const palm = Object.entries(g.palm?.sensors ?? {});
+  const ranked = [...groups].sort((a, b) => b.max - a.max);
   return (
-    <div className="p-4" style={card}>
-      <svg viewBox="0 0 1000 720" width="100%" role="img" aria-label="機身溫度分布圖（14 吋 MacBook Pro 俯視示意）"
-        style={{ display: "block", maxWidth: 880, margin: "0 auto", fontFamily: "var(--font-sans)" }}>
+    <div className="grid gap-6 p-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(220px,1fr)]" style={card}>
+      <svg viewBox="0 0 1000 580" width="100%" role="img" aria-label="機身溫度分布圖（14 吋 MacBook Pro 俯視示意）"
+        style={{ display: "block", fontFamily: "var(--font-sans)" }}>
         {/* chassis and trackpad outline for orientation */}
-        <rect x={20} y={30} width={960} height={670} rx={40} fill="var(--bg)" stroke="var(--border-strong)" strokeWidth={2} />
-        <text x={500} y={22} textAnchor="middle" fontSize={14} fill="var(--text-subtle)">↑ 螢幕轉軸（後側）</text>
-        <rect x={330} y={440} width={340} height={230} rx={14} fill="none" stroke="var(--border)" strokeDasharray="6 6" />
-        <text x={660} y={662} textAnchor="end" fontSize={12} fill="var(--text-subtle)">觸控板範圍</text>
+        <rect x={20} y={30} width={960} height={530} rx={40} fill="var(--bg)" stroke="var(--border-strong)" strokeWidth={2} />
+        <text x={500} y={20} textAnchor="middle" fontSize={15} fill="var(--text-subtle)">↑ 螢幕轉軸（後側）</text>
 
         {/* logic board with SoC, SSD and Wi-Fi */}
         <rect x={275} y={55} width={450} height={250} rx={12} fill="var(--accent-bg)" stroke="var(--border-strong)" />
-        <text x={285} y={296} fontSize={12} fill="var(--text-subtle)">主機板</text>
+        <text x={285} y={296} fontSize={13} fill="var(--text-subtle)">主機板</text>
         <Spot x={420} y={85} w={170} h={98} label="CPU" value={g.cpu?.max}
-          sub={g.cpu ? `平均 ${g.cpu.avg}° · ${Object.keys(g.cpu.sensors).length} 探針` : undefined} />
+          sub={g.cpu ? `平均 ${g.cpu.avg}°` : undefined} />
         <Spot x={420} y={190} w={170} h={98} label="GPU" value={g.gpu?.max}
-          sub={g.gpu ? `平均 ${g.gpu.avg}° · ${Object.keys(g.gpu.sensors).length} 探針` : undefined} />
+          sub={g.gpu ? `平均 ${g.gpu.avg}°` : undefined} />
         <Spot x={600} y={85} w={115} h={98} label="SSD" value={g.ssd?.max} />
         <Spot x={290} y={85} w={120} h={98} label="Wi-Fi" value={g.wifi?.max} />
 
@@ -97,36 +96,52 @@ export default function LaptopMap({ groups, fans, otherCount }: {
 
         {/* battery cells under palm rests and trackpad */}
         {[[60, 250], [335, 330], [690, 250]].map(([x, w], i) => (
-          <rect key={i} x={x} y={370} width={w} height={300} rx={10}
-            fill={bat ? ramp(t(bat.avg)) : "var(--surface)"} fillOpacity={0.55} stroke="var(--border-strong)" />
+          <rect key={i} x={x} y={375} width={w} height={165} rx={10}
+            fill={bat ? ramp(t(bat.avg)) : "var(--surface)"} fillOpacity={0.45} stroke="var(--border-strong)" />
         ))}
-        <text x={500} y={410} textAnchor="middle" fontSize={16} fill="var(--text)">
-          電池 {bat ? `平均 ${bat.avg}° · 最高 ${bat.max}°` : "無讀數"}
+        <rect x={345} y={420} width={310} height={110} rx={12} fill="none" stroke="var(--border-strong)" strokeDasharray="6 6" />
+        <text x={500} y={404} textAnchor="middle" fontSize={17} fill="var(--text)">
+          電池 {bat ? `${bat.avg}°` : "無讀數"}
         </text>
-        <text x={500} y={434} textAnchor="middle" fontSize={13} fill="var(--text-muted)">
-          {bat ? Object.entries(bat.sensors).map(([k, v]) => `${k} ${v}°`).join(" · ") : ""}
-        </text>
+        <text x={500} y={482} textAnchor="middle" fontSize={13} fill="var(--text-subtle)">觸控板</text>
 
         {/* palm rest surface probes */}
         {palm.slice(0, 2).map(([k, v], i) => (
-          <Spot key={k} x={i ? 740 : 70} y={560} w={190} h={80} label={`掌托 ${k}`} value={v} />
+          <Spot key={k} x={i ? 740 : 70} y={420} w={190} h={84} label={`掌托 ${k}`} value={v} />
         ))}
-        {!palm.length && <Spot x={70} y={560} w={190} h={80} label="掌托" />}
+        {!palm.length && <Spot x={70} y={420} w={190} h={84} label="掌托" />}
       </svg>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px]" style={{ color: "var(--text-muted)" }}>
-        <span className="flex items-center gap-2">
-          <span className="font-mono">{T_LO}°</span>
-          <span className="inline-block h-2 w-28" style={{ background: `linear-gradient(90deg, ${ramp(0)}, ${ramp(0.5)}, ${ramp(1)})`, borderRadius: 2 }} />
-          <span className="font-mono">{T_HI}°</span>
-        </span>
-        <span><span style={{ color: "var(--status-warn)" }}>●</span> ≥85° 偏高　<span style={{ color: "var(--status-err)" }}>●</span> ≥95° 過熱</span>
+      <div className="flex flex-col">
+        <div className="mb-2 text-[11px]" style={{ color: "var(--text-muted)" }}>各區最高溫</div>
+        <ul className="flex flex-col gap-1.5">
+          {ranked.map((x) => {
+            const flag = heat(x.max);
+            return (
+              <li key={x.id} className="grid grid-cols-[5.5rem_1fr_3.5rem] items-center gap-2 text-xs"
+                title={Object.entries(x.sensors).map(([k, v]) => `${k} ${v}°`).join(" · ")}>
+                <span style={{ color: "var(--text-muted)" }}>{x.label}</span>
+                <span className="h-1.5 overflow-hidden" style={{ background: "var(--accent-bg)", borderRadius: 2 }}>
+                  <span className="block h-full" style={{ width: `${Math.max(2, Math.min(100, t(x.max) * 100))}%`, background: flag ? flag.color : ramp(t(x.max)) }} />
+                </span>
+                <span className="text-right font-mono tabular-nums" style={{ color: flag ? flag.color : "var(--text)" }}>{x.max.toFixed(1)}°</span>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+          <span className="flex items-center gap-2">
+            <span className="font-mono">{T_LO}°</span>
+            <span className="inline-block h-2 w-20" style={{ background: `linear-gradient(90deg, ${ramp(0)}, ${ramp(0.5)}, ${ramp(1)})`, borderRadius: 2 }} />
+            <span className="font-mono">{T_HI}°</span>
+          </span>
+          <span><span style={{ color: "var(--status-warn)" }}>●</span> ≥85°　<span style={{ color: "var(--status-err)" }}>●</span> ≥95°</span>
+        </div>
+        <p className="mt-auto pt-4 text-[11px] leading-relaxed" style={{ color: "var(--text-subtle)" }}>
+          位置為 14 吋 MacBook Pro 示意。左右出風口依鍵名判定；風扇、掌托、電池探針的左右 Apple 未公開，僅為排版。
+          另有 {otherCount} 個位置不明的感測器列在下方明細。
+        </p>
       </div>
-      <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "var(--text-subtle)" }}>
-        位置依 14 吋 MacBook Pro 內部配置示意。CPU / GPU 方塊顯示該區最高溫；左右出風口依 SMC 鍵名（TaL / TaR）判定；
-        風扇 F0/F1、掌托 Ts0P/Ts1P、三個電池探針各在哪一側 Apple 未公開，圖上以鍵名標示、左右僅為排版。
-        另有 {otherCount} 個感測器位置不明，列在下方「未分類溫度鍵」。
-      </p>
     </div>
   );
 }
