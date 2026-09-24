@@ -16,10 +16,10 @@ const ACCENT_SOFT = "#5b7a6a";
 const BORDER = "#e5e7eb";
 const TEXT_SUBTLE = "#9ca3af";
 
-const RANGES = ["15m", "1h", "6h", "24h", "7d", "30d", "90d", "1y"] as const;
+const RANGES = ["1m", "5m", "15m", "1h", "6h", "24h", "7d", "30d", "90d", "1y"] as const;
 type Range = (typeof RANGES)[number];
 const RANGE_LABEL: Record<Range, string> = {
-  "15m": "15 分", "1h": "1 小時", "6h": "6 小時", "24h": "24 小時", "7d": "7 天", "30d": "30 天", "90d": "90 天", "1y": "1 年",
+  "1m": "1 分", "5m": "5 分", "15m": "15 分", "1h": "1 小時", "6h": "6 小時", "24h": "24 小時", "7d": "7 天", "30d": "30 天", "90d": "90 天", "1y": "1 年",
 };
 const TIER_LABEL = { "5s": "5 秒原始資料", "1m": "每分鐘彙整", "1h": "每小時彙整" } as const;
 const HEAT_COLS = 120;
@@ -53,6 +53,7 @@ function timeFmt(range: Range) {
   return (ts: number) => {
     const d = new Date(ts * 1000);
     const hm = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    if (range === "1m" || range === "5m") return `${hm}:${String(d.getSeconds()).padStart(2, "0")}`;
     return long ? `${d.getMonth() + 1}/${d.getDate()}${range === "7d" ? ` ${hm}` : ""}` : hm;
   };
 }
@@ -184,7 +185,8 @@ export default function HistoryPanel({ clusters }: { clusters: CpuCluster[] }) {
     };
     load();
     // Short ranges move visibly; refresh them while the page is open.
-    const every = ["15m", "1h"].includes(range) ? 15000 : ["6h", "24h"].includes(range) ? 60000 : 0;
+    const every = ["1m", "5m"].includes(range) ? 5000
+      : ["15m", "1h"].includes(range) ? 15000 : ["6h", "24h"].includes(range) ? 60000 : 0;
     const id = every ? setInterval(() => { if (!document.hidden) load(); }, every) : undefined;
     return () => { alive = false; if (id) clearInterval(id); };
   }, [range]);

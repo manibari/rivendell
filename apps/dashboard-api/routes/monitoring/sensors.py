@@ -11,7 +11,7 @@ from lib.system_sensors import snapshot
 router = APIRouter()
 
 RANGES = {
-    "15m": 900, "1h": 3600, "6h": 6 * 3600, "24h": 86400,
+    "1m": 60, "5m": 300, "15m": 900, "1h": 3600, "6h": 6 * 3600, "24h": 86400,
     "7d": 7 * 86400, "30d": 30 * 86400, "90d": 90 * 86400, "1y": 365 * 86400,
 }
 
@@ -28,7 +28,7 @@ def api_sensors(interval_ms: int = Query(250, ge=50, le=2000)) -> dict[str, Any]
 
 @router.get("/api/health/metrics/history", tags=["Health"])
 def api_metrics_history(
-    range: str = Query("1h", description="15m / 1h / 6h / 24h / 7d / 30d / 90d / 1y"),
+    range: str = Query("1h", description="1m / 5m / 15m / 1h / 6h / 24h / 7d / 30d / 90d / 1y"),
     until: int | None = Query(None, description="window end, epoch seconds (default now)"),
     keys: str | None = Query(None, description="comma-separated metric keys; omit for all"),
     points: int = Query(600, ge=10, le=5000),
