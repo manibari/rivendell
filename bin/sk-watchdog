@@ -17,21 +17,32 @@
 #     Catches the 04-27 failure mode: 27 futile restarts over 80 minutes against
 #     a poisoned .next build cache.
 #
+# Overload hold: a probe that times out while the whole machine is saturated
+# (1-min load average above OVERLOAD_RATIO x CPU count) is not evidence of a
+# hung service. On 2026-09-25 an osmium job plus a VM drove load to ~29 on 18
+# cores; the api missed three 15 s probes and was restarted mid-overload,
+# which only added startup work. While overloaded, failures are still counted
+# and logged but the restart waits, up to OVERLOAD_MAX_FAILURES in a row
+# (~10 minutes) so a service that is genuinely hung still gets restarted.
+# Deep recovery never runs from an overload-held failure.
+#
 # State (per service):
 #   <key>:<consecutive_failures>:<last_restart_ts>:<restarts_today>:<today_date>
 # State file: reports/.watchdog-state — survives across invocations
 # Log file:   reports/watchdog.log    — silent on healthy, written on FAIL/RESTART/RECOVER/DEEP
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$REPO_DIR/bin/lib/platform.sh"
 SK_PLATFORM="$(sk_platform)"
-STATE_DIR="$REPO_DIR/reports"
+STATE_DIR="${SK_WATCHDOG_STATE_DIR:-$REPO_DIR/reports}"
 STATE_FILE="$STATE_DIR/.watchdog-state"
 LOG_FILE="$STATE_DIR/watchdog.log"
 THRESHOLD=3
 GRACE_SECONDS=60
 ESCALATE_THRESHOLD=5
+OVERLOAD_RATIO="1.2"
+OVERLOAD_MAX_FAILURES=10
 
 mkdir -p "$STATE_DIR"
 touch "$STATE_FILE"
@@ -126,6 +137,33 @@ probe_url() {
     curl -fs --max-time 15 -o /dev/null "$1" 2>/dev/null
 }
 
+# 1-minute load average. SK_WATCHDOG_LOAD overrides it (tests).
+load_1m() {
+    if [ -n "${SK_WATCHDOG_LOAD+set}" ]; then
+        echo "$SK_WATCHDOG_LOAD"
+    elif [ -r /proc/loadavg ]; then
+        cut -d' ' -f1 /proc/loadavg
+    else
+        sysctl -n vm.loadavg 2>/dev/null | tr -d '{}' | awk '{print $1}'
+    fi
+}
+
+cpu_count() {
+    echo "${SK_WATCHDOG_CPUS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)}"
+}
+
+# Prints "<load>/<cpus>" and returns 0 when the machine is saturated. An
+# unreadable load average counts as not overloaded, so the watchdog falls back
+# to its old behaviour instead of holding restarts forever.
+system_overloaded() {
+    local load cpus
+    load="$(load_1m)"
+    cpus="$(cpu_count)"
+    [ -n "$load" ] || return 1
+    echo "$load/$cpus"
+    awk -v l="$load" -v c="$cpus" -v r="$OVERLOAD_RATIO" 'BEGIN { exit !(l > c * r + 1e-6) }'
+}
+
 check_and_restart() {
     local key="$1" url="$2" label="$3"
     local state failures last_restart restarts_today today_date
@@ -169,6 +207,13 @@ check_and_restart() {
         return 0
     fi
 
+    local load
+    if load=$(system_overloaded) && [ "$failures" -lt "$OVERLOAD_MAX_FAILURES" ]; then
+        log "HOLD $label (system overloaded, load $load — restart waits, $failures/$OVERLOAD_MAX_FAILURES)"
+        set_state "$key" "$failures" "$last_restart" "$restarts_today" "$today_date"
+        return 0
+    fi
+
     # Threshold reached — restart. Decide whether to escalate to deep recovery
     # first, based on how many times we've already restarted this service today.
     if [ "$restarts_today" -ge "$ESCALATE_THRESHOLD" ]; then
@@ -192,6 +237,9 @@ check_and_restart() {
     fi
 }
 
-check_and_restart "api" "http://localhost:8000/api/agents" "com.sk.dashboard.api"
-check_and_restart "web" "http://localhost:3000" "com.sk.dashboard.web"
-check_and_restart "gateway" "http://localhost:8310/health" "com.sk.gateway"
+# Sourcing the script (tests) defines the functions without probing anything.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    check_and_restart "api" "http://localhost:8000/api/agents" "com.sk.dashboard.api"
+    check_and_restart "web" "http://localhost:3000" "com.sk.dashboard.web"
+    check_and_restart "gateway" "http://localhost:8310/health" "com.sk.gateway"
+fi
