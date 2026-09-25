@@ -154,10 +154,16 @@ export interface FilteredTokensData {
   }[];
   models: {
     model: string;
+    source: "claude" | "codex";
+    billing: "api" | "subscription";
     input_tokens: number;
     output_tokens: number;
     cost_usd: number;
   }[];
+  sources?: Record<
+    "claude" | "codex",
+    { sessions: number; messages: number; tokens: number; cache_tokens: number; cost_usd: number }
+  >;
   projects: {
     project: string;
     sessions: number;

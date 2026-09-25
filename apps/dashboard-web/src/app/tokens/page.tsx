@@ -178,11 +178,18 @@ export default function TokensPage() {
             value: (data.total_cache_tokens ?? 0).toLocaleString(),
           },
           {
-            label: "估算花費 (API 等值·非實付)",
+            label: "估算花費 (Claude API 等值·非實付)",
             value: `$${data.total_cost_usd.toFixed(2)}`,
           },
         ]}
       />
+      {data.sources && (
+        <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
+          合併 Claude Code + Codex。Claude {data.sources.claude.sessions} sessions ·{" "}
+          {data.sources.claude.tokens.toLocaleString()} tokens；Codex {data.sources.codex.sessions} sessions ·{" "}
+          {data.sources.codex.tokens.toLocaleString()} tokens（ChatGPT 訂閱制，不計美金）。
+        </p>
+      )}
 
       {/* Daily usage chart — recharts re-colored with token palette */}
       {data.daily.length > 0 && (
@@ -273,6 +280,7 @@ export default function TokensPage() {
             <thead>
               <tr style={headerRowStyle}>
                 {tableHeader("Model")}
+                {tableHeader("來源")}
                 {tableHeader("Input", "right")}
                 {tableHeader("Output", "right")}
                 {tableHeader("Cost", "right")}
@@ -287,6 +295,9 @@ export default function TokensPage() {
                   <td className="px-4 py-2 font-mono text-xs" style={{ color: "var(--text)" }}>
                     {m.model}
                   </td>
+                  <td className="px-4 py-2 text-xs" style={{ color: TEXT_SUBTLE }}>
+                    {m.source === "codex" ? "Codex" : "Claude Code"}
+                  </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
                     {m.input_tokens.toLocaleString()}
                   </td>
@@ -294,7 +305,7 @@ export default function TokensPage() {
                     {m.output_tokens.toLocaleString()}
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
-                    ${m.cost_usd.toFixed(4)}
+                    {m.billing === "subscription" ? "訂閱制" : `$${m.cost_usd.toFixed(4)}`}
                   </td>
                 </tr>
               ))}

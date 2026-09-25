@@ -1,4 +1,8 @@
-"""Token usage data from Claude Code session JSONL files.
+"""Token usage data from Claude Code and Codex session JSONL files.
+
+Codex rollouts (~/.codex/sessions) are parsed by lib/tokens_codex.py into the
+same per-file aggregate shape and merged here, so every total, daily bar,
+project row and model row is one combined figure (2026-09-26, Peter).
 
 Previously also read ~/.claude/stats-cache.json, but Claude Code stopped
 maintaining that cache in early 2026 (frozen at 2026-02-16 for this user),
@@ -18,7 +22,10 @@ from functools import lru_cache
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, is_codex_model,  # noqa: F401
+                              iter_codex_sessions, parse_codex_session)
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _CACHE_TTL = 60.0  # seconds; full JSONL parse takes ~1-2s for 500MB
@@ -71,10 +78,18 @@ class ModelSummary:
     cache_read_tokens: int
     cache_create_tokens: int
     cost_usd: float
+    source: str = "claude"      # "claude" | "codex"
+    billing: str = "api"        # "api" (priced) | "subscription" (cost is 0)
+
+
+def model_source(model: str) -> str:
+    return "codex" if is_codex_model(model) else "claude"
 
 
 def _estimate_cost(model: str, input_t: int, output_t: int,
                    cache_read: int, cache_create: int) -> float:
+    if is_codex_model(model):
+        return 0.0  # ChatGPT subscription: no per-token bill to estimate
     p = PRICING.get(model, DEFAULT_PRICING)
     return (
         input_t * p["input"] / 1_000_000
@@ -415,6 +430,8 @@ class FilteredUsage:
     total_messages: int
     total_cost_usd: float
     total_tokens: int
+    # per-source split of the combined totals: {"claude": {...}, "codex": {...}}
+    sources: dict[str, dict[str, int | float]] = field(default_factory=dict)
 
 
 def get_filtered_usage(date_start: str | None = None,
@@ -459,16 +476,29 @@ def get_filtered_usage(date_start: str | None = None,
                 seen_requests,
             )
 
+    # Codex rollouts: same aggregate shape, same cache, same merge.
+    for jsonl_path in iter_codex_sessions():
+        file_agg = _file_agg_cached(jsonl_path, "codex", parser=_parse_codex)
+        _merge_file_agg(
+            file_agg, date_start, date_end,
+            projects, models_agg, daily_agg, all_sessions,
+            seen_requests,
+        )
+
     # Build model summary
     model_results = []
     for model, m in models_agg.items():
         cost = _estimate_cost(model, m["input"], m["output"], m["cache_read"], m["cache_create"])
+        src = model_source(model)
         model_results.append(ModelSummary(
             model=model, input_tokens=m["input"], output_tokens=m["output"],
             cache_read_tokens=m["cache_read"], cache_create_tokens=m["cache_create"],
-            cost_usd=cost,
+            cost_usd=cost, source=src,
+            billing="subscription" if src == "codex" else "api",
         ))
-    model_results.sort(key=lambda x: x.cost_usd, reverse=True)
+    # Sorted by work done, not by cost: Codex rows carry no $ and would
+    # otherwise always sink to the bottom.
+    model_results.sort(key=lambda x: x.input_tokens + x.output_tokens, reverse=True)
 
     # Build project usage
     proj_results = []
@@ -506,11 +536,37 @@ def get_filtered_usage(date_start: str | None = None,
     total_tokens = sum(m.input_tokens + m.output_tokens for m in model_results)
     total_messages = sum(d["messages"] for d in projects.values())
 
+    sources: dict[str, dict[str, int | float]] = {
+        "claude": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
+        "codex": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
+    }
+    for m in model_results:
+        s = sources[m.source]
+        s["tokens"] += m.input_tokens + m.output_tokens
+        s["cache_tokens"] += m.cache_read_tokens + m.cache_create_tokens
+        s["cost_usd"] += m.cost_usd
+    for sid in all_sessions:
+        sources["codex" if _is_codex_session_id(sid) else "claude"]["sessions"] += 1
+    for key in seen_requests:
+        sources["codex" if str(key).startswith("codex:") else "claude"]["messages"] += 1
+
     return FilteredUsage(
         models=model_results, projects=proj_results, daily=daily_results,
         total_sessions=len(all_sessions), total_messages=total_messages,
         total_cost_usd=total_cost, total_tokens=total_tokens,
+        sources=sources,
     )
+
+
+def _parse_codex(path: Path, fallback_project: str) -> dict:
+    return parse_codex_session(path, fallback_project, _cwd_to_project_name)
+
+
+_CODEX_SESSION_IDS: set[str] = set()
+
+
+def _is_codex_session_id(session_id: str) -> bool:
+    return session_id in _CODEX_SESSION_IDS
 
 
 def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
@@ -633,8 +689,13 @@ def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
     return agg
 
 
-def _file_agg_cached(path: Path, fallback_project: str) -> dict:
+def _file_agg_cached(path: Path, fallback_project: str,
+                     parser: Callable[[Path, str], dict] = _parse_jsonl_granular) -> dict:
     """Per-file aggregate with a SQLite cache keyed on (mtime, size).
+
+    `parser` selects the source format (Claude Code rows by default, Codex
+    rollouts via _parse_codex); the cache row is keyed by path so the two
+    never collide.
 
     Why: the JSONL corpus reached ~1GB and the api re-parsed ALL of it on every
     cold start. That parse (GIL-bound) starved every other endpoint past the
@@ -668,10 +729,14 @@ def _file_agg_cached(path: Path, fallback_project: str) -> dict:
         ).fetchone()
         if row and row[0] == st.st_mtime and row[1] == st.st_size:
             try:
-                return json.loads(row[2])
+                agg = json.loads(row[2])
             except json.JSONDecodeError:
-                pass  # corrupt cache row → re-parse below
-        agg = _parse_jsonl_granular(path, fallback_project)
+                agg = None  # corrupt cache row → re-parse below
+            if agg is not None:
+                _remember_codex_sessions(agg, parser)
+                return agg
+        agg = parser(path, fallback_project)
+        _remember_codex_sessions(agg, parser)
         conn.execute(
             "INSERT INTO jsonl_file_cache(path, mtime, size, agg) VALUES (?, ?, ?, ?) "
             "ON CONFLICT(path) DO UPDATE SET mtime=excluded.mtime, size=excluded.size, agg=excluded.agg",
@@ -681,6 +746,16 @@ def _file_agg_cached(path: Path, fallback_project: str) -> dict:
         return agg
     finally:
         conn.close()
+
+
+def _remember_codex_sessions(agg: dict, parser: Callable) -> None:
+    """Track which session ids came from Codex so per-source session counts
+    can be split after the shared merge."""
+    if parser is not _parse_codex:
+        return
+    for day in agg.values():
+        for p in day.values():
+            _CODEX_SESSION_IDS.update(p.get("sessions", []))
 
 
 def _merge_file_agg(

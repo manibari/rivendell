@@ -8,6 +8,21 @@ from lib.tokens import get_filtered_usage, get_all_time_usage, get_daily_usage
 
 router = APIRouter()
 
+
+def _models_payload(f) -> list[dict[str, Any]]:
+    return [
+        {
+            "model": m.model,
+            "source": m.source,          # "claude" | "codex"
+            "billing": m.billing,        # "api" | "subscription"
+            "input_tokens": m.input_tokens,
+            "output_tokens": m.output_tokens,
+            "cost_usd": m.cost_usd,
+        }
+        for m in f.models
+    ]
+
+
 # ── Tokens ────────────────────────────────────────────────────────────
 
 @router.get("/api/tokens", tags=["Tokens"])
@@ -40,15 +55,9 @@ def api_tokens() -> dict[str, Any]:
             }
             for d in get_daily_usage(days=None)
         ],
-        "models": [
-            {
-                "model": m.model,
-                "input_tokens": m.input_tokens,
-                "output_tokens": m.output_tokens,
-                "cost_usd": m.cost_usd,
-            }
-            for m in f.models
-        ],
+        "models": _models_payload(f),
+        # Combined totals above; this is the Claude / Codex split of them.
+        "sources": f.sources,
         "projects": [
             {
                 "project": p.project,
@@ -96,15 +105,9 @@ def api_tokens_filtered(
             }
             for d in _daily
         ],
-        "models": [
-            {
-                "model": m.model,
-                "input_tokens": m.input_tokens,
-                "output_tokens": m.output_tokens,
-                "cost_usd": m.cost_usd,
-            }
-            for m in f.models
-        ],
+        "models": _models_payload(f),
+        # Combined totals above; this is the Claude / Codex split of them.
+        "sources": f.sources,
         "projects": [
             {
                 "project": p.project,
