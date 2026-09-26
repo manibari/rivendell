@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { apiFetch, type SensorsData } from "@/lib/api";
+import { apiFetch, type MetricsHistory, type SensorsData } from "@/lib/api";
 import type { Trend } from "@/components/Sparkline";
 import BatteryPanel from "@/components/sensors/BatteryPanel";
 import CpuCores from "@/components/sensors/CpuCores";
@@ -14,8 +14,14 @@ import { card, heat, RawList, Rows, Section, Tile } from "@/components/sensors/u
 // in-page trend lines, plus persisted history from the metrics collector
 // (agents/registry/metrics-collector.md) that keeps recording when this page
 // is closed.
+//
+// The tile trend lines cover the last WINDOW_MIN minutes of wall-clock time.
+// They are seeded from the collector's store on mount, so opening the page
+// (or coming back to it) shows the past window at once instead of an empty
+// line that refills from zero (2026-09-27, Peter: 不要新切換就要重跑).
 const POLL_SEC = 2;
-const HISTORY = 90;
+const WINDOW_MIN = 15;
+const WINDOW_MS = WINDOW_MIN * 60 * 1000;
 
 type Ok = Extract<SensorsData, { status: "ok" }>;
 type Series = Record<string, Trend>;
@@ -33,6 +39,38 @@ function points(d: Ok): Record<string, number> {
   return p;
 }
 
+// Collector store key (platform/monitoring/system/history.py flatten) → tile key.
+function seriesKey(historyKey: string): string | null {
+  if (historyKey === "cpu.total") return "cpu";
+  if (historyKey === "gpu.util") return "gpu";
+  const m = /^(temp|power|fan|core)\.([^.]+)$/.exec(historyKey);
+  if (m) return `${m[1][0]}:${m[2]}`;
+  if (historyKey === "bat.w") return "b:w";
+  return null;
+}
+
+// Persisted history → one Trend per tile key, nulls dropped, epoch s → ms.
+function seedFromHistory(h: MetricsHistory): Series {
+  const out: Series = {};
+  if (h.status === "unavailable") return out;
+  for (const [hk, vals] of Object.entries(h.avg)) {
+    const k = seriesKey(hk);
+    if (!k) continue;
+    const v: number[] = [];
+    const t: number[] = [];
+    vals.forEach((x, i) => { if (x !== null) { v.push(x); t.push(h.ts[i] * 1000); } });
+    if (v.length) out[k] = { v, t };
+  }
+  return out;
+}
+
+function trimWindow(tr: Trend, now: number): Trend {
+  const cut = now - WINDOW_MS;
+  let i = 0;
+  while (i < tr.t.length && tr.t[i] < cut) i++;
+  return i ? { v: tr.v.slice(i), t: tr.t.slice(i) } : tr;
+}
+
 export default function SensorsPage() {
   const [data, setData] = useState<SensorsData | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -40,11 +78,32 @@ export default function SensorsPage() {
   const busy = useRef(false);
 
   useEffect(() => {
+    let alive = true;
+    // Seed the window from the collector store; live points already gathered
+    // before this arrives stay in front, history fills in behind them.
+    apiFetch<MetricsHistory>(`/api/health/metrics/history?range=${WINDOW_MIN}m&points=${WINDOW_MIN * 12}`)
+      .then((h) => {
+        if (!alive) return;
+        const seed = seedFromHistory(h);
+        setSeries((prev) => {
+          const next: Series = { ...prev };
+          for (const [k, tr] of Object.entries(seed)) {
+            const live = prev[k] ?? EMPTY;
+            const firstLive = live.t[0] ?? Infinity;
+            const keep = tr.t.filter((x) => x < firstLive).length;
+            next[k] = { v: [...tr.v.slice(0, keep), ...live.v], t: [...tr.t.slice(0, keep), ...live.t] };
+          }
+          return next;
+        });
+      })
+      .catch(() => { /* live polling still works without the seed */ });
+
     const tick = async () => {
       if (busy.current || document.hidden) return;
       busy.current = true;
       try {
         const d = await apiFetch<SensorsData>("/api/health/sensors");
+        if (!alive) return;
         setData(d);
         setErr(null);
         if (d.status === "ok") {
@@ -54,20 +113,20 @@ export default function SensorsPage() {
             const now = Date.now();
             for (const [k, v] of Object.entries(point)) {
               const old = prev[k] ?? EMPTY;
-              next[k] = { v: [...old.v, v].slice(-HISTORY), t: [...old.t, now].slice(-HISTORY) };
+              next[k] = trimWindow({ v: [...old.v, v], t: [...old.t, now] }, now);
             }
             return next;
           });
         }
       } catch (e) {
-        setErr((e as Error).message);
+        if (alive) setErr((e as Error).message);
       } finally {
         busy.current = false;
       }
     };
     tick();
     const id = setInterval(tick, POLL_SEC * 1000);
-    return () => clearInterval(id);
+    return () => { alive = false; clearInterval(id); };
   }, []);
 
   return (
@@ -76,7 +135,7 @@ export default function SensorsPage() {
         系統監控
       </h1>
       <p className="mb-5 font-mono text-[11px]" style={{ color: "var(--text-subtle)" }}>
-        即時每 {POLL_SEC} 秒更新 · 背景每 5 秒記錄歷史
+        即時每 {POLL_SEC} 秒更新 · 走勢線顯示最近 {WINDOW_MIN} 分鐘（含背景每 5 秒記錄的歷史，換頁回來不歸零）
       </p>
 
       {err && <p style={{ color: "var(--status-err)" }}>API 錯誤：{err}</p>}

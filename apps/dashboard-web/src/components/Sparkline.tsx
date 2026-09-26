@@ -48,7 +48,7 @@ export default function Sparkline({
         height={height}
         preserveAspectRatio="none"
         role="img"
-        aria-label={`${label} 最近 ${values.length} 次取樣，${lo.toFixed(1)}–${hi.toFixed(1)} ${unit}`}
+        aria-label={`${label} 最近 ${Math.max(1, Math.round((trend.t[last] - trend.t[0]) / 60000))} 分鐘，${lo.toFixed(1)}–${hi.toFixed(1)} ${unit}`}
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
           const i = Math.round(((e.clientX - r.left) / r.width) * last);
