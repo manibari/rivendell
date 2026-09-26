@@ -9,8 +9,9 @@ same cache, merge and date filter apply to both sources.
 
 Added 2026-09-26 (Peter): the /tokens page counted Claude Code only, and the
 ask was one combined total with Codex models listed alongside Claude models.
-Codex is subscription-billed, so its cost is reported as 0 and flagged
-`billing: subscription` rather than priced at an invented API rate.
+Codex is subscription-billed; the cost shown is the OpenAI API list-price
+equivalent (what the same tokens would cost on the API), flagged
+`billing: subscription` so the UI can say it is not the actual bill.
 """
 
 from __future__ import annotations
@@ -34,6 +35,33 @@ _USAGE_KEYS = ("input_tokens", "cached_input_tokens", "cache_write_input_tokens"
 
 
 UNKNOWN_CODEX_MODEL = "codex-unknown-model"
+
+# OpenAI list prices per 1M tokens, short-context tier (<272K), from
+# developers.openai.com/api/docs/pricing as of 2026-09-26. Long-context
+# requests bill ~2x but the rollout log carries no per-request context length,
+# so the estimate is a floor. A model missing here costs 0, never a default.
+OPENAI_PRICING: dict[str, dict[str, float]] = {
+    "gpt-6-astra":  {"input": 10.0, "output": 50.0, "cache_read": 1.0,  "cache_create": 12.5},
+    "gpt-6-sol":    {"input": 2.0,  "output": 10.0, "cache_read": 0.2,  "cache_create": 2.5},
+    "gpt-5.6-sol":  {"input": 4.0,  "output": 20.0, "cache_read": 0.4,  "cache_create": 5.0},
+    "gpt-5.6-luna": {"input": 0.2,  "output": 1.2,  "cache_read": 0.02, "cache_create": 0.25},
+    "gpt-5.5":      {"input": 5.0,  "output": 30.0, "cache_read": 0.5,  "cache_create": 6.25},
+    "gpt-5.3-codex": {"input": 1.75, "output": 14.0, "cache_read": 0.175, "cache_create": 2.1875},
+}
+
+
+def estimate_codex_cost(model: str, input_t: int, output_t: int,
+                        cache_read: int, cache_create: int) -> float:
+    """API-equivalent USD for a Codex model; 0 when the model is not priced."""
+    p = OPENAI_PRICING.get(model)
+    if not p:
+        return 0.0
+    return (
+        input_t * p["input"] / 1_000_000
+        + output_t * p["output"] / 1_000_000
+        + cache_read * p["cache_read"] / 1_000_000
+        + cache_create * p["cache_create"] / 1_000_000
+    )
 
 
 def _provenance_model(session_meta: dict) -> str:

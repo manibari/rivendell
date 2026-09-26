@@ -178,7 +178,7 @@ export default function TokensPage() {
             value: (data.total_cache_tokens ?? 0).toLocaleString(),
           },
           {
-            label: "估算花費 (Claude API 等值·非實付)",
+            label: "估算花費 (API 等值·非實付)",
             value: `$${data.total_cost_usd.toFixed(2)}`,
           },
         ]}
@@ -187,7 +187,8 @@ export default function TokensPage() {
         <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
           合併 Claude Code + Codex。Claude {data.sources.claude.sessions} sessions ·{" "}
           {data.sources.claude.tokens.toLocaleString()} tokens；Codex {data.sources.codex.sessions} sessions ·{" "}
-          {data.sources.codex.tokens.toLocaleString()} tokens（ChatGPT 訂閱制，不計美金）。
+          {data.sources.codex.tokens.toLocaleString()} tokens · API 等值 ${data.sources.codex.cost_usd.toFixed(2)}
+          （實付為 ChatGPT 訂閱費，此為 OpenAI 牌價換算）。
         </p>
       )}
 
@@ -305,7 +306,10 @@ export default function TokensPage() {
                     {m.output_tokens.toLocaleString()}
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
-                    {m.billing === "subscription" ? "訂閱制" : `$${m.cost_usd.toFixed(4)}`}
+                    ${m.cost_usd.toFixed(4)}
+                    {m.billing === "subscription" && (
+                      <span style={{ color: TEXT_SUBTLE, fontSize: 10, marginLeft: 4 }}>等值</span>
+                    )}
                   </td>
                 </tr>
               ))}

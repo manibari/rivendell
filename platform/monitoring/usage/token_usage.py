@@ -24,8 +24,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable
 
-from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, is_codex_model,  # noqa: F401
-                              iter_codex_sessions, parse_codex_session)
+from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, estimate_codex_cost,  # noqa: F401
+                              is_codex_model, iter_codex_sessions, parse_codex_session)
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _CACHE_TTL = 60.0  # seconds; full JSONL parse takes ~1-2s for 500MB
@@ -79,7 +79,7 @@ class ModelSummary:
     cache_create_tokens: int
     cost_usd: float
     source: str = "claude"      # "claude" | "codex"
-    billing: str = "api"        # "api" (priced) | "subscription" (cost is 0)
+    billing: str = "api"        # "api" (priced) | "subscription" (cost = API equivalent, not billed)
 
 
 def model_source(model: str) -> str:
@@ -89,7 +89,9 @@ def model_source(model: str) -> str:
 def _estimate_cost(model: str, input_t: int, output_t: int,
                    cache_read: int, cache_create: int) -> float:
     if is_codex_model(model):
-        return 0.0  # ChatGPT subscription: no per-token bill to estimate
+        # ChatGPT subscription: this is the OpenAI API list-price equivalent,
+        # not an actual bill (2026-09-26, Peter asked for the conversion).
+        return estimate_codex_cost(model, input_t, output_t, cache_read, cache_create)
     p = PRICING.get(model, DEFAULT_PRICING)
     return (
         input_t * p["input"] / 1_000_000

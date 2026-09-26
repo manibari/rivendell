@@ -147,9 +147,11 @@ class CodexParserTest(unittest.TestCase):
         self.assertEqual(list(project["models"]), ["gpt-5.6-sol"])
         self.assertEqual(project["models"]["gpt-5.6-sol"], [17386, 0, 0, 0])
 
-    def test_codex_models_are_subscription_billed(self) -> None:
+    def test_codex_models_priced_at_openai_list_rates(self) -> None:
+        # unpriced Codex model never falls back to the Claude default rate
         self.assertEqual(tokens._estimate_cost(tokens.UNKNOWN_CODEX_MODEL, 1_000_000, 0, 0, 0), 0.0)
-        self.assertEqual(tokens._estimate_cost("gpt-6-sol", 1_000_000, 1_000_000, 0, 0), 0.0)
+        # gpt-6-sol: $2 in + $10 out + $0.2 cache read per 1M
+        self.assertAlmostEqual(tokens._estimate_cost("gpt-6-sol", 1_000_000, 1_000_000, 1_000_000, 0), 12.2)
         self.assertEqual(tokens.model_source("gpt-5.6-luna"), "codex")
         self.assertEqual(tokens.model_source("claude-fable-5-1"), "claude")
         self.assertGreater(tokens._estimate_cost("claude-fable-5-1", 1_000_000, 0, 0, 0), 0.0)
