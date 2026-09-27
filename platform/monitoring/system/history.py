@@ -6,6 +6,8 @@ zlib-compressed JSON object {metric: value}:
     metrics_5s   raw samples from the collector      kept 7 days
     metrics_1m   per-minute avg / min / max          kept 90 days
     metrics_1h   per-hour avg / min / max            kept forever
+    procs_5s     top CPU processes per sample        kept PROCS_KEEP_DAYS
+                 (list of {pid, ppid, name, parent, cpu, args}; see processes.py)
 
 Rollups are built from the tier below only for buckets that have fully ended,
 so re-running `rollup` never double counts. Gaps (sleep, collector down) stay
@@ -31,6 +33,7 @@ DB_NAME = "system-metrics.db"
 SAMPLE_SEC = 5
 TIERS = {"5s": SAMPLE_SEC, "1m": 60, "1h": 3600}
 RETENTION = {"5s": 7 * 86400, "1m": 90 * 86400, "1h": None}
+PROCS_KEEP_DAYS = 14
 # A query reads the finest tier that covers the window within this many rows.
 MAX_ROWS = 12000
 # The collector writes every SAMPLE_SEC; older than this means it is not running.
@@ -42,6 +45,7 @@ CREATE TABLE IF NOT EXISTS metrics_1m (ts INTEGER PRIMARY KEY, n INTEGER NOT NUL
     avg BLOB NOT NULL, min BLOB NOT NULL, max BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS metrics_1h (ts INTEGER PRIMARY KEY, n INTEGER NOT NULL,
     avg BLOB NOT NULL, min BLOB NOT NULL, max BLOB NOT NULL);
+CREATE TABLE IF NOT EXISTS procs_5s (ts INTEGER PRIMARY KEY, data BLOB NOT NULL);
 """
 
 
@@ -168,9 +172,52 @@ def rollup(conn: sqlite3.Connection, now: int | None = None) -> dict[str, int]:
     return {"1m": _rollup_tier(conn, "5s", "1m", now), "1h": _rollup_tier(conn, "1m", "1h", now)}
 
 
+def write_procs(conn: sqlite3.Connection, ts: int, rows: list[dict[str, Any]]) -> None:
+    conn.execute("INSERT OR REPLACE INTO procs_5s (ts, data) VALUES (?, ?)",
+                 (ts, zlib.compress(json.dumps(rows, separators=(",", ":"), ensure_ascii=False).encode())))
+    conn.commit()
+
+
+def query_procs(since: int, until: int, top: int = 15, db_dir: Path | None = None) -> dict[str, Any]:
+    """Who used the CPU in [since, until).
+
+    Returns processes grouped by name+args (pids churn for short-lived jobs),
+    ranked by total CPU-seconds, each with its peak and the times it was seen.
+    """
+    path = (db_dir or DB_DIR) / DB_NAME
+    if not path.exists():
+        return {"status": "unavailable", "error": f"尚未建立歷史資料庫（{DB_NAME}）"}
+    conn = connect(db_dir)
+    try:
+        rows = conn.execute("SELECT ts, data FROM procs_5s WHERE ts >= ? AND ts < ? ORDER BY ts",
+                            (since, until)).fetchall()
+    finally:
+        conn.close()
+    groups: dict[tuple[str, str], dict[str, Any]] = {}
+    for ts, blob in rows:
+        for r in json.loads(zlib.decompress(blob)):
+            g = groups.setdefault((r["name"], r.get("args", "")), {
+                "name": r["name"], "args": r.get("args", ""), "parent": r.get("parent", ""),
+                "cpu_seconds": 0.0, "peak": 0.0, "samples": 0, "first": ts, "last": ts, "pids": set(),
+            })
+            g["cpu_seconds"] += r["cpu"] / 100 * SAMPLE_SEC
+            g["peak"] = max(g["peak"], r["cpu"])
+            g["samples"] += 1
+            g["last"] = ts
+            g["pids"].add(r["pid"])
+    ranked = sorted(groups.values(), key=lambda g: g["cpu_seconds"], reverse=True)[:top]
+    for g in ranked:
+        g["cpu_seconds"] = round(g["cpu_seconds"], 1)
+        g["pids"] = len(g["pids"])
+    return {"status": "ok" if rows else "empty", "since": since, "until": until,
+            "samples": len(rows), "processes": ranked}
+
+
 def prune(conn: sqlite3.Connection, now: int | None = None) -> dict[str, int]:
     now = int(now if now is not None else time.time())
     removed = {}
+    cur = conn.execute("DELETE FROM procs_5s WHERE ts < ?", (now - PROCS_KEEP_DAYS * 86400,))
+    removed["procs"] = cur.rowcount
     for tier, keep in RETENTION.items():
         if keep is None:
             continue

@@ -19,6 +19,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import history  # noqa: E402
+import processes  # noqa: E402
 import sensors  # noqa: E402
 
 _stop = False
@@ -32,6 +33,20 @@ def _on_signal(signum: int, _frame: object) -> None:
     global _stop
     _stop = True
     _log(f"signal {signum}, stopping")
+
+
+def run_procs(conn: sqlite3.Connection, sampler: processes.Sampler, ts: int, now: float) -> str | None:
+    """Store who used the CPU this interval. Independent of the sensor sample so
+    a sensor failure never hides the process data, and vice versa."""
+    try:
+        rows = sampler.sample(now)
+    except (OSError, ValueError, TimeoutError) as exc:
+        return f"ps: {exc}"
+    except Exception as exc:  # subprocess.TimeoutExpired and friends
+        return f"ps: {exc}"
+    if rows:
+        history.write_procs(conn, ts, rows)
+    return None
 
 
 def run_once(conn: sqlite3.Connection, ts: int) -> str | None:
@@ -52,6 +67,8 @@ def main() -> int:
     conn = history.connect()
     _log(f"collector started, every {history.SAMPLE_SEC}s -> {history.DB_DIR / history.DB_NAME}")
     last_error: str | None = None
+    last_proc_error: str | None = None
+    sampler = processes.Sampler()
     last_rollup = last_prune = 0
     written = 0
     while not _stop:
@@ -65,6 +82,13 @@ def main() -> int:
             _log(f"sample failed: {err}" if err else "sampling ok")
             last_error = err
         written += err is None
+        try:
+            perr = run_procs(conn, sampler, ts, time.time())
+        except sqlite3.Error as exc:
+            perr = f"sqlite: {exc}"
+        if perr != last_proc_error:
+            _log(f"process sample failed: {perr}" if perr else "process sampling ok")
+            last_proc_error = perr
         try:
             if now - last_rollup >= 60:
                 done = history.rollup(conn)

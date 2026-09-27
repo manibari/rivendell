@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from lib.system_history import query as history_query
+from lib.system_history import query_procs
 from lib.system_sensors import snapshot
 
 router = APIRouter()
@@ -43,3 +44,19 @@ def api_metrics_history(
     end = until or int(time.time())
     wanted = [k for k in (keys or "").split(",") if k] or None
     return history_query(end - RANGES[range], end, wanted, points)
+
+
+@router.get("/api/health/processes", tags=["Health"])
+def api_processes(
+    range: str = Query("15m", description="same windows as /metrics/history"),
+    until: int | None = Query(None, description="window end, epoch seconds (default now)"),
+    top: int = Query(15, ge=1, le=100),
+) -> dict[str, Any]:
+    """Which processes used the CPU in the window, ranked by CPU-seconds.
+
+    Kept 14 days at 5 s resolution by the metrics collector.
+    """
+    if range not in RANGES:
+        raise HTTPException(400, f"range must be one of {', '.join(RANGES)}")
+    end = until or int(time.time())
+    return query_procs(end - RANGES[range], end, top)
