@@ -34,4 +34,4 @@ for nvm_bin in "$HOME"/.nvm/versions/node/*/bin; do
 done
 export PATH
 
-exec "$VENV_DIR/bin/uvicorn" server:app --host 127.0.0.1 --port 8310 --app-dir "$DIR"
+exec "$VENV_DIR/bin/uvicorn" server:app --host 127.0.0.1 --port 8003 --app-dir "$DIR"

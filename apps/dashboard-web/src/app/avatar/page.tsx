@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { KeyRound, RefreshCw, Trash2 } from "lucide-react";
 
-// avatar-gateway 是獨立服務（127.0.0.1:8310），不走 :8000 的 api helpers
-const GATEWAY = "http://localhost:8310";
+// avatar-gateway 是獨立服務（127.0.0.1:8003），不走 :8000 的 api helpers
+const GATEWAY = "http://localhost:8003";
 
 type Persona = {
   slug: string;
@@ -88,7 +88,7 @@ export default function AvatarPage() {
       setChosen((c) => c || p.active);
       setErr("");
     } catch {
-      setErr("gateway 未啟動（com.sk.gateway，:8310）");
+      setErr("gateway 未啟動（com.sk.gateway，:8003）");
     }
   }, []);
 

@@ -257,7 +257,7 @@ mail-triage 報告（`reports/mail-triage-*.md`）與 dispatch 的 email payload
 ## 助理 Avatar（/avatar 頁 + gateway）
 
 - `localhost:3000/avatar`：選人格（林迪/米瑞爾）→ VRM 對話視窗（麥克風要允許，瀏覽器 STT/TTS 繁中）
-- 大腦：`com.sk.gateway`（:8310，127.0.0.1 only，**不可 tunnel 對外**）。引擎預設 codex
+- 大腦：`com.sk.gateway`（:8003，127.0.0.1 only，**不可 tunnel 對外**）。引擎預設 codex
   （ChatGPT OAuth 額度），可在畫面切 claude / openai-api / anthropic-api；API 金鑰在畫面輸入，
   存 `~/.config/rivendell/gateway-keys.env`（chmod 600）
 - 對話模型零工具；要辦事只會開 `sk dispatch` 提案（--source avatar），確認分級照舊
