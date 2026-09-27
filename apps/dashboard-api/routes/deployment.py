@@ -251,130 +251,92 @@ def _docker_running_ports() -> tuple[dict[int, dict[str, Any]], str | None]:
     return out, None
 
 
+_DESKTOP_PROJECTS = {"macOS", "tailscale", "Discord", "Steam", "WeChat"}
+
+
+def _repo_of(path: str | None) -> str | None:
+    """~/Code/X/... or ~/Rightek/engineering/repos/X/... -> X (the repo name)."""
+    if not path or path == "/":
+        return None
+    home = str(Path.home())
+    for root in ("Code", "code", "Rightek/engineering/repos", "Projects", "Company/engineering/repos"):
+        prefix = f"{home}/{root}/"
+        if path.startswith(prefix):
+            return path[len(prefix):].split("/", 1)[0]
+    return None
+
+
 @router.get("/api/ports", tags=["Ports"])
 async def api_ports() -> dict[str, Any]:
-    """Compose declarations + local listeners + docker labels (the owner/folder
-    source of truth). Docker is authoritative for what's actually running and
-    whose it is; compose adds 'declared-but-not-running' drift."""
-    try:
-        import yaml
-    except ImportError:
-        raise HTTPException(status_code=500, detail="PyYAML not installed")
+    """Registry (data/ports.conf) checked against the kernel and docker by
+    lib.port_registry — the same code `sk check ports` runs, so the page and
+    the CLI always agree. Status: live / conflict / drift (claimed, idle) /
+    wild (unclaimed). rivendell's own docker-compose adds its opt-in profiles
+    as declared-only rows."""
+    from lib.port_registry import evaluate
 
-    dc_path = Path(os.environ.get("COMPOSE_FILE", str(Path(__file__).resolve().parent.parent.parent.parent / "docker-compose.yml")))
-    if not dc_path.exists():
-        raise HTTPException(status_code=404, detail=f"docker-compose.yml not found: {dc_path}")
-
-    try:
-        dc = yaml.safe_load(dc_path.read_text())
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to parse docker-compose.yml: {exc}")
-
+    states, errs = evaluate()
     entries_by_port: dict[int, dict[str, Any]] = {}
-    for svc_name, svc_cfg in dc.get("services", {}).items():
-        if not isinstance(svc_cfg, dict):
-            continue
-        container = svc_cfg.get("container_name", svc_name)
-        for port_spec in svc_cfg.get("ports", []):
-            host_port = _parse_compose_host_port(port_spec)
-            if host_port is None:
-                continue
-            port_type = _infer_port_type(host_port)
-            entries_by_port[host_port] = {
-                "port": host_port,
-                "service": svc_name,
-                "container": container,
-                "type": port_type,
-                "web": port_type not in ("DB", "Cache"),
-                "category": _infer_category(port_type),
-                "project": _infer_project(svc_name),
-                "status": "unknown",
-                "declared": True,
-                "source": "compose",
-                "folder": None,
-                "listener": None,
-            }
-
-    listeners, listener_error = _listening_tcp_ports()
-
-    for port, entry in entries_by_port.items():
-        listener = listeners.get(port)
-        if listener_error:
-            entry["status"] = "unknown"
-            entry["listener_error"] = listener_error
-        elif listener:
-            entry["status"] = "live"
-            entry["listener"] = listener
+    for st in states:
+        occ = st.occupant
+        claim = st.owner or (st.claims[0] if st.claims else None)
+        folder = (occ.folder or (occ.cwd if occ.cwd and occ.cwd != "/" else None)) if occ else None
+        if claim:
+            project = claim.project
         else:
-            entry["status"] = "drift"
-
-    # Known desktop/system apps that listen on TCP but are NOT deployments —
-    # they drown the wild list (QA 2026-07-05 ISSUE-002: Discord/LINE/AnyDesk/
-    # ControlCenter/devtools swamped the real dev ports). lsof truncates
-    # COMMAND to ~9 chars, so match by lowercase prefix.
-    _SYSTEM_LISTENER_PREFIXES = (
-        "controlce", "rapportd", "discord", "anydesk", "line", "google",
-        "safari", "arc", "firefox", "brave", "msedge", "spotify", "slack",
-        "dropbox", "telegram", "whatsapp", "zoom", "teams", "figma", "notion",
-        "steam", "obs", "adobe", "creative", "mail", "messages", "facetime",
-    )
-
-    for port, listener in listeners.items():
-        if port in entries_by_port:
-            continue
-        port_type = _infer_port_type(port)
-        cmd = (listener.get("command") or "").lower()
-        is_system = any(cmd.startswith(p) for p in _SYSTEM_LISTENER_PREFIXES)
-        entries_by_port[port] = {
-            "port": port,
-            "service": listener.get("command") or "local-listener",
-            "container": f"pid:{listener.get('pid', '')}".rstrip(":"),
+            project = (occ and (occ.compose_project or _repo_of(folder))) or "local"
+        port_type = _infer_port_type(st.port)
+        entries_by_port[st.port] = {
+            "port": st.port,
+            "service": claim.service if claim else (occ.container or occ.command if occ else "—"),
+            "container": (occ.container if occ and occ.container else (f"pid:{occ.pid}" if occ and occ.pid else "—")),
             "type": port_type,
             "web": port_type not in ("DB", "Cache"),
             "category": _infer_category(port_type),
-            "project": "local",
-            "status": "wild",
-            "declared": False,
-            "source": "listener",
-            "folder": None,
-            "system": is_system,
-            "listener": listener,
+            "project": project,
+            "status": {"idle": "drift"}.get(st.status, st.status),
+            "declared": bool(st.claims),
+            "source": "docker" if occ and occ.container else ("listener" if occ else "registry"),
+            "folder": folder,
+            "image": occ.image if occ else None,
+            "system": project in _DESKTOP_PROJECTS or bool(st.claims and all(c.owner.startswith("app:") for c in st.claims)),
+            "listener": {"command": occ.command, "pid": occ.pid} if occ else None,
+            "conflict": st.conflict,
+            "detail": st.detail,
+            "claims": [{"project": c.project, "service": c.service, "notes": c.notes} for c in st.claims],
         }
 
-    # ── Docker overlay (authoritative owner + source folder) ──────────────────
-    # Enrich/insert from running containers: docker tells us the real project and
-    # the code folder behind each published port — including containers from repos
-    # this dashboard's compose file never mentions.
-    docker_ports, docker_error = _docker_running_ports()
-    for port, dmeta in docker_ports.items():
-        entry = entries_by_port.get(port)
-        if entry is None:
-            port_type = _infer_port_type(port)
-            entry = {
-                "port": port,
-                "type": port_type,
-                "web": port_type not in ("DB", "Cache"),
-                "category": _infer_category(port_type),
-                "declared": False,
-                "source": "docker",
-                "listener": None,
+    # rivendell's own compose profiles (news-stock / sales / marketing): opt-in,
+    # shown as declared-only so the page still says they exist.
+    try:
+        import yaml
+        dc_path = Path(os.environ.get("COMPOSE_FILE", str(Path(__file__).resolve().parent.parent.parent.parent / "docker-compose.yml")))
+        dc = yaml.safe_load(dc_path.read_text()) if dc_path.exists() else {}
+    except Exception:  # noqa: BLE001
+        dc = {}
+    for svc_name, svc_cfg in (dc or {}).get("services", {}).items():
+        if not isinstance(svc_cfg, dict):
+            continue
+        for port_spec in svc_cfg.get("ports", []):
+            hp = _parse_compose_host_port(port_spec)
+            if hp is None or hp in entries_by_port:
+                continue
+            port_type = _infer_port_type(hp)
+            entries_by_port[hp] = {
+                "port": hp, "service": svc_name, "container": svc_cfg.get("container_name", svc_name),
+                "type": port_type, "web": port_type not in ("DB", "Cache"),
+                "category": _infer_category(port_type), "project": _infer_project(svc_name),
+                "status": "drift", "declared": True, "source": "compose", "folder": None,
+                "listener": None, "conflict": None, "detail": "rivendell docker-compose opt-in profile", "claims": [],
             }
-            entries_by_port[port] = entry
-        # A running container IS the current deployment of this port.
-        entry["status"] = "live"
-        entry["container"] = dmeta.get("container") or entry.get("container")
-        entry["service"] = dmeta.get("service") or entry.get("service") or "—"
-        entry["project"] = dmeta.get("project") or entry.get("project") or _infer_project(entry.get("service", ""))
-        entry["folder"] = dmeta.get("folder")
-        entry["image"] = dmeta.get("image")
-        entry["source"] = "docker"
 
     return {
         "ports": sorted(
             entries_by_port.values(),
             key=lambda e: ((e.get("project") or ""), e["port"], (e.get("service") or "")),
         ),
-        "listener_error": listener_error,
-        "docker_error": docker_error,
+        "conflicts": sum(1 for e in entries_by_port.values() if e["status"] == "conflict"),
+        "listener_error": errs.get("listener_error"),
+        "docker_error": errs.get("docker_error"),
         "health": _deployment_health(),
     }

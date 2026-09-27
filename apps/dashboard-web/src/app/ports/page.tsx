@@ -33,7 +33,9 @@ function PortStatusBadge({ status }: { status: PortInfo["status"] }) {
   const dot: "ok" | "warn" | "err" | "idle" =
     status === "live"
       ? "ok"
-      : status === "drift"
+      : status === "conflict"
+        ? "err"
+        : status === "drift"
         ? "err"
         : status === "wild"
           ? "warn"
@@ -41,7 +43,9 @@ function PortStatusBadge({ status }: { status: PortInfo["status"] }) {
             ? "idle"
             : "warn";
   const label =
-    status === "drift"
+    status === "conflict"
+      ? "衝突"
+      : status === "drift"
       ? "declared-only"
       : status === "wild"
         ? "wild"
@@ -93,6 +97,11 @@ function PortRow({ port }: { port: PortInfo }) {
       </td>
       <td className="px-4 py-3 text-sm" style={{ color: "var(--text)" }}>
         {port.service}
+        {port.status === "conflict" && port.detail && (
+          <div className="mt-0.5 text-xs" style={{ color: "var(--status-err)" }}>
+            {port.detail}
+          </div>
+        )}
       </td>
       <td
         className="px-4 py-3 font-mono text-xs"
@@ -195,6 +204,7 @@ export default function PortsPage() {
   }, [filtered]);
 
   const liveCount = filtered.filter((p) => p.status === "live").length;
+  const conflicts = (data?.ports ?? []).filter((p) => p.status === "conflict");
   const driftCount = filtered.filter((p) => p.status === "drift").length;
   const wildCount = filtered.filter((p) => p.status === "wild").length;
   const relatedCount = filtered.filter((p) => p.status !== "live").length;
@@ -207,9 +217,12 @@ export default function PortsPage() {
   const visibleGrouped = useMemo(() => {
     return grouped
       .map(([project, ports]) => {
-        const live = ports.filter((p) => p.status === "live");
-        const related = ports.filter((p) => p.status !== "live" && !p.system);
-        const system = ports.filter((p) => p.status !== "live" && p.system);
+        // Conflicts are never hidden behind the toggle: they are the reason
+        // this page exists (2026-09-27, the 8081 mops_dbs / trip-atlas clash).
+        const shown = (p: PortInfo) => p.status === "live" || p.status === "conflict";
+        const live = ports.filter((p) => shown(p) && !p.system);
+        const related = ports.filter((p) => !shown(p) && !p.system);
+        const system = ports.filter((p) => p.system);
         const visible = showRelated
           ? showSystem
             ? [...live, ...related, ...system]
@@ -258,15 +271,16 @@ export default function PortsPage() {
             className="mt-1 text-sm"
             style={{ color: "var(--text-muted)" }}
           >
-            當前實際部署的服務 · 切換「相關部署」可顯示已宣告但未啟動的 port
+            當前實際部署的服務 · 登記表 data/ports.conf · 切換「相關部署」可顯示已登記但未啟動的 port
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div
-            className="flex items-center gap-3 text-xs font-mono tabular-nums"
+            className="flex items-center gap-3 whitespace-nowrap text-xs font-mono tabular-nums"
             style={{ color: "var(--text-muted)" }}
           >
             <StatusDot status="ok" label={`${liveCount} live`} />
+            <StatusDot status="err" label={`${conflicts.length} 衝突`} />
             <StatusDot status="err" label={`${driftCount} drift`} />
             <StatusDot status="warn" label={`${wildCount} wild`} />
           </div>
@@ -317,6 +331,33 @@ export default function PortsPage() {
           </button>
         </div>
       </div>
+
+      {conflicts.length > 0 && (
+        <div
+          className="mb-4 px-4 py-3 text-sm"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--status-err)",
+            borderRadius: "var(--radius-md)",
+          }}
+        >
+          <div className="flex items-center gap-2 font-medium" style={{ color: "var(--status-err)" }}>
+            <AlertTriangle size={14} />
+            {conflicts.length} 個 port 衝突：同一個 port 被兩個專案登記，或被不是登記者的程式佔用
+          </div>
+          <ul className="mt-2 space-y-1 font-mono text-xs" style={{ color: "var(--text)" }}>
+            {conflicts.map((p) => (
+              <li key={p.port}>
+                <span className="tabular-nums" style={{ fontWeight: 500 }}>{p.port}</span>
+                <span style={{ color: "var(--text-muted)" }}> · {p.detail}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs" style={{ color: "var(--text-subtle)" }}>
+            解法：把其中一方改到空的 port，並更新 data/ports.conf。命令列可用 sk check ports 檢查。
+          </p>
+        </div>
+      )}
 
       {/* Tab bar */}
       <div

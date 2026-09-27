@@ -48,7 +48,7 @@ Commands:
                       Flags: --json (structured), --quiet (only output if drift, exit non-zero)
   check portability   Hardcoded home paths, non-bash-parsable scripts, pipefail traps
                       Flags: --json (structured), --quiet (only output if issues)
-  check ports         Port drift: live listeners vs data/ports.conf vs docker-compose
+  check ports         Port registry: conflicts + unclaimed listeners vs data/ports.conf
                       Flags: --json (structured), --quiet (only output if drift)
 
 Standalone tools (bin/):
@@ -3736,110 +3736,34 @@ cmd_check_ssot() {
 # docker and a stray `npm run dev` all bind ports without asking, and the only
 # real enforcement is the kernel returning EADDRINUSE.
 cmd_check_ports() {
-  local mode="text" quiet=false
+  # One implementation, shared with the dashboard 部署 page (/api/ports):
+  # platform/deployment/port_registry.py. It checks not only "is this port
+  # registered" but "is the REGISTERED project the one using it" — the gap that
+  # let trip-atlas OTP sit on mops_dbs 8081 unnoticed (2026-09-27).
+  local args=() quiet=false
   for arg in "$@"; do
     case "$arg" in
-      --json)  mode="json" ;;
-      --quiet) quiet=true ;;
+      --json)  args+=(--json) ;;
+      --quiet) args+=(--quiet); quiet=true ;;
     esac
   done
-
-  local conf_file="$REPO_DIR/data/ports.conf"
-  local compose_file="$REPO_DIR/docker-compose.yml"
-
-  # reality: listening TCP ports (macOS lsof / Linux ss).
-  # Ports >= 49152 are the IANA ephemeral range — the OS hands them out at
-  # random per boot (macOS rapportd is the usual offender). Registering one is
-  # meaningless because it will be a different number tomorrow, so skip them.
-  local live=""
-  if command -v lsof >/dev/null 2>&1; then
-    live="$(lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null \
-      | awk 'NR>1 {n=split($9,a,":"); if (a[n]+0 > 0 && a[n]+0 < 49152) print a[n]}' | sort -un || true)"
-  elif command -v ss >/dev/null 2>&1; then
-    live="$(ss -ltnH 2>/dev/null \
-      | awk '{n=split($4,a,":"); if (a[n]+0 > 0 && a[n]+0 < 49152) print a[n]}' | sort -un || true)"
+  local out rc=0
+  # rc 1 means "found conflicts", not a crash; keep set -e from aborting here.
+  out="$(python3 "$REPO_DIR/platform/deployment/port_registry.py" ${args[@]+"${args[@]}"} 2>&1)" || rc=$?
+  if [[ " ${args[*]+${args[*]}} " == *" --json "* ]]; then
+    echo "$out"
+    return $rc
   fi
-
-  # intent: data/ports.conf
-  local claimed="" claim_map=""
-  if [ -f "$conf_file" ]; then
-    while IFS='|' read -r port project service _rest; do
-      [[ "$port" =~ ^[[:space:]]*# ]] && continue
-      port="$(echo "$port" | xargs)"
-      [ -z "$port" ] && continue
-      [[ "$port" =~ ^[0-9]+$ ]] || continue
-      claimed+="$port"$'\n'
-      claim_map+="$port|$(echo "$project" | xargs)|$(echo "$service" | xargs)"$'\n'
-    done < "$conf_file"
+  if $quiet && [ "$rc" -eq 0 ]; then return 0; fi
+  echo -e "${CYAN}=== Port Registry ===${NC}"
+  echo -e "  reality: kernel + docker   intent: data/ports.conf (OWNER column)\n"
+  if [ "$rc" -eq 0 ]; then
+    echo "$out"
+    echo -e "${GREEN}No conflicts — every listener belongs to the project that claimed it.${NC}"
+  else
+    echo -e "${RED}${out}${NC}"
   fi
-  claimed="$(echo "$claimed" | sort -un | grep -v '^$' || true)"
-
-  # claims: docker-compose host ports
-  local declared=""
-  if [ -f "$compose_file" ]; then
-    declared="$(grep -oE '^[[:space:]]*-[[:space:]]*"[0-9]+:' "$compose_file" 2>/dev/null \
-      | grep -oE '[0-9]+' | sort -un || true)"
-  fi
-
-  local unclaimed phantom idle
-  unclaimed="$(comm -23 <(echo "$live" | grep -v '^$' || true) <(echo "$claimed") || true)"
-  idle="$(comm -13 <(echo "$live" | grep -v '^$' || true) <(echo "$claimed") || true)"
-  phantom="$(comm -23 <(echo "$declared" | grep -v '^$' || true) \
-                     <(echo "$live" | grep -v '^$' || true) || true)"
-
-  local n_un n_ph n_idle total
-  n_un="$(echo -n "$unclaimed" | grep -c '^' || true)"
-  n_ph="$(echo -n "$phantom" | grep -c '^' || true)"
-  n_idle="$(echo -n "$idle" | grep -c '^' || true)"
-  # Only unclaimed listeners are drift. A compose declaration that is not
-  # listening is normal — every service here sits behind an opt-in profile
-  # (news-stock, sales, marketing), and those repos are not even checked out
-  # on this machine. Counting them as failures would make the check cry wolf
-  # every night forever.
-  total=$n_un
-
-  if [ "$mode" = "json" ]; then
-    printf '{"total":%d,"unclaimed":%d,"phantom":%d,"idle":%d}\n' \
-      "$total" "$n_un" "$n_ph" "$n_idle"
-    [ "$total" -gt 0 ] && return 1 || return 0
-  fi
-
-  if $quiet && [ "$total" -eq 0 ]; then return 0; fi
-  echo -e "${CYAN}=== Port Drift ===${NC}"
-  echo -e "  reality: kernel   intent: data/ports.conf   claims: docker-compose.yml\n"
-
-  if [ "$n_un" -gt 0 ]; then
-    echo -e "${RED}Listening but unclaimed (${n_un}) — register in data/ports.conf:${NC}"
-    while IFS= read -r p; do
-      [ -z "$p" ] && continue
-      local who=""
-      command -v lsof >/dev/null 2>&1 && \
-        who="$(lsof -nP -iTCP:"$p" -sTCP:LISTEN 2>/dev/null | awk 'NR==2 {print $1" (pid "$2")"}' || true)"
-      printf "  %-6s %s\n" "$p" "${who:-unknown}"
-    done <<< "$unclaimed"
-    echo ""
-  fi
-  if [ "$n_ph" -gt 0 ] && ! $quiet; then
-    echo -e "${CYAN}Declared in docker-compose but not listening (${n_ph}) — informational:${NC}"
-    echo "$phantom" | sed 's/^/  /'
-    echo -e "  ${CYAN}these sit behind opt-in profiles (news-stock / sales / marketing);${NC}"
-    echo -e "  ${CYAN}not drift unless you expected that profile to be up${NC}\n"
-  fi
-  if [ "$n_idle" -gt 0 ] && ! $quiet; then
-    echo -e "${CYAN}Claimed but idle (${n_idle}) — reserved, service not running:${NC}"
-    while IFS= read -r p; do
-      [ -z "$p" ] && continue
-      printf "  %-6s %s\n" "$p" "$(echo "$claim_map" | awk -F'|' -v P="$p" '$1==P {print $2" / "$3}')"
-    done <<< "$idle"
-    echo ""
-  fi
-
-  if [ "$total" -eq 0 ]; then
-    echo -e "${GREEN}No drift — every listener is claimed, no stale declarations.${NC}"
-    return 0
-  fi
-  echo -e "${RED}Total drift: $total${NC}"
-  return 1
+  return $rc
 }
 
 # ─── Portability check (guards the class of bug that broke the 2026-07 move) ───

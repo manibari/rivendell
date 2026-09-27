@@ -453,9 +453,15 @@ export interface PortInfo {
   web: boolean;
   category: "前端" | "後端" | "資料庫" | "其他";
   project: string;
-  status: "live" | "drift" | "wild" | "stopped" | "unknown";
+  status: "live" | "conflict" | "drift" | "wild" | "stopped" | "unknown";
   declared?: boolean;
-  source?: "compose" | "listener" | "docker";
+  source?: "compose" | "listener" | "docker" | "registry";
+  /** "occupied": held by someone other than the claimant. "duplicate": two
+   *  projects claim the port in data/ports.conf. */
+  conflict?: "occupied" | "duplicate" | null;
+  /** Human-readable reason from lib/port_registry (the same text `sk check ports` prints). */
+  detail?: string;
+  claims?: { project: string; service: string; notes: string }[];
   /** Source-code folder behind this port, from the docker compose
    *  `project.working_dir` label. null when the port isn't a docker container. */
   folder?: string | null;
@@ -479,6 +485,8 @@ export interface DeploymentHealth {
 
 export interface PortsData {
   ports: PortInfo[];
+  /** ports held by the wrong project, or claimed by two projects */
+  conflicts?: number;
   listener_error?: string | null;
   docker_error?: string | null;
   /** Per-app deployment health (keyed by project name), from the shared
