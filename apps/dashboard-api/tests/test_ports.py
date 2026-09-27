@@ -91,6 +91,28 @@ class PortsTest(unittest.TestCase):
         self.assertFalse(matches(Claim(1, "x", "c", "docker:foo"), occ))
         self.assertTrue(matches(Claim(1, "x", "c", "docker:foo"), Occupant(container="foo")))
         self.assertFalse(matches(Claim(1, "x", "c", "/srv/a"), Occupant(cwd="/srv/ab")))
+    def test_numbering_rule_and_old_port_during_a_move(self) -> None:
+        from lib import port_registry as pr
+        from lib.port_registry import Occupant
+
+        conf = (
+            "@id | 15 | Rightek-CRM\n"
+            "8150 | Rightek-CRM | backend | /srv/crm | was 8100\n"
+            "3100 | Rightek-CRM | frontend | /srv/crm | off the rule\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ports.conf"
+            path.write_text(conf, encoding="utf-8")
+            with patch.object(pr, "listeners", return_value=(
+                    {8100: Occupant(command="python", pid="5", cwd="/srv/crm/backend")}, None)), \
+                    patch.object(pr, "docker_ports", return_value=({}, None)):
+                states, errs = pr.evaluate(path)
+        by_port = {s.port: s for s in states}
+        self.assertEqual(by_port[8100].status, "moving")
+        self.assertEqual(by_port[8100].moved_to.port, 8150)
+        self.assertEqual(len(errs["off_rule"]), 1)
+        self.assertIn("3100", errs["off_rule"][0])
+
 
 if __name__ == "__main__":
     unittest.main()

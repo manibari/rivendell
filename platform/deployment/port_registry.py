@@ -18,6 +18,12 @@ Statuses per port:
                mops_dbs and trip-atlas both expected it
     idle       claimed, nothing listening (reserved)
     wild       listening, nobody claimed it
+    moving     listening on a port a claim lists as "was NNNN": the service
+               has not been moved to its new port yet
+
+Numbering rule (ports.conf header): a project with an `@id | PP | NAME`
+line must use ports R PP i (R in 3/5/6/8/9). `off_rule` lists claims that do
+not; projects without an id (desktop apps, system) are not checked.
 
 Added 2026-09-27 (Peter): trip-atlas OTP sat on mops_dbs's 8081 and nothing
 said so, because the old check only asked "is this port registered", never
@@ -49,6 +55,36 @@ class Claim:
     notes: str = ""
 
 
+ROLE_DIGITS = {"3": "web", "5": "postgres", "6": "redis", "8": "http", "9": "storage"}
+
+
+def parse_ids(path: Path = CONF) -> dict[str, str]:
+    """{project: PP} from `@id | PP | PROJECT` lines."""
+    ids: dict[str, str] = {}
+    if path.exists():
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            parts = [x.strip() for x in raw.split("|")]
+            if len(parts) >= 3 and parts[0] == "@id" and re.fullmatch(r"\d\d", parts[1]):
+                ids[parts[2]] = parts[1]
+    return ids
+
+
+def off_rule(claim: Claim, ids: dict[str, str]) -> str | None:
+    """Why a claim breaks the numbering rule, or None when it follows it."""
+    pp = ids.get(claim.project)
+    if pp is None:
+        return None
+    digits = str(claim.port)
+    if len(digits) != 4 or digits[0] not in ROLE_DIGITS or digits[1:3] != pp:
+        return f"{claim.project} 的編號是 {pp}，{claim.port} 不符合 R{pp}i"
+    return None
+
+
+def moved_from(claim: Claim) -> int | None:
+    m = re.search(r"\bwas (\d{2,5})\b", claim.notes)
+    return int(m.group(1)) if m else None
+
+
 @dataclass
 class Occupant:
     command: str = ""
@@ -69,6 +105,7 @@ class PortState:
     owner: Claim | None = None      # the claim the occupant matched
     conflict: str | None = None     # "occupied" | "duplicate"
     detail: str = ""
+    moved_to: Claim | None = None   # status "moving": the claim this old port moved to
 
 
 def parse_conf(path: Path = CONF) -> list[Claim]:
@@ -188,7 +225,10 @@ def describe(occ: Occupant) -> str:
 
 
 def evaluate(conf: Path | None = None) -> tuple[list[PortState], dict[str, str | None]]:
-    claims = parse_conf(conf or Path(os.environ.get("RIVENDELL_PORTS_CONF", CONF)))
+    conf = conf or Path(os.environ.get("RIVENDELL_PORTS_CONF", CONF))
+    claims = parse_conf(conf)
+    ids = parse_ids(conf)
+    old_ports = {moved_from(c): c for c in claims if moved_from(c)}
     lst, lerr = listeners()
     dck, derr = docker_ports()
     live: dict[int, Occupant] = {}
@@ -218,7 +258,12 @@ def evaluate(conf: Path | None = None) -> tuple[list[PortState], dict[str, str |
             states.append(st)
             continue
         if not cl:
-            states.append(PortState(port, "wild", cl, occ, detail=f"未登記：{describe(occ)}"))
+            target = old_ports.get(port)
+            if target and matches(target, occ):
+                states.append(PortState(port, "moving", cl, occ, moved_to=target,
+                                        detail=f"待搬遷：{target.project} {target.service} 要從 {port} 改到 {target.port}"))
+            else:
+                states.append(PortState(port, "wild", cl, occ, detail=f"未登記：{describe(occ)}"))
             continue
         owner = next((c for c in cl if matches(c, occ)), None)
         st = PortState(port, "live", cl, occ, owner)
@@ -230,18 +275,28 @@ def evaluate(conf: Path | None = None) -> tuple[list[PortState], dict[str, str |
             others = [p for p in projects if p != owner.project]
             st.detail = f"{owner.project} 正在用；{', '.join(others)} 也登記了 {port}，啟動時會撞"
         states.append(st)
-    return states, {"listener_error": lerr, "docker_error": derr}
+    errs: dict[str, Any] = {"listener_error": lerr, "docker_error": derr,
+                            "off_rule": [r for c in claims if (r := off_rule(c, ids))]}
+    return states, errs
 
 
 def main(argv: list[str]) -> int:
     states, errs = evaluate()
     conflicts = [s for s in states if s.status == "conflict"]
     wild = [s for s in states if s.status == "wild"]
+    moving = [s for s in states if s.status == "moving"]
+    off = errs.get("off_rule") or []
+    bad = bool(conflicts or wild or off)
     if "--json" in argv:
-        print(json.dumps({"conflicts": len(conflicts), "wild": len(wild),
+        print(json.dumps({"conflicts": len(conflicts), "wild": len(wild), "moving": len(moving),
                           "ports": [asdict(s) for s in states], **errs}, ensure_ascii=False))
-        return 1 if conflicts or wild else 0
-    for label, group in (("Conflicts", conflicts), ("Unclaimed listeners", wild)):
+        return 1 if bad else 0
+    if off:
+        print(f"Off the numbering rule ({len(off)}):")
+        for r in off:
+            print(f"  {r}")
+        print()
+    for label, group in (("Conflicts", conflicts), ("Still on the old port", moving), ("Unclaimed listeners", wild)):
         if not group:
             continue
         print(f"{label} ({len(group)}):")
@@ -254,8 +309,8 @@ def main(argv: list[str]) -> int:
         for s in idle:
             print(f"  {s.port:<6} {' / '.join(f'{c.project} {c.service}' for c in s.claims)}")
         print()
-    print(f"Total: {len(conflicts)} conflict, {len(wild)} unclaimed")
-    return 1 if conflicts or wild else 0
+    print(f"Total: {len(conflicts)} conflict, {len(moving)} to move, {len(wild)} unclaimed, {len(off)} off-rule")
+    return 1 if bad else 0
 
 
 if __name__ == "__main__":
