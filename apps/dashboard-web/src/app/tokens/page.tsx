@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch, type FilteredTokensData } from "@/lib/api";
 import MetricsRow from "@/components/MetricsRow";
+import LiveUsage from "./LiveUsage";
 import {
   BarChart,
   Bar,
@@ -191,6 +192,8 @@ export default function TokensPage() {
           （實付為 ChatGPT 訂閱費，此為 OpenAI 牌價換算）。
         </p>
       )}
+
+      <LiveUsage />
 
       {/* Daily usage chart — recharts re-colored with token palette */}
       {data.daily.length > 0 && (
