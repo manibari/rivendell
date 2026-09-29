@@ -9,16 +9,18 @@ description: >
   through an accepted + released delivery, and ROADMAP.md is a view derived from the
   tickets, not a second list. Two tiers: light (TODOS.md fixed IDs + deliveries
   ledger, any repo) and full (DB tracker + admin portal + operator CLI, products with
-  a platform-admin surface). Reference = Yellow-Chick (full), ChimesFlow roadmap-in-DB
-  (user-facing view).
+  a platform-admin surface). Optional capability layer on top: 細項 with acceptance +
+  checks + evidence, status derived — tickets record WORK, 細項 record CAPABILITY, one
+  ticket can advance several 細項. Reference = Yellow-Chick (tickets, full tier),
+  PTI-ARES (細項 checks + evidence), ChimesFlow roadmap-in-DB (user-facing view).
   TRIGGER when: "開票", "開 ticket", "開工作票", "工作票", "hotfix 要不要開票",
-  "改 roadmap", "roadmap 怎麼維護", "票的狀態", setting up ticket / backlog / work-package
+  "改 roadmap", "roadmap 怎麼維護", "票的狀態", "細項驗收", "能力做到哪", setting up ticket / backlog / work-package
   tracking for a product; or when work is about to start with no ticket ID to cite.
   SKIP when: version bump / release gate itself (spine-versioning); aligning
   CHANGELOG / ROADMAP / progress text after the fact (doc-drift-sync); a one-off
   script or throwaway prototype; the team already runs Jira / Linear as the SoT.
 tags: [backend, roadmap, tickets, work-packages, release, spine, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -46,6 +48,66 @@ the tickets instead of being hand-maintained beside them. Pairs with
    pointing at a delivery that lists the ticket in `work_ids` and has a version,
    `verified_on`, evidence sources and a deployment record. "已合入 main" is
    `review` (待驗收). **發版不等於驗收** — say so in the roadmap header.
+
+## Two layers: tickets = work, 細項 = capability
+
+A ticket answers "what work was done"; a capability item (細項) answers "what can the
+tool do now". They are different questions and must not share one status field.
+
+| | Ticket | 細項 (capability item) |
+|---|---|---|
+| Records | a unit of work (feature / task / hotfix) | one describable capability of the product |
+| Done when | accepted + released delivery (rule 4) | **every check passed with evidence** |
+| Status is | set through the transition rules | **derived, never hand-set** |
+| Lives | TODOS / tracker | `roadmap.json` groups (or `acceptance.md` sections) |
+
+- **Many-to-many.** One ticket can advance several 細項 (`advances: [...]`, PTI-ARES
+  calls it `also`); one 細項 is usually built by several tickets. Never force the
+  ticket into one 細項 — the others then show 未開工 forever (PTI-ARES 2026-09-26).
+- **Ticket done ≠ capability done.** All tickets closed while a check is still false =
+  the capability is not there yet; that gap is exactly what this layer exists to show.
+- **Add this layer when** the product is judged by what it can do (contract acceptance,
+  a customer checklist, a long-lived tool many tickets touch). A small app can stop
+  at tickets; Yellow-Chick's `acceptance.md` sections map to `work_ids` only, with no
+  checks — status there is inferred from tickets, which is the weaker form.
+
+**細項 shape** (PTI-ARES `data/roadmap.json` → `gates[].milestones[]`):
+
+```json
+{ "code": "W3",
+  "acceptance": "PE 不用終端機：上傳 ODB++ 就建出專案，背景解析與檢查，看得到進度，之後可重檢、改名、刪除。",
+  "checks": [
+    { "id": "W3-1",
+      "text": "上傳壓縮檔＋選規則集即建立專案，背景跑解析→檢查，列表看得到狀態",
+      "passed": true,
+      "evidence": "ingest_router.py POST /projects；project-status.test.ts；docs/requirements/self-serve-upload-projects.md US-1" } ] }
+```
+
+Rules for writing it (Peter 2026-09-27):
+
+- `acceptance`: one sentence — what the tool can do when this is finished.
+- Each check is a **yes/no capability or logic sentence**. Test data is not the
+  standard: "board X matches Valor on 42 rows" goes in `evidence`, never in `text`.
+- `passed: true` only when `evidence` names a concrete place — test name, file path +
+  line/endpoint, report section. No evidence → stays false.
+- A 細項 that can get stuck half-done needs to be split.
+- The commit that closes a check flips `passed` and writes its evidence in the same
+  change.
+
+**Derived status** (PTI-ARES `backend/app/host/meta.py:_milestone_status`): any linked
+work blocked → `blocked`; all checks passed → `done`; any check passed or any linked
+work shipped → `in_progress`; else `pending`. Expose `progress: {passed, total}`. A
+test (`tests/test_roadmap_taxonomy.py`) enforces that every 細項 eventually has checks;
+a legacy manual `done` flag is honoured only on items with no checks yet.
+
+**Grouping vs contract gates.** Group 細項 by the capability they really belong to
+(bands → capability groups); keep customer-facing acceptance dates and thresholds in
+a separate `contract_gates` list. Two different axes — don't stack them in one
+hierarchy, and don't regroup an item because of its historical code prefix.
+
+**Optional commit gate.** PTI-ARES requires a `Milestone: <細項>[, <also>...]` trailer
+on every commit (`scripts/hooks/commit-msg`), first code = primary. With tickets in
+place, cite the ticket ID and let the ticket's `advances` carry the 細項 mapping.
 
 ## Tier choice
 
@@ -128,6 +190,8 @@ ticket SoT.
   unreadable, don't render an empty roadmap (YC reader raises instead of showing 0).
 - **Ticket IDs are not version numbers.** Don't name tickets `V0-12-X`; the version
   a ticket lands in is the delivery's field, set at release time.
+- **Don't let a ticket status stand in for a capability.** "RULES-ENGINE 完成" says
+  the work closed; whether the engine can do X is the 細項's checks.
 - **Deferred ≠ dropped.** Owner said "later" → `deferred` with the date/decision in
   the note; the ticket stays visible.
 
@@ -135,5 +199,7 @@ ticket SoT.
 
 - `~/Code/Yellow-Chick/ROADMAP.md`, `TODOS.md`, `docs/development/{README,deliveries}.md`
 - `~/Code/Yellow-Chick/app/development/`, `scripts/development_tracker.py`
+- `~/Code/PTI-ARES/AGENTS.md` (Roadmap 歸位), `data/roadmap.json`, `backend/app/host/meta.py`,
+  `docs/plans/refactor-2026-10/17-dev-tracking-like-yellow-chick.md` (the two layers merged)
 - `~/code/ChimesFlow/backend/app/routers/roadmap.py` (user-facing view)
 - Registry `rivendell/docs/spine-modules.md` (#4).

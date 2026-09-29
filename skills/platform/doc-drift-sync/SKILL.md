@@ -97,6 +97,9 @@ fabricate history.
 - **Released ≠ accepted**: an item that shipped in a version but has no
   `verified_on` / acceptance evidence stays 待驗收 in ROADMAP and TODOS; never
   promote it to 完成 just because CHANGELOG has it.
+- **細項 status follows its checks** (when the project has a capability layer, see
+  `spine-roadmap`): no doc calls a 細項 done while a check is false, and no check is
+  `passed` without concrete evidence (test name / file path / report section).
 - **Every released version has a delivery row** (when `deliveries.md` exists):
   CHANGELOG heading X ↔ a delivery with `version: X` and its `work_ids`.
 
