@@ -152,6 +152,14 @@
     {
       "phrase": "誰能寫這張表",
       "expect": "system-design"
+    },
+    {
+      "phrase": "開工作票",
+      "expect": "spine-roadmap"
+    },
+    {
+      "phrase": "改 roadmap",
+      "expect": "spine-roadmap"
     }
   ]
 }

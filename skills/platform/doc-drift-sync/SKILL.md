@@ -23,7 +23,7 @@ metadata:
 # Top-level duplicates of the nested metadata above: rivendell's `sk check`
 # reads tags/version from the top level, the Agent Skills Standard nests them.
 tags: [docs, versioning, roadmap, changelog, iteration, maintenance]
-version: 1.0.0
+version: 1.1.0
 ---
 
 # doc-drift-sync
@@ -56,6 +56,12 @@ Per project, these four are the source of truth and must agree:
 | `ROADMAP.md` | What's planned: Now / Next / Later / Done | "Done" item missing from CHANGELOG |
 | `progress.md` | Current working state / in-flight | claims done but roadmap says Next |
 | `CLAUDE.md` (+AGENTS.md) | Rules, structure, counts | stale counts, dead paths, renamed things |
+| `deliveries.md` (if the project keeps one) | Ticket → version → deployment evidence | released version with no delivery row, or `done` ticket with no evidence |
+| `TODOS.md` (ticket spec, fixed IDs) | Spec + dependencies per ticket ID | ticket cited in CHANGELOG/ROADMAP but absent here |
+
+The ticket side (fixed IDs, statuses, deliveries ledger) is defined by
+`spine-roadmap`; the version gate by `spine-versioning`. This skill only checks
+that the text files agree with them.
 
 Not every project has all four — sync whichever exist. If a project clearly needs
 one it lacks (e.g. ships versions but has no CHANGELOG), flag it; don't silently
@@ -85,6 +91,14 @@ fabricate history.
   manifest, the latest git tag (if the project tags), and any doc that cites it.
 - `CLAUDE.md` structural claims (skill counts, directory tree, file paths) match
   reality — re-derive counts, don't trust the written number.
+- **ROADMAP header is derived**: the version and ticket counts by status in the
+  header match the tracker (or TODOS) right now — re-count, don't copy last
+  week's numbers. Version also matches runtime and any generated API schema.
+- **Released ≠ accepted**: an item that shipped in a version but has no
+  `verified_on` / acceptance evidence stays 待驗收 in ROADMAP and TODOS; never
+  promote it to 完成 just because CHANGELOG has it.
+- **Every released version has a delivery row** (when `deliveries.md` exists):
+  CHANGELOG heading X ↔ a delivery with `version: X` and its `work_ids`.
 
 ## The iteration cycle
 

@@ -6,7 +6,8 @@ description: >
   Planning-stage gate that injects a standard "ops baseline" feature checklist into
   every new product / web app: 開發 roadmap, 系統日誌, 版本管理 (changelog), 意見回饋
   (feedback), API 金鑰, 一般設定. Anchors each item to ChimesFlow's existing
-  implementation as the copy-from reference (SoT). Ensures these are PLANNED, not an
+  implementation as the copy-from reference (SoT); roadmap + 版本管理 also cite
+  Yellow-Chick (tickets + release gate). Ensures these are PLANNED, not an
   afterthought — it does not build them itself.
   TRIGGER: scoping/planning a new web or product app with a UI and users; "做一個新
   app", "新系統", "new app", "new product"; or at requirement / init-project /
@@ -14,7 +15,7 @@ description: >
   SKIP: backend-only services, CLI tools, scrapers, single-page report generators,
   libraries — anything without a multi-user admin/settings surface.
 tags: [workflow, scaffold, gate]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Bash, Grep, Glob, Skill"
 ---
@@ -61,6 +62,16 @@ Fold this into the requirement / plan. Each item → mirror the ChimesFlow refer
 | 4 | **意見回饋** (feedback) | FE `feedback/`, `components/feedback/` · BE `routers/feedback.py`, `models/feedback.py`, `schemas/feedback.py` |
 | 5 | **API 金鑰** | FE `settings/api-keys/` · BE `routers/api_keys.py`, `models/api_key.py`, `schemas/api_key.py` |
 | 6 | **一般設定** | FE `settings/` (shell that hosts changelog + api-keys + general prefs) |
+
+**Second reference for #1 and #3 — Yellow-Chick** (`YC=~/Code/Yellow-Chick`). ChimesFlow
+shows the user-facing surface; Yellow-Chick shows the dev-side mechanism behind it:
+fixed-ID tickets, status tracker with history, deliveries ledger, and a CI release
+gate. Plan both sides when the app will ship versions:
+
+| # | Yellow-Chick reference | Recipe skill |
+|---|------------------------|--------------|
+| 1 | `ROADMAP.md`, `TODOS.md`, `app/development/tracker*.py`, `scripts/development_tracker.py`, `frontend/src/features/development/` | `spine-roadmap` (light tier by default) |
+| 3 | `scripts/checks/check_release.py`, `app/development/versioning.py`, `docs/development/{README,deliveries}.md` | `spine-versioning` |
 
 For each: state **include / defer / N-A + reason**. Default = include. A deferred item
 must carry a one-line why and a follow-up note, not vanish.

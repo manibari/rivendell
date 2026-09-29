@@ -68,7 +68,7 @@
       "gate": null
     },
     {
-      "text": "product-skeleton clone → init-project → spine-auth → spine-schema-sync → spine-versioning ｜ 視情況：spine-rbac（多人用才需要）、docker-compose-setup、markdown-file-ssot、setup-permissions",
+      "text": "product-skeleton clone → init-project → spine-auth → spine-schema-sync → spine-versioning → spine-roadmap ｜ 視情況：spine-rbac（多人用才需要）、docker-compose-setup、markdown-file-ssot、setup-permissions",
       "gaps": [],
       "stage": "Do",
       "note": "骨架已接好線，每個 spine 模組各有一個要自己決定的政策；init-project 建 CLAUDE.md / AGENTS.md",
@@ -93,6 +93,11 @@
         {
           "source": "rivendell",
           "name": "spine-versioning",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "spine-roadmap",
           "mode": "core"
         },
         {

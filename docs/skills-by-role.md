@@ -53,7 +53,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `app-ops-baseline` ｜ 視情況：`gstack-office-hours` (gstack)、`discovery-interview`、`chimesflow-design`、`ui-ux-pro-max` ｜ 自動：`dev-process-gate` | 主線五步：定義任務 → 產品範圍與 user story → 第一條核心旅程 → 首頁 wireframe → 注入 ops 基線（roadmap / logs / changelog / feedback / api-keys / settings）。還沒想清楚值不值得做才叫 office-hours；有客戶才做 discovery；要接 ChimesFlow 設計系統才載 chimesflow-design |
-| Do | product-skeleton clone → `init-project` → `spine-auth` → `spine-schema-sync` → `spine-versioning` ｜ 視情況：`spine-rbac`（多人用才需要）、`docker-compose-setup`、`markdown-file-ssot`、`setup-permissions` | 骨架已接好線，每個 spine 模組各有一個要自己決定的政策；init-project 建 CLAUDE.md / AGENTS.md |
+| Do | product-skeleton clone → `init-project` → `spine-auth` → `spine-schema-sync` → `spine-versioning` → `spine-roadmap` ｜ 視情況：`spine-rbac`（多人用才需要）、`docker-compose-setup`、`markdown-file-ssot`、`setup-permissions` | 骨架已接好線，每個 spine 模組各有一個要自己決定的政策；init-project 建 CLAUDE.md / AGENTS.md |
 | Check | `qa-testing` → `env-doctor` ｜ 視情況：`qa-journey`（第一條旅程能走通） | 測試策略；另一台機器跑得起來 |
 | Act | `ci-pipeline` → `deploy` ｜ 視情況：`cloudflare-tunnel-provision`（要對外）｜ 自動：`doc-drift-sync` | 起手的 Act 就是第一次上線，之後進 1b / 1c 循環 |
 

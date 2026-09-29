@@ -83,7 +83,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (125 skills)
+## Skills Catalog (126 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -214,6 +214,7 @@ as release notes.
 | **rbac-permissions** | `/rbac-permissions` 或自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
 | **spine-rbac** | 自動 | Canonical RBAC tiering for the FastAPI product fleet. |
+| **spine-roadmap** | 自動 | Canonical 開票 + roadmap mechanism for the product fleet: every piece of work |
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
 | **spine-versioning** | 自動 | Canonical version + changelog for the product fleet — and crucially the |
 | **sqlite-to-postgres** | 自動 | SQLite → PostgreSQL/Supabase 遷移指南：語法差異、schema 轉換、資料遷移、驗證 |
@@ -301,7 +302,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 5 | 5 |
-| dev | 20 | 21 | 8 | 8 |
+| dev | 21 | 21 | 8 | 8 |
 | shared | 1 | 14 | 2 | — |
 
 

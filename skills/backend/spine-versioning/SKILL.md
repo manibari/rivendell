@@ -14,10 +14,12 @@ description: >
   TRIGGER when: adding version / changelog / release notes / 更新歷程 / 版本號 /
   bump / "顯示版本" to a product; setting up release hygiene; OR right after someone
   says "I'll remember to bump next time" (that's the signal to install the gate).
+  Yellow-Chick (2026-09) is the first product WITH the gate: owner-defined bump
+  rules, hotfix-needs-ticket, and scripts/checks/check_release.py in CI.
   SKIP when: a published library with its own semantic-release tooling; a throwaway
   prototype with no releases; a repo where version is fully auto-derived from tags already.
 tags: [backend, versioning, changelog, release, ci, git-hooks, spine, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -58,6 +60,47 @@ CI variant: the same diff check as a required PR step (fails the check instead o
 push) — better for teams; the hook is better for solo (catches it before it leaves the
 machine). Do both if you want belt + suspenders.
 
+## Reference with a working gate: Yellow-Chick (read before copying)
+
+`YC=~/Code/Yellow-Chick`. Policy text: `docs/development/README.md` 「上線版本規則」.
+
+**Bump rules** (owner-defined 2026-09-26, MINOR revised 09-28):
+
+| Part | When | Extra evidence required |
+|------|------|-------------------------|
+| PATCH | every ordinary update that goes live | — |
+| MINOR | a new module / feature goes live | `release.requirement_source` = a requirement doc or recorded owner decision |
+| MAJOR | owner decides | `release.decided_by` + basis |
+
+- One batch takes only the highest level; MINOR resets PATCH, MAJOR resets both.
+- **Commits, doc edits, dev-complete and local tests do NOT bump.** Restarting the same
+  build is not a release. Release = QA passed → service reloaded → version + page
+  verified → local tag. "Every independently-acceptable segment ships a version."
+- **Hotfix needs a ticket** (`HOTFIX-*`, see [[spine-roadmap]]) and a PATCH release with
+  a tag; a delivery record links the ticket via `work_ids`. Commit + CHANGELOG alone is
+  rejected. First case: `HOTFIX-OAUTH-QUOTA` → `0.5.2`.
+- Deployment evidence names its environment (`local-development` ≠ production).
+
+**The gate** — `scripts/checks/check_release.py`, run in CI with `--base <previous commit>`
+(`.github/workflows/ci.yml`), and with `--tag` after a local release:
+
+1. Product paths changed (`app/`, `frontend/src/`, `employees/`, `library/`, `alembic/`)
+   → runtime version must increase AND `CHANGELOG.md` must be in the diff.
+2. Runtime version (`app/__init__.py __version__`, the only source; frontend has no
+   constant) == newest CHANGELOG heading == generated `frontend/openapi.json` version.
+3. `docs/development/deliveries.md` has a delivery for this version with a `release`
+   decision and `deployments` evidence.
+4. `--tag`: the version tag exists and points at HEAD.
+
+**Release-decision validator** — `app/development/versioning.py`: the new version must
+equal `previous_version` + `kind` exactly (no skipped numbers); MINOR needs a known
+requirement source; MAJOR needs `decided_by`; a version with no deployment is refused.
+Historical versions before the policy date are kept as-is, not rewritten.
+
+Unlike the generic pre-push hook above, this gate checks **coherence across four
+places** and **release evidence**, not just "did a CHANGELOG line appear". Prefer it
+for products with a runtime version + generated API schema.
+
 ## What converges (use as-is)
 
 - **One version string, one source of truth** (`version.ts` `APP_VERSION`, or a
@@ -95,6 +138,8 @@ machine). Do both if you want belt + suspenders.
 - `~/code/ChimesFlow/CHANGELOG.md` + `frontend version.ts` (APP_VERSION, UI footer);
   user-facing roadmap-in-DB (`routers/roadmap.py`, `scripts/seed_roadmap.py`)
 - `~/code/Family-Fiscal/backend/db.py` (`release_items` table = user-facing 更新歷程)
+- `~/Code/Yellow-Chick/scripts/checks/check_release.py`, `app/development/versioning.py`,
+  `docs/development/README.md` (bump + hotfix policy), `docs/development/deliveries.md`
 - Recurrence + fix rationale: `~/.claude/learnings/LEARNINGS.md` (2026-06-22 sed no-op;
   2026-06-28 memory-not-gate). Registry `rivendell/docs/spine-modules.md` (#5). Pairs with
   [[spine-roadmap]] (#4, the user-facing surface) — version is the data, roadmap is the view.
