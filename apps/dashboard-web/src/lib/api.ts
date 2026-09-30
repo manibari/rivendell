@@ -666,6 +666,26 @@ export type SensorsData =
       cpu: { clusters: CpuCluster[]; core_count: number; total_active: number | null };
       gpu: GpuReading;
       battery: BatteryReading;
+      memory: MemoryReading;
+    };
+
+export type MemoryReading =
+  | { status: "unavailable"; error: string }
+  | {
+      status: "ok";
+      /** kern.memorystatus_vm_pressure_level; null = sysctl unreadable */
+      pressure_level: "normal" | "warn" | "critical" | null;
+      pressure_level_raw: number | null;
+      total_bytes: number | null;
+      used_bytes: number | null;
+      available_bytes: number | null;
+      available_percent: number;
+      compressed_bytes: number | null;
+      swap_total_bytes: number | null;
+      swap_used_bytes: number | null;
+      swap_free_bytes: number | null;
+      page_size_bytes: number;
+      source: string;
     };
 
 /** GET /api/health/metrics/history — collector store, bucketed server-side. */

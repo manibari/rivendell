@@ -28,6 +28,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import battery  # noqa: E402
 import cores  # noqa: E402
+import memory  # noqa: E402
 
 SOURCE = HERE / "sensors.c"
 BINARY = Path(os.environ.get("SK_SENSORS_BIN", str(HERE / "build" / "sk-sensors")))
@@ -172,6 +173,7 @@ def snapshot(interval_ms: int = 250) -> dict[str, Any]:
         "cpu": cores.cpu(residency, watts),
         "gpu": cores.gpu(residency, watts),
         "battery": battery.snapshot(),
+        "memory": memory.snapshot(),
     }
 
 

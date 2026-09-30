@@ -389,6 +389,33 @@ flowchart LR
 
 ---
 
+## §10 系統監控資料路徑（2026-09-30 補記）
+
+§1 的範圍是 agent 執行資料；本機硬體讀數是另一條平行的鏈，之前沒寫進任何設計文件，隨 `SYSTEM-MONITOR-MEMORY` 補上。
+
+```
+sensors.snapshot()  ── sensors.c（溫度/功耗/風扇） + cores（CPU/GPU） + battery + memory
+      │  每 5 秒，由常駐 collector 呼叫（platform/agent_fleet/registry/metrics-collector.md，launchd keepalive）
+      ▼
+history.flatten() → system-metrics.db   5s 留 7 天 → 1m 留 90 天 → 1h 永久
+      │
+      ▼
+dashboard-api routes/monitoring/sensors.py ── 即時 snapshot + /api/health/metrics/history
+      ▼
+dashboard-web /health/sensors（只讀，不自行換算判斷）
+```
+
+| 模組 | 唯一職責 | 不負責 |
+|---|---|---|
+| `platform/monitoring/system/memory.py` | 讀 macOS 系統層級記憶體：總量、已用、可用、壓縮、swap、壓力等級 | process 排名、Docker 分類、節省建議（屬 `docs/requirements/ram-service-monitor.md`） |
+| `history.py` | 把 snapshot 攤平成 `mem.*` 等數值鍵並分層保存 | 取樣時機（由 collector 決定） |
+
+**記憶體讀數來源**：`vm_stat`（頁大小、壓縮頁）、`memory_pressure -Q`（總量、可用率）、`sysctl vm.swapusage`、`sysctl kern.memorystatus_vm_pressure_level`（1 normal / 2 warn / 4 critical，與「活動監視器」壓力圖同源）。壓力等級直接用核心的判斷，前端不另訂門檻。模組內快取 5 秒，與取樣週期一致，不增加額外輪詢。
+
+**失敗語意**：主要來源讀不到時整塊回 `status: "unavailable"` 並附原因；單一次要讀數（swap、壓力等級）讀不到時該欄為 `null`，其餘照常，history 不寫該鍵。任何情況都不以 0 代替。
+
+---
+
 ## 下一步
 
 | 下一步 | Skill | 做什麼 |

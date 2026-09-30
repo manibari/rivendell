@@ -108,6 +108,14 @@ def flatten(snap: dict[str, Any]) -> dict[str, float]:
         put("bat.ac", 1 if bat.get("external_connected") else 0)
         put("bat.health", bat.get("health_percent"))
         put("bat.cycles", bat.get("cycle_count"))
+    mem = snap.get("memory") or {}
+    if mem.get("status") == "ok":
+        for source, key in (("used_bytes", "mem.used_gib"), ("available_bytes", "mem.available_gib"),
+                            ("compressed_bytes", "mem.compressed_gib"), ("swap_used_bytes", "mem.swap_gib")):
+            value = mem.get(source)
+            put(key, value / 1024**3 if value is not None else None)
+        put("mem.available_pct", mem.get("available_percent"))
+        put("mem.pressure", mem.get("pressure_level_raw"))
     return out
 
 

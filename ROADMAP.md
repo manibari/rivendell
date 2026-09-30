@@ -41,6 +41,8 @@
 
 ## Wave 1 — 可觀測(monitoring 0 → 1)
 
+- [x] **SYSTEM-MONITOR-MEMORY** 同一頁顯示 RAM 壓力、使用量、壓縮與 swap，並納入常駐歷史採樣（2026-09-30 完成；[票與驗收條件](docs/plans/2026-09-30-system-monitor-memory.md)）。
+
 - [ ] **R2a** WSL 三件套(**Peter ~30min**:clone ops + OPS_KEY/HEALTH_KEY env + crontab;
       dashboard A2b systemd)。README 全備好。
 - [ ] **R2b** agent 失敗告警:launchd agent exit≠0 → Telegram(復用 notify 管線)。

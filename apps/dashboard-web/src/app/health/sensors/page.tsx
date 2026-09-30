@@ -36,11 +36,22 @@ function points(d: Ok): Record<string, number> {
   if (d.cpu.total_active !== null) p["cpu"] = d.cpu.total_active;
   if (d.gpu.device_util !== null) p["gpu"] = d.gpu.device_util;
   if (d.battery.status === "ok" && d.battery.battery_watts !== null) p["b:w"] = d.battery.battery_watts;
+  if (d.memory.status === "ok") {
+    if (d.memory.used_bytes !== null) p["mem.used"] = d.memory.used_bytes / 1024 ** 3;
+    p["mem.available_pct"] = d.memory.available_percent;
+    if (d.memory.compressed_bytes !== null) p["mem.compressed"] = d.memory.compressed_bytes / 1024 ** 3;
+    if (d.memory.swap_used_bytes !== null) p["mem.swap"] = d.memory.swap_used_bytes / 1024 ** 3;
+  }
   return p;
 }
 
 // Collector store key (platform/monitoring/system/history.py flatten) → tile key.
 function seriesKey(historyKey: string): string | null {
+  const memoryKeys: Record<string, string> = {
+    "mem.used_gib": "mem.used", "mem.available_pct": "mem.available_pct",
+    "mem.compressed_gib": "mem.compressed", "mem.swap_gib": "mem.swap",
+  };
+  if (memoryKeys[historyKey]) return memoryKeys[historyKey];
   if (historyKey === "cpu.total") return "cpu";
   if (historyKey === "gpu.util") return "gpu";
   const m = /^(temp|power|fan|core)\.([^.]+)$/.exec(historyKey);
@@ -155,6 +166,15 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
   const groups = Object.fromEntries(d.temperatures.groups.map((g) => [g.id, g]));
   const sys = d.power.system.find((p) => p.id === "PSTR");
   const bat = d.battery.status === "ok" ? d.battery : null;
+  const mem = d.memory.status === "ok" ? d.memory : null;
+  const gib = (bytes: number | null | undefined) => bytes == null ? null : bytes / 1024 ** 3;
+  const memoryUnavailable = d.memory.status === "unavailable" ? d.memory.error : "—";
+  const pressureFlags: Record<string, { label: string; color: string }> = {
+    normal: { label: "壓力正常", color: "var(--status-ok)" },
+    warn: { label: "壓力偏高", color: "var(--status-warn)" },
+    critical: { label: "壓力危急", color: "var(--status-err)" },
+  };
+  const pressureFlag = mem && (pressureFlags[mem.pressure_level ?? ""] ?? { label: "壓力未判讀", color: "var(--text-muted)" });
   return (
     <>
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
@@ -167,6 +187,18 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
         {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" series={series["p:PSTR"] ?? EMPTY} />}
         {bat && <Tile title="電池" value={bat.percent} unit="%" digits={0}
           sub={bat.state_label} />}
+        <Tile title="RAM 已用" value={gib(mem?.used_bytes)} unit="GiB" digits={1}
+          sub={mem ? `共 ${gib(mem.total_bytes)?.toFixed(1) ?? "—"} GiB` : memoryUnavailable}
+          series={series["mem.used"] ?? EMPTY} />
+        <Tile title="RAM 可用率" value={mem?.available_percent ?? null} unit="%" digits={0}
+          sub={mem ? `${gib(mem.available_bytes)?.toFixed(1) ?? "—"} GiB 可用` : memoryUnavailable}
+          series={series["mem.available_pct"] ?? EMPTY} flag={pressureFlag} />
+        <Tile title="記憶體壓縮" value={gib(mem?.compressed_bytes)} unit="GiB" digits={1}
+          sub={mem ? "壓縮器目前佔用" : memoryUnavailable}
+          series={series["mem.compressed"] ?? EMPTY} />
+        <Tile title="Swap 已用" value={gib(mem?.swap_used_bytes)} unit="GiB" digits={1}
+          sub={mem?.swap_total_bytes != null ? `總量 ${gib(mem.swap_total_bytes)?.toFixed(1)} GiB` : mem ? "系統未回報 swap 用量" : memoryUnavailable}
+          series={series["mem.swap"] ?? EMPTY} />
       </div>
 
       <Section title="機身溫度分布">
