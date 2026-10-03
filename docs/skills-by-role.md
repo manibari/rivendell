@@ -373,7 +373,7 @@
 |---|---|---|
 | Plan | `setup-permissions` · `settings-audit` | 只放用到的權限；清無效設定 |
 | Do | `context-journal` · `context-recovery` · `claude-to-telegram` · `auto-stage` · `protect-secrets` | 長 session 不掉 context；手機遙控；hook 自動 stage、擋 .env |
-| Check | `sk check` | |
+| Check | `sk check` · `token-quota-log` | 額度餘量、重置時間、每 1% 額度約多少 token（dashboard /tokens） |
 | Act | `session-wrap` · `self-improving-agent` · `learnings-promotion-sprint` | 收工；踩坑分流到對的 vault；升進 CLAUDE.md |
 
 ### 8d repo 維運

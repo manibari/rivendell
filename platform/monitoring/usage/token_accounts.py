@@ -131,6 +131,17 @@ def account_at(spans: list[tuple[float, float, str]], at: float) -> str | None:
     return None
 
 
+def codex_account_at(spans: list[tuple[float, float, str]], at: float, creator: str) -> str:
+    """The Codex account a row at `at` was charged to.
+
+    Codex reloads auth.json, so after a login switch an existing session keeps
+    running on the NEW account while its rollout still names the creator. The
+    login sighting is therefore the authority; the creator id is used only
+    where no sighting covers the row (before the observer ran, or API down).
+    """
+    return account_at(spans, at) or creator
+
+
 def labels() -> dict[tuple[str, str], str]:
     """(source, account_id) -> latest readable label."""
     try:

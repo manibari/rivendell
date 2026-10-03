@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, type FilteredTokensData } from "@/lib/api";
 import MetricsRow from "@/components/MetricsRow";
 import LiveUsage from "./LiveUsage";
+import QuotaPanel from "./QuotaPanel";
 import {
   BarChart,
   Bar,
@@ -194,6 +195,8 @@ export default function TokensPage() {
       )}
 
       <LiveUsage />
+
+      <QuotaPanel />
 
       {/* Daily usage chart — recharts re-colored with token palette */}
       {data.daily.length > 0 && (

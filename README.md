@@ -22,7 +22,7 @@ The repository is organized by ownership. See [repository layout](docs/architect
 
 ```
 skills/
-├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(12)
+├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(13)
 ├── agents/     # 自動化 Agent：排程、觀測、persona (5)
 ├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
 ├── workflow/   # dev 循環工具與 Session 維運 (15)
@@ -83,7 +83,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (126 skills)
+## Skills Catalog (127 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -105,6 +105,7 @@ as release notes.
 | **skill-creator** | 自動 | 建立、修改、評測 skills，含 eval 和 benchmark 工具 |
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
+| **token-quota-log** | statusLine | 記錄官方訂閱額度（Claude 5h／每週已用 %、重置時間），對照 token 用量；dashboard /tokens 帳號與額度 |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
 | **writing-great-skills** | `/writing-great-skills` | Reference for writing and editing skills well — the vocabulary and principles |
 
@@ -301,7 +302,7 @@ as release notes.
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
-| platform | 1 | 13 | 5 | 5 |
+| platform | 1 | 13 | 6 | 5 |
 | dev | 21 | 21 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 

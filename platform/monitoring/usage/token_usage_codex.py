@@ -102,7 +102,7 @@ def parse_codex_session(path: Path, fallback_project: str,
                              "requests": [...]}}}
     Same as tokens._parse_jsonl_granular. Field mapping (OpenAI convention:
     cached tokens are a subset of input_tokens):
-      input        = input_tokens - cached_input_tokens
+      input        = input_tokens - cached_input_tokens - cache_write_input_tokens
       cache_read   = cached_input_tokens
       cache_create = cache_write_input_tokens
       output       = output_tokens (reasoning tokens are already inside it)
@@ -155,7 +155,9 @@ def parse_codex_session(path: Path, fallback_project: str,
                     continue
                 delta = _usage_delta(prev_total, total)
                 prev_total = total
-                input_new = max(0, delta["input_tokens"] - delta["cached_input_tokens"])
+                # OpenAI input_tokens already includes cached and cache-write tokens.
+                input_new = max(0, delta["input_tokens"] - delta["cached_input_tokens"]
+                                - delta["cache_write_input_tokens"])
                 output = delta["output_tokens"]
                 # Older Codex builds logged only total_tokens; keep that as input
                 # so the session is not silently dropped.

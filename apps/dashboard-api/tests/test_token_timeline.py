@@ -123,21 +123,52 @@ class TimelineTest(unittest.TestCase):
         self.assertEqual(entry["account"], "acct-1")
         self.assertEqual((entry["totals"]["input"], entry["totals"]["output"]), (160, 40))
 
-    def test_codex_started_mid_file_uses_first_event_as_baseline(self) -> None:
+    def test_codex_started_mid_file_takes_baseline_from_before_the_window(self) -> None:
         old = "".join(codex_row(self.now - 7200 + i, 1000 * (i + 1), 0, pad=4000)
                       for i in range(60))
         (self.codex / "rollout.jsonl").write_text(
             codex_meta("acct-1") + old + codex_row(self.now - 40, 60_500, 0)
             + codex_row(self.now - 20, 60_900, 30))
         entry = self.series(timeline.get_timeline("minute", 10), "codex:acct-1")
-        # 60_000 -> 60_500 is the baseline; only 60_500 -> 60_900 is counted.
-        self.assertLessEqual(entry["totals"]["input"], 900)
+        # 60_000 (last counter before the window) is the baseline, so the first
+        # in-window step 60_000 -> 60_500 is counted too.
+        self.assertEqual(entry["totals"]["input"], 900)
         self.assertEqual(entry["totals"]["output"], 30)
+
+    def test_codex_cache_write_is_netted_out_of_input(self) -> None:
+        row = json.loads(codex_row(self.now - 20, 1000, 10))
+        row["payload"]["info"]["total_token_usage"].update(
+            cached_input_tokens=600, cache_write_input_tokens=300)
+        (self.codex / "rollout.jsonl").write_text(codex_meta("acct-1") + json.dumps(row) + "\n")
+        t = self.series(timeline.get_timeline("minute", 10), "codex:acct-1")["totals"]
+        self.assertEqual((t["input"], t["cache_read"], t["cache_create"], t["output"]),
+                         (100, 600, 300, 10))
+
+    def test_rate_and_breakdown_count_all_four_categories(self) -> None:
+        (self.claude / "a.jsonl").write_text(claude_row(self.now - 10, "r1", 4))
+        entry = self.series(timeline.get_timeline("minute", 5), "claude:")
+        # input 1 + output 4 + cache_read 10 + cache_create 5
+        self.assertEqual(entry["breakdown"][0]["tokens"], 20)
+        self.assertEqual(entry["breakdown"][0]["output"], 4)
+        self.assertEqual(entry["breakdown"][0]["cache_tokens"], 10)
+        self.assertEqual(entry["tokens_per_minute"], 4)  # 20 over a 5-minute window
 
     def login(self, email: str, uuid: str, at: float) -> None:
         (self.root / "claude.json").write_text(json.dumps(
             {"oauthAccount": {"accountUuid": uuid, "emailAddress": email}}))
         accounts.observe(at)
+
+    def test_codex_rows_follow_the_login_after_a_switch(self) -> None:
+        (self.root / "codex-auth.json").write_text(json.dumps({"tokens": {"account_id": "acct-2"}}))
+        for at in range(int(self.now - 60), int(self.now), 20):
+            accounts.observe(at)
+        (self.codex / "rollout.jsonl").write_text(
+            codex_meta("acct-1") + codex_row(self.now - 300, 100, 10)
+            + codex_row(self.now - 200, 150, 20) + codex_row(self.now - 30, 400, 50))
+        result = timeline.get_timeline("minute", 10)
+        # before any sighting: the creator; inside acct-2's sighting: acct-2
+        self.assertEqual(self.series(result, "codex:acct-1")["totals"]["output"], 20)
+        self.assertEqual(self.series(result, "codex:acct-2")["totals"]["output"], 30)
 
     def test_claude_rows_without_a_login_record_stay_unattributed(self) -> None:
         (self.claude / "a.jsonl").write_text(claude_row(self.now - 10, "r1", 1))

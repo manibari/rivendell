@@ -553,7 +553,26 @@ for want in manifest["hooks"]:
     if not (os.path.isfile(script) and os.access(script, os.X_OK)):
         unreadable.append(cmd)
 
-if action == "install" and missing:
+# statusLine is a single slot, not a list: install fills it only when empty and
+# never overwrites one that points elsewhere (that is the user's own choice).
+status_want = manifest.get("statusLine")
+status_conflict = status_installed = False
+if status_want:
+    have = (settings.get("statusLine") or {}).get("command")
+    if have == status_want["command"]:
+        present.append(status_want)
+    elif have:
+        status_conflict = True
+    elif action == "install":
+        settings["statusLine"] = {"type": "command", "command": status_want["command"]}
+        status_installed = True
+    else:
+        missing.append({"event": "statusLine", **status_want})
+    script = os.path.expanduser(status_want["command"].split()[0])
+    if not (os.path.isfile(script) and os.access(script, os.X_OK)):
+        unreadable.append(status_want["command"])
+
+if action == "install" and (missing or status_installed):
     for want in missing:
         entry = {"hooks": [{"type": "command", "command": want["command"]}]}
         if want.get("matcher"):
@@ -562,9 +581,12 @@ if action == "install" and missing:
     with open(settings_path, "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print(f"  installed {len(missing)} hook(s); restart Claude Code to load them")
+    if missing:
+        print(f"  installed {len(missing)} hook(s); restart Claude Code to load them")
     for w in missing:
         print(f"    + {w['event']} {w.get('matcher') or '-'} -> {w['command']}")
+    if status_installed:
+        print(f"  installed statusLine -> {status_want['command']} (shows from the next prompt)")
 elif missing:
     print(f"  {len(missing)} hook(s) NOT registered — run: sk hooks install")
     for w in missing:
@@ -572,12 +594,16 @@ elif missing:
 else:
     print(f"  all {len(present)} manifest hook(s) registered")
 
+if status_conflict:
+    print(f"  statusLine is set to another command; manifest wants {status_want['command']}")
+    print("    (not overwritten — edit ~/.claude/settings.json by hand if you want it)")
+
 if unreadable:
     print(f"  {len(unreadable)} script(s) not executable — run `sk deploy` first:")
     for c in unreadable:
         print(f"    ! {c}")
     sys.exit(1)
-sys.exit(0 if not missing or action == "install" else 1)
+sys.exit(0 if (not missing or action == "install") and not status_conflict else 1)
 PYHOOK
       ;;
     -h|--help)

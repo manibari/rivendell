@@ -66,14 +66,20 @@
       "gate": null
     },
     {
-      "text": "sk check",
+      "text": "sk check · token-quota-log",
       "gaps": [],
       "stage": "Check",
-      "note": "",
+      "note": "額度餘量、重置時間、每 1% 額度約多少 token（dashboard /tokens）",
       "id": "8c-check",
       "order": 3,
-      "skill_refs": [],
-      "action": "sk check",
+      "skill_refs": [
+        {
+          "source": "rivendell",
+          "name": "token-quota-log",
+          "mode": "core"
+        }
+      ],
+      "action": "額度餘量、重置時間、每 1% 額度約多少 token（dashboard /tokens）",
       "condition": null,
       "gate": null
     },

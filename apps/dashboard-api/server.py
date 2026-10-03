@@ -18,6 +18,7 @@ sys.path.insert(0, str(LIB_DIR))
 
 from lib.db import init_db  # noqa: E402
 from lib.tokens_accounts import start_observer as start_account_observer  # noqa: E402
+from lib.tokens_quota import start_refresher as start_quota_refresher  # noqa: E402
 
 app = FastAPI(
     title="rivendell API",
@@ -43,6 +44,7 @@ app.add_middleware(
 def startup() -> None:
     init_db()
     start_account_observer()
+    start_quota_refresher()
 
 
 from routes.deployment import (  # noqa: E402, F401
@@ -74,11 +76,13 @@ app.include_router(harvest_router)
 from routes.monitoring.overview import router as health_router  # noqa: E402
 from routes.monitoring.usage import router as usage_router  # noqa: E402
 from routes.monitoring.usage_timeline import router as usage_timeline_router  # noqa: E402
+from routes.monitoring.usage_quota import router as usage_quota_router  # noqa: E402
 from routes.monitoring.disk import router as disk_router  # noqa: E402
 from routes.monitoring.errors import router as errors_router  # noqa: E402
 from routes.monitoring.git import router as git_router  # noqa: E402
 from routes.monitoring.sensors import router as sensors_router  # noqa: E402
 
 for monitoring_router in (health_router, disk_router, errors_router, git_router, usage_router,
-                          usage_timeline_router, issues_router, sensors_router):
+                          usage_timeline_router, usage_quota_router, issues_router,
+                          sensors_router):
     app.include_router(monitoring_router)

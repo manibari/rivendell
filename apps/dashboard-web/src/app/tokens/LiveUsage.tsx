@@ -14,7 +14,7 @@ import {
 } from "recharts";
 
 type Bucket = "minute" | "hour";
-type Metric = "output" | "cache";
+type Metric = "total" | "output" | "cache";
 type Group = "account" | "model";
 
 interface Cell {
@@ -31,6 +31,7 @@ interface Part {
   label: string | null;
   model: string;
   tokens: number;
+  output: number;
   cache_tokens: number;
 }
 
@@ -97,7 +98,8 @@ const accountLabel = (p: { source: "claude" | "codex"; account: string | null; l
 
 const seriesLabel = (s: TimelineSeries) => s.model ?? accountLabel(s);
 
-const partValue = (p: Part, metric: Metric) => (metric === "output" ? p.tokens : p.cache_tokens);
+const partValue = (p: Part, metric: Metric) =>
+  metric === "total" ? p.tokens : metric === "output" ? p.output : p.cache_tokens;
 
 // "claude-opus-5-5 82% · claude-fable-5-1 18%" — what a series is made of.
 const breakdownText = (s: TimelineSeries, metric: Metric) => {
@@ -109,8 +111,13 @@ const breakdownText = (s: TimelineSeries, metric: Metric) => {
     .join(" · ");
 };
 
+// 總用量 = all four categories (same as tokens_timeline._total); caching changes
+// a token's price, not whether it was used.
 const cellValue = (c: Cell | undefined, metric: Metric) =>
-  !c ? 0 : metric === "output" ? c.input + c.output : c.cache_read + c.cache_create;
+  !c ? 0
+    : metric === "total" ? c.input + c.output + c.cache_read + c.cache_create
+      : metric === "output" ? c.output
+        : c.cache_read;
 
 const compact = (v: number) =>
   v >= 1e9 ? `${(v / 1e9).toFixed(1)}B`
@@ -141,7 +148,7 @@ const toggleStyle = (active: boolean): React.CSSProperties => ({
 export default function LiveUsage() {
   const [bucket, setBucket] = useState<Bucket>("minute");
   const [span, setSpan] = useState(60);
-  const [metric, setMetric] = useState<Metric>("output");
+  const [metric, setMetric] = useState<Metric>("total");
   const [group, setGroup] = useState<Group>("account");
   const [paused, setPaused] = useState(false);
   const [data, setData] = useState<TimelineData | null>(null);
@@ -224,8 +231,11 @@ export default function LiveUsage() {
             </button>
           ))}
           <span style={{ width: 8 }} />
+          <button style={toggleStyle(metric === "total")} onClick={() => setMetric("total")}>
+            總用量
+          </button>
           <button style={toggleStyle(metric === "output")} onClick={() => setMetric("output")}>
-            產出 (in+out)
+            輸出
           </button>
           <button style={toggleStyle(metric === "cache")} onClick={() => setMetric("cache")}>
             Context 重讀
@@ -251,7 +261,7 @@ export default function LiveUsage() {
               />
               {seriesLabel(s)}
               <span style={{ color: "var(--text-muted)" }}>
-                {" "}· 目前 {s.tokens_per_minute.toLocaleString()} tokens/分
+                {" "}· 目前 {s.tokens_per_minute.toLocaleString()} 總 tokens/分
                 · 區間 {cellValue(s.totals, metric).toLocaleString()} · {s.totals.requests.toLocaleString()} 次請求
               </span>
               <span style={{ color: TEXT_SUBTLE }}>
@@ -315,11 +325,11 @@ export default function LiveUsage() {
         )}
       </div>
       <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
-        「目前」＝最近 {(data?.rate_window_seconds ?? 300) / 60} 分鐘的平均。Claude Code 的用量紀錄沒有帳號欄位，帳號是照「當時登入的是誰」對回去的；
+        總用量＝未快取輸入＋輸出＋快取重讀＋快取寫入（兩家都可直接比）。「目前」＝最近 {(data?.rate_window_seconds ?? 300) / 60} 分鐘的總用量平均。Claude Code 的用量紀錄沒有帳號欄位，帳號是照「當時登入的是誰」對回去的；
         {data?.account_log_from
           ? `登入紀錄從 ${dayClock(data.account_log_from)} 開始，更早的用量標「帳號未判讀」。`
           : "這段時間沒有登入紀錄，Claude Code 用量標「帳號未判讀」。"}
-        Codex 帳號取自每個 session 自己的紀錄。
+        Codex 帳號同樣照「當時登入的是誰」（換帳號後，跑到一半的 session 也算新帳號）；沒有登入紀錄的時段才用 session 建立時的帳號。
       </p>
     </section>
   );

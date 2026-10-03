@@ -111,3 +111,4 @@ metadata-workshop	商業	客戶 Metadata Workshop：商業知識轉 YAML schema�
 # === 人資 ===
 candidate-analysis	人資	面試候選人管理：PDF 履歷結構化、GitHub 程式碼品質分析、候選人檔案產生
 jd-writer	人資	結構化 JD 產生：工作職責、必要/加分技能、職涯路徑、薪資範圍（讀組織階層寫出精準 JD）
+token-quota-log	基礎建設	記錄官方訂閱額度（Claude statusLine 的 5h／每週已用 %、重置時間；Codex 讀 rollout），對照 token 用量算每 1% 額度約多少 token

@@ -11,7 +11,9 @@ probe (see token_usage._file_agg_cached), so this never parses a whole file:
     what was appended since the previous poll)
 
 Account attribution:
-  - Codex rollouts carry `creator_account_id` in session_meta -> exact, per session
+  - Codex rows follow the login sighting that covers them (Codex reloads auth.json,
+    so a session keeps running on a newly logged-in account); the rollout's
+    `creator_account_id` is the fallback where no sighting covers the row
   - Claude Code rows carry no account; they are matched by timestamp against the
     login intervals kept by token_accounts. A row outside every interval has
     account=None (shown as 未判讀) — never guessed from the current login.
@@ -41,6 +43,7 @@ BUCKETS: dict[str, tuple[int, int, int]] = {
 }
 RATE_WINDOW_S = 300  # "current rate" = tokens per minute over the last 5 minutes
 _SEEK_STOP = 1 << 16  # stop the binary search once the range is under 64KB
+_BASELINE_SCAN = 8 << 20  # how far back to look for the counter before the window
 _KEEP_S = BUCKETS["hour"][0] * BUCKETS["hour"][2] + 3600
 
 GROUPS = ("account", "model")
@@ -128,6 +131,38 @@ def _codex_head(f, tail: _Tail, fallback_id: str) -> None:
     tail.session_id = tail.session_id or fallback_id
 
 
+def _codex_baseline(f, offset: int, since: float) -> dict | None:
+    """The cumulative counter just before `since`, read backwards from `offset`.
+
+    _seek_offset lands on a 64KB boundary, so the region between it and the
+    window start may hold counters older than the window; those are consumed
+    as baseline by _read_codex's own time check. Returns {} when the file starts
+    inside the window (count from zero) and None when no counter was found in
+    the scanned tail (fall back to using the first event as baseline).
+    """
+    if offset == 0:
+        return {}
+    pos, carry = offset, b""
+    while pos > 0 and offset - pos < _BASELINE_SCAN:
+        step = min(_SEEK_STOP, pos)
+        pos -= step
+        f.seek(pos)
+        lines = (f.read(step) + carry).split(b"\n")
+        carry = lines[0] if pos > 0 else b""
+        for raw in reversed(lines[1:] if pos > 0 else lines):
+            if b'"token_count"' not in raw:
+                continue
+            try:
+                entry = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            total = ((entry.get("payload") or {}).get("info") or {}).get("total_token_usage")
+            at = _epoch(entry.get("timestamp", ""))
+            if total and at is not None and at < since:
+                return total
+    return None
+
+
 def _read_claude(raw: bytes, tail: _Tail, line_key: str) -> None:
     if b'"usage"' not in raw:
         return
@@ -178,7 +213,8 @@ def _read_codex(raw: bytes, tail: _Tail, line_key: str) -> None:
     delta = _usage_delta(tail.prev_total, total)
     tail.prev_total = total
     cached = delta["cached_input_tokens"]
-    fresh = max(0, delta["input_tokens"] - cached)
+    # OpenAI input_tokens already includes cached and cache-write tokens.
+    fresh = max(0, delta["input_tokens"] - cached - delta["cache_write_input_tokens"])
     output = delta["output_tokens"]
     if fresh == 0 and output == 0 and cached == 0:
         fresh = delta["total_tokens"]
@@ -206,8 +242,8 @@ def _advance(path: Path, kind: str, since: float) -> _Tail | None:
                 if kind == "codex":
                     _codex_head(f, tail, path.stem)
                 tail.offset = _seek_offset(f, st.st_size, since)
-                if kind == "codex" and tail.offset == 0:
-                    tail.prev_total = {}  # whole file is in the window: count from zero
+                if kind == "codex":
+                    tail.prev_total = _codex_baseline(f, tail.offset, since)
                 _TAILS[key] = tail
             reader = _read_codex if kind == "codex" else _read_claude
             f.seek(tail.offset)
@@ -258,6 +294,16 @@ def _collect(since: float) -> dict[str, tuple[str, str, tuple]]:
     return merged
 
 
+def _total(rec: tuple) -> int:
+    """Tokens the model processed: input + output + cache_read + cache_create.
+
+    The four are disjoint for both sources (Codex input is stored net of cached
+    and cache-write), so their sum is comparable across Claude and Codex. Caching
+    changes the price of a token, not whether it was used.
+    """
+    return rec[1] + rec[2] + rec[3] + rec[4]
+
+
 def _zero() -> dict[str, int]:
     return dict.fromkeys((*_FIELDS, "requests"), 0)
 
@@ -279,6 +325,7 @@ def get_timeline(bucket: str = "minute", span: int | None = None,
     with _LOCK:
         merged = _collect(float(start))
     logins = accounts.intervals("claude", float(start))
+    codex_logins = accounts.intervals("codex", float(start))
     names = accounts.labels()
 
     points: dict[int, dict[str, dict[str, int]]] = {
@@ -293,7 +340,10 @@ def get_timeline(bucket: str = "minute", span: int | None = None,
         slot = start + int((at - start) // size) * size
         if slot not in points:
             continue
-        account = codex_account or None if source == "codex" else accounts.account_at(logins, at)
+        if source == "codex":
+            account = accounts.codex_account_at(codex_logins, at, codex_account) or None
+        else:
+            account = accounts.account_at(logins, at)
         account_name = names.get((source, account)) if account else None
         if group == "model":
             series_id, other = f"model:{model}", f"{source}:{account or ''}"
@@ -314,15 +364,16 @@ def get_timeline(bucket: str = "minute", span: int | None = None,
         entry["totals"]["requests"] += 1
         part = entry["breakdown"].setdefault(other, {
             "source": source, "account": account, "label": account_name,
-            "model": model, "tokens": 0, "cache_tokens": 0,
+            "model": model, "tokens": 0, "output": 0, "cache_tokens": 0,
         })
-        part["tokens"] += rec[1] + rec[2]
-        part["cache_tokens"] += rec[3] + rec[4]
+        part["tokens"] += _total(rec)
+        part["output"] += rec[2]
+        part["cache_tokens"] += rec[3]
         if at >= now - RATE_WINDOW_S:
-            recent[series_id] = recent.get(series_id, 0) + rec[1] + rec[2]
+            recent[series_id] = recent.get(series_id, 0) + _total(rec)
 
     series = sorted(meta.values(),
-                    key=lambda m: -(m["totals"]["input"] + m["totals"]["output"]))
+                    key=lambda m: -sum(m["totals"][f] for f in _FIELDS))
     for entry in series:
         entry["tokens_per_minute"] = round(recent.get(entry["id"], 0) / (RATE_WINDOW_S / 60))
         entry["breakdown"] = sorted(entry["breakdown"].values(), key=lambda p: -p["tokens"])
