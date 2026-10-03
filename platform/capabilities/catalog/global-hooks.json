@@ -29,5 +29,9 @@
       "command": "~/.claude/skills/context-journal/scripts/journal-compact-reminder-hook.sh",
       "why": "context-journal: two-tier context nudge — over .compact-threshold suggest /compact, over .restart-threshold suggest handoff + a fresh session. Tunable via ~/.claude/session-logs/.*-threshold."
     }
-  ]
+  ],
+  "statusLine": {
+    "command": "~/.claude/skills/token-quota-log/scripts/statusline-quota.py",
+    "why": "token-quota-log: show 5h / weekly quota and append every change to ~/.claude/usage-quota/claude-rate-limits.jsonl — the only local record of the Claude quota, read by dashboard /tokens 帳號與額度."
+  }
 }
