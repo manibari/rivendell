@@ -110,6 +110,14 @@
       "expect": "system-design"
     },
     {
+      "phrase": "超過 20 個檔",
+      "expect": "dev-size-gate"
+    },
+    {
+      "phrase": "資料夾分類",
+      "expect": "dev-size-gate"
+    },
+    {
       "phrase": "先把架構定下來",
       "expect": "system-design"
     },

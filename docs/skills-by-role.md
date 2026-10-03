@@ -71,7 +71,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` → `gstack-investigate` (gstack，bug 才要) → `system-design`（動到 schema / 跨模組傳遞 / 新增 store 時 HARD GATE；純內部邏輯小改由它自己判 Skip）｜ 視情況：`backend-async-jobs`（慢工作先決定同步 / job / pipeline）、`spine-rbac`（權限先選 tier） | 先找根因再動手；沒畫面也要有 SA/SD —— 它產出的 target 功能關係圖就是事後 `qa-dataflow` 的對照基準 |
-| Do | 對應功能的那一支 ｜ 視情況：`spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `large-file-refactor`（500 行以上）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 一次只會用到其中一兩支，看功能是什麼 |
+| Do | 對應功能的那一支 ｜ 視情況：`spine-auth` · `rbac-permissions` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `dev-size-gate`（資料夾直接放超過 20 檔要歸納、檔案超過 800 行要拆；CI 守衛＋拆檔步驟）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 一次只會用到其中一兩支，看功能是什麼 |
 | Check | `qa-testing` → `gstack-review` (gstack) ｜ 視情況：`qa-dataflow`（資料流反證）、`gstack-codex` (gstack，第二意見)、`repro-exam`（要給人標準考題） | |
 | Act | `deploy` → `gstack-canary` (gstack) ｜ 視情況：`gstack-benchmark` (gstack，動到請求路徑) ｜ 自動：`doc-drift-sync` | |
 
@@ -114,7 +114,7 @@
 | Plan | `task-brief` · `github-repo-audit` | 完成定義要是「看得到證據」；先打 repo 健康分 |
 | Do | `qa-dataflow` · `skill-apply` | 畫地圖 → 拔依賴反證 → 只釘重要接縫；有 `docs/design/*-sd.md` 就拿它的 §6 target 圖當對照，不要重畫；拿外部 skill 集當 review 鏡片 |
 | Check | `chart-design` 的 `check-html-figure.mjs` · `de-slopify`（報告給人看時） | 功能關係圖的機械檢查；報告文字 |
-| Act | `qa-dataflow` gap-report（含「不要動壞的東西」）· `large-file-refactor`（建議）· `doc-drift-sync` | 落差報告交回開發者；文件對齊 |
+| Act | `qa-dataflow` gap-report（含「不要動壞的東西」）· `dev-size-gate`（建議）· `doc-drift-sync` | 落差報告交回開發者；文件對齊 |
 
 ### 2b 功能完成後的 QA
 

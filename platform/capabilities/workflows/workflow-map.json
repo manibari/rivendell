@@ -112,9 +112,9 @@
       "source": "local",
       "desc": "三層記憶系統：結構化實體知識圖"
     },
-    "large-file-refactor": {
+    "dev-size-gate": {
       "source": "local",
-      "desc": "系統性拆分大型單檔元件"
+      "desc": "大小守衛：資料夾超過 20 檔要歸納、檔案超過 800 行要拆（含拆檔步驟）"
     },
     "agent-launchd": {
       "source": "local",
@@ -1449,7 +1449,7 @@
       "icon": "✅",
       "skills": [
         "de-slopify",
-        "large-file-refactor",
+        "dev-size-gate",
         "qa-auto",
         "qa-planner",
         "qa-testing",

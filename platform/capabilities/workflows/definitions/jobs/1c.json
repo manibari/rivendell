@@ -43,7 +43,7 @@
       "gate": null
     },
     {
-      "text": "對應功能的那一支 ｜ 視情況：spine-auth · rbac-permissions · db-migration · sqlite-to-postgres · vector-search-setup · imap-smtp-integration · oauth-token-vault · telegram-bot · mcp-builder · firebase-backend · audio-transcription-flow · ai-vision-extract · large-file-refactor（500 行以上）· concurrent-session-git（多 session 共用 tree）· resolving-merge-conflicts（卡衝突）· agent-dispatch（3 個以上獨立問題）｜ 自動：gstack-careful (gstack，破壞性指令前)",
+      "text": "對應功能的那一支 ｜ 視情況：spine-auth · rbac-permissions · db-migration · sqlite-to-postgres · vector-search-setup · imap-smtp-integration · oauth-token-vault · telegram-bot · mcp-builder · firebase-backend · audio-transcription-flow · ai-vision-extract · dev-size-gate（資料夾直接放超過 20 檔要歸納、檔案超過 800 行要拆；CI 守衛＋拆檔步驟）· concurrent-session-git（多 session 共用 tree）· resolving-merge-conflicts（卡衝突）· agent-dispatch（3 個以上獨立問題）｜ 自動：gstack-careful (gstack，破壞性指令前)",
       "gaps": [],
       "stage": "Do",
       "note": "一次只會用到其中一兩支，看功能是什麼",
@@ -112,7 +112,7 @@
         },
         {
           "source": "rivendell",
-          "name": "large-file-refactor",
+          "name": "dev-size-gate",
           "mode": "conditional"
         },
         {

@@ -166,8 +166,8 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **de-slopify** | `/de-slopify` 或自動 | 移除 AI 生成「廢文」痕跡，讓文本讀起來像人寫的 |
+| **dev-size-gate** | 自動 | Size is a signal, meaning is the reason (Yellow-Chick D37 |
 | **github-repo-audit** | `/github-repo-audit` 或自動 | Audit a GitHub repository for structure quality, documentation coverage |
-| **large-file-refactor** | 自動 | Systematically split large single-file components (500+ lines) into modular |
 | **protect-secrets** | Hook (PreToolUse) | 攔截讀取/修改 .env、private keys、credentials 等敏感檔案 |
 | **say-it-plain** | `/say-it-plain` 或自動 | 把「講不清、抓不到重點、要人一問再問」的中文重寫成人能秒懂的版本——結論先行 |
 
@@ -302,7 +302,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 5 | 5 |
-| dev | 21 | 21 | 8 | 8 |
+| dev | 21 | 21 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 
 

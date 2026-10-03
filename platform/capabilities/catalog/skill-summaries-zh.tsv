@@ -73,7 +73,7 @@ security-review	品質	全面安全檢查清單：auth、input validation、secr
 protect-secrets	品質	PreToolUse hook，阻擋讀寫 .env、私鑰、credentials 等機密檔案
 systematic-debugging	品質	四階段除錯框架：觀察 → 假設 → 驗證 → 修復，禁止跳到答案
 github-repo-audit	品質	GitHub repo 健康度審計：結構、文件覆蓋、CI/CD、相依性、code hygiene，產出可行動評分報告
-large-file-refactor	品質	系統化拆分 500+ 行單一檔案：保持介面相容、模組化、介面測試
+dev-size-gate	品質	大小守衛（D37）：資料夾直接放超過 20 檔要照意義分組、程式檔超過 800 行要拆；CI 檢查＋只准變短的舊帳清單＋拆檔步驟（併入原 large-file-refactor）
 
 # === 工作流 / 規劃 ===
 autoresearch	工作流	自主迭代迴圈：定義目標 + 指標 + 驗證指令，agent 自動 modify → verify → keep/discard

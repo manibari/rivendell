@@ -74,7 +74,7 @@
       "gate": null
     },
     {
-      "text": "qa-dataflow gap-report（含「不要動壞的東西」）· large-file-refactor（建議）· doc-drift-sync",
+      "text": "qa-dataflow gap-report（含「不要動壞的東西」）· dev-size-gate（建議）· doc-drift-sync",
       "gaps": [],
       "stage": "Act",
       "note": "落差報告交回開發者；文件對齊",
@@ -88,7 +88,7 @@
         },
         {
           "source": "rivendell",
-          "name": "large-file-refactor",
+          "name": "dev-size-gate",
           "mode": "core"
         },
         {
