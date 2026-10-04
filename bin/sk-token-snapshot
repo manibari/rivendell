@@ -57,6 +57,11 @@ for d in full.daily:
         proj_days += 1
 
 print(f"{count} {proj_days}")
+
+# Per-account split (token_account_daily): the only record of which account
+# used what once the JSONLs rotate. A week back covers missed nights.
+from lib.tokens_account_daily import snapshot as account_snapshot
+account_snapshot(days_back=7)
 PY
 )
 

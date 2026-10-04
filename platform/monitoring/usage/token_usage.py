@@ -192,6 +192,12 @@ def upsert_daily_usage(usage: DailyUsage) -> None:
 
     Idempotent: re-running for the same date overwrites. Caller decides
     which days to snapshot (typically: every completed day except today).
+
+    Never shrinks a day (2026-10-05): once some of a day's session files have
+    rotated away, the re-parse is smaller than the truth, and the nightly
+    snapshot used to overwrite the complete figure with it. A row is only
+    replaced when the new tokens_total is at least the stored one; to force a
+    correction downward, delete the row first.
     """
     import sqlite3
     db_path = _history_db_path()
@@ -221,6 +227,7 @@ def upsert_daily_usage(usage: DailyUsage) -> None:
                 tokens_total=excluded.tokens_total,
                 cost_usd=excluded.cost_usd,
                 details_json=excluded.details_json
+            WHERE excluded.tokens_total >= token_usage.tokens_total
         """, (usage.date, usage.sessions, usage.messages,
               usage.tokens_total, usage.cost_usd, details))
         conn.commit()
