@@ -13,6 +13,16 @@ interface QuotaReading {
   reset_since_read: boolean;
 }
 
+interface Advice {
+  status: "usable" | "blocked" | "unknown";
+  rank: number | null;
+  blocked_by?: "week" | "session" | null;
+  blocked_until?: number | null;
+  rate_per_hour?: number | null;
+  exhaust_at?: number | null;
+  pace_per_day?: number | null;
+}
+
 interface QuotaAccount {
   source: Source;
   account_id: string | null;
@@ -21,6 +31,7 @@ interface QuotaAccount {
   first_seen: number;
   last_seen: number;
   quota: Record<string, QuotaReading>; // key = window length in minutes
+  advice: Advice;
 }
 
 interface QuotaWindow {
@@ -29,6 +40,7 @@ interface QuotaWindow {
   label: string | null;
   window_min: number;
   resets_at: number;
+  reset_exact: number | null;
   plan: string;
   first_at: number;
   last_at: number;
@@ -48,6 +60,7 @@ interface QuotaData {
   computed_at: number | null;
   error: string | null;
   claude_log_present: boolean;
+  hidden_idle_accounts: number;
   accounts: QuotaAccount[];
   windows: QuotaWindow[];
 }
@@ -68,6 +81,14 @@ const who = (source: Source, label: string | null, id: string | null) =>
   `${SOURCE_NAME[source]} · ${label ?? (id ? id.slice(0, 8) : "帳號未判讀")}`;
 
 const cell = "px-3 py-2 font-mono tabular-nums";
+
+// Display order only: per source, ranked first, then blocked (soonest free), then unknown.
+const STATUS_ORDER = { usable: 0, blocked: 1, unknown: 2 } as const;
+const byAdvice = (x: QuotaAccount, y: QuotaAccount) =>
+  x.source.localeCompare(y.source)
+  || STATUS_ORDER[x.advice.status] - STATUS_ORDER[y.advice.status]
+  || (x.advice.rank ?? 0) - (y.advice.rank ?? 0)
+  || (x.advice.blocked_until ?? 0) - (y.advice.blocked_until ?? 0);
 const head = (text: string, align: "left" | "right" = "left") => (
   <th className={`px-3 py-2 text-${align}`} style={{ fontSize: 11, fontWeight: 500, color: "var(--text-muted)" }}>
     {text}
@@ -77,6 +98,68 @@ const head = (text: string, align: "left" | "right" = "left") => (
 // Used up = the quota ran out and has not reset since; the whole reading turns red.
 const usedUp = (q?: QuotaReading) => !!q && !q.reset_since_read && q.remaining_percent <= 0;
 const ERR = "var(--status-err)";
+
+const BLOCKED_BY = { week: "週額度用完", session: "session 用完" } as const;
+
+// The backend ranks; this only words it. Rank 1 per source is the one to use now.
+function AdviceBadge({ a }: { a: QuotaAccount }) {
+  const adv = a.advice;
+  if (adv.status === "usable" && adv.rank === 1) {
+    return <span style={{ color: "var(--accent)", fontWeight: 600, whiteSpace: "nowrap" }}>優先用</span>;
+  }
+  if (adv.status === "usable") {
+    return <span style={{ color: "var(--text-muted)", whiteSpace: "nowrap" }}>第 {adv.rank} 順位</span>;
+  }
+  if (adv.status === "blocked" && adv.blocked_until) {
+    return (
+      <span style={{ color: "var(--status-warn)", whiteSpace: "nowrap" }}>
+        等到 {stamp(adv.blocked_until)}
+        <br />
+        <span style={{ fontSize: 11 }}>{BLOCKED_BY[adv.blocked_by ?? "week"]}</span>
+      </span>
+    );
+  }
+  return <span style={{ color: TEXT_SUBTLE }}>—</span>;
+}
+
+function Outlook({ adv }: { adv: Advice }) {
+  if (adv.status === "unknown") return null;
+  if (adv.exhaust_at) {
+    return (
+      <div style={{ fontSize: 11, color: "var(--status-warn)", whiteSpace: "nowrap" }}>
+        照目前速度 {stamp(adv.exhaust_at)} 用完
+        {adv.pace_per_day ? `；撐到重置每天 ${adv.pace_per_day}%` : ""}
+      </div>
+    );
+  }
+  if (adv.pace_per_day && adv.status === "usable") {
+    return <div style={{ fontSize: 11, color: TEXT_SUBTLE, whiteSpace: "nowrap" }}>撐到重置每天可用 {adv.pace_per_day}%</div>;
+  }
+  return null;
+}
+
+function Summary({ accounts }: { accounts: QuotaAccount[] }) {
+  const lines = (["claude", "codex"] as Source[]).map((source) => {
+    const mine = accounts.filter((a) => a.source === source && a.advice.status !== "unknown");
+    if (mine.length === 0) return null;
+    const first = mine.find((a) => a.advice.rank === 1);
+    if (first) {
+      return `${SOURCE_NAME[source]}：用 ${first.label ?? first.account_id?.slice(0, 8)}`;
+    }
+    const next = mine
+      .filter((a) => a.advice.blocked_until)
+      .sort((x, y) => (x.advice.blocked_until ?? 0) - (y.advice.blocked_until ?? 0))[0];
+    return next
+      ? `${SOURCE_NAME[source]}：全部被擋住，最早 ${stamp(next.advice.blocked_until!)} ${next.label ?? ""} 可用`
+      : null;
+  }).filter(Boolean);
+  if (lines.length === 0) return null;
+  return (
+    <p className="mb-2" style={{ fontSize: 13, color: "var(--text)" }}>
+      <span style={{ fontWeight: 600 }}>建議：</span>{lines.join("　·　")}
+    </p>
+  );
+}
 
 function RemainingBar({ q }: { q: QuotaReading }) {
   const color = q.remaining_percent <= 10 ? "var(--status-err)"
@@ -136,39 +219,54 @@ export default function QuotaPanel() {
       {err && <p style={{ fontSize: 12, color: "var(--status-err)" }}>讀不到額度：{err}</p>}
       {data?.error && <p style={{ fontSize: 12, color: "var(--status-err)" }}>重算失敗：{data.error}</p>}
 
+      {data && <Summary accounts={data.accounts} />}
+
       {data && (
         <div className="overflow-x-auto rounded" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
           <table className="w-full" style={{ fontSize: 12 }}>
             <thead style={{ borderBottom: "1px solid var(--border)" }}>
               <tr>
+                {head("建議")}
                 {head("帳號")}
                 {head("方案")}
                 {head("首次 / 最後使用")}
                 {head("週額度已用", "right")}
                 {head("週額度餘量")}
                 {head("額度更新（重置）")}
-                {head("5 小時餘量", "right")}
+                {head("目前 session（5 小時）", "right")}
+                {head("session 重置")}
                 {head("讀數時間")}
               </tr>
             </thead>
             <tbody>
-              {data.accounts.map((a) => {
+              {[...data.accounts].sort(byAdvice).map((a) => {
                 const w = a.quota[WEEK];
                 const h = a.quota[FIVE_HOUR];
                 const red = usedUp(w) ? { color: ERR, fontWeight: 600 } : undefined;
                 return (
                   <tr key={`${a.source}:${a.account_id}`} style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
+                    <td className={cell}><AdviceBadge a={a} /></td>
                     <td className={cell}>{who(a.source, a.label, a.account_id)}</td>
                     <td className={cell}>{a.plan || "—"}</td>
-                    <td className={cell}>{stamp(a.first_seen)} → {stamp(a.last_seen)}</td>
+                    <td className={cell} style={{ whiteSpace: "nowrap" }}>
+                      {stamp(a.first_seen)}
+                      <br />→ {stamp(a.last_seen)}
+                    </td>
                     <td className={`${cell} text-right`} style={red}>{w ? `${w.used_percent.toFixed(0)}%` : "—"}</td>
-                    <td className={cell}>{w ? <RemainingBar q={w} /> : "無讀數"}</td>
+                    <td className={cell}>
+                      {w ? <RemainingBar q={w} /> : "無讀數"}
+                      <Outlook adv={a.advice} />
+                    </td>
                     <td className={cell} style={red}>
                       {w ? stamp(w.resets_at) : "—"}
                       {w?.reset_since_read && <span style={{ color: TEXT_SUBTLE }}>（已重置，待新讀數）</span>}
                     </td>
-                    <td className={`${cell} text-right`} style={usedUp(h) ? { color: ERR, fontWeight: 600 } : undefined}>
-                      {h ? `${h.remaining_percent.toFixed(0)}%` : "—"}
+                    <td className={`${cell} text-right`} style={{ whiteSpace: "nowrap", ...(usedUp(h) ? { color: ERR, fontWeight: 600 } : {}) }}>
+                      {h ? `已用 ${h.used_percent.toFixed(0)}% · 剩 ${h.remaining_percent.toFixed(0)}%` : "—"}
+                    </td>
+                    <td className={cell} style={usedUp(h) ? { color: ERR, fontWeight: 600 } : undefined}>
+                      {h ? stamp(h.resets_at) : "—"}
+                      {h?.reset_since_read && <span style={{ color: TEXT_SUBTLE }}>（已重置，待新讀數）</span>}
                     </td>
                     <td className={cell} style={{ color: TEXT_SUBTLE }}>{w ? stamp(w.read_at) : "—"}</td>
                   </tr>
@@ -202,7 +300,7 @@ export default function QuotaPanel() {
                 {weekly.map((w) => (
                   <tr key={`${w.source}:${w.account_id}:${w.resets_at}`} style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
                     <td className={cell}>{who(w.source, w.label, w.account_id || null)}</td>
-                    <td className={cell}>{stamp(w.resets_at)}</td>
+                    <td className={cell}>{stamp(w.reset_exact ?? w.resets_at)}</td>
                     <td className={`${cell} text-right`}>{w.used_from.toFixed(0)}% → {w.used_to.toFixed(0)}%</td>
                     <td className={`${cell} text-right`}>{millions(w.tokens)}</td>
                     <td className={`${cell} text-right`}>{millions(w.cache_read)}</td>
@@ -220,6 +318,8 @@ export default function QuotaPanel() {
       <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
         額度是官方讀數：Codex 取自 rollout 的 rate_limits；Claude 取自 statusLine（token-quota-log），只有裝好之後才有紀錄。
         「每 1% 約」＝該週期第一筆到最後一筆讀數之間，本機記到的總用量 ÷ 額度上升的百分點；同帳號在別台機器或網頁用的部分本機看不到，會讓數字偏低。
+        「建議」：同一個來源裡，先用週額度最快重置、還有剩的帳號（重置後沒用完的就作廢）；被週額度或 5 小時 session 擋住的排後面。
+        超過 30 天沒用的帳號不列出{data?.hidden_idle_accounts ? `（目前隱藏 ${data.hidden_idle_accounts} 個）` : ""}，資料保留，再用到會自動出現。
         {data && !data.claude_log_present && " 目前還沒有 Claude 額度紀錄：執行 sk deploy 與 sk hooks install 後重開 Claude Code。"}
       </p>
     </section>

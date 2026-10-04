@@ -27,13 +27,16 @@ CLAUDE_CONFIG = Path.home() / ".claude.json"
 WINDOWS = ("five_hour", "seven_day")
 
 
-def _account() -> tuple[str, str]:
+def _account() -> tuple[str, str, str]:
+    """(account id, email, plan). Plan is the rate-limit tier, e.g. claude_max_5x."""
     try:
         account = json.loads(CLAUDE_CONFIG.read_text()).get("oauthAccount") or {}
     except (OSError, json.JSONDecodeError):
-        return "", ""
+        return "", "", ""
     account_id = account.get("accountUuid") or ""
-    return account_id, account.get("emailAddress") or account_id[:8]
+    tier = account.get("organizationRateLimitTier") or account.get("organizationType") or ""
+    plan = tier[len("default_"):] if tier.startswith("default_") else tier
+    return account_id, account.get("emailAddress") or account_id[:8], plan
 
 
 def _limits(data: dict) -> dict:
@@ -47,9 +50,9 @@ def _limits(data: dict) -> dict:
     return out
 
 
-def _log(account_id: str, label: str, limits: dict) -> None:
+def _log(account_id: str, label: str, plan: str, limits: dict) -> None:
     """Append only when the reading differs from the last one for this account."""
-    signature = {"account_id": account_id, "limits": limits}
+    signature = {"account_id": account_id, "plan": plan, "limits": limits}
     try:
         last = json.loads(LAST_FILE.read_text())
     except (OSError, json.JSONDecodeError):
@@ -58,7 +61,7 @@ def _log(account_id: str, label: str, limits: dict) -> None:
         return
     QUOTA_DIR.mkdir(parents=True, exist_ok=True)
     row = {"ts": round(time.time(), 3), "account_id": account_id, "label": label,
-           "limits": limits}
+           "plan": plan, "limits": limits}
     with QUOTA_LOG.open("a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
     last[account_id] = signature
@@ -87,9 +90,9 @@ def main() -> None:
         data = {}
     limits = _limits(data)
     if limits:
-        account_id, label = _account()
+        account_id, label, plan = _account()
         try:
-            _log(account_id, label, limits)
+            _log(account_id, label, plan, limits)
         except OSError:
             pass  # a full disk must not blank the status line
     print(_text(data, limits))

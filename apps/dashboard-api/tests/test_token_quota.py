@@ -109,7 +109,7 @@ class QuotaTest(unittest.TestCase):
         q = a["quota"]["10080"]
         self.assertEqual((a["source"], a["account_id"]), ("codex", "acct-1"))
         self.assertEqual((q["used_percent"], q["remaining_percent"]), (84, 16))
-        self.assertEqual(q["resets_at"], quota._hour(resets))
+        self.assertEqual(q["resets_at"], resets)  # the server's exact time, not the hour key
         self.assertFalse(q["reset_since_read"])
         # after the reset time passes the quota is full again until a new reading
         later = quota.get_quota(resets + 2 * HOUR)["accounts"][0]["quota"]["10080"]
@@ -134,6 +134,19 @@ class QuotaTest(unittest.TestCase):
         self.assertEqual(w["tokens_per_percent"], 117)  # (2 + 12 + 200 + 20) / 2
         self.assertEqual(w["label"], "a@b.c")
         self.assertTrue(result["claude_log_present"])
+
+    def test_claude_session_window_reports_its_exact_reset(self) -> None:
+        session_reset = self.now + 2 * HOUR + 1234
+        self.log.write_text(json.dumps({"ts": self.now - 60, "account_id": "u-1",
+                                        "plan": "claude_max_5x", "limits": {
+            "five_hour": {"used_percentage": 56, "resets_at": session_reset},
+            "seven_day": {"used_percentage": 54, "resets_at": self.now + 86400}}}) + "\n")
+        quota.refresh(self.now)
+        q = quota.get_quota(self.now)["accounts"][0]["quota"]
+        self.assertEqual((q["300"]["used_percent"], q["300"]["remaining_percent"]), (56, 44))
+        self.assertEqual(q["300"]["resets_at"], session_reset)
+        self.assertEqual(q["10080"]["used_percent"], 54)
+        self.assertEqual(quota.get_quota(self.now)["accounts"][0]["plan"], "claude_max_5x")
 
     def test_a_closed_claude_window_keeps_its_stored_tokens(self) -> None:
         resets = self.now + HOUR
@@ -167,8 +180,19 @@ class QuotaTest(unittest.TestCase):
         accts = {a["label"]: a for a in quota.get_quota(self.now)["accounts"]}
         self.assertEqual(accts["one@x.y"]["quota"]["10080"]["used_percent"], 100)
         self.assertEqual(accts["two@x.y"]["quota"]["10080"]["used_percent"], 1)
-        self.assertEqual(accts["two@x.y"]["quota"]["10080"]["resets_at"],
-                         quota._hour(self.now + 5 * 86400))
+        self.assertEqual(accts["two@x.y"]["quota"]["10080"]["resets_at"], self.now + 5 * 86400)
+
+    def test_accounts_idle_over_a_month_are_not_listed(self) -> None:
+        old = self.now - 40 * 86400
+        (self.codex / "old.jsonl").write_text(
+            codex_meta("acct-old") + codex_event(old, 100, 0, 1, 5, old + 86400))
+        (self.codex / "new.jsonl").write_text(
+            codex_meta("acct-new") + codex_event(self.now - 60, 100, 0, 1, 5, self.now + 86400))
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        self.assertEqual([a["account_id"] for a in result["accounts"]], ["acct-new"])
+        self.assertEqual(result["hidden_idle_accounts"], 1)
+        self.assertEqual(result["accounts"][0]["advice"]["rank"], 1)
 
     def test_no_logs_gives_an_empty_answer(self) -> None:
         quota.refresh(self.now)

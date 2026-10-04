@@ -29,13 +29,14 @@ import json
 import sqlite3
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 from lib import tokens_accounts as accounts
 from lib.tokens import PROJECTS_DIR, _history_db_path
 from lib.tokens_codex import CODEX_SESSION_DIRS, _usage_delta
+from lib.tokens_quota_advice import advise
 from lib.tokens_timeline import _epoch, _seek_offset
 
 CLAUDE_QUOTA_LOG = Path.home() / ".claude" / "usage-quota" / "claude-rate-limits.jsonl"
@@ -43,6 +44,7 @@ CLAUDE_WINDOWS = {"five_hour": 300, "seven_day": 10080}
 WEEK_MIN = 10080
 CLAUDE_LOOKBACK_S = 8 * 86400   # never parse Claude logs further back than this
 REFRESH_S = 60
+IDLE_HIDE_S = 30 * 86400   # an account unused this long is not listed
 _FIELDS = ("input", "output", "cache_read", "cache_create")
 
 
@@ -51,10 +53,11 @@ class Reading:
     source: str
     account: str
     window_min: int
-    resets_at: int     # rounded to the hour: the server jitters it by seconds
+    resets_at: int     # rounded to the hour: the window key (server jitters it by seconds)
     at: float
     used: float
     plan: str = ""
+    reset_exact: float = 0.0   # the server's own value, for display
 
 
 @dataclass
@@ -94,9 +97,14 @@ def _connect() -> sqlite3.Connection:
             output INTEGER NOT NULL,
             cache_read INTEGER NOT NULL,
             cache_create INTEGER NOT NULL,
+            reset_exact REAL,
             PRIMARY KEY (source, account_id, window_min, resets_at)
         )
     """)
+    # Added after the table first shipped (2026-10-04); older DBs lack it.
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(token_quota_window)")}
+    if "reset_exact" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN reset_exact REAL")
     return conn
 
 
@@ -139,7 +147,7 @@ def _parse_codex(path: Path) -> tuple[list[Reading], list[tuple]]:
                 readings.append(Reading(
                     "codex", account, int(primary.get("window_minutes") or 0),
                     _hour(primary["resets_at"]), at, float(primary["used_percent"]),
-                    limits.get("plan_type") or ""))
+                    limits.get("plan_type") or "", float(primary["resets_at"])))
     return readings, usage
 
 
@@ -174,8 +182,8 @@ def _codex_all() -> tuple[list[Reading], list[tuple]]:
         return readings, usage
     since = min([r.at for r in readings] + [u[0] for u in usage])
     spans = accounts.intervals("codex", since)
-    readings = [Reading(r.source, accounts.codex_account_at(spans, r.at, r.account),
-                        r.window_min, r.resets_at, r.at, r.used, r.plan) for r in readings]
+    readings = [replace(r, account=accounts.codex_account_at(spans, r.at, r.account))
+                for r in readings]
     usage = [(u[0], accounts.codex_account_at(spans, u[0], u[1]), *u[2:]) for u in usage]
     return readings, usage
 
@@ -199,7 +207,8 @@ def _claude_readings() -> list[Reading]:
                 continue
             out.append(Reading("claude", row.get("account_id") or "", window_min,
                                _hour(limit["resets_at"]), float(row["ts"]),
-                               float(limit["used_percentage"])))
+                               float(limit["used_percentage"]), row.get("plan") or "",
+                               reset_exact=float(limit["resets_at"])))
     return out
 
 
@@ -283,7 +292,8 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
                     sums[name] += value
         out.append({
             "source": source, "account_id": account, "window_min": window_min,
-            "resets_at": resets_at, "plan": last.plan, "first_at": first.at,
+            "resets_at": resets_at, "reset_exact": last.reset_exact or resets_at,
+            "plan": last.plan, "first_at": first.at,
             "last_at": last.at, "used_from": first.used, "used_to": last.used,
             "readings": len(rs), **sums,
         })
@@ -294,7 +304,8 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
     """Upsert window rows. `replace_source` drops that source's rows first: Codex
     is recomputed from its full history each time, so a row whose attribution
     changed must not linger under the old account."""
-    cols = ("source", "account_id", "window_min", "resets_at", "plan", "first_at", "last_at",
+    cols = ("source", "account_id", "window_min", "resets_at", "reset_exact", "plan",
+            "first_at", "last_at",
             "used_from", "used_to", "readings", *_FIELDS)
     with _connect() as conn:
         if replace_source:
@@ -362,12 +373,15 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
         a["last_seen"] = max(a["last_seen"], w["last_at"])
         latest = a["quota"].get(str(w["window_min"]))
         if latest is None or w["last_at"] > latest["read_at"]:
-            reset = w["resets_at"] <= now
+            exact = w.get("reset_exact") or w["resets_at"]
+            reset = exact <= now
             a["quota"][str(w["window_min"])] = {
                 "used_percent": 0.0 if reset else w["used_to"],
                 "remaining_percent": 100.0 if reset else max(0.0, 100 - w["used_to"]),
-                "resets_at": w["resets_at"], "read_at": w["last_at"],
+                "resets_at": exact, "read_at": w["last_at"],
                 "reset_since_read": reset,
+                # where this window's readings start, for the burn rate
+                "window_first_at": w["first_at"], "window_used_from": w["used_from"],
             }
             if w["plan"]:
                 a["plan"] = w["plan"]
@@ -383,12 +397,17 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
         w["tokens"] = tokens
         w["label"] = names.get((w["source"], w["account_id"])) if w["account_id"] else None
         w["tokens_per_percent"] = round(tokens / moved) if moved > 0 else None
+    # Accounts idle for over a month are left off the panel and the advice;
+    # their data stays, so using one again brings it straight back.
+    shown = [a for a in acct.values() if a["last_seen"] >= now - IDLE_HIDE_S]
+    advise(shown, now)
     return {
         "generated_at": int(now),
         "computed_at": _state["computed_at"],
         "error": _state["error"],
         "claude_log_present": CLAUDE_QUOTA_LOG.exists(),
-        "accounts": sorted(acct.values(), key=lambda a: -a["last_seen"]),
+        "hidden_idle_accounts": len(acct) - len(shown),
+        "accounts": sorted(shown, key=lambda a: -a["last_seen"]),
         "windows": windows,
     }
 
