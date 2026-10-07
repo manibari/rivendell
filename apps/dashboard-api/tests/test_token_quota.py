@@ -201,5 +201,189 @@ class QuotaTest(unittest.TestCase):
         self.assertFalse(result["claude_log_present"])
 
 
+class StepEstimateTest(QuotaTest):
+    """step_tokens_per_percent: median of single 1% steps, not the whole window."""
+
+    def codex_steps(self, steps: list[tuple], resets: float, extra: str = "") -> None:
+        """steps: (at, total_in, used) cumulative, each 1% above the previous."""
+        events = codex_meta("acct-1")
+        for at, total_in, used in steps:
+            events += codex_event(at, total_in, 0, 0, used, resets)
+        (self.codex / "r.jsonl").write_text(events + extra)
+
+    def test_six_one_percent_steps_with_equal_tokens(self) -> None:
+        resets = self.now + 3 * 86400
+        self.codex_steps([(self.now - 60 + i * 10, 1000 * i, 10 + i) for i in range(7)], resets)
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual(w["clean_steps"], 6)
+        self.assertEqual(w["step_tokens_per_percent"], 1000)
+        self.assertEqual(w["tokens_per_percent"], 1000)
+        self.assertEqual(w["local_percent"], 6.0)      # 6000 tokens / 1000 per 1%
+        self.assertEqual(w["other_percent"], 0.0)
+
+    def test_a_five_percent_jump_with_no_local_tokens_counts_as_other(self) -> None:
+        resets = self.now + 3 * 86400
+        # the jump lands after the last reading: same cumulative totals, so the
+        # local logs show no tokens for it
+        jump = codex_event(self.now - 60 + 7 * 10, 6000, 0, 0, 21, resets)
+        self.codex_steps([(self.now - 60 + i * 10, 1000 * i, 10 + i) for i in range(7)],
+                         resets, extra=jump)
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual((w["used_from"], w["used_to"]), (10, 21))
+        self.assertEqual(w["clean_steps"], 6)   # the 5% jump is not a clean step
+        self.assertEqual(w["step_tokens_per_percent"], 1000)
+        self.assertEqual(w["tokens_per_percent"], 545)  # 6000 / 11, the old average
+        self.assertEqual(w["local_percent"], 6.0)
+        self.assertAlmostEqual(w["other_percent"], 5.0, delta=0.5)
+
+    def test_stale_readings_only_count_new_highs(self) -> None:
+        resets = self.now + 3 * 86400
+        # 10, 11, 10, 11, 12: the dips and repeats are stale, only 10->11 and
+        # 11->12 are steps
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1")
+            + codex_event(self.now - 50, 0, 0, 0, 10, resets)
+            + codex_event(self.now - 40, 1000, 0, 0, 11, resets)
+            + codex_event(self.now - 30, 2000, 0, 0, 10, resets)
+            + codex_event(self.now - 20, 3000, 0, 0, 11, resets)
+            + codex_event(self.now - 10, 4000, 0, 0, 12, resets))
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual(w["clean_steps"], 2)
+        self.assertIsNone(w["step_tokens_per_percent"])
+        self.assertIsNone(w["local_percent"])
+        self.assertIsNone(w["other_percent"])
+
+    def test_fewer_than_five_clean_steps_gives_none(self) -> None:
+        resets = self.now + 3 * 86400
+        self.codex_steps([(self.now - 20 + i * 10, 1000 * i, 10 + i) for i in range(3)], resets)
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual(w["clean_steps"], 2)
+        self.assertIsNone(w["step_tokens_per_percent"])
+        self.assertIsNone(w["local_percent"])
+        self.assertIsNone(w["other_percent"])
+
+    def test_a_pre_migration_db_gets_the_new_columns_on_connect(self) -> None:
+        import sqlite3
+        db = self.root / "test.db"
+        conn = sqlite3.connect(db)
+        conn.execute("""
+            CREATE TABLE token_quota_window (
+                source TEXT NOT NULL, account_id TEXT NOT NULL,
+                window_min INTEGER NOT NULL, resets_at INTEGER NOT NULL,
+                plan TEXT NOT NULL DEFAULT '', first_at REAL NOT NULL,
+                last_at REAL NOT NULL, used_from REAL NOT NULL, used_to REAL NOT NULL,
+                readings INTEGER NOT NULL, input INTEGER NOT NULL,
+                output INTEGER NOT NULL, cache_read INTEGER NOT NULL,
+                cache_create INTEGER NOT NULL,
+                PRIMARY KEY (source, account_id, window_min, resets_at))""")
+        conn.close()
+        resets = self.now + 3 * 86400
+        self.codex_steps([(self.now - 60 + i * 10, 1000 * i, 10 + i) for i in range(7)], resets)
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual((w["clean_steps"], w["step_tokens_per_percent"]), (6, 1000))
+
+
+def limit_hit_event(at: float, kind: str = "task_complete",
+                    info: str = "usage_limit_exceeded") -> str:
+    return json.dumps({"timestamp": iso(at), "type": "event_msg", "payload": {
+        "type": kind,
+        "error": {"message": "You've hit your usage limit.",
+                  "codex_error_info": info}}}) + "\n"
+
+
+def quota_setup() -> tuple:
+    """Same patches as QuotaTest.setUp, without a test case to subclass."""
+    tmp = tempfile.TemporaryDirectory()
+    root = Path(tmp.name)
+    claude = root / "claude" / "proj"
+    codex = root / "codex"
+    claude.mkdir(parents=True)
+    codex.mkdir()
+    log = root / "claude-rate-limits.jsonl"
+    quota._codex_cache.clear()
+    quota._claude_tails.clear()
+    db = root / "test.db"
+    patches = [
+        patch.object(quota, "PROJECTS_DIR", root / "claude"),
+        patch.object(quota, "CODEX_SESSION_DIRS", (codex,)),
+        patch.object(quota, "CLAUDE_QUOTA_LOG", log),
+        patch.object(quota, "_history_db_path", lambda: db),
+        patch.object(accounts, "_history_db_path", lambda: db),
+        patch.object(accounts, "CLAUDE_CONFIG", root / "claude.json"),
+        patch.object(accounts, "CODEX_AUTH", root / "codex-auth.json"),
+    ]
+    for item in patches:
+        item.start()
+    return tmp, root, codex, log, db, patches
+
+
+class UsageLimitHitTest(unittest.TestCase):
+    """A usage_limit_exceeded error event counts as a 100% reading."""
+
+    def setUp(self) -> None:
+        self.tmp, self.root, self.codex, self.log, self.db, self.patches = quota_setup()
+        self.now = time.time()
+
+    def tearDown(self) -> None:
+        for patch in self.patches:
+            patch.stop()
+        self.tmp.cleanup()
+
+    def window(self, result: dict, source: str) -> dict:
+        return next(w for w in result["windows"] if w["source"] == source)
+
+    def account_quota(self, result: dict, account: str, window: str) -> dict:
+        return next(a for a in result["accounts"] if a["account_id"] == account)["quota"][window]
+
+    def test_a_limit_hit_fills_the_open_window(self) -> None:
+        resets = self.now + 3 * 86400
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1")
+            + codex_event(self.now - 600, 1000, 800, 10, 98, resets)
+            + codex_event(self.now - 300, 3000, 2600, 30, 99, resets + 7)
+            + limit_hit_event(self.now))
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        w = self.window(result, "codex")
+        self.assertEqual((w["window_min"], w["used_to"]), (10080, 100))
+        q = self.account_quota(result, "acct-1", "10080")
+        self.assertEqual((q["used_percent"], q["remaining_percent"]), (100, 0))
+        self.assertFalse(q["reset_since_read"])
+
+    def test_a_limit_hit_with_no_earlier_reading_adds_no_window(self) -> None:
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1") + limit_hit_event(self.now))
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        self.assertEqual(result["windows"], [])
+
+    def test_a_limit_hit_after_the_reset_adds_nothing(self) -> None:
+        resets = self.now + HOUR
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1")
+            + codex_event(self.now - 600, 1000, 800, 10, 99, resets)
+            + limit_hit_event(resets + HOUR))
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        w = self.window(result, "codex")
+        self.assertEqual(w["used_to"], 99)   # the old window is untouched
+        self.assertEqual(result["windows"], [w])
+
+    def test_other_error_infos_are_ignored(self) -> None:
+        resets = self.now + 3 * 86400
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1")
+            + codex_event(self.now - 300, 1000, 800, 10, 99, resets)
+            + limit_hit_event(self.now, info="server_overloaded"))
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual((w["used_to"], w["readings"]), (99, 1))
+
+
 if __name__ == "__main__":
     unittest.main()

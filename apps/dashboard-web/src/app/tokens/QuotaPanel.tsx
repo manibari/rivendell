@@ -53,6 +53,10 @@ interface QuotaWindow {
   cache_create: number;
   tokens: number;
   tokens_per_percent: number | null;
+  step_tokens_per_percent: number | null;
+  clean_steps: number;
+  local_percent: number | null;
+  other_percent: number | null;
 }
 
 interface QuotaData {
@@ -258,15 +262,21 @@ export default function QuotaPanel() {
                       <Outlook adv={a.advice} />
                     </td>
                     <td className={cell} style={red}>
-                      {w ? stamp(w.resets_at) : "—"}
-                      {w?.reset_since_read && <span style={{ color: TEXT_SUBTLE }}>（已重置，待新讀數）</span>}
+                      {w
+                        ? w.reset_since_read
+                          ? <>已重置<br /><span style={{ color: TEXT_SUBTLE }}>（原 {stamp(w.resets_at)}）</span></>
+                          : stamp(w.resets_at)
+                        : "—"}
                     </td>
                     <td className={`${cell} text-right`} style={{ whiteSpace: "nowrap", ...(usedUp(h) ? { color: ERR, fontWeight: 600 } : {}) }}>
                       {h ? `已用 ${h.used_percent.toFixed(0)}% · 剩 ${h.remaining_percent.toFixed(0)}%` : "—"}
                     </td>
                     <td className={cell} style={usedUp(h) ? { color: ERR, fontWeight: 600 } : undefined}>
-                      {h ? stamp(h.resets_at) : "—"}
-                      {h?.reset_since_read && <span style={{ color: TEXT_SUBTLE }}>（已重置，待新讀數）</span>}
+                      {h
+                        ? h.reset_since_read
+                          ? <><span style={{ whiteSpace: "nowrap" }}>已重置 · 下次使用起算 5 小時</span><br /><span style={{ color: TEXT_SUBTLE }}>（原 {stamp(h.resets_at)}）</span></>
+                          : stamp(h.resets_at)
+                        : "—"}
                     </td>
                     <td className={cell} style={{ color: TEXT_SUBTLE }}>{w ? stamp(w.read_at) : "—"}</td>
                   </tr>
@@ -293,6 +303,7 @@ export default function QuotaPanel() {
                   {head("快取重讀", "right")}
                   {head("輸出", "right")}
                   {head("每 1% 約", "right")}
+                  {head("其他電腦約", "right")}
                   {head("讀數", "right")}
                 </tr>
               </thead>
@@ -305,7 +316,14 @@ export default function QuotaPanel() {
                     <td className={`${cell} text-right`}>{millions(w.tokens)}</td>
                     <td className={`${cell} text-right`}>{millions(w.cache_read)}</td>
                     <td className={`${cell} text-right`}>{millions(w.output)}</td>
-                    <td className={`${cell} text-right`}>{w.tokens_per_percent ? millions(w.tokens_per_percent) : "—"}</td>
+                    <td className={`${cell} text-right`}>
+                      {w.step_tokens_per_percent != null
+                        ? millions(w.step_tokens_per_percent)
+                        : w.tokens_per_percent != null
+                          ? <span style={{ color: TEXT_SUBTLE }}>{millions(w.tokens_per_percent)} 樣本少</span>
+                          : "—"}
+                    </td>
+                    <td className={`${cell} text-right`}>{w.other_percent != null ? `${w.other_percent.toFixed(0)}%` : "—"}</td>
                     <td className={`${cell} text-right`} style={{ color: TEXT_SUBTLE }}>{w.readings}</td>
                   </tr>
                 ))}
@@ -317,7 +335,7 @@ export default function QuotaPanel() {
 
       <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
         額度是官方讀數：Codex 取自 rollout 的 rate_limits；Claude 取自 statusLine（token-quota-log），只有裝好之後才有紀錄。
-        「每 1% 約」＝該週期第一筆到最後一筆讀數之間，本機記到的總用量 ÷ 額度上升的百分點；同帳號在別台機器或網頁用的部分本機看不到，會讓數字偏低。
+        「每 1% 約」＝只看額度每次上升 1% 的那一小段，本機在這段用了多少 token，取中位數；額度一次跳 2% 以上、或這段本機沒用量的，多半是別台電腦或網頁在用，不算進去。少於 5 段可用的只顯示整段平均（標「樣本少」）。「其他電腦約」＝額度上升的百分點 − 本機用量 ÷ 每 1% 約，是估計值。
         「建議」：同一個來源裡，先用週額度最快重置、還有剩的帳號（重置後沒用完的就作廢）；被週額度或 5 小時 session 擋住的排後面。
         超過 30 天沒用的帳號不列出{data?.hidden_idle_accounts ? `（目前隱藏 ${data.hidden_idle_accounts} 個）` : ""}，資料保留，再用到會自動出現。
         {data && !data.claude_log_present && " 目前還沒有 Claude 額度紀錄：執行 sk deploy 與 sk hooks install 後重開 Claude Code。"}

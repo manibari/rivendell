@@ -25,8 +25,10 @@ never recomputed. Requests only read the cache and never parse.
 
 from __future__ import annotations
 
+import bisect
 import json
 import sqlite3
+import statistics
 import threading
 import time
 from dataclasses import dataclass, field, replace
@@ -105,6 +107,13 @@ def _connect() -> sqlite3.Connection:
     columns = {row[1] for row in conn.execute("PRAGMA table_info(token_quota_window)")}
     if "reset_exact" not in columns:
         conn.execute("ALTER TABLE token_quota_window ADD COLUMN reset_exact REAL")
+    # Single 1% steps (2026-10-07): the same account burns quota on other
+    # computers too, so the whole-window average underestimates; keep the
+    # per-step median and how many clean steps fed it.
+    if "step_tokens_per_percent" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN step_tokens_per_percent REAL")
+    if "clean_steps" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN clean_steps INTEGER NOT NULL DEFAULT 0")
     return conn
 
 
@@ -123,7 +132,7 @@ def _parse_codex(path: Path) -> tuple[list[Reading], list[tuple]]:
                 except json.JSONDecodeError:
                     pass
                 continue
-            if b'"token_count"' not in raw:
+            if b'"token_count"' not in raw and b"usage_limit_exceeded" not in raw:
                 continue
             try:
                 entry = json.loads(raw)
@@ -131,7 +140,18 @@ def _parse_codex(path: Path) -> tuple[list[Reading], list[tuple]]:
                 continue
             payload = entry.get("payload") or {}
             at = _epoch(entry.get("timestamp", ""))
-            if payload.get("type") != "token_count" or at is None:
+            if at is None:
+                continue
+            # A refused request writes no rate_limits reading, only this error
+            # event; it means the account's window is fully used, so record it as
+            # a 100% reading with no window yet (window_min == 0 marks a hit).
+            if b"usage_limit_exceeded" in raw:
+                error = payload.get("error") or {}
+                if payload.get("type") in ("task_complete", "error") and \
+                        error.get("codex_error_info") == "usage_limit_exceeded":
+                    readings.append(Reading("codex", account, 0, 0, at, 100.0))
+                continue
+            if payload.get("type") != "token_count":
                 continue
             total = (payload.get("info") or {}).get("total_token_usage")
             if total:
@@ -185,6 +205,23 @@ def _codex_all() -> tuple[list[Reading], list[tuple]]:
     readings = [replace(r, account=accounts.codex_account_at(spans, r.at, r.account))
                 for r in readings]
     usage = [(u[0], accounts.codex_account_at(spans, u[0], u[1]), *u[2:]) for u in usage]
+    # A limit-hit reading (window_min == 0) has no window of its own yet. Attach
+    # it to the still-open window of the same account; if none is open (no
+    # earlier reading, or that window already reset) it is dropped, so no
+    # window_min == 0 reading can ever reach _windows.
+    hits = [r for r in readings if r.window_min == 0]
+    if hits:
+        real = [r for r in readings if r.window_min > 0]
+        kept = []
+        for h in hits:
+            earlier = [r for r in real if r.account == h.account and r.at <= h.at]
+            if not earlier:
+                continue
+            latest = max(earlier, key=lambda r: r.at)
+            if (latest.reset_exact or latest.resets_at) > h.at:
+                kept.append(replace(h, window_min=latest.window_min, resets_at=latest.resets_at,
+                                    plan=latest.plan, reset_exact=latest.reset_exact))
+        readings = real + kept
     return readings, usage
 
 
@@ -281,6 +318,20 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
     by_account: dict[str, list[tuple]] = {}
     for u in usage:
         by_account.setdefault(u[1], []).append(u)
+    # Per account: sorted times and running token totals, so the tokens in any
+    # (t0, t1] are two bisects, not a scan of the full history per step.
+    timeline: dict[str, tuple[list[float], list[int]]] = {}
+    for acct_id, rows in by_account.items():
+        rows.sort(key=lambda u: u[0])
+        totals, running = [0], 0
+        for u in rows:
+            running += sum(u[2:6])
+            totals.append(running)
+        timeline[acct_id] = ([u[0] for u in rows], totals)
+
+    def tokens_between(acct_id: str, t0: float, t1: float) -> int:
+        times, totals = timeline.get(acct_id, ([], [0]))
+        return totals[bisect.bisect_right(times, t1)] - totals[bisect.bisect_right(times, t0)]
     out = []
     for (source, account, window_min, resets_at), rs in groups.items():
         rs.sort(key=lambda r: r.at)
@@ -290,12 +341,29 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
             if first.at < u[0] <= last.at:
                 for name, value in zip(_FIELDS, u[2:6]):
                     sums[name] += value
+        # Several sessions report stale quota values, so readings go up and
+        # down; only a new high is a real step, and the local tokens between
+        # the old high and the new one are what spent that step.
+        hi, hi_at = first.used, first.at
+        ratios: list[float] = []
+        clean_steps = 0
+        for r in rs[1:]:
+            if r.used <= hi:
+                continue
+            tokens = tokens_between(account, hi_at, r.at)
+            delta = r.used - hi
+            if 0 < delta <= 1.5 and tokens > 0:
+                clean_steps += 1
+                ratios.append(tokens / delta)
+            hi, hi_at = r.used, r.at
         out.append({
             "source": source, "account_id": account, "window_min": window_min,
             "resets_at": resets_at, "reset_exact": last.reset_exact or resets_at,
             "plan": last.plan, "first_at": first.at,
             "last_at": last.at, "used_from": first.used, "used_to": last.used,
             "readings": len(rs), **sums,
+            "step_tokens_per_percent": int(statistics.median(ratios)) if len(ratios) >= 5 else None,
+            "clean_steps": clean_steps,
         })
     return out
 
@@ -306,7 +374,8 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
     changed must not linger under the old account."""
     cols = ("source", "account_id", "window_min", "resets_at", "reset_exact", "plan",
             "first_at", "last_at",
-            "used_from", "used_to", "readings", *_FIELDS)
+            "used_from", "used_to", "readings", *_FIELDS,
+            "step_tokens_per_percent", "clean_steps")
     with _connect() as conn:
         if replace_source:
             conn.execute("DELETE FROM token_quota_window WHERE source = ?", (replace_source,))
@@ -397,6 +466,18 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
         w["tokens"] = tokens
         w["label"] = names.get((w["source"], w["account_id"])) if w["account_id"] else None
         w["tokens_per_percent"] = round(tokens / moved) if moved > 0 else None
+        # Whole-window average kept as is; the step median is the estimate that
+        # ignores quota moved by other computers, and the split between them.
+        step = w.get("step_tokens_per_percent")
+        w["step_tokens_per_percent"] = step
+        w["clean_steps"] = w.get("clean_steps") or 0
+        if step is None:
+            w["local_percent"] = None
+            w["other_percent"] = None
+        else:
+            local_percent = round(tokens / step, 1)
+            w["local_percent"] = local_percent
+            w["other_percent"] = round(max(0.0, moved - local_percent), 1)
     # Accounts idle for over a month are left off the panel and the advice;
     # their data stays, so using one again brings it straight back.
     shown = [a for a in acct.values() if a["last_seen"] >= now - IDLE_HIDE_S]
