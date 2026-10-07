@@ -201,6 +201,20 @@ class QuotaTest(unittest.TestCase):
         self.assertFalse(result["claude_log_present"])
 
 
+def week_estimate_test_case() -> tuple:
+    tmp = tempfile.TemporaryDirectory()
+    root = Path(tmp.name)
+    codex = root / "codex"
+    codex.mkdir(parents=True)
+    patches = [
+        patch.object(quota, "CODEX_SESSION_DIRS", (codex,)),
+        patch.object(quota, "_history_db_path", lambda: root / "test.db"),
+    ]
+    for p in patches:
+        p.start()
+    return tmp, codex, patches
+
+
 class StepEstimateTest(QuotaTest):
     """step_tokens_per_percent: median of single 1% steps, not the whole window."""
 
@@ -265,6 +279,68 @@ class StepEstimateTest(QuotaTest):
         self.assertIsNone(w["step_tokens_per_percent"])
         self.assertIsNone(w["local_percent"])
         self.assertIsNone(w["other_percent"])
+
+    def test_two_step_weeks_give_the_median_per_percent(self) -> None:
+        resets = self.now + 3 * 86400
+        # six clean 1% steps per week: 4M tokens per step in week one, 6M in week two
+        self.codex_steps([(self.now - 300 + i * 10, 4_000_000 * i, 44 + i) for i in range(7)],
+                         resets,
+                         extra="".join(
+                             codex_event(self.now - 200 + i * 10, 40_000_000 + 6_000_000 * i,
+                                          0, 0, 60 + i, resets - 7 * 86400)
+                             for i in range(1, 7)))
+        quota.refresh(self.now)
+        a = quota.get_quota(self.now)["accounts"][0]
+        self.assertEqual(a["week_estimate"], {
+            "per_percent": 5_000_000, "week_tokens": 500_000_000,
+            "basis": "steps", "weeks": 2, "rough": True})
+
+    def test_step_estimate_falls_back_to_a_moved_average(self) -> None:
+        resets = self.now + 3 * 86400
+        (self.codex / "r.jsonl").write_text(
+            codex_meta("acct-1")
+            + codex_event(self.now - 200, 0, 0, 0, 25, resets)
+            # one 50% jump: too big to be a clean step, so the whole-window
+            # average stands in; 400M tokens over 50 points is 8M per 1%
+            + codex_event(self.now - 100, 400_000_000, 0, 0, 75, resets))
+        quota.refresh(self.now)
+        a = quota.get_quota(self.now)["accounts"][0]
+        self.assertEqual(a["week_estimate"], {
+            "per_percent": 8_000_000, "week_tokens": 800_000_000,
+            "basis": "average", "weeks": 1, "rough": True})
+
+    def test_two_weeks_that_moved_far_enough_are_not_rough(self) -> None:
+        week = lambda reset, step: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15,
+                                    "step_tokens_per_percent": step, "tokens_per_percent": step}
+        est = quota._week_estimate([week(1, 4_000_000), week(2, 6_000_000)])
+        self.assertFalse(est["rough"])
+        self.assertTrue(quota._week_estimate([week(1, 4_000_000)])["rough"])
+
+    def test_session_windows_are_ignored_for_the_estimate(self) -> None:
+        session_reset = self.now + 2 * HOUR + 1234
+        self.log.write_text(json.dumps({"ts": self.now - 60, "account_id": "u-1",
+                                        "limits": {
+            "five_hour": {"used_percentage": 56, "resets_at": session_reset},
+            "seven_day": {"used_percentage": 54, "resets_at": self.now + 86400}}}) + "\n")
+        quota.refresh(self.now)
+        a = quota.get_quota(self.now)["accounts"][0]
+        self.assertIsNone(a["week_estimate"])
+
+    def test_a_small_move_with_no_steps_gives_none(self) -> None:
+        tmp, codex, patches = week_estimate_test_case()
+        try:
+            resets = time.time() + 3 * 86400
+            (codex / "r.jsonl").write_text(
+                codex_meta("acct-1")
+                + codex_event(time.time() - 200, 100, 0, 0, 50, resets)
+                + codex_event(time.time() - 100, 1_000, 0, 0, 53, resets))
+            quota.refresh()
+            result = quota.get_quota()
+            self.assertEqual(result["accounts"][0]["week_estimate"], None)
+        finally:
+            for p in patches:
+                p.stop()
+            tmp.cleanup()
 
     def test_a_pre_migration_db_gets_the_new_columns_on_connect(self) -> None:
         import sqlite3

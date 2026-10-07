@@ -44,6 +44,9 @@ from lib.tokens_timeline import _epoch, _seek_offset
 CLAUDE_QUOTA_LOG = Path.home() / ".claude" / "usage-quota" / "claude-rate-limits.jsonl"
 CLAUDE_WINDOWS = {"five_hour": 300, "seven_day": 10080}
 WEEK_MIN = 10080
+# Below these, the weekly estimate is shown as rough.
+ESTIMATE_MIN_WEEKS = 2
+ESTIMATE_MIN_MOVED = 20
 CLAUDE_LOOKBACK_S = 8 * 86400   # never parse Claude logs further back than this
 REFRESH_S = 60
 IDLE_HIDE_S = 30 * 86400   # an account unused this long is not listed
@@ -425,6 +428,33 @@ def _sightings() -> dict[tuple[str, str], list[float]]:
     return {(s, a): [lo, hi] for s, a, lo, hi in rows}
 
 
+def _week_estimate(windows: list[dict]) -> dict | None:
+    """Tokens for 100% of the weekly quota, from this account's weekly windows.
+
+    Preference: the median of the single-1%-step values, which ignore quota
+    moved by other computers; otherwise the whole-window average of a window
+    that moved at least 10 points. None when neither is available.
+    """
+    weekly = [w for w in windows if w["window_min"] == WEEK_MIN]
+    used = [w for w in weekly if w.get("step_tokens_per_percent") is not None]
+    if used:
+        per_percent, basis = int(statistics.median(
+            w["step_tokens_per_percent"] for w in used)), "steps"
+    else:
+        used = [w for w in weekly if w.get("tokens_per_percent") is not None
+                and w["used_to"] - w["used_from"] >= 10]
+        if not used:
+            return None
+        per_percent, basis = int(statistics.median(
+            w["tokens_per_percent"] for w in used)), "average"
+    # One early week can hold five clean steps and still be far off.
+    moved = sum(w["used_to"] - w["used_from"] for w in used)
+    rough = (basis == "average" or len(used) < ESTIMATE_MIN_WEEKS
+             or moved < ESTIMATE_MIN_MOVED)
+    return {"per_percent": per_percent, "week_tokens": per_percent * 100,
+            "basis": basis, "weeks": len(used), "rough": rough}
+
+
 def get_quota(now: float | None = None) -> dict[str, Any]:
     """Accounts with their latest quota reading, plus every reset window."""
     now = time.time() if now is None else now
@@ -478,6 +508,12 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
             local_percent = round(tokens / step, 1)
             w["local_percent"] = local_percent
             w["other_percent"] = round(max(0.0, moved - local_percent), 1)
+    by_account: dict[tuple, list[dict]] = {}
+    for w in windows:
+        by_account.setdefault((w["source"], w["account_id"]), []).append(w)
+    for a in acct.values():
+        a["week_estimate"] = _week_estimate(
+            by_account.get((a["source"], a["account_id"] or ""), ()))
     # Accounts idle for over a month are left off the panel and the advice;
     # their data stays, so using one again brings it straight back.
     shown = [a for a in acct.values() if a["last_seen"] >= now - IDLE_HIDE_S]

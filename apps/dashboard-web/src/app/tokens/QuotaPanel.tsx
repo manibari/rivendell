@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 
 type Source = "claude" | "codex";
@@ -32,6 +32,15 @@ interface QuotaAccount {
   last_seen: number;
   quota: Record<string, QuotaReading>; // key = window length in minutes
   advice: Advice;
+  week_estimate: WeekEstimate | null;
+}
+
+interface WeekEstimate {
+  per_percent: number;
+  week_tokens: number;
+  basis: "steps" | "average";
+  weeks: number;
+  rough: boolean;
 }
 
 interface QuotaWindow {
@@ -185,6 +194,7 @@ function RemainingBar({ q }: { q: QuotaReading }) {
 export default function QuotaPanel() {
   const [data, setData] = useState<QuotaData | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let alive = true;
@@ -204,9 +214,17 @@ export default function QuotaPanel() {
     };
   }, []);
 
-  const weekly = (data?.windows ?? [])
-    .filter((w) => String(w.window_min) === WEEK && w.used_to > w.used_from)
-    .slice(0, 16);
+  const weeklyFor = (a: QuotaAccount) =>
+    (data?.windows ?? []).filter((w) => w.source === a.source
+      && (w.account_id || null) === (a.account_id || null)
+      && String(w.window_min) === WEEK && w.used_to > w.used_from);
+
+  const toggleWeek = (key: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
 
   return (
     <section className="mt-8">
@@ -236,6 +254,7 @@ export default function QuotaPanel() {
                 {head("首次 / 最後使用")}
                 {head("週額度已用", "right")}
                 {head("週額度餘量")}
+                {head("用滿一週約", "right")}
                 {head("額度更新（重置）")}
                 {head("目前 session（5 小時）", "right")}
                 {head("session 重置")}
@@ -247,10 +266,25 @@ export default function QuotaPanel() {
                 const w = a.quota[WEEK];
                 const h = a.quota[FIVE_HOUR];
                 const red = usedUp(w) ? { color: ERR, fontWeight: 600 } : undefined;
+                const weeks = weeklyFor(a);
+                const key = `${a.source}:${a.account_id}`;
+                const open = expanded.has(key);
+                const est = a.week_estimate;
                 return (
-                  <tr key={`${a.source}:${a.account_id}`} style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
+                  <Fragment key={key}>
+                  <tr style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
                     <td className={cell}><AdviceBadge a={a} /></td>
-                    <td className={cell}>{who(a.source, a.label, a.account_id)}</td>
+                    <td className={cell}>
+                      {who(a.source, a.label, a.account_id)}
+                      {weeks.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleWeek(key)}
+                          style={{ marginLeft: 8, fontSize: 11, color: "var(--text-muted)", background: "none", border: "1px solid var(--border)", borderRadius: 4, padding: "1px 6px", cursor: "pointer" }}>
+                          {open ? "▾ 收起" : "▸ 細節"}
+                        </button>
+                      )}
+                    </td>
                     <td className={cell}>{a.plan || "—"}</td>
                     <td className={cell} style={{ whiteSpace: "nowrap" }}>
                       {stamp(a.first_seen)}
@@ -260,6 +294,15 @@ export default function QuotaPanel() {
                     <td className={cell}>
                       {w ? <RemainingBar q={w} /> : "無讀數"}
                       <Outlook adv={a.advice} />
+                    </td>
+                    <td className={`${cell} text-right`}>
+                      {est
+                        ? <>{millions(est.week_tokens)}
+                            <br />
+                            <span style={{ fontSize: 11, color: TEXT_SUBTLE }}>
+                              每 1% 約 {(est.per_percent / 1e6).toFixed(1)}M{est.rough && "（粗估）"}
+                            </span></>
+                        : "—"}
                     </td>
                     <td className={cell} style={red}>
                       {w
@@ -280,6 +323,41 @@ export default function QuotaPanel() {
                     </td>
                     <td className={cell} style={{ color: TEXT_SUBTLE }}>{w ? stamp(w.read_at) : "—"}</td>
                   </tr>
+                  {open && (
+                    <tr style={{ color: "var(--text)" }}>
+                      <td colSpan={11} style={{ padding: "0 12px 12px", background: "var(--row-hover, rgba(125,125,125,0.06))" }}>
+                        <table className="w-full" style={{ fontSize: 11 }}>
+                          <thead style={{ borderBottom: "1px solid var(--border)" }}>
+                            <tr>
+                              {head("週期重置")}
+                              {head("額度", "right")}
+                              {head("本機用量", "right")}
+                              {head("每 1% 約", "right")}
+                              {head("其他電腦約", "right")}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {weeks.map((dw) => (
+                              <tr key={`${dw.source}:${dw.account_id}:${dw.resets_at}`}>
+                                <td className={cell}>{stamp(dw.reset_exact ?? dw.resets_at)}</td>
+                                <td className={`${cell} text-right`}>{dw.used_from.toFixed(0)}% → {dw.used_to.toFixed(0)}%</td>
+                                <td className={`${cell} text-right`}>{millions(dw.tokens)}</td>
+                                <td className={`${cell} text-right`}>
+                                  {dw.step_tokens_per_percent != null
+                                    ? millions(dw.step_tokens_per_percent)
+                                    : dw.tokens_per_percent != null
+                                      ? <span style={{ color: TEXT_SUBTLE }}>{millions(dw.tokens_per_percent)} 樣本少</span>
+                                      : "—"}
+                                </td>
+                                <td className={`${cell} text-right`}>{dw.other_percent != null ? `${dw.other_percent.toFixed(0)}%` : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -287,55 +365,9 @@ export default function QuotaPanel() {
         </div>
       )}
 
-      {weekly.length > 0 && (
-        <>
-          <h3 className="mt-6 mb-2" style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>
-            每週額度 vs token（每個重置週期）
-          </h3>
-          <div className="overflow-x-auto rounded" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
-            <table className="w-full" style={{ fontSize: 12 }}>
-              <thead style={{ borderBottom: "1px solid var(--border)" }}>
-                <tr>
-                  {head("帳號")}
-                  {head("週期重置")}
-                  {head("額度", "right")}
-                  {head("總用量", "right")}
-                  {head("快取重讀", "right")}
-                  {head("輸出", "right")}
-                  {head("每 1% 約", "right")}
-                  {head("其他電腦約", "right")}
-                  {head("讀數", "right")}
-                </tr>
-              </thead>
-              <tbody>
-                {weekly.map((w) => (
-                  <tr key={`${w.source}:${w.account_id}:${w.resets_at}`} style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
-                    <td className={cell}>{who(w.source, w.label, w.account_id || null)}</td>
-                    <td className={cell}>{stamp(w.reset_exact ?? w.resets_at)}</td>
-                    <td className={`${cell} text-right`}>{w.used_from.toFixed(0)}% → {w.used_to.toFixed(0)}%</td>
-                    <td className={`${cell} text-right`}>{millions(w.tokens)}</td>
-                    <td className={`${cell} text-right`}>{millions(w.cache_read)}</td>
-                    <td className={`${cell} text-right`}>{millions(w.output)}</td>
-                    <td className={`${cell} text-right`}>
-                      {w.step_tokens_per_percent != null
-                        ? millions(w.step_tokens_per_percent)
-                        : w.tokens_per_percent != null
-                          ? <span style={{ color: TEXT_SUBTLE }}>{millions(w.tokens_per_percent)} 樣本少</span>
-                          : "—"}
-                    </td>
-                    <td className={`${cell} text-right`}>{w.other_percent != null ? `${w.other_percent.toFixed(0)}%` : "—"}</td>
-                    <td className={`${cell} text-right`} style={{ color: TEXT_SUBTLE }}>{w.readings}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-
       <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
         額度是官方讀數：Codex 取自 rollout 的 rate_limits；Claude 取自 statusLine（token-quota-log），只有裝好之後才有紀錄。
-        「每 1% 約」＝只看額度每次上升 1% 的那一小段，本機在這段用了多少 token，取中位數；額度一次跳 2% 以上、或這段本機沒用量的，多半是別台電腦或網頁在用，不算進去。少於 5 段可用的只顯示整段平均（標「樣本少」）。「其他電腦約」＝額度上升的百分點 − 本機用量 ÷ 每 1% 約，是估計值。
+        「用滿一週約」＝每 1% 額度本機約用多少 token × 100，取各週中位數；資料不到 2 週、額度動不到 20%，或只能用整週平均算的，標「粗估」。點「細節」看每週數字。
         「建議」：同一個來源裡，先用週額度最快重置、還有剩的帳號（重置後沒用完的就作廢）；被週額度或 5 小時 session 擋住的排後面。
         超過 30 天沒用的帳號不列出{data?.hidden_idle_accounts ? `（目前隱藏 ${data.hidden_idle_accounts} 個）` : ""}，資料保留，再用到會自動出現。
         {data && !data.claude_log_present && " 目前還沒有 Claude 額度紀錄：執行 sk deploy 與 sk hooks install 後重開 Claude Code。"}
