@@ -70,7 +70,7 @@ class _ClaudeTail:
     inode: int = 0
     offset: int = 0
     covered_from: float = 0.0
-    rows: dict[str, tuple] = field(default_factory=dict)   # key -> (at, in, out, cr, cc)
+    rows: dict[str, tuple] = field(default_factory=dict)   # key -> (at, in, out, cr, cc, model)
 
 
 _codex_cache: dict[str, tuple[float, int, list, list]] = {}
@@ -117,21 +117,35 @@ def _connect() -> sqlite3.Connection:
         conn.execute("ALTER TABLE token_quota_window ADD COLUMN step_tokens_per_percent REAL")
     if "clean_steps" not in columns:
         conn.execute("ALTER TABLE token_quota_window ADD COLUMN clean_steps INTEGER NOT NULL DEFAULT 0")
+    # Per-model split (2026-10-08): which model spent each clean 1% step and
+    # the total tokens per model, so the weekly estimate can be split by model.
+    if "step_ratios_by_model" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN step_ratios_by_model TEXT NOT NULL DEFAULT '{}'")
+    if "model_tokens" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN model_tokens TEXT NOT NULL DEFAULT '{}'")
     return conn
 
 
 # ── Codex ───────────────────────────────────────────────────────────────
 
 def _parse_codex(path: Path) -> tuple[list[Reading], list[tuple]]:
-    """Readings and per-event token deltas (at, account, in, out, cr, cc) of one rollout."""
+    """Readings and per-event token deltas (at, account, in, out, cr, cc, model) of one rollout."""
     readings: list[Reading] = []
     usage: list[tuple] = []
-    account, prev = "", {}
+    account, prev, model = "", {}, ""
     with open(path, "rb") as f:
         for raw in f:
             if b'"session_meta"' in raw and not account:
                 try:
                     account = (json.loads(raw).get("payload") or {}).get("creator_account_id") or ""
+                except json.JSONDecodeError:
+                    pass
+                continue
+            # turn_context carries the model of the current turn; remember it so
+            # the usage rows that follow are tagged (a file can switch models).
+            if b'"turn_context"' in raw:
+                try:
+                    model = (json.loads(raw).get("payload") or {}).get("model") or ""
                 except json.JSONDecodeError:
                     pass
                 continue
@@ -163,7 +177,7 @@ def _parse_codex(path: Path) -> tuple[list[Reading], list[tuple]]:
                 cached, write = d["cached_input_tokens"], d["cache_write_input_tokens"]
                 fresh = max(0, d["input_tokens"] - cached - write)
                 if fresh or d["output_tokens"] or cached or write:
-                    usage.append((at, account, fresh, d["output_tokens"], cached, write))
+                    usage.append((at, account, fresh, d["output_tokens"], cached, write, model))
             limits = payload.get("rate_limits") or {}
             primary = limits.get("primary") or {}
             if primary.get("used_percent") is not None and primary.get("resets_at"):
@@ -253,7 +267,7 @@ def _claude_readings() -> list[Reading]:
 
 
 def _claude_usage(since: float) -> list[tuple]:
-    """(at, account, in, out, cr, cc) for every Claude request since `since`."""
+    """(at, account, in, out, cr, cc, model) for every Claude request since `since`."""
     rows: dict[str, tuple] = {}
     if PROJECTS_DIR.is_dir():
         for path in PROJECTS_DIR.rglob("*.jsonl"):
@@ -296,12 +310,17 @@ def _advance_claude(path: Path, st, since: float) -> _ClaudeTail:
             at = _epoch(entry.get("timestamp", ""))
             if not usage or at is None:
                 continue
+            # <synthetic> is not a real model; treat it as unknown.
+            model = msg.get("model") or ""
+            if model == "<synthetic>":
+                model = ""
             # Same dedup rule as tokens_timeline: one request, last row wins.
             rid = entry.get("requestId") or msg.get("id") or f"{key}:{tail.offset}"
             tail.rows[rid] = (at, usage.get("input_tokens", 0) or 0,
                               usage.get("output_tokens", 0) or 0,
                               usage.get("cache_read_input_tokens", 0) or 0,
-                              usage.get("cache_creation_input_tokens", 0) or 0)
+                              usage.get("cache_creation_input_tokens", 0) or 0,
+                              model)
     if tail.rows and min(r[0] for r in tail.rows.values()) < since:
         tail.rows = {k: r for k, r in tail.rows.items() if r[0] >= since}
     return tail
@@ -322,19 +341,45 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
     for u in usage:
         by_account.setdefault(u[1], []).append(u)
     # Per account: sorted times and running token totals, so the tokens in any
-    # (t0, t1] are two bisects, not a scan of the full history per step.
-    timeline: dict[str, tuple[list[float], list[int]]] = {}
+    # (t0, t1] are two bisects, not a scan of the full history per step. Per
+    # model too, so a clean 1% step can be attributed to the model that spent it.
+    timeline: dict[str, tuple[list[float], list[int], dict[str, list[int]]]] = {}
     for acct_id, rows in by_account.items():
         rows.sort(key=lambda u: u[0])
-        totals, running = [0], 0
-        for u in rows:
+        n = len(rows)
+        totals, running = [0] * (n + 1), 0
+        for i, u in enumerate(rows, 1):
             running += sum(u[2:6])
-            totals.append(running)
-        timeline[acct_id] = ([u[0] for u in rows], totals)
+            totals[i] = running
+        # Per-model prefix sums, aligned to the same row indices as `totals`,
+        # so tokens for one model in (t0, t1] are two bisects per model.
+        models: list[str] = []
+        for u in rows:
+            if u[6] not in models:
+                models.append(u[6])
+        per_model: dict[str, list[int]] = {}
+        for m in models:
+            series, run = [0] * (n + 1), 0
+            for i, u in enumerate(rows, 1):
+                if u[6] == m:
+                    run += sum(u[2:6])
+                series[i] = run
+            per_model[m] = series
+        timeline[acct_id] = ([u[0] for u in rows], totals, per_model)
 
     def tokens_between(acct_id: str, t0: float, t1: float) -> int:
-        times, totals = timeline.get(acct_id, ([], [0]))
+        times, totals = timeline.get(acct_id, ([], [0], {}))[0:2]
         return totals[bisect.bisect_right(times, t1)] - totals[bisect.bisect_right(times, t0)]
+
+    def model_tokens_between(acct_id: str, t0: float, t1: float) -> dict[str, int]:
+        times, _, per_model = timeline.get(acct_id, ([], [0], {}))
+        i0, i1 = bisect.bisect_right(times, t0), bisect.bisect_right(times, t1)
+        out: dict[str, int] = {}
+        for model, series in per_model.items():
+            v = series[i1] - series[i0]
+            if v:
+                out[model] = v
+        return out
     out = []
     for (source, account, window_min, resets_at), rs in groups.items():
         rs.sort(key=lambda r: r.at)
@@ -350,14 +395,24 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
         hi, hi_at = first.used, first.at
         ratios: list[float] = []
         clean_steps = 0
+        ratios_by_model: dict[str, list[int]] = {}
+        model_tokens: dict[str, int] = {}
         for r in rs[1:]:
             if r.used <= hi:
                 continue
             tokens = tokens_between(account, hi_at, r.at)
             delta = r.used - hi
+            mt_by_model = model_tokens_between(account, hi_at, r.at)
+            # Rows with no model ("") count in the totals but are not a model.
+            mt_by_model.pop("", None)
+            for model, mt in mt_by_model.items():
+                model_tokens[model] = model_tokens.get(model, 0) + mt
             if 0 < delta <= 1.5 and tokens > 0:
                 clean_steps += 1
                 ratios.append(tokens / delta)
+                for model, mt in mt_by_model.items():
+                    if mt / tokens >= 0.8:
+                        ratios_by_model.setdefault(model, []).append(int(mt / delta))
             hi, hi_at = r.used, r.at
         out.append({
             "source": source, "account_id": account, "window_min": window_min,
@@ -367,6 +422,9 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
             "readings": len(rs), **sums,
             "step_tokens_per_percent": int(statistics.median(ratios)) if len(ratios) >= 5 else None,
             "clean_steps": clean_steps,
+            "step_ratios_by_model": {m: [int(v) for v in vals]
+                                     for m, vals in ratios_by_model.items()},
+            "model_tokens": model_tokens,
         })
     return out
 
@@ -378,7 +436,8 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
     cols = ("source", "account_id", "window_min", "resets_at", "reset_exact", "plan",
             "first_at", "last_at",
             "used_from", "used_to", "readings", *_FIELDS,
-            "step_tokens_per_percent", "clean_steps")
+            "step_tokens_per_percent", "clean_steps",
+            "step_ratios_by_model", "model_tokens")
     with _connect() as conn:
         if replace_source:
             conn.execute("DELETE FROM token_quota_window WHERE source = ?", (replace_source,))
@@ -387,7 +446,8 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
         conn.executemany(
             f"INSERT OR REPLACE INTO token_quota_window({', '.join(cols)}) "
             f"VALUES ({', '.join('?' * len(cols))})",
-            [tuple(r[c] for c in cols) for r in rows])
+            [tuple(json.dumps(r[c]) if c in ("step_ratios_by_model", "model_tokens")
+                   else r[c] for c in cols) for r in rows])
 
 
 def refresh(now: float | None = None) -> None:
@@ -428,12 +488,38 @@ def _sightings() -> dict[tuple[str, str], list[float]]:
     return {(s, a): [lo, hi] for s, a, lo, hi in rows}
 
 
+def _json_obj(value: Any) -> dict:
+    """Decode a stored JSON object column; bad or NULL values become {}."""
+    if value is None or value == "":
+        return {}
+    try:
+        obj = json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    return obj if isinstance(obj, dict) else {}
+
+
+def _distinct_weeks(windows: list[dict]) -> int:
+    """Count weeks, not windows: one week can log several reset hours on the
+    same day, so resets less than 3 days apart are the same week."""
+    resets = sorted((w.get("reset_exact") or w.get("resets_at") or 0) for w in windows)
+    weeks, last = 0, None
+    for r in resets:
+        if last is None or r - last >= 3 * 86400:
+            weeks += 1
+            last = r
+    return weeks
+
+
 def _week_estimate(windows: list[dict]) -> dict | None:
     """Tokens for 100% of the weekly quota, from this account's weekly windows.
 
     Preference: the median of the single-1%-step values, which ignore quota
     moved by other computers; otherwise the whole-window average of a window
-    that moved at least 10 points. None when neither is available.
+    that moved at least 10 points. None when neither is available. Quota burns
+    at different rates per model, so the per-1% figure is also split by the
+    model that spent each clean step; the top-level number is the one for the
+    account's main model when that model has enough clean steps on its own.
     """
     weekly = [w for w in windows if w["window_min"] == WEEK_MIN]
     used = [w for w in weekly if w.get("step_tokens_per_percent") is not None]
@@ -449,10 +535,40 @@ def _week_estimate(windows: list[dict]) -> dict | None:
             w["tokens_per_percent"] for w in used)), "average"
     # One early week can hold five clean steps and still be far off.
     moved = sum(w["used_to"] - w["used_from"] for w in used)
-    rough = (basis == "average" or len(used) < ESTIMATE_MIN_WEEKS
+    rough = (basis == "average" or _distinct_weeks(used) < ESTIMATE_MIN_WEEKS
              or moved < ESTIMATE_MIN_MOVED)
+    # Per model: pool the clean-step ratios across the account's weekly
+    # windows; a step only counts for the one model that spent >= 80% of it.
+    pooled: dict[str, list[int]] = {}
+    totals: dict[str, int] = {}
+    for w in weekly:
+        for model, series in (w.get("step_ratios_by_model") or {}).items():
+            pooled.setdefault(model, []).extend(series)
+        for model, count in (w.get("model_tokens") or {}).items():
+            totals[model] = totals.get(model, 0) + count
+    by_model = []
+    for model, series in pooled.items():
+        if len(series) < 5:
+            continue
+        p = int(statistics.median(series))
+        by_model.append({"model": model, "per_percent": p,
+                         "week_tokens": p * 100, "steps": len(series),
+                         "weeks": _distinct_weeks(
+                             [w for w in weekly if model in (w.get("step_ratios_by_model") or {})]),
+                         "rough": False})
+    for e in by_model:
+        e["rough"] = e["weeks"] < ESTIMATE_MIN_WEEKS or e["steps"] < ESTIMATE_MIN_MOVED
+    by_model.sort(key=lambda e: (-totals.get(e["model"], 0), e["model"]))
+    model = max(totals, key=lambda m: totals[m]) if totals else None
+    main = next((e for e in by_model if e["model"] == model), None)
+    if main is not None:
+        return {"per_percent": main["per_percent"],
+                "week_tokens": main["week_tokens"], "basis": "model",
+                "weeks": main["weeks"], "rough": main["rough"],
+                "model": model, "by_model": by_model}
     return {"per_percent": per_percent, "week_tokens": per_percent * 100,
-            "basis": basis, "weeks": len(used), "rough": rough}
+            "basis": basis, "weeks": _distinct_weeks(used), "rough": rough,
+            "model": model, "by_model": by_model}
 
 
 def get_quota(now: float | None = None) -> dict[str, Any]:
@@ -501,6 +617,13 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
         step = w.get("step_tokens_per_percent")
         w["step_tokens_per_percent"] = step
         w["clean_steps"] = w.get("clean_steps") or 0
+        # Per-model step ratios and tokens, stored as JSON text (may be NULL or
+        # malformed in an old row); decode to dicts so the client gets objects.
+        w["step_ratios_by_model"] = _json_obj(w.get("step_ratios_by_model"))
+        model_tokens = _json_obj(w.get("model_tokens"))
+        w["model_tokens"] = model_tokens
+        w["main_model"] = (max(model_tokens, key=lambda m: model_tokens[m])
+                           if model_tokens else None)
         if step is None:
             w["local_percent"] = None
             w["other_percent"] = None

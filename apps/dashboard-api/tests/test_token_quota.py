@@ -36,13 +36,18 @@ def codex_meta(account: str) -> str:
                        "payload": {"id": "c1", "creator_account_id": account}}) + "\n"
 
 
-def claude_row(at: float, request: str, output: int) -> str:
+def claude_row(at: float, request: str, output: int, model: str = "claude-opus-5-5") -> str:
     return json.dumps({
         "timestamp": iso(at), "requestId": request,
-        "message": {"model": "claude-opus-5-5", "usage": {
+        "message": {"model": model, "usage": {
             "input_tokens": 1, "output_tokens": output,
             "cache_read_input_tokens": 100, "cache_creation_input_tokens": 10}},
     }) + "\n"
+
+
+def codex_turn(at: float, model: str) -> str:
+    return json.dumps({"timestamp": iso(at), "type": "event_msg",
+                       "payload": {"type": "turn_context", "model": model}}) + "\n"
 
 
 def quota_row(at: float, account: str, week_used: float, resets_at: float) -> str:
@@ -291,9 +296,12 @@ class StepEstimateTest(QuotaTest):
                              for i in range(1, 7)))
         quota.refresh(self.now)
         a = quota.get_quota(self.now)["accounts"][0]
+        # No model is tagged, so "unknown" is not a model: the mixed
+        # per-week median stands.
         self.assertEqual(a["week_estimate"], {
             "per_percent": 5_000_000, "week_tokens": 500_000_000,
-            "basis": "steps", "weeks": 2, "rough": True})
+            "basis": "steps", "weeks": 2, "rough": True, "model": None,
+            "by_model": []})
 
     def test_step_estimate_falls_back_to_a_moved_average(self) -> None:
         resets = self.now + 3 * 86400
@@ -305,16 +313,28 @@ class StepEstimateTest(QuotaTest):
             + codex_event(self.now - 100, 400_000_000, 0, 0, 75, resets))
         quota.refresh(self.now)
         a = quota.get_quota(self.now)["accounts"][0]
+        # The 50% jump is not a clean step, so no per-model entry; the jump's
+        # tokens still count toward the account's model.
         self.assertEqual(a["week_estimate"], {
             "per_percent": 8_000_000, "week_tokens": 800_000_000,
-            "basis": "average", "weeks": 1, "rough": True})
+            "basis": "average", "weeks": 1, "rough": True,
+            "model": None, "by_model": []})
 
     def test_two_weeks_that_moved_far_enough_are_not_rough(self) -> None:
-        week = lambda reset, step: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15,
+        week = lambda reset, step: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15, "resets_at": reset * 7 * 86400,
                                     "step_tokens_per_percent": step, "tokens_per_percent": step}
         est = quota._week_estimate([week(1, 4_000_000), week(2, 6_000_000)])
         self.assertFalse(est["rough"])
         self.assertTrue(quota._week_estimate([week(1, 4_000_000)])["rough"])
+
+    def test_two_reset_hours_on_one_day_are_one_week(self) -> None:
+        day = 20_000 * 86400
+        week = lambda reset: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15,
+                              "resets_at": reset, "reset_exact": reset,
+                              "step_tokens_per_percent": 5_000_000, "tokens_per_percent": 5_000_000}
+        est = quota._week_estimate([week(day - 8 * 3600), week(day + 14 * 3600)])
+        self.assertEqual(est["weeks"], 1)
+        self.assertTrue(est["rough"])
 
     def test_session_windows_are_ignored_for_the_estimate(self) -> None:
         session_reset = self.now + 2 * HOUR + 1234
@@ -362,8 +382,120 @@ class StepEstimateTest(QuotaTest):
         quota.refresh(self.now)
         w = self.window(quota.get_quota(self.now), "codex")
         self.assertEqual((w["clean_steps"], w["step_tokens_per_percent"]), (6, 1000))
+        # the per-model columns migrated too, and the old rows decoded fine
+        conn = sqlite3.connect(db)
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(token_quota_window)")}
+        conn.close()
+        self.assertIn("step_ratios_by_model", cols)
+        self.assertIn("model_tokens", cols)
+        self.assertEqual(w["model_tokens"], {})
+        self.assertEqual(w["step_ratios_by_model"], {})
+        self.assertIsNone(w["main_model"])
 
 
+class ModelSplitTest(QuotaTest):
+    """The weekly estimate split by the model that spent each clean 1% step."""
+
+    def test_one_model_week_gives_a_model_basis_estimate(self) -> None:
+        resets = self.now + 3 * 86400
+        # six clean 1% steps, all after a turn_context on model A
+        events = codex_meta("acct-1") + codex_turn(self.now - 300, "model-a")
+        for i in range(7):
+            events += codex_event(self.now - 300 + i * 10, 1000 * i, 0, 0, 10 + i, resets)
+        (self.codex / "r.jsonl").write_text(events)
+        _, usage = quota._parse_codex(self.codex / "r.jsonl")
+        self.assertEqual({u[6] for u in usage}, {"model-a"})
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        w = self.window(result, "codex")
+        self.assertEqual(w["model_tokens"], {"model-a": 6000})
+        self.assertEqual(w["step_ratios_by_model"], {"model-a": [1000] * 6})
+        self.assertEqual(w["main_model"], "model-a")
+        est = result["accounts"][0]["week_estimate"]
+        self.assertEqual((est["basis"], est["model"]), ("model", "model-a"))
+        self.assertEqual(est["by_model"], [{
+            "model": "model-a", "per_percent": 1000, "week_tokens": 100_000,
+            "steps": 6, "weeks": 1, "rough": True}])
+        self.assertEqual((est["per_percent"], est["week_tokens"]), (1000, 100_000))
+
+    def test_two_models_split_by_model_and_the_bigger_one_leads(self) -> None:
+        resets = self.now + 3 * 86400
+        # five clean 1% steps on model A at 4M each, then six on model B at 1M
+        events = codex_meta("acct-1") + codex_turn(self.now - 600, "model-a")
+        for i in range(6):
+            events += codex_event(self.now - 600 + i * 10, 4_000_000 * i, 0, 0, 40 + i, resets)
+        events += codex_turn(self.now - 540, "model-b")
+        for i in range(1, 7):
+            events += codex_event(self.now - 540 + i * 10, 20_000_000 + 1_000_000 * i,
+                                  0, 0, 45 + i, resets)
+        (self.codex / "r.jsonl").write_text(events)
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        w = self.window(result, "codex")
+        self.assertEqual(w["model_tokens"], {"model-a": 20_000_000, "model-b": 6_000_000})
+        est = result["accounts"][0]["week_estimate"]
+        by_model = {e["model"]: e for e in est["by_model"]}
+        self.assertEqual(set(by_model), {"model-a", "model-b"})
+        self.assertEqual(by_model["model-a"]["per_percent"], 4_000_000)
+        self.assertEqual(by_model["model-b"]["per_percent"], 1_000_000)
+        self.assertEqual((by_model["model-a"]["steps"], by_model["model-b"]["steps"]), (5, 6))
+        self.assertEqual(est["model"], "model-a")   # 20M of its tokens vs 6M
+        self.assertEqual(est["basis"], "model")
+        self.assertEqual((est["per_percent"], est["week_tokens"]), (4_000_000, 400_000_000))
+        self.assertEqual([e["model"] for e in est["by_model"]],
+                         ["model-a", "model-b"])   # sorted by tokens desc
+
+    def test_a_step_split_between_two_models_counts_for_neither(self) -> None:
+        resets = self.now + 3 * 86400
+        # each clean 1% step is half model A, half model B (the token events
+        # carry no reading; the reading comes after both), so no model
+        # reaches the 80% bar and the step feeds the all-model ratio only
+        events = codex_meta("acct-1")
+        events += codex_event(self.now - 600, 0, 0, 0, 10, resets)
+        total = 0
+        for k in range(6):
+            for m in ("model-a", "model-b"):
+                events += codex_turn(self.now - 590 + k * 100, m)
+                total += 1_000_000
+                events += codex_event(self.now - 590 + k * 100, total, 0, 0, None, resets)
+            events += codex_event(self.now - 560 + k * 100, total, 0, 0, 11 + k, resets)
+        (self.codex / "r.jsonl").write_text(events)
+        quota.refresh(self.now)
+        result = quota.get_quota(self.now)
+        w = self.window(result, "codex")
+        self.assertEqual(w["clean_steps"], 6)
+        self.assertEqual(w["step_tokens_per_percent"], 2_000_000)
+        self.assertEqual(w["step_ratios_by_model"], {})
+        self.assertEqual(w["model_tokens"], {"model-a": 6_000_000, "model-b": 6_000_000})
+        est = result["accounts"][0]["week_estimate"]
+        self.assertEqual(est["by_model"], [])
+        self.assertEqual(est["basis"], "steps")     # the mixed result stands
+        self.assertEqual(est["per_percent"], 2_000_000)
+        self.assertIn(est["model"], ("model-a", "model-b"))
+
+    def test_claude_rows_carry_the_model_and_synthetic_is_unknown(self) -> None:
+        resets, resets2 = self.now + 86400, self.now + 86400 + 3600
+        self.log.write_text(
+            quota_row(self.now - 950, "", 5, resets2)
+            + quota_row(self.now - 850, "", 6, resets2)
+            + quota_row(self.now - 300, "", 10, resets)
+            + quota_row(self.now - 100, "", 11, resets))
+        (self.claude / "a.jsonl").write_text(
+            claude_row(self.now - 900, "r1", 3, model="<synthetic>")
+            + claude_row(self.now - 250, "r0", 5))
+        quota.refresh(self.now)
+        windows = {w["resets_at"]: w for w in quota.get_quota(self.now)["windows"]
+                   if w["source"] == "claude"}
+        w_opus = windows[quota._hour(resets)]
+        w_unknown = windows[quota._hour(resets2)]
+        self.assertEqual(w_opus["model_tokens"], {"claude-opus-5-5": 116})
+        self.assertEqual(w_opus["step_ratios_by_model"], {"claude-opus-5-5": [116]})
+        self.assertEqual(w_opus["main_model"], "claude-opus-5-5")
+        # <synthetic> is not a real model: unknown rows count for no model
+        self.assertEqual(w_unknown["model_tokens"], {})
+        self.assertIsNone(w_unknown["main_model"])
+        self.assertEqual(w_unknown["step_ratios_by_model"], {})
+        self.assertIsNone(w_unknown["main_model"])
 def limit_hit_event(at: float, kind: str = "task_complete",
                     info: str = "usage_limit_exceeded") -> str:
     return json.dumps({"timestamp": iso(at), "type": "event_msg", "payload": {

@@ -35,12 +35,23 @@ interface QuotaAccount {
   week_estimate: WeekEstimate | null;
 }
 
+interface ModelEstimate {
+  model: string;
+  per_percent: number;
+  week_tokens: number;
+  steps: number;
+  weeks: number;
+  rough: boolean;
+}
+
 interface WeekEstimate {
   per_percent: number;
   week_tokens: number;
-  basis: "steps" | "average";
+  basis: "steps" | "average" | "model";
   weeks: number;
   rough: boolean;
+  model: string | null;
+  by_model: ModelEstimate[];
 }
 
 interface QuotaWindow {
@@ -66,6 +77,7 @@ interface QuotaWindow {
   clean_steps: number;
   local_percent: number | null;
   other_percent: number | null;
+  main_model: string | null;
 }
 
 interface QuotaData {
@@ -90,6 +102,19 @@ const stamp = (epoch: number) => {
   return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 const millions = (v: number) => `${(v / 1e6).toFixed(1)}M`;
+// Model display name: drop the claude- prefix; no model read as unknown.
+const modelName = (model: string | null) => {
+  const m = model ?? "";
+  if (!m) return "未知";
+  return m.startsWith("claude-") ? m.slice("claude-".length) : m;
+};
+// One line under the weekly figure: the model the number is for, or a note
+// when it mixes models.
+const estModelLine = (est: WeekEstimate) => {
+  if (est.basis === "model") return modelName(est.model);
+  if (est.model) return "混用估算";
+  return "";
+};
 const who = (source: Source, label: string | null, id: string | null) =>
   `${SOURCE_NAME[source]} · ${label ?? (id ? id.slice(0, 8) : "帳號未判讀")}`;
 
@@ -270,6 +295,7 @@ export default function QuotaPanel() {
                 const key = `${a.source}:${a.account_id}`;
                 const open = expanded.has(key);
                 const est = a.week_estimate;
+                const estLine = est ? estModelLine(est) : "";
                 return (
                   <Fragment key={key}>
                   <tr style={{ borderTop: "1px solid var(--border)", color: "var(--text)" }}>
@@ -295,12 +321,13 @@ export default function QuotaPanel() {
                       {w ? <RemainingBar q={w} /> : "無讀數"}
                       <Outlook adv={a.advice} />
                     </td>
-                    <td className={`${cell} text-right`}>
+                    <td className={`${cell} text-right`} style={{ whiteSpace: "nowrap" }}>
                       {est
                         ? <>{millions(est.week_tokens)}
                             <br />
                             <span style={{ fontSize: 11, color: TEXT_SUBTLE }}>
                               每 1% 約 {(est.per_percent / 1e6).toFixed(1)}M{est.rough && "（粗估）"}
+                              {estLine && <><br />{estLine}</>}
                             </span></>
                         : "—"}
                     </td>
@@ -326,6 +353,13 @@ export default function QuotaPanel() {
                   {open && (
                     <tr style={{ color: "var(--text)" }}>
                       <td colSpan={11} style={{ padding: "0 12px 12px", background: "var(--row-hover, rgba(125,125,125,0.06))" }}>
+                        {est && est.by_model.length >= 2 && (
+                          <div style={{ fontSize: 11, color: TEXT_SUBTLE, marginBottom: 6, fontFamily: "monospace" }}>
+                            各模型：{est.by_model.map((e) =>
+                              `${modelName(e.model)} 每 1% 約 ${millions(e.per_percent)}（用滿約 ${millions(e.week_tokens)}，${e.steps} 段）${e.rough ? "粗估" : ""}`
+                            ).join(" · ")}
+                          </div>
+                        )}
                         <table className="w-full" style={{ fontSize: 11 }}>
                           <thead style={{ borderBottom: "1px solid var(--border)" }}>
                             <tr>
@@ -334,6 +368,7 @@ export default function QuotaPanel() {
                               {head("本機用量", "right")}
                               {head("每 1% 約", "right")}
                               {head("其他電腦約", "right")}
+                              {head("主要模型")}
                             </tr>
                           </thead>
                           <tbody>
@@ -350,6 +385,7 @@ export default function QuotaPanel() {
                                       : "—"}
                                 </td>
                                 <td className={`${cell} text-right`}>{dw.other_percent != null ? `${dw.other_percent.toFixed(0)}%` : "—"}</td>
+                                <td className={cell}>{dw.main_model ? modelName(dw.main_model) : "—"}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -368,6 +404,7 @@ export default function QuotaPanel() {
       <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
         額度是官方讀數：Codex 取自 rollout 的 rate_limits；Claude 取自 statusLine（token-quota-log），只有裝好之後才有紀錄。
         「用滿一週約」＝每 1% 額度本機約用多少 token × 100，取各週中位數；資料不到 2 週、額度動不到 20%，或只能用整週平均算的，標「粗估」。點「細節」看每週數字。
+        換模型會改變每 1% 的 token 數（Opus 比 Sonnet 少很多），所以只用同一個模型為主的 1% 段來估；混用的段不算進各模型。
         「建議」：同一個來源裡，先用週額度最快重置、還有剩的帳號（重置後沒用完的就作廢）；被週額度或 5 小時 session 擋住的排後面。
         超過 30 天沒用的帳號不列出{data?.hidden_idle_accounts ? `（目前隱藏 ${data.hidden_idle_accounts} 個）` : ""}，資料保留，再用到會自動出現。
         {data && !data.claude_log_present && " 目前還沒有 Claude 額度紀錄：執行 sk deploy 與 sk hooks install 後重開 Claude Code。"}
