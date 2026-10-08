@@ -824,6 +824,18 @@ cmd_check() {
   rm -f /tmp/sk-routing.$$
 
   echo ""
+  # Worktrees: executors leave .claude/worktrees/* behind. Report only; several
+  # sessions share the repo, so nothing here deletes one.
+  echo -e "${CYAN}[Worktrees]${NC}"
+  if python3 "$REPO_DIR/scripts/check-worktrees.py" >/tmp/sk-worktrees.$$ 2>&1; then
+    echo -e "  ${GREEN}$(tail -1 /tmp/sk-worktrees.$$ | sed 's/^ *//')${NC}"
+  else
+    echo -e "  ${YELLOW}$(tail -1 /tmp/sk-worktrees.$$ | sed 's/^ *//')${NC}"
+    grep -E 'STALE|remove:' /tmp/sk-worktrees.$$ | sed 's/^/  /'
+  fi
+  rm -f /tmp/sk-worktrees.$$
+
+  echo ""
   # Role coverage: every skill must appear in docs/skills-by-role.md at least once,
   # so the user-facing "who uses what" page cannot silently fall behind the catalog.
   echo -e "${CYAN}[Role coverage]${NC}"
@@ -4493,6 +4505,7 @@ case "${1:-help}" in
       portability) shift; cmd_check_portability "$@" ;;
       ports)  shift; cmd_check_ports "$@" ;;
       liveness) shift; cmd_check_liveness "$@" ;;
+      worktrees) shift; python3 "$REPO_DIR/scripts/check-worktrees.py" "$@" ;;
       *)    cmd_check "${1:-}" ;;
     esac
     ;;
