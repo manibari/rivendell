@@ -43,6 +43,7 @@ agent-observability	基礎建設	Agent 可觀測性：exec-lib 整合、執行�
 audit-fix	基礎建設	分析 sk audit 報告，自動修復專案權限問題
 ci-pipeline	基礎建設	偵測專案技術棧，自動產生 GitHub Actions CI 工作流
 deploy	基礎建設	推薦部署平台，產生 Dockerfile / fly.toml / vercel.json 等配置
+app-installer	基礎建設	把產品做成客戶免裝開發工具就能用的安裝檔：macOS .app + DMG、MSI、deb/rpm；原生單一執行檔或內嵌 Python/Node 的 app，含乾淨機器依賴檢查
 dev-process-gate	基礎建設	攔截跳過設計直接寫 code 的行為，引導走完整開發流程
 agent-headless	基礎建設	Headless agent 模式範本：排程、structured logging、output 管理
 init-project	基礎建設	初始化 AGENTS.md + .claude/CLAUDE.md 專案配置

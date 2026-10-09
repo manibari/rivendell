@@ -168,6 +168,26 @@
     {
       "phrase": "改 roadmap",
       "expect": "spine-roadmap"
+    },
+    {
+      "phrase": "做成 dmg",
+      "expect": "app-installer"
+    },
+    {
+      "phrase": "安裝檔",
+      "expect": "app-installer"
+    },
+    {
+      "phrase": "不用 docker 跑",
+      "expect": "app-installer"
+    },
+    {
+      "phrase": "notarize",
+      "expect": "app-installer"
+    },
+    {
+      "phrase": "打包成 container",
+      "expect": "docker-compose-setup"
     }
   ]
 }
