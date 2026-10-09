@@ -80,10 +80,19 @@ def inspect(repo: Path, days: float, now: float) -> list[dict[str, object]]:
         path = Path(str(entry["worktree"]))
         head = str(entry["HEAD"])
         missing = not path.exists()
+        # The directory is there but its .git link is gone: git cannot read it.
+        # Files may still sit in it (.env, work), so it is never safe to remove.
+        broken = not missing and not (path / ".git").exists()
         branch_ref = entry.get("branch")
         branch = branch_ref.removeprefix("refs/heads/") if isinstance(branch_ref, str) else None
-        commit_time = int(git(repo if missing else path, "log", "-1", "--format=%ct", head if missing else "HEAD").strip())
-        if missing:
+        detached_repo = missing or broken
+        commit_time = int(git(repo if detached_repo else path, "log", "-1", "--format=%ct",
+                              head if detached_repo else "HEAD").strip())
+        if broken:
+            ahead = None
+            dirty = None
+            last_active = max(commit_time, path.lstat().st_mtime)
+        elif missing:
             ahead = None
             dirty = None
             last_active = commit_time
@@ -99,7 +108,7 @@ def inspect(repo: Path, days: float, now: float) -> list[dict[str, object]]:
                 except FileNotFoundError:
                     pass
         idle_days = round((now - last_active) / 86400, 1)
-        stale = missing or idle_days >= days
+        stale = missing or broken or idle_days >= days
         results.append({
             "path": str(path),
             "branch": branch,
@@ -110,6 +119,7 @@ def inspect(repo: Path, days: float, now: float) -> list[dict[str, object]]:
             "idle_days": idle_days,
             "stale": stale,
             "missing": missing,
+            "broken": broken,
             "safe_to_remove": bool(missing or (stale and ahead == 0 and dirty == 0)),
         })
     return sorted(results, key=lambda item: float(item["idle_days"]), reverse=True)
@@ -122,6 +132,8 @@ def print_text(worktrees: list[dict[str, object]], repo: Path) -> None:
         suffix = ""
         if item["safe_to_remove"]:
             suffix = "  safe to remove"
+        elif item["broken"]:
+            suffix = "  keep: no .git link, check the files by hand"
         elif item["stale"]:
             reasons = []
             if item["ahead"]:

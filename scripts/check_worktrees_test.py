@@ -118,6 +118,16 @@ class CheckWorktreesTest(unittest.TestCase):
         self.assertEqual(data["worktrees"][0]["dirty"], 1)
         self.assertFalse(data["worktrees"][0]["stale"])
 
+    def test_worktree_without_git_link_is_broken_not_safe(self) -> None:
+        self.add_worktree()
+        (self.worktree / ".git").unlink()
+        (self.worktree / ".env").write_text("x")
+        process, data = self.result()
+        self.assertEqual(process.returncode, 1)
+        item = data["worktrees"][0]
+        self.assertEqual((item["broken"], item["stale"], item["safe_to_remove"]), (True, True, False))
+        self.assertIn("no .git link", self.check(as_json=False).stdout)
+
     def test_repeated_run_has_same_idle_days(self) -> None:
         self.add_worktree()
         first, first_data = self.result()
