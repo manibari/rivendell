@@ -80,6 +80,7 @@ dev-size-gate	品質	大小守衛（D37）：資料夾直接放超過 20 檔要�
 autoresearch	工作流	自主迭代迴圈：定義目標 + 指標 + 驗證指令，agent 自動 modify → verify → keep/discard
 context-recovery	工作流	Session compaction 後自動恢復上下文（git/檔案/memory）
 agent-dispatch	工作流	派遣多個 agent 平行處理 3+ 個獨立問題
+agent-code-dispatch	工作流	把一張開發票派給執行者（Qwen / Codex / Claude）寫，Claude 規劃並把關驗收
 executing-plans	工作流	分批執行實作計畫，每批完成後 review checkpoint
 planning-with-files	工作流	Manus 風格檔案式規劃（task_plan.md / findings.md / progress.md）
 requirement	工作流	定義結構化需求：user story + acceptance criteria + scope

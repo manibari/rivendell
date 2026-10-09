@@ -23,7 +23,7 @@ The repository is organized by ownership. See [repository layout](docs/architect
 ```
 skills/
 ├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(13)
-├── agents/     # 自動化 Agent：排程、觀測、persona (5)
+├── agents/     # 自動化 Agent：排程、觀測、persona、開發派工 (6)
 ├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
 ├── workflow/   # dev 循環工具與 Session 維運 (15)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
@@ -83,7 +83,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (127 skills)
+## Skills Catalog (128 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -113,6 +113,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **agent-code-dispatch** | 自動 | Give one scoped coding ticket to an executor (Qwen, Codex, or a Claude subagent) |
 | **agent-dispatch** | 自動 | Use multiple Claude agents to investigate and fix independent problems |
 | **agent-headless** | `/agent-headless` | Pattern for running Claude Code as an automated |
 | **agent-launchd** | 自動 | Create / debug / manage macOS launchd LaunchAgents — plist generation |
@@ -303,7 +304,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
-| dev | 21 | 21 | 9 | 7 |
+| dev | 21 | 22 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 
 

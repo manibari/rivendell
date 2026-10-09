@@ -77,6 +77,9 @@ Deploy & Infrastructure:
   todo [--fix]        One page of what is still outstanding: down services,
                       uncommitted work, ROADMAP backlog. --fix applies the AUTO
                       items, --notify pushes to Telegram when anything is RED.
+  code exec --executor qwen|codex -C <dir> --brief-file <f>
+                      Run one coding ticket on an executor via codex exec
+                      (agent-code-dispatch). Also: code proxy start|stop|status.
   help                Show this help message
 
 Categories: platform, workflow, quality, git, frontend, backend, docs
@@ -4530,6 +4533,7 @@ case "${1:-help}" in
   update)     cmd_update "${2:-}" ;;
   reboot)     shift; exec "$REPO_DIR/bin/sk-reboot" "$@" ;;
   todo)       shift; exec "$REPO_DIR/bin/sk-todo" "$@" ;;
+  code)       shift; exec python3 "$REPO_DIR/skills/agents/agent-code-dispatch/scripts/code-run" "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo -e "${RED}Unknown command:${NC} $1"

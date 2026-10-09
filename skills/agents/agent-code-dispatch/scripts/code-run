@@ -1,0 +1,266 @@
+#!/usr/bin/env python3
+"""code-run: run one coding task on an executor through `codex exec`.
+
+Usage:
+  code-run exec --executor qwen|codex -C <dir> (--brief-file <file> | --brief <text>)
+                [-m <model>] [--network]
+  code-run proxy start|stop|status      (the GMI proxy that the qwen executor uses)
+  code-run key-check                    (the GMI key)
+
+Executors:
+  qwen   GMI Qwen. Starts the proxy when it is not running and uses
+         CODEX_HOME=~/.codex-qwen, so /tokens counts the run as Qwen.
+  codex  The ChatGPT Codex login in ~/.codex, with its own default model.
+The claude executor is not run here: Claude runs it as a worktree subagent
+(see SKILL.md).
+
+--executor has no default on purpose. The default executor is a rule in the
+global CLAUDE.md, and the caller passes it each time, so there is one source.
+
+Each run goes to ~/.local/state/sk/code-runs/<stamp>-<executor>-<dir name>/:
+  brief.md     the task text
+  events.jsonl codex --json events
+  last.md      the final message from Qwen
+  stderr.log   codex stderr
+The last stdout line is a JSON summary: exit code, seconds, token usage,
+changed files.
+
+Key: GMI_API_KEY from the environment, else the macOS Keychain item
+"sk-gmi-api-key". The key goes to the proxy through its environment only.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import signal
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PROXY = HERE / "qwen_codex_proxy.py"
+HOME = Path.home() / ".codex-qwen"
+PID_FILE = HOME / "proxy.pid"
+RUNS = Path.home() / ".local" / "state" / "sk" / "code-runs"
+EXECUTORS = ("qwen", "codex")
+PORT = int(os.environ.get("QWEN_PROXY_PORT", 8004))
+KEYCHAIN_SERVICE = "sk-gmi-api-key"
+QWEN_MODEL = os.environ.get("QWEN_MODEL", "Qwen/Qwen3.8-27B")
+# Watchdog. codex writes an event for each item, so a quiet events file means a
+# stall (2026-10-07: a run hung 74 min on the proxy). One upstream call may take
+# up to the proxy's 10 min upstream timeout, so the idle limit is above that.
+IDLE_LIMIT_MIN = 15
+TOTAL_LIMIT_MIN = 90
+
+
+def gmi_key() -> str:
+    key = os.environ.get("GMI_API_KEY", "").strip()
+    if key:
+        return key
+    try:
+        out = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
+                             capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        return ""
+    return out.stdout.strip() if out.returncode == 0 else ""
+
+
+def proxy_up() -> bool:
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/health", timeout=2) as resp:
+            return json.loads(resp.read()).get("ok") is True
+    except Exception:
+        return False
+
+
+def port_taken() -> bool:
+    with socket.socket() as s:
+        return s.connect_ex(("127.0.0.1", PORT)) == 0
+
+
+def proxy_start() -> None:
+    if proxy_up():
+        return
+    if port_taken():
+        sys.exit(f"port {PORT} is used by another program; see `sk check ports`")
+    key = gmi_key()
+    if not key:
+        sys.exit(f"no GMI key: set GMI_API_KEY or add Keychain item '{KEYCHAIN_SERVICE}'")
+    HOME.mkdir(parents=True, exist_ok=True)
+    env = {**os.environ, "GMI_API_KEY": key, "QWEN_PROXY_PORT": str(PORT)}
+    proc = subprocess.Popen([sys.executable, "-u", str(PROXY)], env=env,
+                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                            stderr=open(HOME / "proxy.err", "a"), start_new_session=True)
+    PID_FILE.write_text(str(proc.pid))
+    for _ in range(50):
+        if proxy_up():
+            return
+        if proc.poll() is not None:
+            sys.exit(f"proxy exited with code {proc.returncode}; see {HOME / 'proxy.err'}")
+        time.sleep(0.1)
+    sys.exit("proxy did not answer /health in 5 s")
+
+
+def proxy_stop() -> None:
+    try:
+        pid = int(PID_FILE.read_text())
+        os.kill(pid, signal.SIGTERM)
+    except (OSError, ValueError):
+        pass
+    PID_FILE.unlink(missing_ok=True)
+
+
+def git_changes(cwd: Path) -> list[str]:
+    out = subprocess.run(["git", "-C", str(cwd), "status", "--short"],
+                         capture_output=True, text=True, check=False)
+    return [line for line in out.stdout.splitlines() if line.strip()]
+
+
+def read_events(events: Path) -> tuple[dict, str]:
+    """Token usage of the last completed turn, and the last error message."""
+    usage: dict = {}
+    error = ""
+    try:
+        for line in events.open():
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            kind = event.get("type")
+            if kind == "turn.completed":
+                usage = event.get("usage") or usage
+            elif kind == "turn.failed":
+                error = (event.get("error") or {}).get("message") or error
+            elif kind == "error":
+                error = event.get("message") or error
+    except OSError:
+        pass
+    return usage, error
+
+
+def watch(proc: subprocess.Popen, events: Path, idle_s: float, total_s: float) -> str:
+    """Wait for codex. Stop it on a stall or past the total limit; return why."""
+    started = time.time()
+    while proc.poll() is None:
+        time.sleep(5)
+        now = time.time()
+        try:
+            quiet = now - events.stat().st_mtime
+        except OSError:
+            quiet = now - started
+        reason = ""
+        if quiet > idle_s:
+            reason = f"stalled: no codex event for {round(quiet / 60)} min"
+        elif now - started > total_s:
+            reason = f"timeout: run passed {round(total_s / 60)} min"
+        if reason:
+            os.killpg(proc.pid, signal.SIGTERM)
+            try:
+                proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait()
+            return reason
+    return ""
+
+
+def cmd_exec(args) -> int:
+    cwd = Path(args.C).resolve()
+    if not cwd.is_dir():
+        sys.exit(f"not a directory: {cwd}")
+    brief = Path(args.brief_file).read_text() if args.brief_file else args.brief
+    if not brief or not brief.strip():
+        sys.exit("empty brief")
+    run_dir = RUNS / f"{time.strftime('%Y%m%d-%H%M%S')}-{args.executor}-{cwd.name}"
+    run_dir.mkdir(parents=True)
+    (run_dir / "brief.md").write_text(brief)
+    before = set(git_changes(cwd))
+    cmd = ["codex", "exec", "-C", str(cwd), "-s", "workspace-write",
+           "--json", "-o", str(run_dir / "last.md")]
+    env = {k: v for k, v in os.environ.items() if k != "GMI_API_KEY"}
+    model = args.model
+    if args.executor == "qwen":
+        proxy_start()
+        model = model or QWEN_MODEL
+        cmd += ["-c", "model_provider=gmi",
+                "-c", 'model_providers.gmi.name="GMI"',
+                "-c", f'model_providers.gmi.base_url="http://127.0.0.1:{PORT}/v1"',
+                "-c", 'model_providers.gmi.env_key="QWEN_PROXY_TOKEN"',
+                "-c", 'model_providers.gmi.wire_api="responses"']
+        # The proxy holds the real key; codex only needs a non-empty token.
+        env.update(CODEX_HOME=str(HOME), QWEN_PROXY_TOKEN="local")
+    if model:
+        cmd += ["-m", model]
+    if args.network:
+        cmd += ["-c", "sandbox_workspace_write.network_access=true"]
+    cmd.append(brief)
+    print(f"run dir: {run_dir}", flush=True)
+    started = time.time()
+    events = run_dir / "events.jsonl"
+    with open(events, "w") as out, open(run_dir / "stderr.log", "w") as err:
+        proc = subprocess.Popen(cmd, env=env, stdin=subprocess.DEVNULL, stdout=out,
+                                stderr=err, start_new_session=True)
+        stopped = watch(proc, events, args.idle_min * 60, args.timeout_min * 60)
+    code = proc.returncode
+    usage, error = read_events(events)
+    if stopped:
+        error = stopped + (f"; last codex error: {error}" if error else "")
+    summary = {
+        "exit": code,
+        "seconds": round(time.time() - started),
+        "executor": args.executor,
+        "model": model or "(codex default)",
+        "usage": usage,
+        "error": error,
+        "changed": [c for c in git_changes(cwd) if c not in before],
+        "run_dir": str(run_dir),
+    }
+    (run_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2))
+    print(json.dumps(summary, ensure_ascii=False), flush=True)
+    return code
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(prog="code-run")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    ex = sub.add_parser("exec")
+    ex.add_argument("--executor", required=True, choices=EXECUTORS,
+                    help="no default: the caller passes the executor from the CLAUDE.md rule")
+    ex.add_argument("-C", required=True, help="working directory (use a git worktree)")
+    group = ex.add_mutually_exclusive_group(required=True)
+    group.add_argument("--brief-file")
+    group.add_argument("--brief")
+    ex.add_argument("-m", "--model", help=f"qwen default {QWEN_MODEL}; codex default from ~/.codex")
+    ex.add_argument("--idle-min", type=float, default=IDLE_LIMIT_MIN,
+                    help="stop codex after this many minutes with no event")
+    ex.add_argument("--timeout-min", type=float, default=TOTAL_LIMIT_MIN,
+                    help="stop codex after this many minutes in total")
+    ex.add_argument("--network", action="store_true",
+                    help="allow network in the sandbox (needed for a local DB or a dev server)")
+    px = sub.add_parser("proxy")
+    px.add_argument("action", choices=["start", "stop", "status"])
+    sub.add_parser("key-check")
+    args = parser.parse_args()
+
+    if args.cmd == "exec":
+        return cmd_exec(args)
+    if args.cmd == "key-check":
+        print("key found" if gmi_key() else f"no key (Keychain item '{KEYCHAIN_SERVICE}')")
+        return 0 if gmi_key() else 1
+    if args.action == "start":
+        proxy_start()
+        print(f"proxy up on 127.0.0.1:{PORT}")
+    elif args.action == "stop":
+        proxy_stop()
+        print("proxy stopped")
+    else:
+        print(f"proxy {'up' if proxy_up() else 'down'} on 127.0.0.1:{PORT}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
