@@ -25,7 +25,7 @@ skills/
 ├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(13)
 ├── agents/     # 自動化 Agent：排程、觀測、persona、開發派工 (6)
 ├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
-├── workflow/   # dev 循環工具與 Session 維運 (15)
+├── workflow/   # dev 循環工具與 Session 維運 (16)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
 ├── quality/    # 程式品質、審查、文字打磨 (5)
 ├── git/        # Git/GitHub 操作 (4)
@@ -83,7 +83,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (128 skills)
+## Skills Catalog (129 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -137,6 +137,7 @@ as release notes.
 
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
+| **app-installer** | `/app-installer` 或自動 | Package a product as an installer a customer opens with no developer tools: a macOS .app in a DMG, a Windows MSI, Linux deb/rpm/AppImage. |
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
@@ -304,7 +305,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
-| dev | 21 | 22 | 9 | 7 |
+| dev | 21 | 23 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 
 

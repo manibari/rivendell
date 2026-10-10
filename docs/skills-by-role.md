@@ -80,7 +80,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `deploy` ｜ 視情況：`ci-pipeline`（還沒有 CI） | 選平台、生設定 |
-| Do | `cloudflare-tunnel-provision` → `tunnel-proxy-deploy` ｜ 視情況：`docker-compose-setup` | 從零開網域；FastAPI + Next.js 走 tunnel 的反代坑 |
+| Do | `cloudflare-tunnel-provision` → `tunnel-proxy-deploy` ｜ 視情況：`docker-compose-setup` · `app-installer`（客戶自己開的安裝檔：dmg／msi，不靠 docker） | 從零開網域；FastAPI + Next.js 走 tunnel 的反代坑 |
 | Check | `gstack-canary` (gstack) → `env-doctor` ｜ 視情況：`gstack-cso` (gstack，上線前安全審計) | 上線後回歸；環境一致 |
 | Act | `cloudflare-tunnel-ops` ｜ 自動：`spine-versioning`、`doc-drift-sync` ｜ 視情況：`gstack-document-release` (gstack) | tunnel 掛了／搬機器 |
 
