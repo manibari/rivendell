@@ -89,7 +89,9 @@ h3 { font: 600 24px/1.5 var(--font-ui); }
 .btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--ink) 40%, transparent); outline-offset: 3px; }
 
 .accent { background: var(--grad-accent-text); -webkit-background-clip: text;
-  background-clip: text; color: transparent; }
+  background-clip: text; color: transparent;
+  /* CJK glyphs reach outside the line box; widen the painted box or the tops are cut. */
+  display: inline-block; padding: 0.18em 0.04em 0.12em; margin: -0.18em -0.04em -0.12em; }
 
 .card { background: var(--card); border-radius: var(--radius-card);
   box-shadow: var(--shadow-card); padding: var(--space-6); }

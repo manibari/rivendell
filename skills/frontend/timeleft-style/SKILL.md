@@ -142,6 +142,8 @@ Chinese rules (*ours*):
 - [ ] Serif only in h1/h2; Chinese headings weight 600.
 - [ ] Body text is `--ink` or `--ink-muted`, never `--ink-faint`; contrast 4.5:1 or more.
 - [ ] Inputs are 16 px text or larger.
+- [ ] Accent text zoomed at 2x: no stroke of a Chinese glyph is cut at the top or bottom
+  (gradient text paints only its own box; `tokens.css` widens it).
 - [ ] Dark mode checked with a screenshot (the gradient stays, surfaces change).
 - [ ] No Timeleft assets (§6).
 
