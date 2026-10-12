@@ -108,6 +108,8 @@ Write the brief to the scratchpad as `brief-<slug>.md`. Use this order:
 - If a test cannot run (no database, no network, missing tool), stop.
   Report the command and the exact error. Do not make the test pass another way.
 - Do not commit. Do not add dependencies.
+- Do not start a browser, Playwright, whisper, or a GPU model. Claude runs them
+  outside the sandbox.
 
 # Goal
 <one paragraph: what the user gets>
@@ -121,9 +123,29 @@ Write the brief to the scratchpad as `brief-<slug>.md`. Use this order:
 # Test command
 <the exact command; say if it needs a service>
 
+# Claude runs after review
+<commands that cannot run in the sandbox (see "Sandbox limits"); omit if none>
+
 # Report
 End with: files changed, test command output (last 20 lines), anything you could not do.
 ```
+
+#### Sandbox limits (qwen, codex)
+
+The codex sandbox blocks access to the macOS window server and to the GPU.
+These commands fail at start inside it. Do not put them in "Test command" or
+"Acceptance". Put them under "Claude runs after review", and run them in step 5.
+
+- Playwright, or any other browser launch. Chrome stops in `_RegisterApplication`
+  with exit 134, and macOS writes a crash report for each launch.
+- Programs that use the GPU: PyTorch on MPS (`torch.backends.mps.is_available()`
+  is False in the sandbox), whisper-cli (stopped at start 8 times on 2026-10-09),
+  local image or video models.
+- `uv run`: the sandbox cannot write `~/.cache/uv`. Run `uv sync` in the worktree
+  before dispatch, and give `.venv/bin/python ...` commands.
+
+(2026-10-11: a brief told Codex to run Playwright "and stop if the browser cannot
+start". Codex ran 128 tests anyway. All failed, and Chrome crashed 16 times.)
 
 ### 3. Run in the background
 
@@ -160,8 +182,8 @@ Check each item. Write the result of each item in your report.
    mocks of a shared check. Search the diff for `skip`, `xfail`, `monkeypatch`,
    `mock`, and `return True`.
 3. Language: user-facing strings are Traditional Chinese.
-4. Tests: run the test command yourself, outside the sandbox. Do not trust the
-   executor report for this.
+4. Tests: run the test command and the "Claude runs after review" commands
+   yourself, outside the sandbox. Do not trust the executor report for this.
 5. Claim versus fact: each claim in the report agrees with the diff and your test run.
 6. Changed expectations: list each `-` line in an existing test that holds an
    expected value (`assertEqual`, `assert ==`, `expect(...)`). For each one, the
