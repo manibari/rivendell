@@ -39,9 +39,12 @@ import subprocess
 import sys
 import time
 import urllib.request
+from collections import deque
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import code_run_liveness as liveness  # noqa: E402
 PROXY = HERE / "qwen_codex_proxy.py"
 HOME = Path.home() / ".codex-qwen"
 PID_FILE = HOME / "proxy.pid"
@@ -50,11 +53,21 @@ EXECUTORS = ("qwen", "codex")
 PORT = int(os.environ.get("QWEN_PROXY_PORT", 8004))
 KEYCHAIN_SERVICE = "sk-gmi-api-key"
 QWEN_MODEL = os.environ.get("QWEN_MODEL", "Qwen/Qwen3.8-27B")
-# Watchdog. codex writes an event for each item, so a quiet events file means a
-# stall (2026-10-07: a run hung 74 min on the proxy). One upstream call may take
-# up to the proxy's 10 min upstream timeout, so the idle limit is above that.
-IDLE_LIMIT_MIN = 15
+# Watchdog. A run is stalled when, for IDLE_LIMIT_MIN, codex wrote no event, its
+# process group used almost no CPU, and it received no bytes (code_run_liveness).
+# Long thinking still uses CPU, so it is not a stall. The owner (2026-10-12): 15 min
+# was too long, "時間就是金錢"; a stall is handled by one automatic continuation.
+IDLE_LIMIT_MIN = 1
 TOTAL_LIMIT_MIN = 90
+SAMPLE_S = 10
+RETRIES = 1
+CONTINUE_NOTE = """
+
+# Continue (automatic)
+A previous attempt at this task stopped because it went still for a while (no event,
+no CPU, no network). Its edits are still in this worktree. First read `git status` and
+`git diff`, keep what is right, then finish the task. Do not redo finished steps.
+"""
 
 
 def gmi_key() -> str:
@@ -143,29 +156,54 @@ def read_events(events: Path) -> tuple[dict, str]:
 
 
 def watch(proc: subprocess.Popen, events: Path, idle_s: float, total_s: float) -> str:
-    """Wait for codex. Stop it on a stall or past the total limit; return why."""
+    """Wait for codex. Stop it when still for `idle_s` or past `total_s`; return why."""
     started = time.time()
+    history: deque[tuple[float, liveness.Sample]] = deque()
+    history.append((started, liveness.sample(proc.pid, events)))
     while proc.poll() is None:
-        time.sleep(5)
+        time.sleep(SAMPLE_S)
         now = time.time()
-        try:
-            quiet = now - events.stat().st_mtime
-        except OSError:
-            quiet = now - started
+        history.append((now, liveness.sample(proc.pid, events)))
+        while len(history) > 2 and now - history[1][0] >= idle_s:
+            history.popleft()  # keep the oldest sample at least idle_s back
         reason = ""
-        if quiet > idle_s:
-            reason = f"stalled: no codex event for {round(quiet / 60)} min"
+        then, before = history[0]
+        if now - then >= idle_s and not liveness.moved(before, history[-1][1], now - then):
+            reason = f"stalled: no event, CPU or network for {round(now - then)} s"
         elif now - started > total_s:
             reason = f"timeout: run passed {round(total_s / 60)} min"
         if reason:
-            os.killpg(proc.pid, signal.SIGTERM)
-            try:
-                proc.wait(timeout=20)
-            except subprocess.TimeoutExpired:
-                os.killpg(proc.pid, signal.SIGKILL)
-                proc.wait()
+            stop_tree(proc)
             return reason
     return ""
+
+
+def stop_tree(proc: subprocess.Popen) -> None:
+    """Stop codex and every command it started, including those in other process groups."""
+    pids = liveness.tree_pids(proc.pid)
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        for pid in reversed(pids):
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                pass
+        try:
+            proc.wait(timeout=20)
+            break
+        except subprocess.TimeoutExpired:
+            continue
+    for pid in pids:  # anything that ignored SIGTERM after codex itself exited
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def add_usage(total: dict, usage: dict) -> dict:
+    for key, value in usage.items():
+        if isinstance(value, int):
+            total[key] = total.get(key, 0) + value
+    return total
 
 
 def cmd_exec(args) -> int:
@@ -197,17 +235,29 @@ def cmd_exec(args) -> int:
         cmd += ["-m", model]
     if args.network:
         cmd += ["-c", "sandbox_workspace_write.network_access=true"]
-    cmd.append(brief)
     print(f"run dir: {run_dir}", flush=True)
     started = time.time()
-    events = run_dir / "events.jsonl"
-    with open(events, "w") as out, open(run_dir / "stderr.log", "w") as err:
-        proc = subprocess.Popen(cmd, env=env, stdin=subprocess.DEVNULL, stdout=out,
-                                stderr=err, start_new_session=True)
-        stopped = watch(proc, events, args.idle_min * 60, args.timeout_min * 60)
+    usage: dict = {}
+    stalls: list[str] = []
+    attempt = 0
+    while True:
+        events = run_dir / ("events.jsonl" if attempt == 0 else f"events.retry{attempt}.jsonl")
+        prompt = brief if attempt == 0 else brief + CONTINUE_NOTE
+        with open(events, "w") as out, open(run_dir / "stderr.log", "a") as err:
+            proc = subprocess.Popen(cmd + [prompt], env=env, stdin=subprocess.DEVNULL,
+                                    stdout=out, stderr=err, start_new_session=True)
+            stopped = watch(proc, events, args.idle_min * 60, args.timeout_min * 60)
+        attempt_usage, error = read_events(events)
+        add_usage(usage, attempt_usage)
+        if stopped.startswith("stalled") and attempt < args.retries:
+            stalls.append(stopped)
+            print(f"{stopped}; continuing (attempt {attempt + 2})", flush=True)
+            attempt += 1
+            continue
+        break
     code = proc.returncode
-    usage, error = read_events(events)
     if stopped:
+        stalls.append(stopped)
         error = stopped + (f"; last codex error: {error}" if error else "")
     summary = {
         "exit": code,
@@ -216,6 +266,8 @@ def cmd_exec(args) -> int:
         "model": model or "(codex default)",
         "usage": usage,
         "error": error,
+        "attempts": attempt + 1,
+        "stalls": stalls,
         "changed": [c for c in git_changes(cwd) if c not in before],
         "run_dir": str(run_dir),
     }
@@ -236,7 +288,9 @@ def main() -> int:
     group.add_argument("--brief")
     ex.add_argument("-m", "--model", help=f"qwen default {QWEN_MODEL}; codex default from ~/.codex")
     ex.add_argument("--idle-min", type=float, default=IDLE_LIMIT_MIN,
-                    help="stop codex after this many minutes with no event")
+                    help="stop codex after this many minutes with no event, CPU or network")
+    ex.add_argument("--retries", type=int, default=RETRIES,
+                    help="after a stall, continue this many times in the same worktree")
     ex.add_argument("--timeout-min", type=float, default=TOTAL_LIMIT_MIN,
                     help="stop codex after this many minutes in total")
     ex.add_argument("--network", action="store_true",

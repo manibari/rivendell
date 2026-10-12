@@ -159,9 +159,16 @@ Run it with `run_in_background`. Do not poll. The command prints the run
 directory first and a JSON summary last (exit, seconds, usage, error, changed
 files). Run files are in `~/.local/state/sk/code-runs/<stamp>-<executor>-<dir>/`.
 `--network` lets the sandbox reach a local database or dev server.
-A watchdog stops codex after 15 min with no event (`--idle-min`) or 90 min in
-total (`--timeout-min`); the summary `error` then starts with `stalled:` or
-`timeout:`. Report it; do not re-run more than once without telling the user.
+A watchdog samples the run every 10 s. The run is alive while, in the last
+minute (`--idle-min 1`), codex wrote an event, its process tree used CPU (a
+command runs, or the model streams; long thinking counts), or it received bytes.
+All three still for a minute is a stall: the watchdog stops codex and every
+command it started, then continues once in the same worktree (`--retries 1`,
+the brief plus a "read git diff first" note). The summary lists `attempts` and
+`stalls`; `error` starts with `stalled:` or `timeout:` (90 min, `--timeout-min`)
+only when the last attempt failed. The owner (2026-10-12): 15 min was too long,
+time is money. Note: when codex waits on a long command it posts status lines,
+which count as movement; the total limit still applies.
 
 claude: call the Agent tool with `isolation: "worktree"`,
 `run_in_background: true`, and the brief as the prompt. Do not do the work in
@@ -209,7 +216,7 @@ defects found.
 
 ```bash
 sk code exec --executor <qwen|codex> -C <dir> --brief-file <file> [-m <model>] [--network]
-             [--idle-min 15] [--timeout-min 90]
+             [--idle-min 1] [--retries 1] [--timeout-min 90]
 sk code proxy start|stop|status     # GMI proxy for qwen
 sk code key-check                   # GMI key for qwen
 ```
@@ -224,4 +231,6 @@ keeps running; stop it with `sk code proxy stop`. A qwen run uses
 - `scripts/code-run`: launcher (executor choice, proxy lifecycle, run directory).
 - `scripts/qwen_codex_proxy.py`: Responses-stream shim for GMI. Tests:
   `python3 -m unittest qwen_codex_proxy_test` in `scripts/`.
+- `scripts/code_run_liveness.py`: the watchdog's signals (events, process-tree CPU,
+  bytes received). Tests: `python3 -m unittest code_run_liveness_test` in `scripts/`.
 - `scripts/set-gmi-key.command`: stores the GMI key in the Keychain.
