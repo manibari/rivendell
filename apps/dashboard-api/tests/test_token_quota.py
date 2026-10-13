@@ -285,7 +285,7 @@ class StepEstimateTest(QuotaTest):
         self.assertIsNone(w["local_percent"])
         self.assertIsNone(w["other_percent"])
 
-    def test_two_step_weeks_give_the_median_per_percent(self) -> None:
+    def test_two_step_weeks_use_the_current_cycle_per_percent(self) -> None:
         resets = self.now + 3 * 86400
         # six clean 1% steps per week: 4M tokens per step in week one, 6M in week two
         self.codex_steps([(self.now - 300 + i * 10, 4_000_000 * i, 44 + i) for i in range(7)],
@@ -296,12 +296,51 @@ class StepEstimateTest(QuotaTest):
                              for i in range(1, 7)))
         quota.refresh(self.now)
         a = quota.get_quota(self.now)["accounts"][0]
-        # No model is tagged, so "unknown" is not a model: the mixed
-        # per-week median stands.
+        # The older cycle has a different value and does not affect this one.
         self.assertEqual(a["week_estimate"], {
-            "per_percent": 5_000_000, "week_tokens": 500_000_000,
-            "basis": "steps", "weeks": 2, "rough": True, "model": None,
+            "per_percent": 4_000_000, "week_tokens": 400_000_000,
+            "basis": "top_steps", "steps": 6, "rough": True, "model": None,
             "by_model": []})
+        self.assertEqual(a["week_estimate_resets_at"], resets)
+        self.assertEqual({w["week_estimate"]["per_percent"] for w in quota.get_quota(self.now)["windows"]},
+                         {4_000_000, 6_000_000})
+
+    def test_fourteen_steps_use_the_ten_largest_ratios(self) -> None:
+        resets = self.now + 3 * 86400
+        totals = [0]
+        for ratio in range(1, 15):
+            totals.append(totals[-1] + ratio * 1000)
+        self.codex_steps([(self.now - 150 + i * 10, total, 10 + i)
+                          for i, total in enumerate(totals)], resets)
+        quota.refresh(self.now)
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual(w["step_ratios"], [i * 1000 for i in range(1, 15)])
+        self.assertEqual(w["week_estimate"]["per_percent"], 9500)
+        self.assertEqual(w["week_estimate"]["steps"], 10)
+        self.assertFalse(w["week_estimate"]["rough"])
+
+    def test_closed_cycle_keeps_its_estimate_but_account_has_none(self) -> None:
+        resets = self.now + HOUR
+        self.codex_steps([(self.now - 60 + i * 10, 1000 * i, 10 + i)
+                          for i in range(7)], resets)
+        quota.refresh(self.now)
+        result = quota.get_quota(resets)
+        self.assertEqual(self.window(result, "codex")["week_estimate"]["per_percent"], 1000)
+        self.assertIsNone(result["accounts"][0]["week_estimate"])
+        self.assertIsNone(result["accounts"][0]["week_estimate_resets_at"])
+
+    def test_old_row_uses_model_ratios_when_step_ratios_are_empty(self) -> None:
+        import sqlite3
+        resets = self.now + 3 * 86400
+        self.codex_steps([(self.now - 60 + i * 10, 1000 * i, 10 + i)
+                          for i in range(7)], resets)
+        quota.refresh(self.now)
+        with sqlite3.connect(self.root / "test.db") as conn:
+            conn.execute("UPDATE token_quota_window SET step_ratios = '[]', "
+                         "step_ratios_by_model = ?", (json.dumps({"model-a": [3000] * 5}),))
+        w = self.window(quota.get_quota(self.now), "codex")
+        self.assertEqual(w["week_estimate"]["per_percent"], 3000)
+        self.assertEqual(w["week_estimate"]["basis"], "top_steps")
 
     def test_step_estimate_falls_back_to_a_moved_average(self) -> None:
         resets = self.now + 3 * 86400
@@ -317,23 +356,23 @@ class StepEstimateTest(QuotaTest):
         # tokens still count toward the account's model.
         self.assertEqual(a["week_estimate"], {
             "per_percent": 8_000_000, "week_tokens": 800_000_000,
-            "basis": "average", "weeks": 1, "rough": True,
+            "basis": "average", "steps": 0, "rough": True,
             "model": None, "by_model": []})
 
-    def test_two_weeks_that_moved_far_enough_are_not_rough(self) -> None:
-        week = lambda reset, step: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15, "resets_at": reset * 7 * 86400,
-                                    "step_tokens_per_percent": step, "tokens_per_percent": step}
-        est = quota._week_estimate([week(1, 4_000_000), week(2, 6_000_000)])
+    def test_ten_clean_ratios_are_not_rough(self) -> None:
+        window = {"step_ratios": [1000] * 10, "step_ratios_by_model": {},
+                  "tokens_per_percent": 1000, "used_from": 0, "used_to": 10,
+                  "model_tokens": {}, "main_model": None}
+        est = quota._cycle_estimate(window)
+        self.assertEqual(est["steps"], 10)
         self.assertFalse(est["rough"])
-        self.assertTrue(quota._week_estimate([week(1, 4_000_000)])["rough"])
 
-    def test_two_reset_hours_on_one_day_are_one_week(self) -> None:
-        day = 20_000 * 86400
-        week = lambda reset: {"window_min": quota.WEEK_MIN, "used_from": 0, "used_to": 15,
-                              "resets_at": reset, "reset_exact": reset,
-                              "step_tokens_per_percent": 5_000_000, "tokens_per_percent": 5_000_000}
-        est = quota._week_estimate([week(day - 8 * 3600), week(day + 14 * 3600)])
-        self.assertEqual(est["weeks"], 1)
+    def test_fewer_than_ten_clean_ratios_are_rough(self) -> None:
+        window = {"step_ratios": [1000, 2000, 3000], "step_ratios_by_model": {},
+                  "tokens_per_percent": 1000, "used_from": 0, "used_to": 3,
+                  "model_tokens": {}, "main_model": None}
+        est = quota._cycle_estimate(window)
+        self.assertEqual((est["per_percent"], est["steps"]), (2000, 3))
         self.assertTrue(est["rough"])
 
     def test_session_windows_are_ignored_for_the_estimate(self) -> None:
@@ -345,6 +384,8 @@ class StepEstimateTest(QuotaTest):
         quota.refresh(self.now)
         a = quota.get_quota(self.now)["accounts"][0]
         self.assertIsNone(a["week_estimate"])
+        session = next(w for w in quota.get_quota(self.now)["windows"] if w["window_min"] == 300)
+        self.assertIsNone(session["week_estimate"])
 
     def test_a_small_move_with_no_steps_gives_none(self) -> None:
         tmp, codex, patches = week_estimate_test_case()
@@ -387,9 +428,11 @@ class StepEstimateTest(QuotaTest):
         cols = {row[1] for row in conn.execute("PRAGMA table_info(token_quota_window)")}
         conn.close()
         self.assertIn("step_ratios_by_model", cols)
+        self.assertIn("step_ratios", cols)
         self.assertIn("model_tokens", cols)
         self.assertEqual(w["model_tokens"], {})
         self.assertEqual(w["step_ratios_by_model"], {})
+        self.assertEqual(w["step_ratios"], [1000] * 6)
         self.assertIsNone(w["main_model"])
 
 
@@ -412,10 +455,10 @@ class ModelSplitTest(QuotaTest):
         self.assertEqual(w["step_ratios_by_model"], {"model-a": [1000] * 6})
         self.assertEqual(w["main_model"], "model-a")
         est = result["accounts"][0]["week_estimate"]
-        self.assertEqual((est["basis"], est["model"]), ("model", "model-a"))
+        self.assertEqual((est["basis"], est["model"]), ("top_steps", "model-a"))
         self.assertEqual(est["by_model"], [{
             "model": "model-a", "per_percent": 1000, "week_tokens": 100_000,
-            "steps": 6, "weeks": 1, "rough": True}])
+            "steps": 6, "rough": True}])
         self.assertEqual((est["per_percent"], est["week_tokens"]), (1000, 100_000))
 
     def test_two_models_split_by_model_and_the_bigger_one_leads(self) -> None:
@@ -440,8 +483,8 @@ class ModelSplitTest(QuotaTest):
         self.assertEqual(by_model["model-b"]["per_percent"], 1_000_000)
         self.assertEqual((by_model["model-a"]["steps"], by_model["model-b"]["steps"]), (5, 6))
         self.assertEqual(est["model"], "model-a")   # 20M of its tokens vs 6M
-        self.assertEqual(est["basis"], "model")
-        self.assertEqual((est["per_percent"], est["week_tokens"]), (4_000_000, 400_000_000))
+        self.assertEqual(est["basis"], "top_steps")
+        self.assertEqual((est["per_percent"], est["week_tokens"]), (2_500_000, 250_000_000))
         self.assertEqual([e["model"] for e in est["by_model"]],
                          ["model-a", "model-b"])   # sorted by tokens desc
 
@@ -469,7 +512,7 @@ class ModelSplitTest(QuotaTest):
         self.assertEqual(w["model_tokens"], {"model-a": 6_000_000, "model-b": 6_000_000})
         est = result["accounts"][0]["week_estimate"]
         self.assertEqual(est["by_model"], [])
-        self.assertEqual(est["basis"], "steps")     # the mixed result stands
+        self.assertEqual(est["basis"], "top_steps")     # the mixed result stands
         self.assertEqual(est["per_percent"], 2_000_000)
         self.assertIn(est["model"], ("model-a", "model-b"))
 

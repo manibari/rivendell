@@ -7,6 +7,7 @@ counts are local and exact. This module lines them up:
     and remaining quota
   - per reset window: quota % at the first and last reading, the tokens spent
     between them (four disjoint categories), and tokens per 1% of quota
+  - per weekly cycle: an estimate from its ten largest clean local 1% steps
 
 Quota readings:
   - Codex: every rollout token_count event carries rate_limits.primary
@@ -44,9 +45,7 @@ from lib.tokens_timeline import _epoch, _seek_offset
 CLAUDE_QUOTA_LOG = Path.home() / ".claude" / "usage-quota" / "claude-rate-limits.jsonl"
 CLAUDE_WINDOWS = {"five_hour": 300, "seven_day": 10080}
 WEEK_MIN = 10080
-# Below these, the weekly estimate is shown as rough.
-ESTIMATE_MIN_WEEKS = 2
-ESTIMATE_MIN_MOVED = 20
+ESTIMATE_TOP_STEPS = 10
 CLAUDE_LOOKBACK_S = 8 * 86400   # never parse Claude logs further back than this
 REFRESH_S = 60
 IDLE_HIDE_S = 30 * 86400   # an account unused this long is not listed
@@ -121,6 +120,8 @@ def _connect() -> sqlite3.Connection:
     # the total tokens per model, so the weekly estimate can be split by model.
     if "step_ratios_by_model" not in columns:
         conn.execute("ALTER TABLE token_quota_window ADD COLUMN step_ratios_by_model TEXT NOT NULL DEFAULT '{}'")
+    if "step_ratios" not in columns:
+        conn.execute("ALTER TABLE token_quota_window ADD COLUMN step_ratios TEXT NOT NULL DEFAULT '[]'")
     if "model_tokens" not in columns:
         conn.execute("ALTER TABLE token_quota_window ADD COLUMN model_tokens TEXT NOT NULL DEFAULT '{}'")
     return conn
@@ -422,6 +423,7 @@ def _windows(readings: list[Reading], usage: list[tuple]) -> list[dict]:
             "readings": len(rs), **sums,
             "step_tokens_per_percent": int(statistics.median(ratios)) if len(ratios) >= 5 else None,
             "clean_steps": clean_steps,
+            "step_ratios": [int(v) for v in ratios],
             "step_ratios_by_model": {m: [int(v) for v in vals]
                                      for m, vals in ratios_by_model.items()},
             "model_tokens": model_tokens,
@@ -437,7 +439,7 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
             "first_at", "last_at",
             "used_from", "used_to", "readings", *_FIELDS,
             "step_tokens_per_percent", "clean_steps",
-            "step_ratios_by_model", "model_tokens")
+            "step_ratios", "step_ratios_by_model", "model_tokens")
     with _connect() as conn:
         if replace_source:
             conn.execute("DELETE FROM token_quota_window WHERE source = ?", (replace_source,))
@@ -446,7 +448,7 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
         conn.executemany(
             f"INSERT OR REPLACE INTO token_quota_window({', '.join(cols)}) "
             f"VALUES ({', '.join('?' * len(cols))})",
-            [tuple(json.dumps(r[c]) if c in ("step_ratios_by_model", "model_tokens")
+            [tuple(json.dumps(r[c]) if c in ("step_ratios", "step_ratios_by_model", "model_tokens")
                    else r[c] for c in cols) for r in rows])
 
 
@@ -499,76 +501,45 @@ def _json_obj(value: Any) -> dict:
     return obj if isinstance(obj, dict) else {}
 
 
-def _distinct_weeks(windows: list[dict]) -> int:
-    """Count weeks, not windows: one week can log several reset hours on the
-    same day, so resets less than 3 days apart are the same week."""
-    resets = sorted((w.get("reset_exact") or w.get("resets_at") or 0) for w in windows)
-    weeks, last = 0, None
-    for r in resets:
-        if last is None or r - last >= 3 * 86400:
-            weeks += 1
-            last = r
-    return weeks
+def _json_list(value: Any) -> list:
+    """Decode a stored JSON list column; bad or NULL values become []."""
+    if value is None or value == "":
+        return []
+    try:
+        obj = json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return []
+    return obj if isinstance(obj, list) else []
 
 
-def _week_estimate(windows: list[dict]) -> dict | None:
-    """Tokens for 100% of the weekly quota, from this account's weekly windows.
-
-    Preference: the median of the single-1%-step values, which ignore quota
-    moved by other computers; otherwise the whole-window average of a window
-    that moved at least 10 points. None when neither is available. Quota burns
-    at different rates per model, so the per-1% figure is also split by the
-    model that spent each clean step; the top-level number is the one for the
-    account's main model when that model has enough clean steps on its own.
-    """
-    weekly = [w for w in windows if w["window_min"] == WEEK_MIN]
-    used = [w for w in weekly if w.get("step_tokens_per_percent") is not None]
-    if used:
-        per_percent, basis = int(statistics.median(
-            w["step_tokens_per_percent"] for w in used)), "steps"
+def _cycle_estimate(w: dict) -> dict | None:
+    """Estimate a single weekly cycle from its largest clean local steps."""
+    by_model_ratios = w["step_ratios_by_model"]
+    ratios = w["step_ratios"]
+    if not ratios:
+        ratios = [value for series in by_model_ratios.values() for value in series]
+    if ratios:
+        top = sorted(ratios, reverse=True)[:ESTIMATE_TOP_STEPS]
+        per_percent = int(statistics.median(top))
+        basis, steps, rough = "top_steps", len(top), len(top) < ESTIMATE_TOP_STEPS
+    elif w["tokens_per_percent"] is not None and w["used_to"] - w["used_from"] >= 10:
+        per_percent = w["tokens_per_percent"]
+        basis, steps, rough = "average", 0, True
     else:
-        used = [w for w in weekly if w.get("tokens_per_percent") is not None
-                and w["used_to"] - w["used_from"] >= 10]
-        if not used:
-            return None
-        per_percent, basis = int(statistics.median(
-            w["tokens_per_percent"] for w in used)), "average"
-    # One early week can hold five clean steps and still be far off.
-    moved = sum(w["used_to"] - w["used_from"] for w in used)
-    rough = (basis == "average" or _distinct_weeks(used) < ESTIMATE_MIN_WEEKS
-             or moved < ESTIMATE_MIN_MOVED)
-    # Per model: pool the clean-step ratios across the account's weekly
-    # windows; a step only counts for the one model that spent >= 80% of it.
-    pooled: dict[str, list[int]] = {}
-    totals: dict[str, int] = {}
-    for w in weekly:
-        for model, series in (w.get("step_ratios_by_model") or {}).items():
-            pooled.setdefault(model, []).extend(series)
-        for model, count in (w.get("model_tokens") or {}).items():
-            totals[model] = totals.get(model, 0) + count
+        return None
     by_model = []
-    for model, series in pooled.items():
+    for model, series in by_model_ratios.items():
         if len(series) < 5:
             continue
-        p = int(statistics.median(series))
-        by_model.append({"model": model, "per_percent": p,
-                         "week_tokens": p * 100, "steps": len(series),
-                         "weeks": _distinct_weeks(
-                             [w for w in weekly if model in (w.get("step_ratios_by_model") or {})]),
-                         "rough": False})
-    for e in by_model:
-        e["rough"] = e["weeks"] < ESTIMATE_MIN_WEEKS or e["steps"] < ESTIMATE_MIN_MOVED
-    by_model.sort(key=lambda e: (-totals.get(e["model"], 0), e["model"]))
-    model = max(totals, key=lambda m: totals[m]) if totals else None
-    main = next((e for e in by_model if e["model"] == model), None)
-    if main is not None:
-        return {"per_percent": main["per_percent"],
-                "week_tokens": main["week_tokens"], "basis": "model",
-                "weeks": main["weeks"], "rough": main["rough"],
-                "model": model, "by_model": by_model}
+        top = sorted(series, reverse=True)[:ESTIMATE_TOP_STEPS]
+        value = int(statistics.median(top))
+        by_model.append({"model": model, "per_percent": value,
+                         "week_tokens": value * 100, "steps": len(top),
+                         "rough": len(top) < ESTIMATE_TOP_STEPS})
+    by_model.sort(key=lambda e: (-w["model_tokens"].get(e["model"], 0), e["model"]))
     return {"per_percent": per_percent, "week_tokens": per_percent * 100,
-            "basis": basis, "weeks": _distinct_weeks(used), "rough": rough,
-            "model": model, "by_model": by_model}
+            "basis": basis, "steps": steps, "rough": rough,
+            "model": w["main_model"], "by_model": by_model}
 
 
 def get_quota(now: float | None = None) -> dict[str, Any]:
@@ -620,6 +591,7 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
         # Per-model step ratios and tokens, stored as JSON text (may be NULL or
         # malformed in an old row); decode to dicts so the client gets objects.
         w["step_ratios_by_model"] = _json_obj(w.get("step_ratios_by_model"))
+        w["step_ratios"] = _json_list(w.get("step_ratios"))
         model_tokens = _json_obj(w.get("model_tokens"))
         w["model_tokens"] = model_tokens
         w["main_model"] = (max(model_tokens, key=lambda m: model_tokens[m])
@@ -631,12 +603,18 @@ def get_quota(now: float | None = None) -> dict[str, Any]:
             local_percent = round(tokens / step, 1)
             w["local_percent"] = local_percent
             w["other_percent"] = round(max(0.0, moved - local_percent), 1)
+        w["week_estimate"] = _cycle_estimate(w) if w["window_min"] == WEEK_MIN else None
     by_account: dict[tuple, list[dict]] = {}
     for w in windows:
         by_account.setdefault((w["source"], w["account_id"]), []).append(w)
     for a in acct.values():
-        a["week_estimate"] = _week_estimate(
-            by_account.get((a["source"], a["account_id"] or ""), ()))
+        current = [w for w in by_account.get((a["source"], a["account_id"] or ""), ())
+                   if w["window_min"] == WEEK_MIN
+                   and (w.get("reset_exact") or w["resets_at"]) > now]
+        latest = max(current, key=lambda w: w["last_at"], default=None)
+        a["week_estimate"] = latest["week_estimate"] if latest else None
+        a["week_estimate_resets_at"] = (
+            latest.get("reset_exact") or latest["resets_at"]) if latest else None
     # Accounts idle for over a month are left off the panel and the advice;
     # their data stays, so using one again brings it straight back.
     shown = [a for a in acct.values() if a["last_seen"] >= now - IDLE_HIDE_S]
