@@ -113,6 +113,27 @@ class PortsTest(unittest.TestCase):
         self.assertEqual(len(errs["off_rule"]), 1)
         self.assertIn("3100", errs["off_rule"][0])
 
+    def test_glob_owner_is_reported_and_its_parent_dir_matches(self) -> None:
+        from lib import port_registry as pr
+        from lib.port_registry import Claim, Occupant, matches
+
+        occ = Occupant(command="Python", pid="7", cwd="/srv/mops/.claude/worktrees/x/api")
+        self.assertFalse(matches(Claim(8205, "mops_dbs", "api", "/srv/mops/.claude/worktrees/*"), occ))
+        self.assertTrue(matches(Claim(8205, "mops_dbs", "api", "/srv/mops/.claude/worktrees"), occ))
+
+        conf = (
+            "8205 | mops_dbs | api | /srv/mops/.claude/worktrees/* | review\n"
+            "8206 | mops_dbs | api2 | /srv/mops/.claude/worktrees | review\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ports.conf"
+            path.write_text(conf, encoding="utf-8")
+            with patch.object(pr, "listeners", return_value=({}, None)), \
+                    patch.object(pr, "docker_ports", return_value=({}, None)):
+                _, errs = pr.evaluate(path)
+        self.assertEqual(len(errs["bad_owner"]), 1)
+        self.assertIn("8205", errs["bad_owner"][0])
+
 
 if __name__ == "__main__":
     unittest.main()

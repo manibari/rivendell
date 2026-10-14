@@ -10,6 +10,7 @@ OWNER says how to recognise the rightful occupant of a live port:
     docker:<container>      that docker container publishes the port
     app:<prefix>            listener command starts with <prefix> (desktop apps)
     -                       claimed, occupant not checked
+A path OWNER is a prefix, not a glob: `bad_owner` lists OWNER values with `*`.
 
 Statuses per port:
     live       listening, and the occupant matches a claim
@@ -77,6 +78,17 @@ def off_rule(claim: Claim, ids: dict[str, str]) -> str | None:
     digits = str(claim.port)
     if len(digits) != 4 or digits[0] not in ROLE_DIGITS or digits[1:3] != pp:
         return f"{claim.project} 的編號是 {pp}，{claim.port} 不符合 R{pp}i"
+    return None
+
+
+def bad_owner(claim: Claim) -> str | None:
+    """Why the checker cannot use a claim's OWNER, or None when it can.
+
+    OWNER is a path prefix, not a glob. A `*` never matches, so the real
+    occupant shows as a conflict (2026-10-14: 8205 and 3081 used `worktrees/*`).
+    """
+    if any(ch in claim.owner for ch in "*?["):
+        return f"{claim.port} {claim.project} 的 OWNER 不能用萬用字元（{claim.owner}），寫到上一層目錄即可"
     return None
 
 
@@ -276,7 +288,8 @@ def evaluate(conf: Path | None = None) -> tuple[list[PortState], dict[str, str |
             st.detail = f"{owner.project} 正在用；{', '.join(others)} 也登記了 {port}，啟動時會撞"
         states.append(st)
     errs: dict[str, Any] = {"listener_error": lerr, "docker_error": derr,
-                            "off_rule": [r for c in claims if (r := off_rule(c, ids))]}
+                            "off_rule": [r for c in claims if (r := off_rule(c, ids))],
+                            "bad_owner": [r for c in claims if (r := bad_owner(c))]}
     return states, errs
 
 
@@ -286,11 +299,17 @@ def main(argv: list[str]) -> int:
     wild = [s for s in states if s.status == "wild"]
     moving = [s for s in states if s.status == "moving"]
     off = errs.get("off_rule") or []
-    bad = bool(conflicts or wild or off)
+    owners = errs.get("bad_owner") or []
+    bad = bool(conflicts or wild or off or owners)
     if "--json" in argv:
         print(json.dumps({"conflicts": len(conflicts), "wild": len(wild), "moving": len(moving),
                           "ports": [asdict(s) for s in states], **errs}, ensure_ascii=False))
         return 1 if bad else 0
+    if owners:
+        print(f"Unusable OWNER ({len(owners)}):")
+        for r in owners:
+            print(f"  {r}")
+        print()
     if off:
         print(f"Off the numbering rule ({len(off)}):")
         for r in off:
@@ -309,7 +328,8 @@ def main(argv: list[str]) -> int:
         for s in idle:
             print(f"  {s.port:<6} {' / '.join(f'{c.project} {c.service}' for c in s.claims)}")
         print()
-    print(f"Total: {len(conflicts)} conflict, {len(moving)} to move, {len(wild)} unclaimed, {len(off)} off-rule")
+    print(f"Total: {len(conflicts)} conflict, {len(moving)} to move, {len(wild)} unclaimed, {len(off)} off-rule, "
+          f"{len(owners)} bad owner")
     return 1 if bad else 0
 
 
