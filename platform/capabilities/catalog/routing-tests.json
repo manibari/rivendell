@@ -170,6 +170,10 @@
       "expect": "spine-roadmap"
     },
     {
+      "phrase": "GitHub issue 還是票",
+      "expect": "spine-roadmap"
+    },
+    {
       "phrase": "派給 Qwen",
       "expect": "agent-code-dispatch"
     },

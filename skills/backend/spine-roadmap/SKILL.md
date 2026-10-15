@@ -15,12 +15,14 @@ description: >
   PTI-ARES (細項 checks + evidence), ChimesFlow roadmap-in-DB (user-facing view).
   TRIGGER when: "開票", "開 ticket", "開工作票", "工作票", "hotfix 要不要開票",
   "改 roadmap", "roadmap 怎麼維護", "票的狀態", "細項驗收", "能力做到哪", setting up ticket / backlog / work-package
-  tracking for a product; or when work is about to start with no ticket ID to cite.
+  tracking for a product; or when work is about to start with no ticket ID to cite;
+  or deciding where GitHub issues, code review, QA findings, or an external file
+  bundle fit beside the tickets — "GitHub issue 還是票", "QA 找到的問題要不要開票".
   SKIP when: version bump / release gate itself (spine-versioning); aligning
   CHANGELOG / ROADMAP / progress text after the fact (doc-drift-sync); a one-off
   script or throwaway prototype; the team already runs Jira / Linear as the SoT.
 tags: [backend, roadmap, tickets, work-packages, release, spine, reference]
-version: 1.1.0
+version: 1.2.0
 source: manual
 ---
 
@@ -178,6 +180,70 @@ lanes/sessions touch the tracker without silently clobbering each other.
 curated, role-filtered "what's coming / what shipped" list for end users. That is a
 different audience from the dev tracker above — build it as a view, don't make it the
 ticket SoT.
+
+## Other channels: GitHub issues, code review, QA, file bundles
+
+Peter decided this on 2026-10-15. On that date, Yellow-Chick, PTI-ARES and the
+light-tier repos had 0 GitHub issues. rivendell had 3 stale spec issues. The tracker
+stays the SoT. The other channels feed it or read from it. They do not hold status.
+
+| Channel | Answers | Do not use it for |
+|---|---|---|
+| GitHub issue | "Someone outside reported this. Do we do it?" | Roadmap items, status, acceptance |
+| Ticket | "We do this. Where is it now?" | — |
+| Code review | "Is the code correct?" (before merge) | "Does the product work?" |
+| QA | "Does the product work?" (one version, one environment) | Code review notes |
+| Delivery | "Is the ticket done?" (version, `verified_on`, evidence) | — |
+
+1. **Add an issue layer only when outside people report work.** The team's own
+   undecided ideas become tickets with status `pending` or `waiting`.
+2. **A roadmap item is a ticket, never an issue.** The roadmap page reads tickets.
+   An item that lives only in an issue is not on the roadmap.
+3. **Convert an issue, then close it.** Open a ticket with a fixed ID. Comment
+   "converted to <ID>" on the issue. Close the issue.
+4. **Do not let a merge close an issue.** Do not write `closes #N` in a PR. A merge
+   is `review`, not `done` (rule 4 above).
+5. **Sort each QA finding by scope.**
+   - The ticket under test fails its acceptance criteria: move it back to
+     `in_progress`. Record the finding in the QA document. Do not open an issue.
+   - The finding is outside the ticket scope: open a new ticket. Use `HOTFIX-*` if
+     it is urgent.
+6. **Keep code review and QA apart.** Put review notes on the PR
+   (`/code-review --comment`). Put QA results in the QA document and the delivery.
+   The PR body links to them. GitHub does not let a PR author approve their own PR.
+   Thus a repo with one account cannot use "Approve" as a gate. A PTI-ARES PR also
+   holds a batch of versions, so one PR does not map to one ticket.
+7. **Do not back-fill old tickets as issues.** Git already holds the record: TODOS,
+   deliveries, CHANGELOG, and commits that cite the ID. A back-filled issue shows
+   today's date and one author. Hundreds of closed issues also bury what a new
+   member needs.
+
+### When other people join
+
+| Who | Give them |
+|---|---|
+| Customer or user (reports problems, reads progress) | Read access to the tracker progress page. Issues as the report intake (rule 3). |
+| Developer (writes code) | Repo access. Tickets and PRs as now. Discussion can be on a PR or an issue. Status stays on the ticket. |
+
+The full tier already supports many writers. `--operator` records who changed a
+ticket. `row_version` stops a stale edit. If you move the SoT to issues later, move
+only the open tickets. Keep the done tickets in Git.
+
+### File bundle for another party's LLM
+
+A file bundle helps another party's LLM learn the background. It is a read-only
+snapshot. It does not replace the tracker or the discussion channel.
+
+- A developer gets the repo. Their agent reads `CLAUDE.md`, `AGENTS.md` and the
+  ticket files.
+- A customer gets a filtered snapshot. Make it with a script, not by hand:
+  1. Stamp the date and the version. Label it as a snapshot, as YC `export-todos` does.
+  2. Remove internal content: owner quotes (老闆原話), internal decisions, other
+     customer names, costs. Their LLM is an external service. Sent content stays sent.
+  3. Add a reading guide. Say what each status means. Say that a release is not
+     acceptance (發版不等於驗收).
+- The export script does not exist (2026-10-15). Dispatch it when the first outside
+  party needs it.
 
 ## Gotchas
 
