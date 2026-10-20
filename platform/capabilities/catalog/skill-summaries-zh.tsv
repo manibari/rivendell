@@ -30,7 +30,7 @@ iot-factory-report	文件	廠務 IoT/SCADA 時序資料分析（UPW/RO/壓縮機
 # === 前端 / 設計 ===
 frontend-design	前端	產生高品質、有設計感的前端 UI，避免 AI 罐頭風格
 ios-integration	前端	iOS 系統整合：Share Extension、Deep Link、App Groups、權限、地圖
-mockup	前端	三階段 UI mockup：ASCII → 靜態 HTML → 互動 HTML，可匯出 Figma
+mockup	前端	三階段 UI mockup：ASCII → 靜態 HTML → 互動 HTML；一律響應式，手機到桌機四種寬度都要過檢查，可匯出 Figma
 swiftui-patterns	前端	SwiftUI 架構模式：@Observable、Navigation、iOS 17+ 最佳實踐
 ui-ux-pro-max	前端	UI/UX 設計資料庫：50+ 風格、97 色盤、57 字型配對、25 圖表類型
 webapp-testing	前端	Playwright 瀏覽器測試：截圖、console log、前端功能驗證

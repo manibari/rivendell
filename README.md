@@ -126,7 +126,7 @@ as release notes.
 |-------|---------|------|
 | **app-ops-baseline** | `/app-ops-baseline` 或自動 | Planning-stage gate that injects a standard "ops baseline" feature checklist |
 | **executing-plans** | 自動 | Execute detailed plans in batches with review checkpoints |
-| **mockup** | `/mockup` 或自動 | Create UI mockups at three fidelity levels (ASCII → static HTML → interactive |
+| **mockup** | `/mockup` 或自動 | Create responsive UI mockups at three fidelity levels (ASCII → static HTML → interactive), checked at phone, tablet and desktop widths |
 | **planning-with-files** | `/planning-with-files` 或自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | 需求定義：先釘統一語言表（ubiquitous language，一個概念一個名字），再寫 user stories 與驗收標準 |
 | **system-design** | `/system-design` 或自動 | SA/SD：資料模型、介面契約、關鍵流程、功能關係圖(target)；職責邊界分三面向——邏輯(bounded context)、實體(目錄結構)、資料(aggregate root 唯一寫入者) |

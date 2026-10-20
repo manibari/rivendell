@@ -70,7 +70,7 @@ Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不�
 | 需求 / 驗收標準 | `docs/requirements/<feature>.md`（`requirement` skill 產出） | 設計沒有對映對象，無法驗收 |
 | **統一語言表** | 同上文件，user stories 之前那張表 | §2 欄位命名沒有依據 → 同概念多名（`report_date` vs `date`），就是那條「踩過的坑」 |
 | 使用者流程 | `docs/user-flow/*` 或 requirement 內的流程段 | 序列圖會漏掉錯誤分支 |
-| 畫面 | `mockups/<feature>.html` + 元件清單（`mockup` skill Step handoff 的 component inventory） | 前端要的資料形狀是猜的 |
+| 畫面 | `mockups/<feature>.html`（多畫面：`mockups/<feature>/`）+ 元件清單（`mockup` skill Step handoff 的 component inventory） | 前端要的資料形狀是猜的 |
 | 既有資料模型 | `models.py` / ORM class / migration 目錄 / `.schema <table>` | schema delta 會寫成「新建」而其實是「改既有」 |
 | 既有介面 | `ls routers/`、`find app -name 'route.ts'`、OpenAPI schema | 會發明一個已經存在的端點 |
 | 既有資料流圖 | `docs/**/dataflow-*`（`qa-dataflow` 上次的 actual 圖） | 沒有起點，target 圖變成空中樓閣 |

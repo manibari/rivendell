@@ -14,7 +14,7 @@ date: YYYY-MM-DD
 scale: full | light          # Step 0 檔位
 triggers: [schema-change, cross-module, new-store]   # 命中哪幾個 Full 判準
 requirement: docs/requirements/<feature>.md | 無
-mockup: mockups/<feature>.html | 無 UI
+mockup: mockups/<feature>.html 或 mockups/<feature>/ | 無 UI
 status: draft | reviewed | superseded
 ---
 
