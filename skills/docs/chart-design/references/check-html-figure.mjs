@@ -120,12 +120,20 @@ const report = await page.evaluate(({ minFont, heightAuto }) => {
         { fontSizePx: Math.round(fs * 10) / 10, minFontPx: minFont, rect: rectOf(r) },
         "raise the size or justify why this element is allowed below the floor");
     }
-    // A single-line element is roughly one line-height tall; 1.8× means it wrapped.
+    // Count the rendered lines: distinct tops of the text's client rects. The box height
+    // is not used, because padding or a fixed height (a 44px touch target) makes a
+    // one-line button look wrapped.
     const inlineOnly = [...el.children].every(c => getComputedStyle(c).display.startsWith("inline") || c.tagName === "BR");
     const hasBr = el.querySelector("br") !== null;
-    if (inlineOnly && !hasBr && r.height >= lh * 1.8 && ownText.length > 1) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const lineTops = [];
+    for (const q of range.getClientRects()) {
+      if (q.width > 0 && q.height > 0 && !lineTops.some(t => Math.abs(t - q.top) < lh / 2)) lineTops.push(q.top);
+    }
+    if (inlineOnly && !hasBr && lineTops.length >= 2 && ownText.length > 1) {
       push("figure/text-wrap", "warning", { selector: selector(el), text: snippet(el) },
-        { heightPx: Math.round(r.height), lineHeightPx: Math.round(lh), widthPx: Math.round(r.width), rect: rectOf(r) },
+        { lines: lineTops.length, heightPx: Math.round(r.height), lineHeightPx: Math.round(lh), widthPx: Math.round(r.width), rect: rectOf(r) },
         "widen the container, shorten the text, or break it deliberately");
     }
   }
