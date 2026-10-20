@@ -102,11 +102,14 @@ Write the brief to the scratchpad as `brief-<slug>.md`. Use this order:
 - Change only the files in "Scope". If you must change another file, stop and say why.
 - Do not change shared test infrastructure: conftest, fixtures, guards, CI config,
   skip markers. Do not replace a guard with a stub.
-- Do not change the expected values of existing tests. If your change makes an
-  existing test fail, stop and report the test and the old and new values.
+- Do not change the expected values of existing tests. If an existing test fails
+  because of your new code, fix your code; do not stop for it. Stop and report the
+  test and the old and new values only when the fix needs a change to the test
+  (an expected value, a guard) or to a file outside "Scope".
   Exception: the brief says that the behavior changes on purpose.
 - If a test cannot run (no database, no network, missing tool), stop.
   Report the command and the exact error. Do not make the test pass another way.
+  A test path that you typed wrong is not this case: find the right file and continue.
 - Do not commit. Do not add dependencies.
 - Do not start a browser, Playwright, whisper, or a GPU model. Claude runs them
   outside the sandbox.
@@ -169,6 +172,12 @@ the brief plus a "read git diff first" note). The summary lists `attempts` and
 only when the last attempt failed. The owner (2026-10-12): 15 min was too long,
 time is money. Note: when codex waits on a long command it posts status lines,
 which count as movement; the total limit still applies.
+
+On a laptop, prefix the command with `caffeinate -i` so idle sleep cannot stop
+the run. A closed lid on battery still sleeps the machine; tell the user to keep
+it open. (2026-10-14: the Mac slept from 11:53 to 13:04 during a run; the
+watchdog then reported a 2239 s stall and the round ended with no report.
+`pmset -g log | grep -E 'Sleep|Wake'` shows such gaps.)
 
 claude: call the Agent tool with `isolation: "worktree"`,
 `run_in_background: true`, and the brief as the prompt. Do not do the work in
