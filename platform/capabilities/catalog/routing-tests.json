@@ -2,6 +2,14 @@
   "_comment": "sk check routing — each phrase must appear in exactly ONE skill's TRIGGER text (matching the DO NOT TRIGGER / SKIP part does not count). Add a row whenever a trigger phrase is converged or a new entry skill is created.",
   "tests": [
     {
+      "phrase": "AI 助理",
+      "expect": "spine-assistant"
+    },
+    {
+      "phrase": "管理後台要不要獨立",
+      "expect": "spine-rbac"
+    },
+    {
       "phrase": "畫流程圖",
       "expect": "chart-design"
     },

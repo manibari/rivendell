@@ -30,7 +30,7 @@ skills/
 ├── quality/    # 程式品質、審查、文字打磨 (5)
 ├── git/        # Git/GitHub 操作 (4)
 ├── frontend/   # 前端設計、iOS、測試 (5)
-├── backend/    # 後端服務 (26)
+├── backend/    # 後端服務 (27)
 ├── sales/      # sales 循環：情蒐 → 提案 → 素材健檢 → CRM 投影 (8)
 ├── gov/        # gov 循環：標案/補助 sourcing → RFQ/計畫書 (4)
 ├── invest/     # invest 循環：MOPS 抓取 → 投資研究 (2)
@@ -83,7 +83,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (130 skills)
+## Skills Catalog (131 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -215,6 +215,7 @@ as release notes.
 | **oauth-token-vault** | 自動 | OAuth Token Vault - Implement OAuth 2. |
 | **odb-dfm-reference** | 自動 | Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and |
 | **rbac-permissions** | `/rbac-permissions` 或自動 | Design and implement Role-Based Access Control (RBAC) for full-stack apps. |
+| **spine-assistant** | 自動 | Canonical recipe for an in-app agentic AI assistant: tools are the only path to data, each call runs as the asking user, sources are checked, every tool attempt is audited. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
 | **spine-rbac** | 自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **spine-roadmap** | 自動 | Canonical 開票 + roadmap mechanism for the product fleet: every piece of work |
@@ -306,7 +307,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
-| dev | 21 | 23 | 9 | 7 |
+| dev | 22 | 23 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 
 

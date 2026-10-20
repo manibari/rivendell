@@ -12,12 +12,14 @@ description: >
   migration path (chimesflow walked it itself).
   TRIGGER when: adding roles / permissions / 權限 / 權限管理 / access control /
   require_admin / require_permission / "給人用要分權限" to a FastAPI product;
-  deciding how granular authz should be; a product's roles outgrowing admin/member.
+  deciding how granular authz should be; a product's roles outgrowing admin/member;
+  where the admin backend lives ("管理後台要不要獨立", "後台要不要拆成另一個 app",
+  platform admin vs tenant owner).
   SKIP when: single-user / no multi-role product (no RBAC needed); authentication
   only with no authorization (that's spine-auth); row-level data scoping mechanics
   specifically (a sub-concern noted here but deeper in each product's utils/rbac).
 tags: [backend, rbac, authz, permissions, fastapi, spine, security, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -89,6 +91,30 @@ The proven path: **keep `require_role` working** while you add `require_permissi
 endpoints one at a time (swap the `Depends`); seed the matrix so `admin` keeps full access
 from day one; delete `require_role` only after the last endpoint moves. Never big-bang.
 
+## Admin surface: same app, separate identity (audit 2026-10-20)
+
+Where does the admin backend live? Four products, checked in code:
+
+| Product | Admin surface | Guard |
+|---|---|---|
+| Yellow-Chick (multi-tenant) | Route `/admin/operations` in the same React app; API prefix `/api/operations*` | `require_operator`: a separate `operator` row, granted on purpose |
+| ChimesERP | `/settings/{audit,access-review,jobs,sod}` in the same app | `require_role` / `require_permission` |
+| ChimesFlow | `(main)/admin/*` route group | `require_role("admin")` |
+| PTI-ARES | `(main)/{logs,members,settings}` | `require_admin` |
+
+- **Converged (n=4): same app, same deploy.** No product runs a separate admin app.
+  Do not build one by default.
+- **Multi-tenant only (n=1, Yellow-Chick): the platform operator is not a tenant role.**
+  A tenant owner is the top role inside one tenant. The operator works across tenants.
+  Keep the operator in its own table, with its own API prefix and dependency. A tenant
+  owner without the grant gets 403. Each entry into a tenant writes an audit row
+  (`operator.impersonated`), so the owner can see who came in.
+- **A separate admin deploy needs a reason.** Examples: the admin must not be reachable
+  from the public internet, or admins need a different login (SSO, MFA). Write the
+  reason in an ADR.
+- **Gaps seen:** Yellow-Chick does not audit the operator's own login. No product
+  enforces MFA for admins.
+
 ## Gotchas — from the audit
 
 - **Don't start at Tier 2**: the matrix + admin API + seed is real weight. For 2 roles it's
@@ -113,4 +139,10 @@ from day one; delete `require_role` only after the last endpoint moves. Never bi
 - Tier 2: `~/code/ChimesFlow/backend/app/middleware/auth.py` (`require_role` / `require_permission`),
   `app/models/role_permission.py`, `app/utils/role_permission_seed.py`, `app/routers/permissions.py`,
   row scope in `app/utils/rbac.py`
+- Admin surface: YC `frontend/src/routes/router.tsx` (`operationsRoute`), `app/api/deps.py:265`
+  `require_operator`, `scripts/ops/platform_admin.py`, `app/api/operations/ops.py`,
+  `docs/plans/admin/2026-09-25-operations-admin-boundary.md`,
+  `docs/design/admin/2026-09-26-platform-admin-entry-sd.md`; ChimesERP
+  `backend/app/routers/admin_logs.py`; ChimesFlow `backend/app/middleware/auth.py`;
+  PTI-ARES `backend/app/features/platform/identity/README.md`
 - Pairs with [[spine-auth]] (decision 3 there defers here). Registry: `rivendell/docs/spine-modules.md` (#2).

@@ -12,7 +12,7 @@
 |---|------|--------|------|----------------------|
 | 1 | 帳密 auth | 登入 / 憑證 / token | **skill ✅** | `spine-auth`(crypto core 收斂 / token+rbac 分歧→參數) |
 | 2 | rbac | 角色權限,給多人用 | **skill ✅** | `spine-rbac`(無 code core,tier 決策:寫死 vs 矩陣) |
-| 3 | logs + admin API | 後台看 logs 跟資料 | **n=1 deferred** ⏸ | chimesflow 一家有;family-fiscal 缺、mops 走 monitor app → 未過 ≥2 收斂門檻,待第 2 實作 |
+| 3 | logs + admin API | 後台看 logs 跟資料 | **n=1 deferred** ⏸ | chimesflow 一家有;family-fiscal 缺、mops 走 monitor app → 未過 ≥2 收斂門檻,待第 2 實作。2026-10-20 盤點:YC / PTI-ARES / ChimesFlow / ChimesERP 都有 admin logs,可重審 |
 | 4 | roadmap | 開發 roadmap 呈現 + 開票 | **skill ✅** | `spine-roadmap`(固定 ID 票、完成須連已驗收已發布交付;Yellow-Chick 完整級 + PTI-ARES 細項 checks/evidence(票記工作、細項記能力)+ ChimesFlow 使用者視圖,2026-09-29) |
 | 5 | 版本 versioning | 開發版本號 / changelog | **skill ✅** | `spine-versioning`(core=enforcement gate,三家都缺所以一直漏 bump) |
 | 6 | cloudflare / deploy | tunnel + prod 部署(WSL deploy 工具已建) | candidate | `spine-deploy` |
@@ -29,6 +29,7 @@
 | 17 | scrape scheduler / job runner | 排程跑爬蟲 job + runner | candidate(scraper) | `spine-job-scheduler` |
 | 18 | idempotent ingestion(upsert/dedup) | 抓回的資料冪等寫入 | candidate(scraper) | `spine-ingestion` |
 | 19 | AI-vision extract(拍照→AI 當 OCR) | 圖→AI 抽結構,identify→normalize→cache→generate→persist | **skill ✅** | `ai-vision-extract`(AI-feature 家族;iihi 來源,n=1 待第 2 驗) |
+| 20 | AI 助理 in-app assistant | 產品內 agentic 助理:只透過工具碰資料、照提問者權限、來源核對、每次工具呼叫留稽核 | **skill ✅** | `spine-assistant`(Yellow-Chick 寫入走 Gate + PTI-ARES 唯讀,2 家收斂;ChimesERP 是下一個消費者,2026-10-20) |
 
 > **兩個 spine family + 共用核心**(2026-06-27 盤 chimesflow CRM + mops scraper 後發現):
 > - **web-app spine**:#1-2-3-4-5-8-9-10-12(auth/rbac/logs/roadmap/版本/feedback/notif/audit/settings)
