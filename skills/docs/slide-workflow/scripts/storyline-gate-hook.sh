@@ -44,11 +44,42 @@ STORY="$(find "$CWD" -maxdepth 1 -name storyline.md 2>/dev/null | head -1)"
 [ -z "$STORY" ] && STORY="$(find "$ROOT" -maxdepth 3 -name storyline.md -not -path '*/node_modules/*' 2>/dev/null | head -1)"
 [ -z "$STORY" ] && exit 0   # no storyline anywhere → not this hook's call
 
-STATUS="$(awk '/^---$/{c++; next} c==1 && /^status:/{sub(/^status:[ \t]*/,""); print; exit}' "$STORY" | tr -d '"'"'" )"
+frontmatter_value() {
+  awk -v key="$1" '
+    NR == 1 && $0 != "---" { exit }
+    /^---$/ { delimiters++; if (delimiters == 2) exit; next }
+    delimiters == 1 && index($0, key ":") == 1 {
+      value = substr($0, length(key) + 2)
+      sub(/^[ \t]*/, "", value)
+      sub(/[ \t]*$/, "", value)
+      if (value ~ /^".*"$/ || value ~ /^\047.*\047$/)
+        value = substr(value, 2, length(value) - 2)
+      print value
+      exit
+    }
+  ' "$STORY"
+}
+
+STATUS="$(frontmatter_value status)"
 if [ "$STATUS" = "signed-off" ]; then
+  SIGNED_BY="$(frontmatter_value signed_by)"
+  GENRE="$(frontmatter_value genre)"
+  if [ "$SIGNED_BY" = "self-check" ] && { [ -z "$GENRE" ] || [ "$GENRE" = "presales" ]; }; then
+    printf '{"decision":"block","reason":"storyline gate: %s 是 B2B 提案，自行簽核不算，要由 /slide-office-hours 簽核。（跳過：SK_SKIP_STORYLINE_GATE=1）"}\n' \
+      "${STORY#$ROOT/}" >&2
+    exit 2
+  fi
   exit 0
 fi
 
-printf '{"decision":"block","reason":"storyline gate: %s 的 status 是「%s」，不是 signed-off。先跑 /slide-office-hours 紅隊完簽核，再生成 deck。（跳過：SK_SKIP_STORYLINE_GATE=1）"}\n' \
-  "${STORY#$ROOT/}" "${STATUS:-缺 status}" >&2
+# Point to the right sign-off path: presales (or no genre) -> slide-office-hours,
+# any other genre -> the self-check script.
+GENRE="$(frontmatter_value genre)"
+if [ -z "$GENRE" ] || [ "$GENRE" = "presales" ]; then
+  NEXT="先跑 /slide-office-hours 紅隊完簽核，再生成 deck。"
+else
+  NEXT="先跑 storyline-selfcheck.sh --sign 自行檢查簽核，再生成 deck。"
+fi
+printf '{"decision":"block","reason":"storyline gate: %s 的 status 是「%s」，不是 signed-off。%s（跳過：SK_SKIP_STORYLINE_GATE=1）"}\n' \
+  "${STORY#$ROOT/}" "${STATUS:-缺 status}" "$NEXT" >&2
 exit 2

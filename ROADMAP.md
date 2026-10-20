@@ -114,6 +114,11 @@
 - **`doe-ml-analysis`** — DOE/製程 ML EDA(heatmap→PCA→regression R²);harvest Strong,
   補製造運營 domain gap。
 - **`bin/sk index`** — INDEX-first 分層 skill 檢索,砍 per-session token(FR 2026-05-08)。
+- **簡報流程三張票**(2026-10-20,由 GitHub issue #1-#3 轉來;計畫
+  `docs/plans/2026-10-20-slide-storyline-review-deck-index.md`):
+  `SLIDE-STORYLINE-GENRE`(非提案簡報可自行簽核 storyline)·
+  `SLIDE-REVIEW`(逐頁排版檢查 + 三輪修正)·
+  `DECK-INDEX`(依機器登記工作資料夾、簡報索引、定版前檢查)。進行中。
 - Later:`presales-poc-scoping` mother-skill(n≥3 觀察中)· domain gaps(商業洞察/
   製造運營 AOI/SPC/排程/EHS/法務,真案落地才抽)· DFM 知識 reference skill(Vault SoT)。
 

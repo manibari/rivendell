@@ -1,4 +1,5 @@
 ---
+genre: presales
 client: <客戶名>
 stage: <first-call | post-discovery | proposal | final-pitch>
 profile: <傳產中小 | 大型科技廠 | 公部門 | 新創>

@@ -94,6 +94,10 @@
       "expect": "slide-office-hours"
     },
     {
+      "phrase": "檢查簡報排版",
+      "expect": "slide-review"
+    },
+    {
       "phrase": "新客戶 kickoff",
       "expect": "sales-client-kickoff-docs"
     },

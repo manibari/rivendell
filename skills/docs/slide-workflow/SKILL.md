@@ -9,7 +9,7 @@ description: >
   TRIGGER: "做簡報", "做 deck", "準備提案", "幫我做 slides", "簡報流程".
   SKIP: complete outline + locked template + "直接生成".
 tags: [docs, workflow]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
@@ -55,8 +55,11 @@ ls -la storyline.md 2>/dev/null
 | 狀況 | 動作 |
 |------|------|
 | 存在 + frontmatter `status: signed-off` | 進 Gate 1 |
-| 存在但 status 是 `draft` 或缺漏 | STOP — 「找到 storyline.md 但還沒簽核。先跑 `/slide-office-hours` red-team 完才能進來。」 |
-| 不存在 | STOP — 「沒找到 storyline.md。deck 沒 storyline 動工會浪費時間（參見 cd63836f 教訓）。從 `/slide-office-hours` 開始，會給你 template。」 |
+| 存在、未簽核，`genre` 是 `presales` 或沒填 | STOP — 「找到 storyline.md 但還沒簽核。先跑 `/slide-office-hours` red-team 完才能進來。」 |
+| 存在、未簽核，`genre` 是 `internal` / `talk` / `report` / `other` | 跑 `scripts/storyline-selfcheck.sh storyline.md`。全部通過 → 加 `--sign` 簽核後進 Gate 1；有未通過 → 把未通過清單給用戶補，不代寫內容 |
+| 不存在 | STOP — 「沒找到 storyline.md。deck 沒 storyline 動工會浪費時間（參見 cd63836f 教訓）。B2B 提案從 `/slide-office-hours` 開始，會給你 template；內部、演講、報告用通用範本 `storyline-template-general.md`。」 |
+
+`genre` 沒填 = `presales`。自行簽核（`signed_by: self-check`）只對非 presales 有效，storyline gate hook 會擋 presales 的自行簽核（2026-10-20）。
 
 **Override**: 用戶說「跳過 storyline gate」/「我知道，直接做」/「--skip-storyline」 — warn once：
 > ⚠️ 跳過 storyline gate。如果中途發現結構/猜題/事實要改，那不是 bug，是這個決定的後果。
@@ -64,7 +67,7 @@ ls -la storyline.md 2>/dev/null
 然後進 Gate 1。
 
 **例外免 storyline 的場景**（自動跳過 Gate 0，不需 override）：
-- 純內部 deck（不對外）
+- 純內部 deck（不對外）且資料夾裡沒有 storyline.md。已經有 storyline.md 就走上表的自行簽核，hook 會擋未簽核的
 - 用戶明確說這是 quick mode + 「我已經想好了」
 
 > 等待 storyline 簽核或 override 後才進入 Gate 1。
@@ -317,12 +320,13 @@ open {output-dir}/{client}-deck.html
 
 ---
 
-## Gate 6.5: 文字打磨 + 視覺一致性（recommended，可省略）
+## Gate 6.5: 排版檢查（必跑）+ 文字打磨（可省略）
 
 | 動作 | 工具 | 何時跳過 |
 |------|------|---------|
+| 逐頁排版檢查：超出畫面、換行、字太小、重疊、留白，加上截圖判讀（概念分色塊、卡片只放一個主標），修正最多三輪 | `/slide-review` | **不跳過**。Gate 7 的定版前檢查要看它寫的 `review.md` |
 | 移除 AI slop / 檢查繁中口吻（「值得注意的是」「進一步」「綜上所述」） | `/de-slopify` | 內部 deck 不對外 |
-| 視覺一致性檢查（行距、對齊、色彩濫用） | `/gstack-design-review` | 已用 locked template 且只動文字 |
+| 整體設計打磨（行距、對齊、色彩濫用） | `/gstack-design-review` | 已用 locked template 且只動文字 |
 | 撰寫講者備註 | manual or `/office-pptx` speaker notes API | 純閱讀型 deck |
 
 > 確認後進入 Gate 7。
@@ -341,6 +345,13 @@ open {output-dir}/{client}-deck.html
 | **PDF**（email 附件 / 鎖定不能改） | 法務 / 投標附件 | print-to-PDF from HTML or PPTX export |
 
 存檔慣例：`{output-dir}/{client}-deck.{ext}`
+
+**定版（用戶說「定版」「OK」「歸檔」）**：
+
+1. 工作資料夾位置依機器登記：`sk work-root get chimes-work`。報錯 = 這台機器沒登記，停下來請用戶登記，不要猜路徑。
+2. 先跑 `sk deck-preflight <deck 資料夾>`：storyline 已簽核、`review.md` 是 `status: passed` 才算通過。「未判讀」也是不通過。
+3. 通過才把定版檔搬進 `presentations/`：客戶簡報 → `客戶/<通路>/<階段>/<客戶>/1-presales/presentations/`；內部、產品簡報 → `<deck 資料夾>/presentations/`。草稿留在 `cache/`。
+4. 跑 `sk deck-index --write` 更新工作資料夾的 `簡報索引.md`。
 
 交付後確認：
 > 簡報已匯出：`{path}`

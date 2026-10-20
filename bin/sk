@@ -80,6 +80,12 @@ Deploy & Infrastructure:
   code exec --executor qwen|codex -C <dir> --brief-file <f>
                       Run one coding ticket on an executor via codex exec
                       (agent-code-dispatch). Also: code proxy start|stop|status.
+  work-root get <key> Print this machine's registered work folder (data/work-roots.conf).
+                      Also: work-root check.
+  deck-index [--write]
+                      List finished decks in presentations/ folders; --write writes 簡報索引.md
+  deck-preflight <dir>
+                      Before a deck becomes final: storyline signed off, review.md passed
   help                Show this help message
 
 Categories: platform, workflow, quality, git, frontend, backend, docs
@@ -837,6 +843,18 @@ cmd_check() {
     grep -E 'STALE|remove:' /tmp/sk-worktrees.$$ | sed 's/^/  /'
   fi
   rm -f /tmp/sk-worktrees.$$
+
+  echo ""
+  # Work roots: each machine registers where its work folder is. A machine with
+  # no row gets a warning here; no script guesses the path.
+  echo -e "${CYAN}[Work roots]${NC}"
+  if python3 "$REPO_DIR/scripts/work_roots.py" check >/tmp/sk-work-roots.$$ 2>&1; then
+    echo -e "  ${GREEN}$(tail -1 /tmp/sk-work-roots.$$ | sed 's/^ *//')${NC}"
+  else
+    echo -e "  ${YELLOW}$(tail -1 /tmp/sk-work-roots.$$ | sed 's/^ *//')${NC}"
+    grep '不存在' /tmp/sk-work-roots.$$ | sed 's/^/  /' || true
+  fi
+  rm -f /tmp/sk-work-roots.$$
 
   echo ""
   # Role coverage: every skill must appear in docs/skills-by-role.md at least once,
@@ -4534,6 +4552,9 @@ case "${1:-help}" in
   reboot)     shift; exec "$REPO_DIR/bin/sk-reboot" "$@" ;;
   todo)       shift; exec "$REPO_DIR/bin/sk-todo" "$@" ;;
   code)       shift; exec python3 "$REPO_DIR/skills/agents/agent-code-dispatch/scripts/code-run" "$@" ;;
+  work-root)  shift; exec python3 "$REPO_DIR/scripts/work_roots.py" "$@" ;;
+  deck-index) shift; exec python3 "$REPO_DIR/scripts/deck_index.py" "$@" ;;
+  deck-preflight) shift; exec python3 "$REPO_DIR/scripts/deck_preflight.py" "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo -e "${RED}Unknown command:${NC} $1"

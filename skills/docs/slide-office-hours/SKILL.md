@@ -7,9 +7,11 @@ description: >
   (stage × profile) matrix; rejects 公開資料 voice. Outputs signed-off storyline consumed
   by slide-workflow / pitch-deck.
   TRIGGER: "/slide-office-hours", "review storyline", "壓力測試 storyline", "簡報前置審核".
-  SKIP: storyline.md already `status: signed-off`.
+  SKIP: storyline.md already `status: signed-off`; a storyline whose `genre` is not
+  `presales` (internal, talk, report, other) — that one uses the slide-workflow
+  self-check script.
 tags: [docs, presales, review]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Edit, Bash, Grep, Glob"
 ---
@@ -19,6 +21,17 @@ allowed-tools: "Read, Edit, Bash, Grep, Glob"
 Storyline red-team gate. **Reviews** a user-written `storyline.md`, never **proposes** content.
 
 The leverage point in deck-building is storyline review, not slide generation. AI's default content voice = 「公開資料合理推測」voice = the failure mode this skill exists to catch.
+
+**Scope: B2B presales only** (`genre: presales`, or no `genre`). Since 2026-10-20 an
+internal deck, a talk or a report uses `genre: internal | talk | report | other` and
+signs off with the self-check script, not with this skill:
+
+```bash
+~/.claude/skills/slide-workflow/scripts/storyline-selfcheck.sh --sign storyline.md
+```
+
+The gate hook rejects a self-check sign-off on a presales storyline. Thus a presales
+deck still goes through this review.
 
 ## Hard Rules
 
@@ -54,6 +67,12 @@ If none found:
 > `cp ~/.claude/skills/slide-office-hours/storyline-template.md ./storyline.md`
 >
 > 寫完再呼叫 /slide-office-hours review。
+>
+> 不是 B2B 提案（內部、演講、報告）就改用通用範本，寫完自行檢查簽核：
+> `cp ~/.claude/skills/slide-workflow/storyline-template-general.md ./storyline.md`
+
+If the storyline has a `genre` other than `presales`, stop and point to the
+self-check script (see "Scope" above). Do not review it here.
 
 If multiple found, ask user which one.
 
@@ -63,6 +82,7 @@ Read storyline frontmatter. Required fields:
 
 | Field | Allowed values |
 |-------|---------------|
+| `genre` | `presales`, or no value (any other value: out of scope, see Step 1) |
 | `stage` | `first-call` / `post-discovery` / `proposal` / `final-pitch` |
 | `profile` | `傳產中小` / `大型科技廠` / `公部門` / `新創` |
 | `client` | <客戶名> |

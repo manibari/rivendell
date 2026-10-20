@@ -155,7 +155,7 @@
 |---|---|---|
 | Plan | `presales-pipeline`（建 client 檔）→ `tw-company-lookup` → `sales-customer-intel` → `metadata-workshop`（猜製程）· `gstack-office-hours` (gstack) | 公司登記；情蒐要 operator-level 猜製程與業務流程，不是轉述公開資料；值不值得追 |
 | Do | storyline.md（**你寫**，AI 補洞）→ `slide-office-hours` → `slide-workflow` → `office-pptx` → `de-slopify` ｜ 視情況：`chart-design`（deck 有圖才進，它再轉 `excalidraw-diagram` / `mermaid-diagram`）、`gdoc-report-builder`（要出 Google Slides） | 通用流程 D：storyline 紅隊過了才生成；繁中打磨 |
-| Check | `slide-office-hours`（`status: signed-off` 才准生成）· `gstack-design-review` (gstack) · `check-html-figure.mjs` | 硬閘門；視覺一致；圖檔切版與字級 |
+| Check | `slide-office-hours`（`status: signed-off` 才准生成）· `slide-review`（逐頁排版，定版前要通過）· `gstack-design-review` (gstack) · `check-html-figure.mjs` | 硬閘門；逐頁切版、字級、色塊；視覺一致；圖檔切版與字級 |
 | Act | `presales-pipeline`（active → 下一步）· `knowledge-graph` | 狀態流轉；人與決策記成事實 |
 
 ### 3b 客戶客製提案（已接觸，要提案）
@@ -164,7 +164,7 @@
 |---|---|---|
 | Plan | `discovery-interview` · `metadata-workshop` · `sales-customer-intel`（更新） | 挖最痛的手工流程；業務知識變 schema |
 | Do | `sales-material` → `sales-deck-design` → `slide-workflow` ｜ 視情況：`slide-template-extractor`（有參考 PPTX 要鎖風格）、`gov-rfq-writer`（要附報價）、`chart-design`（有圖） | 從素材庫組裝；客製提案要像企業提案；報價比 SOW 輕 |
-| Check | `slide-office-hours` · `sales-material-health`（素材沒過期）· `gstack-design-review` (gstack) | |
+| Check | `slide-office-hours` · `slide-review`（逐頁排版）· `sales-material-health`（素材沒過期）· `gstack-design-review` (gstack) | |
 | Act | won → 3c；lost → `presales-pipeline` lost + 原因 · `knowledge-graph` | |
 
 ### 3c 簽約與 kickoff
