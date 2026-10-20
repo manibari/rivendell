@@ -346,12 +346,10 @@ open {output-dir}/{client}-deck.html
 
 存檔慣例：`{output-dir}/{client}-deck.{ext}`
 
-**定版（用戶說「定版」「OK」「歸檔」）**：
+**定版（用戶說「定版」「OK」「歸檔」）**：步驟只寫在工作資料夾 `CLAUDE.md` 的「簡報定版」一節（定版前檢查、搬到哪、更新索引）。這裡不重寫，避免兩份規則不一致。
 
-1. 工作資料夾位置依機器登記：`sk work-root get chimes-work`。報錯 = 這台機器沒登記，停下來請用戶登記，不要猜路徑。
-2. 先跑 `sk deck-preflight <deck 資料夾>`：storyline 已簽核、`review.md` 是 `status: passed` 才算通過。「未判讀」也是不通過。
-3. 通過才把定版檔搬進 `presentations/`：客戶簡報 → `客戶/<通路>/<階段>/<客戶>/1-presales/presentations/`；內部、產品簡報 → `<deck 資料夾>/presentations/`。草稿留在 `cache/`。
-4. 跑 `sk deck-index --write` 更新工作資料夾的 `簡報索引.md`。
+1. 找工作資料夾：`sk work-root get chimes-work`。報錯 = 這台機器沒登記，停下來請用戶登記，不要猜路徑。
+2. 讀 `<工作資料夾>/CLAUDE.md` 的「簡報定版」一節，照做。從工作資料夾外開的 session 不會自動載入那份檔案，要自己讀。
 
 交付後確認：
 > 簡報已匯出：`{path}`
