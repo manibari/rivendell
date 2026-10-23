@@ -1,7 +1,9 @@
 # Skills public release: remove the coupling, keep one source
 
 Date: 2026-10-22. Owner: Peter. Planner and reviewer: Claude. Executor: see each ticket.
-Status: approved 2026-10-23, except decision 7.
+Status: superseded on 2026-10-23 by `2026-10-23-rivendell-product.md`. The owner
+dropped the company / team / private split. The inventory in the appendix
+stays valid as evidence.
 
 Source: Peter, 2026-10-22: 「我是覺得可以公開啦，只是要解決耦合問題」
 「畢竟誰家的公司流程不是都差不多」. On the same day `manibari/rivendell`
