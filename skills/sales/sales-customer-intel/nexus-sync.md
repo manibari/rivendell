@@ -10,7 +10,7 @@ When user provides new information via chat, update BOTH md and Nexus.
 
 ### Trigger Patterns
 
-- "奇美的 IT 主管叫林志明" → update 三、關鍵人物
+- "OO 公司的 IT 主管叫王小明" → update 三、關鍵人物
 - "把 deal potential 改成 high" → update 八、風險評估
 - "他們預算大概 500 萬" → update 四、財務狀況
 - "剛開完會，他們對 IoT 很有興趣" → update 二、近期動態 + 六、痛點

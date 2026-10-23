@@ -345,6 +345,6 @@ Default in this skill: NTD 10,000 / 人天 (blended rate)
 
 ## Reference Implementation
 
-A complete real-world example exists at `~/Documents/Projects/lorien/docs/sow/sabre-2026.md`
-(Sabre AI 方案 — 150 人天, NTD 1.5M). Read this file when you need to see how all sections
+A complete real-world example exists at `~/Documents/Projects/lorien/docs/sow/sabre-2026.md`.
+Read this file when you need to see how all sections
 fit together in a real engagement.

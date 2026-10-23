@@ -112,8 +112,6 @@ Where does the admin backend live? Four products, checked in code:
 - **A separate admin deploy needs a reason.** Examples: the admin must not be reachable
   from the public internet, or admins need a different login (SSO, MFA). Write the
   reason in an ADR.
-- **Gaps seen:** Yellow-Chick does not audit the operator's own login. No product
-  enforces MFA for admins.
 
 ## Gotchas — from the audit
 
