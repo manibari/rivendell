@@ -39,6 +39,25 @@ skills/
 └── docs/       # 文件處理與簡報 (19)
 ```
 
+## 安裝成 Claude Code plugin
+
+不用 clone 整個 repo。在 Claude Code 輸入：
+
+```
+/plugin install dev-flow --marketplace manibari/rivendell
+/plugin install deck-flow --marketplace manibari/rivendell
+```
+
+Claude Code 2.1.275 以前的版本，先輸入 `/plugin marketplace add manibari/rivendell`，再輸入 `/plugin install dev-flow@rivendell`。
+
+| Plugin | 內容 |
+|---|---|
+| `dev-flow` | 開發流程：需求 → 使用流程 → 畫面 → 系統設計 → 開票 → 派工給 Codex 寫程式 → 驗收 |
+| `deck-flow` | 簡報流程：故事線審查 → 做簡報 → 逐頁檢查排版。產生 .pptx 需要 Anthropic 的 document-skills（見下方「Anthropic 文件 skill」） |
+| `charts` | 畫圖與圖表檢查。裝上面任一個時會自動一起裝；只要畫圖可單獨裝：`/plugin install charts --marketplace manibari/rivendell` |
+
+目前是 0.1.0。部分步驟還會用到 `sk` 指令和 Node 套件，後續版本會逐步拿掉這些限制（`docs/plans/2026-10-23-rivendell-product.md`）。
+
 ## Quick Start
 
 ```bash

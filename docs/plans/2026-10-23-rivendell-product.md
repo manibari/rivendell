@@ -62,7 +62,9 @@ that the company and the owner both meet is worth a product).
 | `dev-flow` | requirement, user-flow, mockup, system-design, spine-roadmap, agent-code-dispatch, chart-design | requirement → screens → design → tickets → an executor writes the code → review |
 | `deck-flow` | slide-office-hours, slide-workflow, slide-review, chart-design | storyline → slides → per-slide check |
 
-`chart-design` is in both. `video-transcript` is the next candidate.
+`chart-design` is its own plugin, `charts`. Both flows list it in
+`dependencies`, so it installs once with either flow. `video-transcript` is the
+next candidate.
 
 `deck-flow` needs Anthropic's `document-skills` plugin for `html2pptx`. The
 README says how to install it.
@@ -98,7 +100,8 @@ example) stay. They do not stop a skill from running.
    deploy` symlink and for the plugin copy. PRODUCT-PATHS tests both.
 4. **Node dependencies have a lockfile.** The setup step installs the Chromium
    that Playwright uses.
-5. **Version.** Each plugin entry has a version. A release bumps it
+5. **Version.** Each plugin entry has a version. A set version is pinned:
+   users get no update until the version changes. Thus a release bumps it
    (spine-versioning).
 
 ## Tickets
@@ -107,6 +110,15 @@ example) stay. They do not stop a skill from running.
 
 Goal: the 2 plugins install from GitHub.
 Executor: Claude (configuration).
+
+Status 2026-10-23: done on a local clone; the GitHub test waits for the push.
+
+- `claude plugin validate .` passes, with no advice left.
+- A clean clone installed into a throwaway `CLAUDE_CONFIG_DIR`: `dev-flow`
+  installed `charts` as a dependency. Skills: dev-flow 6, deck-flow 3,
+  charts 1. Always-on cost: about 1,284, 404 and 371 tokens.
+- Each cached copy is 20 MB, with no `.git`, `node_modules` or `office-*`.
+- README has the install lines.
 
 Acceptance:
 
