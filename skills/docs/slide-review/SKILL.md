@@ -15,7 +15,7 @@ description: >
   SKIP: one chart or figure page (chart-design runs its checker directly); storyline
   review (slide-office-hours); overall design taste (gstack-design-review).
 tags: [docs, slides, qa, review]
-version: 1.0.0
+version: 1.0.1
 user_invocable: true
 allowed-tools: "Read, Edit, Write, Bash, Glob, AskUserQuestion"
 ---
@@ -53,7 +53,8 @@ now the source. Background: GitHub issue #2 (2026-06-03), plan
 4. **Colours and fonts change in the template `:root` variables**, not inline
    (slide-workflow Gate 6).
 5. **The user may export without a pass.** Then `review.md` stays
-   `failed-needs-user`, and `sk deck-preflight` blocks the move to the final folder.
+   `failed-needs-user`, and the deck pre-flight (`sk deck-preflight`, where rivendell's
+   `sk` is installed) blocks the move to the final folder.
    Say this once. Do not argue.
 
 ## Procedure
@@ -64,13 +65,14 @@ now the source. Background: GitHub issue #2 (2026-06-03), plan
    `build/`, `pptx-build/slides/` under the deck's `cache/`.
 2. Find the deck's `storyline.md` (deck folder or its `cache/`). Not signed off:
    stop and send the user to slide-workflow Gate 0.
-3. The script needs Playwright from rivendell `node_modules`. If it prints
-   `playwright not found`, run `npm install` in `~/Code/rivendell` once.
+3. The script needs the Node packages of the repo root and Google Chrome. If it
+   prints `playwright not found`, run `npm install` once in the repo root:
+   `cd -P "${CLAUDE_SKILL_DIR}/../../.." && npm install`.
 
 ### Step 1: Iteration 1, script
 
 ```bash
-node ~/.claude/skills/slide-review/scripts/review-deck.mjs <slides-dir>
+node "${CLAUDE_SKILL_DIR}/scripts/review-deck.mjs" <slides-dir>
 ```
 
 Output: `<slides-dir>/review/iter-1/report.json` and one annotated PNG for each
@@ -88,7 +90,7 @@ one line for each defect: slide, rule, what is wrong, the smallest fix.
 Fix only the failing elements in the slide HTML. Then:
 
 ```bash
-node ~/.claude/skills/slide-review/scripts/review-deck.mjs <slides-dir> --iter 2
+node "${CLAUDE_SKILL_DIR}/scripts/review-deck.mjs" <slides-dir> --iter 2
 ```
 
 Read the screenshots again.

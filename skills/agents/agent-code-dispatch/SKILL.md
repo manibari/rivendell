@@ -7,7 +7,8 @@ description: >
   in its own git worktree, then review the work before it reaches the user. Claude
   plans and reviews; the executor writes the code. The default executor is a rule in
   the global CLAUDE.md (開發分工); the user can name another executor for one ticket.
-  Owns `sk code` (launcher) and the GMI proxy that lets codex drive Qwen (127.0.0.1:8004).
+  Owns `scripts/code-run` (the launcher; `sk code` on the owner's machine) and the GMI
+  proxy that lets codex drive Qwen (127.0.0.1:8004).
   TRIGGER when: a ticket or planned change is ready to implement and the next step is
   writing code; or the user says "派給 Qwen", "給 Codex 寫", "這張 Claude 寫", "用 Qwen 做",
   "qwen 開發", "dispatch to qwen", "run this on codex", "換人寫", or asks to compare
@@ -16,7 +17,7 @@ description: >
   (gstack-codex); 3+ independent investigations in parallel (agent-dispatch); an LLM
   provider inside a product app (that is the app's own provider code).
 tags: [workflow, agents]
-version: 2.0.0
+version: 2.1.0
 languages: all
 ---
 
@@ -30,13 +31,14 @@ every executor; only step 3 changes.
 
 1. The user named an executor for this ticket ("這張給 Codex 寫"): use it for this ticket only.
 2. The user said to change the default ("之後都用 Codex"): edit the default line in
-   `~/.claude/CLAUDE.md` (section 開發分工), then use it.
-3. Else: use the default from that line.
+   `~/.claude/CLAUDE.md` (section 開發分工; add the section if it is missing), then use it.
+3. Else: use the default from that line. If there is no such line (a new machine or
+   another user), ask the user once which executor to use, and offer to add the line.
 
 | Executor | How it runs | Account / cost |
 |---|---|---|
-| `qwen` | `sk code exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
-| `codex` | `sk code exec --executor codex` (codex CLI) | ChatGPT login in `~/.codex`, weekly quota |
+| `qwen` | `code-run exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
+| `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT login in `~/.codex`, weekly quota |
 | `claude` | Agent tool, `isolation: "worktree"`, brief as the prompt | Claude session quota |
 
 Do not switch the executor by yourself. If the executor cannot run (no key,
@@ -74,7 +76,7 @@ schema migrations, auth, permissions, secrets, deploy scripts, design across mod
 - qwen: the user stores the GMI key in the Keychain. Ask the user to open
   `scripts/set-gmi-key.command` in Finder. It needs a TTY, so the `!` prefix
   does not work. Never type or paste the key for the user.
-  Check: `sk code key-check` prints `key found`.
+  Check: `python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" key-check` prints `key found`.
 - codex: `codex login` done in `~/.codex`. Quota per account shows on `/tokens`.
 - claude: nothing.
 
@@ -155,7 +157,7 @@ start". Codex ran 128 tests anyway. All failed, and Chrome crashed 16 times.)
 qwen or codex:
 
 ```bash
-sk code exec --executor <qwen|codex> -C <worktree> --brief-file <brief> [--network]
+python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" exec --executor <qwen|codex> -C <worktree> --brief-file <brief> [--network]
 ```
 
 Run it with `run_in_background`. Do not poll. The command prints the run
@@ -224,15 +226,16 @@ defects found.
 ## Commands
 
 ```bash
-sk code exec --executor <qwen|codex> -C <dir> --brief-file <file> [-m <model>] [--network]
-             [--idle-min 1] [--retries 1] [--timeout-min 90]
-sk code proxy start|stop|status     # GMI proxy for qwen
-sk code key-check                   # GMI key for qwen
+CR="${CLAUDE_SKILL_DIR}/scripts/code-run"
+python3 "$CR" exec --executor <qwen|codex> -C <dir> --brief-file <file> [-m <model>] [--network]
+                  [--idle-min 1] [--retries 1] [--timeout-min 90]
+python3 "$CR" proxy start|stop|status     # GMI proxy for qwen
+python3 "$CR" key-check                   # GMI key for qwen
 ```
 
-`sk code` runs `scripts/code-run`. `--executor` has no default: the default
-lives only in the CLAUDE.md rule. The proxy starts on the first qwen run and
-keeps running; stop it with `sk code proxy stop`. A qwen run uses
+Where rivendell's `sk` is installed, `sk code <args>` runs the same script.
+`--executor` has no default: the default lives only in the CLAUDE.md rule. The
+proxy starts on the first qwen run and keeps running; stop it with `proxy stop`. A qwen run uses
 `CODEX_HOME=~/.codex-qwen`, so `/tokens` counts it under the Qwen source.
 
 ## Files

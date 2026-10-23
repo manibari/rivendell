@@ -56,7 +56,7 @@ Claude Code 2.1.275 以前的版本，先輸入 `/plugin marketplace add manibar
 | `deck-flow` | 簡報流程：故事線審查 → 做簡報 → 逐頁檢查排版。產生 .pptx 需要 Anthropic 的 document-skills（見下方「Anthropic 文件 skill」） |
 | `charts` | 畫圖與圖表檢查。裝上面任一個時會自動一起裝；只要畫圖可單獨裝：`/plugin install charts --marketplace manibari/rivendell` |
 
-目前是 0.1.0。部分步驟還會用到 `sk` 指令和 Node 套件，後續版本會逐步拿掉這些限制（`docs/plans/2026-10-23-rivendell-product.md`）。
+目前是 0.1.1。畫面與簡報的自動檢查需要 Node 套件和 Google Chrome，plugin 安裝後還要自己裝套件，下一版處理（`docs/plans/2026-10-23-rivendell-product.md`）。派工給 Codex 需要先登入 Codex CLI。
 
 ## Quick Start
 

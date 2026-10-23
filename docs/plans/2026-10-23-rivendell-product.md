@@ -95,9 +95,14 @@ example) stay. They do not stop a skill from running.
    calls moves into that skill's `scripts/`. `sk` keeps the subcommand as a
    thin wrapper, so the owner's commands do not change. A step that needs the
    owner's setup (work folder registry) says "if available".
-3. **One path rule for both installs.** A file of another skill is found from
-   the physical path of the current skill folder, so it works for the `sk
-   deploy` symlink and for the plugin copy. PRODUCT-PATHS tests both.
+3. **One path rule for both installs.** `${CLAUDE_SKILL_DIR}` expands in
+   SKILL.md for a plugin skill and for a symlinked `sk deploy` skill (tested
+   2026-10-23; it gives the symlink path). Own file: `${CLAUDE_SKILL_DIR}/<file>`.
+   A file of another skill, or the repo root: first get the real folder,
+   `S="$(cd -P "${CLAUDE_SKILL_DIR}" && pwd)"`, then `$S/../../<category>/<skill>/<file>`.
+   Node drops `..` before it follows a symlink, and `cd` without `-P` does the
+   same, so a raw `${CLAUDE_SKILL_DIR}/../..` fails on the owner's machine.
+   Codex does not expand `${CLAUDE_SKILL_DIR}`; a Codex brief gives full paths.
 4. **Node dependencies have a lockfile.** The setup step installs the Chromium
    that Playwright uses.
 5. **Version.** Each plugin entry has a version. A set version is pinned:
@@ -133,6 +138,12 @@ Acceptance:
 Goal: no product skill cites `~/.claude/skills/`.
 Executor: Claude (text), Codex for scripts.
 
+Status 2026-10-23: done with PRODUCT-NO-SK (text only, no script change).
+mockup, chart-design, slide-review and slide-office-hours use the rule in
+Design item 3. chart-design ran `node skills/docs/chart-design/...`, which
+worked only with the rivendell root as the working folder; fixed. Each new
+path was run on the owner's symlink install and on a plugin copy from GitHub.
+
 Acceptance: the rule in Design item 3 is in each product skill; one test runs
 the chart-design checker through the mockup instructions from a plugin copy and
 from the `sk deploy` symlink.
@@ -141,6 +152,16 @@ from the `sk deploy` symlink.
 
 Goal: the product skills run with no `sk` on PATH.
 Executor: Codex.
+
+Status 2026-10-23: done by Claude as text edits; no code change was needed, so
+no Codex run. `sk code` only calls `scripts/code-run`, which already uses only
+the standard library and its own folder. agent-code-dispatch now calls the
+script (tested: `--help` and `key-check` through the skill path) and asks for
+an executor when the CLAUDE.md rule is missing. `sk deck-preflight` is only
+mentioned by slide-review. The slide-workflow promotion step uses
+`sk work-root` where it exists, and else asks where to put the deck. Four
+references to removed sections of the global CLAUDE.md (system-design 3,
+slide-workflow 1) now point to the skill that holds the rule. Plugins: 0.1.1.
 
 Acceptance:
 

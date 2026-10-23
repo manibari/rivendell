@@ -24,7 +24,7 @@ description: >
   transitions (user-flow); verifying a dataflow, not drawing it (qa-dataflow);
   pure text slides; non-visual tables that are just data dumps.
 tags: [docs, workflow]
-version: 1.0.0
+version: 1.0.1
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
@@ -151,7 +151,7 @@ center_offset    = |chart_center - canvas_center| / canvas_dim  ≤ 0.05
 R1 和「沒切版／沒 wrap／字級夠大」三題不靠肉眼估，跑腳本拿診斷：
 
 ```bash
-node skills/docs/chart-design/references/check-html-figure.mjs <fig.html> \
+node "${CLAUDE_SKILL_DIR}/references/check-html-figure.mjs" <fig.html> \
   --width 1600 --height 900 --screenshot /tmp/check.png
 # 直式捲動報告圖（如 qa-dataflow 功能關係圖）用 --height auto
 ```

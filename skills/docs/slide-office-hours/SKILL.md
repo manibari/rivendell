@@ -11,7 +11,7 @@ description: >
   `presales` (internal, talk, report, other) — that one uses the slide-workflow
   self-check script.
 tags: [docs, presales, review]
-version: 1.1.0
+version: 1.1.1
 user_invocable: true
 allowed-tools: "Read, Edit, Bash, Grep, Glob"
 ---
@@ -27,7 +27,7 @@ internal deck, a talk or a report uses `genre: internal | talk | report | other`
 signs off with the self-check script, not with this skill:
 
 ```bash
-~/.claude/skills/slide-workflow/scripts/storyline-selfcheck.sh --sign storyline.md
+"${CLAUDE_SKILL_DIR}/../../docs/slide-workflow/scripts/storyline-selfcheck.sh" --sign storyline.md
 ```
 
 The gate hook rejects a self-check sign-off on a presales storyline. Thus a presales
@@ -64,12 +64,12 @@ find . -name "storyline.md" -not -path "./node_modules/*" -not -path "./.next/*"
 
 If none found:
 > 沒找到 storyline.md。複製 template 寫一份再來：
-> `cp ~/.claude/skills/slide-office-hours/storyline-template.md ./storyline.md`
+> `cp "${CLAUDE_SKILL_DIR}/storyline-template.md" ./storyline.md`
 >
 > 寫完再呼叫 /slide-office-hours review。
 >
 > 不是 B2B 提案（內部、演講、報告）就改用通用範本，寫完自行檢查簽核：
-> `cp ~/.claude/skills/slide-workflow/storyline-template-general.md ./storyline.md`
+> `cp "${CLAUDE_SKILL_DIR}/../../docs/slide-workflow/storyline-template-general.md" ./storyline.md`
 
 If the storyline has a `genre` other than `presales`, stop and point to the
 self-check script (see "Scope" above). Do not review it here.

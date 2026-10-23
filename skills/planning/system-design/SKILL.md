@@ -21,7 +21,7 @@ description: >
   (gstack-office-hours)；要的是使用者旅程而非系統結構 (user-flow)；
   要驗證既有系統實際怎麼跑 (qa-dataflow)。
 tags: [workflow, planning, architecture]
-version: 1.0.0
+version: 1.0.1
 source: manual
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion"
@@ -52,8 +52,8 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion"
 | **Light** | 動到既有模組內部邏輯，但介面契約不變；或只新增一個端點且沿用既有實體 | 只出 §1 §3 §4 §8（scope / 職責邊界 / 契約 / 未決事項），不畫圖或只畫一張序列圖 |
 | **Full** | **動到資料寫入**、**跨模組傳遞**、**新增 store**、新增/修改 schema、新增外部整合、或這是一個新功能的第一版 | 六節全出 + 圖組（見 Step 4） |
 
-Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不差**（見
-`~/.claude/CLAUDE.md`「動到資料寫入 / 跨模組傳遞 / 新增 store」）。
+Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不差**
+（「動到資料寫入 / 跨模組傳遞 / 新增 store」）。
 理由：事前該設計的和事後該驗的是同一件事。事前跳過 Full，事後 `qa-dataflow`
 一定會挖到落差 —— 只是那時已經寫完了。
 
@@ -75,7 +75,7 @@ Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不�
 | 既有介面 | `ls routers/`、`find app -name 'route.ts'`、OpenAPI schema | 會發明一個已經存在的端點 |
 | 既有資料流圖 | `docs/**/dataflow-*`（`qa-dataflow` 上次的 actual 圖） | 沒有起點，target 圖變成空中樓閣 |
 
-> **代碼引用 ≠ 已讀內容**（`~/.claude/CLAUDE.md` 同名規則）：看到 `US-3`、`A1.1`、
+> **代碼引用 ≠ 已讀內容**：看到 `US-3`、`A1.1`、
 > 某張表名被提及，不代表你知道它的內容。動筆前 `grep` + Read 全文。
 > 不確定就在文件裡寫「待補」，**不要憑常識編**。
 
@@ -274,7 +274,7 @@ Triage 不用猶豫，但 `system-architecture.md` 的 per-type 規則必須照�
 `system-architecture.md` 的 R3 反例集（前端+後端、API+Worker、Primary+Replica、
 內部+第三方、multi-region）逐條對一遍。
 
-**排版與驗證**（`~/.claude/CLAUDE.md` Diagram Output Defaults，不重述細節）：
+**排版與驗證**（規則在 `chart-design`，不重述細節）：
 16:9 1600×900 固定、字級下限、生成後**自我截圖 + Read PNG 肉眼檢查**。
 HTML 圖檔另跑機械檢查：
 

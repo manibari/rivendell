@@ -9,7 +9,7 @@ description: >
   TRIGGER: "做簡報", "做 deck", "準備提案", "幫我做 slides", "簡報流程".
   SKIP: complete outline + locked template + "直接生成".
 tags: [docs, workflow]
-version: 1.1.0
+version: 1.1.1
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
@@ -18,7 +18,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 
 Gated workflow + a pre-flight router. Each gate requires user confirmation before proceeding. Never skip a gate unless the user explicitly says to.
 
-> 上層 routing 邏輯（哪一類 deck → 哪個 skill 接手）見 `~/.claude/CLAUDE.md` 的 `### Slide / Deck Building` flow。本 SKILL.md 是該 flow 的 D 路徑（通用流程）的執行細節。
+> 上層 routing 邏輯（哪一類 deck → 哪個 skill 接手）見下方「Pre-flight: Deck-Type Routing」。本 SKILL.md 是其中 D 路徑（通用流程）的執行細節。
 
 ## Pre-flight: Deck-Type Routing
 
@@ -346,10 +346,11 @@ open {output-dir}/{client}-deck.html
 
 存檔慣例：`{output-dir}/{client}-deck.{ext}`
 
-**定版（用戶說「定版」「OK」「歸檔」）**：步驟只寫在工作資料夾 `CLAUDE.md` 的「簡報定版」一節（定版前檢查、搬到哪、更新索引）。這裡不重寫，避免兩份規則不一致。
+**定版（用戶說「定版」「OK」「歸檔」）**：有登記工作資料夾的機器，步驟只寫在工作資料夾 `CLAUDE.md` 的「簡報定版」一節（定版前檢查、搬到哪、更新索引）。這裡不重寫，避免兩份規則不一致。
 
-1. 找工作資料夾：`sk work-root get chimes-work`。報錯 = 這台機器沒登記，停下來請用戶登記，不要猜路徑。
+1. 找工作資料夾：有 rivendell 的 `sk` 時跑 `sk work-root get chimes-work`。報錯 = 這台機器沒登記，停下來請用戶登記，不要猜路徑。
 2. 讀 `<工作資料夾>/CLAUDE.md` 的「簡報定版」一節，照做。從工作資料夾外開的 session 不會自動載入那份檔案，要自己讀。
+3. 沒有 `sk`（例如從 plugin 安裝）：問用戶定版的檔案要放哪裡，搬過去就好。不要猜路徑。
 
 交付後確認：
 > 簡報已匯出：`{path}`

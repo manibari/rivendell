@@ -236,10 +236,12 @@ Extends L2 with vanilla JavaScript for UX validation.
 ## Responsive check (mandatory)
 
 Run the check on each mockup file at the four widths. It uses the chart-design figure
-checker, which needs Playwright from rivendell `node_modules`.
+checker. It needs the Node packages of the repo root (see the last bullet) and
+Google Chrome.
 
 ```bash
-C=~/.claude/skills/chart-design/references/check-html-figure.mjs
+S="$(cd -P "${CLAUDE_SKILL_DIR}" && pwd)"   # real folder: Node drops ".." before it follows a symlink
+C="$S/../../docs/chart-design/references/check-html-figure.mjs"
 mkdir -p mockups/screens
 for w in 375 768 1024 1440; do
   node "$C" mockups/<name>.html --width "$w" --height auto --min-font 12 \
@@ -257,7 +259,8 @@ done
   not for pages.
 - Read all four screenshots of each screen. Show the user at least the 375 and 1440
   screenshots before you call the mockup done.
-- `playwright not found`: run `npm install` in `~/Code/rivendell` once.
+- `playwright not found`: run `npm install` once in the repo root (the folder with
+  `package.json`): `cd -P "${CLAUDE_SKILL_DIR}/../../.." && npm install`.
 
 ## Quality Checklist
 

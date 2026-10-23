@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "公司和個人都常用的兩條工作流程：開發流程與簡報流程",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "plugins": [
     {
@@ -13,7 +13,7 @@
       "description": "畫圖的單一入口：架構圖、流程圖、報告與簡報用圖，附自動檢查與截圖",
       "source": "./",
       "strict": false,
-      "version": "0.1.0",
+      "version": "0.1.1",
       "skills": [
         "./skills/docs/chart-design"
       ]
@@ -23,7 +23,7 @@
       "description": "開發流程：需求 → 使用流程 → 畫面 → 系統設計 → 開票 → 派工給 Codex 寫程式 → 驗收",
       "source": "./",
       "strict": false,
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": [
         "charts"
       ],
@@ -41,7 +41,7 @@
       "description": "簡報流程：故事線審查 → 做簡報 → 逐頁檢查排版。產生 .pptx 需要另外安裝 Anthropic 的 document-skills",
       "source": "./",
       "strict": false,
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": [
         "charts"
       ],
