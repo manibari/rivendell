@@ -44,3 +44,10 @@ platform/agent_fleet/agents.conf
 
 # sk-sensors helper, built on demand from platform/monitoring/system/sensors.c
 platform/monitoring/system/build/
+
+# Anthropic document skills: the owner's machine keeps a local copy, but the
+# licence does not allow redistribution. See README (2026-10-23).
+skills/docs/office-docx/
+skills/docs/office-pdf/
+skills/docs/office-pptx/
+skills/docs/office-xlsx/

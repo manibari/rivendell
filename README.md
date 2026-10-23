@@ -311,6 +311,19 @@ as release notes.
 | shared | 1 | 14 | 2 | — |
 
 
+## Anthropic 文件 skill（本機副本，不在 repo 內）
+
+`office-docx`、`office-pdf`、`office-pptx`、`office-xlsx` 是 Anthropic 官方 document skills 的副本。授權不允許轉載，所以 2026-10-23 起不放進這個 repo（見 `.gitignore`）。上面的目錄還列著它們，是因為原作者的機器保留了本機副本。
+
+新機器或其他使用者，請在 Claude Code 安裝官方版：
+
+```
+/plugin marketplace add anthropics/skills
+/plugin install document-skills@anthropic-agent-skills
+```
+
+`slide-workflow` 產生 .pptx 時，要用 pptx skill 裡的 `html2pptx`。
+
 ## Built-in Claude Code Skills (not in this repo)
 
 These ship compiled into the `claude` binary itself — invisible to `./bin/sk` and the catalog above, but available everywhere Claude Code runs. **Onboard new colleagues with these — easy to miss.**
