@@ -187,10 +187,17 @@ export default function TokensPage() {
       />
       {data.sources && (
         <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
-          合併 Claude Code + Codex。Claude {data.sources.claude.sessions} sessions ·{" "}
+          合併 Claude Code + Codex + Qwen。Claude {data.sources.claude.sessions} sessions ·{" "}
           {data.sources.claude.tokens.toLocaleString()} tokens；Codex {data.sources.codex.sessions} sessions ·{" "}
           {data.sources.codex.tokens.toLocaleString()} tokens · API 等值 ${data.sources.codex.cost_usd.toFixed(2)}
-          （實付為 ChatGPT 訂閱費，此為 OpenAI 牌價換算）。
+          （實付為 ChatGPT 訂閱費，此為 OpenAI 牌價換算）
+          {data.sources.qwen && (
+            <>
+              ；Qwen {data.sources.qwen.sessions} sessions · {data.sources.qwen.tokens.toLocaleString()} tokens
+              （GMI 價格未登錄，花費不計入）
+            </>
+          )}
+          。
         </p>
       )}
 
@@ -303,7 +310,7 @@ export default function TokensPage() {
                     {m.model}
                   </td>
                   <td className="px-4 py-2 text-xs" style={{ color: TEXT_SUBTLE }}>
-                    {m.source === "codex" ? "Codex" : "Claude Code"}
+                    {m.source === "codex" ? "Codex" : m.source === "qwen" ? "Qwen (Codex CLI)" : "Claude Code"}
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
                     {m.input_tokens.toLocaleString()}
@@ -315,6 +322,9 @@ export default function TokensPage() {
                     ${m.cost_usd.toFixed(4)}
                     {m.billing === "subscription" && (
                       <span style={{ color: TEXT_SUBTLE, fontSize: 10, marginLeft: 4 }}>等值</span>
+                    )}
+                    {m.billing === "unpriced" && (
+                      <span style={{ color: TEXT_SUBTLE, fontSize: 10, marginLeft: 4 }}>未定價</span>
                     )}
                   </td>
                 </tr>
@@ -337,6 +347,7 @@ export default function TokensPage() {
                 {tableHeader("Sessions", "right")}
                 {tableHeader("Messages", "right")}
                 {tableHeader("Tokens", "right")}
+                {tableHeader("Context 重讀", "right")}
                 {tableHeader("Cost", "right")}
               </tr>
             </thead>
@@ -357,6 +368,14 @@ export default function TokensPage() {
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
                     {p.tokens_total.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
+                    {(p.cache_tokens ?? 0).toLocaleString()}
+                    {data.total_cache_tokens > 0 && (
+                      <span className="ml-2 text-xs" style={{ color: "var(--text-subtle)" }}>
+                        {(((p.cache_tokens ?? 0) / data.total_cache_tokens) * 100).toFixed(1)}%
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
                     ${p.cost_usd.toFixed(4)}

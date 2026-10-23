@@ -60,6 +60,8 @@ class TimelineTest(unittest.TestCase):
         self.patches = [
             patch.object(timeline, "PROJECTS_DIR", root / "claude"),
             patch.object(timeline, "CODEX_SESSION_DIRS", (self.codex,)),
+            patch.object(timeline, "QWEN_SESSION_DIR", root / "qwen"),
+            patch.object(timeline, "mirror_qwen_rollouts", lambda: 0),
             patch.object(accounts, "_history_db_path", lambda: root / "test.db"),
             patch.object(accounts, "CLAUDE_CONFIG", root / "claude.json"),
             patch.object(accounts, "CODEX_AUTH", root / "codex-auth.json"),
@@ -122,6 +124,21 @@ class TimelineTest(unittest.TestCase):
         entry = self.series(result, "codex:acct-1")
         self.assertEqual(entry["account"], "acct-1")
         self.assertEqual((entry["totals"]["input"], entry["totals"]["output"]), (160, 40))
+
+    def test_qwen_series_is_per_provider_with_the_turn_context_model(self) -> None:
+        qwen = self.root / "qwen"
+        qwen.mkdir()
+        meta = json.dumps({"timestamp": iso(0), "type": "session_meta",
+                           "payload": {"id": "q1", "model": None, "model_provider": "gmi"}}) + "\n"
+        (qwen / "rollout.jsonl").write_text(
+            meta + codex_turn(0, "Qwen/Qwen3.8-27B")
+            + codex_row(self.now - 90, 100, 10) + codex_row(self.now - 20, 160, 40))
+        result = timeline.get_timeline("minute", 10)
+        entry = self.series(result, "qwen:gmi")
+        self.assertEqual((entry["source"], entry["label"]), ("qwen", "GMI"))
+        self.assertEqual((entry["totals"]["input"], entry["totals"]["output"]), (160, 40))
+        by_model = timeline.get_timeline("minute", 10, group="model")
+        self.assertEqual(self.series(by_model, "model:Qwen/Qwen3.8-27B")["source"], "qwen")
 
     def test_codex_started_mid_file_takes_baseline_from_before_the_window(self) -> None:
         old = "".join(codex_row(self.now - 7200 + i, 1000 * (i + 1), 0, pad=4000)

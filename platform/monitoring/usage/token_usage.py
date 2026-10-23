@@ -26,10 +26,11 @@ from typing import Any, Callable
 
 from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, estimate_codex_cost,  # noqa: F401
                               is_codex_model, iter_codex_sessions, parse_codex_session)
+from lib.tokens_qwen import is_qwen_model, iter_qwen_sessions
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _CACHE_TTL = 60.0  # seconds; full JSONL parse takes ~1-2s for 500MB
-_FILE_CACHE_VERSION = 3
+_FILE_CACHE_VERSION = 4  # v4: project names resolve ~/Code case-insensitively
 
 # Pricing per million tokens
 PRICING: dict[str, dict[str, float]] = {
@@ -68,6 +69,7 @@ class ProjectUsage:
     tool_calls: int
     tokens_total: int
     cost_usd: float
+    cache_tokens: int = 0  # cache_read + cache_create: context re-read, not new work
 
 
 @dataclass
@@ -78,16 +80,25 @@ class ModelSummary:
     cache_read_tokens: int
     cache_create_tokens: int
     cost_usd: float
-    source: str = "claude"      # "claude" | "codex"
+    source: str = "claude"      # "claude" | "codex" | "qwen"
     billing: str = "api"        # "api" (priced) | "subscription" (cost = API equivalent, not billed)
+                                # | "unpriced" (no price recorded, cost 0)
 
 
 def model_source(model: str) -> str:
+    if is_qwen_model(model):
+        return "qwen"
     return "codex" if is_codex_model(model) else "claude"
+
+
+_BILLING = {"claude": "api", "codex": "subscription", "qwen": "unpriced"}
 
 
 def _estimate_cost(model: str, input_t: int, output_t: int,
                    cache_read: int, cache_create: int) -> float:
+    if is_qwen_model(model):
+        # GMI price not recorded; 0, never the Claude default below.
+        return 0.0
     if is_codex_model(model):
         # ChatGPT subscription: this is the OpenAI API list-price equivalent,
         # not an actual bill (2026-09-26, Peter asked for the conversion).
@@ -338,8 +349,10 @@ def read_daily_history(start_date: str | None = None,
 
 # Keep in sync with SKIP_PARENT_DIRS in bin/sk (cmd_audit's token block) —
 # the dashboard and the CLI audit must name projects identically.
-_SKIP_PARENT_DIRS = {"Documents", "Projects", "Desktop", "repos", "src", "code", "dev",
-                     "Company", "engineering"}
+# Compared lowercased: macOS paths are case-insensitive, and a machine with
+# ~/Code (not ~/code) otherwise rolls every repo up into one 'Code' project.
+_SKIP_PARENT_DIRS = {"documents", "projects", "desktop", "repos", "src", "code", "dev",
+                     "company", "engineering"}
 
 
 @lru_cache(maxsize=1)
@@ -383,7 +396,7 @@ def _dir_to_project_name(dir_name: str) -> str:
         parts = name.split("-")
         # Drop generic parent dirs (code, Documents, …) before matching
         idx = 0
-        while idx < len(parts) and parts[idx] in _SKIP_PARENT_DIRS:
+        while idx < len(parts) and parts[idx].lower() in _SKIP_PARENT_DIRS:
             idx += 1
         remainder = "-".join(parts[idx:])
         if not remainder:
@@ -420,7 +433,7 @@ def _cwd_to_project_name(cwd: str) -> str:
             return Path(cwd).name or ""
         parts = rel.split("/")
         idx = 0
-        while idx < len(parts) and parts[idx] in _SKIP_PARENT_DIRS:
+        while idx < len(parts) and parts[idx].lower() in _SKIP_PARENT_DIRS:
             idx += 1
         if idx < len(parts):
             return parts[idx]
@@ -439,7 +452,7 @@ class FilteredUsage:
     total_messages: int
     total_cost_usd: float
     total_tokens: int
-    # per-source split of the combined totals: {"claude": {...}, "codex": {...}}
+    # per-source split of the combined totals: {"claude": {...}, "codex": {...}, "qwen": {...}}
     sources: dict[str, dict[str, int | float]] = field(default_factory=dict)
 
 
@@ -494,6 +507,15 @@ def get_filtered_usage(date_start: str | None = None,
             seen_requests,
         )
 
+    # Qwen runs through the Codex CLI: same rollout format, own source.
+    for jsonl_path in iter_qwen_sessions():
+        file_agg = _file_agg_cached(jsonl_path, "qwen", parser=_parse_qwen)
+        _merge_file_agg(
+            file_agg, date_start, date_end,
+            projects, models_agg, daily_agg, all_sessions,
+            seen_requests,
+        )
+
     # Build model summary
     model_results = []
     for model, m in models_agg.items():
@@ -502,8 +524,7 @@ def get_filtered_usage(date_start: str | None = None,
         model_results.append(ModelSummary(
             model=model, input_tokens=m["input"], output_tokens=m["output"],
             cache_read_tokens=m["cache_read"], cache_create_tokens=m["cache_create"],
-            cost_usd=cost, source=src,
-            billing="subscription" if src == "codex" else "api",
+            cost_usd=cost, source=src, billing=_BILLING[src],
         ))
     # Sorted by work done, not by cost: Codex rows carry no $ and would
     # otherwise always sink to the bottom.
@@ -513,6 +534,7 @@ def get_filtered_usage(date_start: str | None = None,
     proj_results = []
     for project, d in projects.items():
         tokens = sum(m["input"] + m["output"] for m in d["by_model"].values())
+        cache = sum(m["cache_read"] + m["cache_create"] for m in d["by_model"].values())
         cost = sum(
             _estimate_cost(mdl, m["input"], m["output"], m["cache_read"], m["cache_create"])
             for mdl, m in d["by_model"].items()
@@ -520,7 +542,7 @@ def get_filtered_usage(date_start: str | None = None,
         proj_results.append(ProjectUsage(
             project=project, sessions=len(d["sessions"]),
             messages=d["messages"], tool_calls=d["tool_calls"],
-            tokens_total=tokens, cost_usd=cost,
+            tokens_total=tokens, cost_usd=cost, cache_tokens=cache,
         ))
     proj_results.sort(key=lambda x: x.cost_usd, reverse=True)
 
@@ -548,6 +570,7 @@ def get_filtered_usage(date_start: str | None = None,
     sources: dict[str, dict[str, int | float]] = {
         "claude": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
         "codex": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
+        "qwen": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
     }
     for m in model_results:
         s = sources[m.source]
@@ -555,9 +578,11 @@ def get_filtered_usage(date_start: str | None = None,
         s["cache_tokens"] += m.cache_read_tokens + m.cache_create_tokens
         s["cost_usd"] += m.cost_usd
     for sid in all_sessions:
-        sources["codex" if _is_codex_session_id(sid) else "claude"]["sessions"] += 1
+        sources[_session_source(sid)]["sessions"] += 1
     for key in seen_requests:
-        sources["codex" if str(key).startswith("codex:") else "claude"]["messages"] += 1
+        key = str(key)
+        src = "qwen" if key.startswith("qwen:") else "codex" if key.startswith("codex:") else "claude"
+        sources[src]["messages"] += 1
 
     return FilteredUsage(
         models=model_results, projects=proj_results, daily=daily_results,
@@ -571,11 +596,24 @@ def _parse_codex(path: Path, fallback_project: str) -> dict:
     return parse_codex_session(path, fallback_project, _cwd_to_project_name)
 
 
+def _parse_qwen(path: Path, fallback_project: str) -> dict:
+    """Codex parser, with request keys prefixed `qwen:` for the source split."""
+    agg = parse_codex_session(path, fallback_project, _cwd_to_project_name)
+    for day in agg.values():
+        for p in day.values():
+            for req in p.get("requests", []):
+                req["key"] = "qwen:" + req["key"].removeprefix("codex:")
+    return agg
+
+
 _CODEX_SESSION_IDS: set[str] = set()
+_QWEN_SESSION_IDS: set[str] = set()
 
 
-def _is_codex_session_id(session_id: str) -> bool:
-    return session_id in _CODEX_SESSION_IDS
+def _session_source(session_id: str) -> str:
+    if session_id in _QWEN_SESSION_IDS:
+        return "qwen"
+    return "codex" if session_id in _CODEX_SESSION_IDS else "claude"
 
 
 def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
@@ -758,13 +796,14 @@ def _file_agg_cached(path: Path, fallback_project: str,
 
 
 def _remember_codex_sessions(agg: dict, parser: Callable) -> None:
-    """Track which session ids came from Codex so per-source session counts
-    can be split after the shared merge."""
-    if parser is not _parse_codex:
+    """Track which session ids came from Codex / Qwen so per-source session
+    counts can be split after the shared merge."""
+    target = {_parse_codex: _CODEX_SESSION_IDS, _parse_qwen: _QWEN_SESSION_IDS}.get(parser)
+    if target is None:
         return
     for day in agg.values():
         for p in day.values():
-            _CODEX_SESSION_IDS.update(p.get("sessions", []))
+            target.update(p.get("sessions", []))
 
 
 def _merge_file_agg(

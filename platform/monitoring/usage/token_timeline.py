@@ -14,6 +14,8 @@ Account attribution:
   - Codex rows follow the login sighting that covers them (Codex reloads auth.json,
     so a session keeps running on a newly logged-in account); the rollout's
     `creator_account_id` is the fallback where no sighting covers the row
+  - Qwen rows (Codex CLI on a third-party provider, 2026-10-06) have no login;
+    the series is the provider named in session_meta (e.g. gmi)
   - Claude Code rows carry no account; they are matched by timestamp against the
     login intervals kept by token_accounts. A row outside every interval has
     account=None (shown as 未判讀) — never guessed from the current login.
@@ -35,6 +37,7 @@ from lib import tokens_accounts as accounts
 from lib.tokens import PROJECTS_DIR
 from lib.tokens_codex import (CODEX_SESSION_DIRS, UNKNOWN_CODEX_MODEL, _provenance_model,
                               _usage_delta)
+from lib.tokens_qwen import QWEN_SESSION_DIR, mirror_qwen_rollouts
 
 # bucket -> (seconds per bucket, default span, max span)
 BUCKETS: dict[str, tuple[int, int, int]] = {
@@ -53,11 +56,11 @@ _FIELDS = ("input", "output", "cache_read", "cache_create")
 @dataclass
 class _Tail:
     """Incremental read state for one JSONL file."""
-    kind: str                      # "claude" | "codex"
+    kind: str                      # "claude" | "codex" | "qwen" (codex rollout format)
     inode: int = 0
     offset: int = 0
     covered_from: float = 0.0      # records are complete from this epoch onward
-    account: str = ""              # codex only; claude is resolved by timestamp
+    account: str = ""              # codex: creator id; qwen: provider; claude: by timestamp
     model: str = "unknown"         # codex only; claude rows name their own model
     session_id: str = ""
     prev_total: dict | None = None  # codex cumulative counter; None = need a baseline
@@ -111,23 +114,34 @@ def _seek_offset(f, size: int, since: float) -> int:
 
 
 def _codex_head(f, tail: _Tail, fallback_id: str) -> None:
-    """Read session_meta (first rows) for the session id, account and model."""
+    """Read session_meta (first rows) for the session id, account and model.
+
+    A Qwen rollout names no model in session_meta; the first turn_context
+    does, so it is read too when the window starts past it."""
     f.seek(0)
     tail.model = UNKNOWN_CODEX_MODEL
-    for _ in range(5):
+    for _ in range(40):
         raw = f.readline()
         if not raw:
             break
-        if b'"session_meta"' not in raw:
+        is_meta = b'"session_meta"' in raw
+        if not is_meta and b'"turn_context"' not in raw:
             continue
         try:
             payload = json.loads(raw).get("payload") or {}
         except json.JSONDecodeError:
             continue
+        if not is_meta:
+            tail.model = payload.get("model") or tail.model
+            break
         tail.session_id = payload.get("id") or payload.get("session_id") or fallback_id
-        tail.account = payload.get("creator_account_id") or ""
+        if tail.kind == "qwen":
+            tail.account = payload.get("model_provider") or ""
+        else:
+            tail.account = payload.get("creator_account_id") or ""
         tail.model = payload.get("model") or _provenance_model(payload) or tail.model
-        break
+        if tail.model != UNKNOWN_CODEX_MODEL:
+            break
     tail.session_id = tail.session_id or fallback_id
 
 
@@ -220,7 +234,7 @@ def _read_codex(raw: bytes, tail: _Tail, line_key: str) -> None:
         fresh = delta["total_tokens"]
     if fresh + output + cached + delta["cache_write_input_tokens"] == 0:
         return
-    tail.records[f"codex:{tail.session_id}:{line_key}"] = (
+    tail.records[f"{tail.kind}:{tail.session_id}:{line_key}"] = (
         at, fresh, output, cached, delta["cache_write_input_tokens"], tail.model,
     )
 
@@ -239,13 +253,13 @@ def _advance(path: Path, kind: str, since: float) -> _Tail | None:
         with open(path, "rb") as f:
             if stale:
                 tail = _Tail(kind=kind, inode=st.st_ino, covered_from=since)
-                if kind == "codex":
+                if kind != "claude":
                     _codex_head(f, tail, path.stem)
                 tail.offset = _seek_offset(f, st.st_size, since)
-                if kind == "codex":
+                if kind != "claude":
                     tail.prev_total = _codex_baseline(f, tail.offset, since)
                 _TAILS[key] = tail
-            reader = _read_codex if kind == "codex" else _read_claude
+            reader = _read_claude if kind == "claude" else _read_codex
             f.seek(tail.offset)
             for raw in f:
                 if not raw.endswith(b"\n"):
@@ -260,7 +274,9 @@ def _advance(path: Path, kind: str, since: float) -> _Tail | None:
 
 def _recent_files(since: float) -> list[tuple[Path, str]]:
     found: list[tuple[Path, str]] = []
-    roots = [(PROJECTS_DIR, "claude")] + [(d, "codex") for d in CODEX_SESSION_DIRS]
+    mirror_qwen_rollouts()  # scratchpad CODEX_HOMEs -> QWEN_SESSION_DIR
+    roots = ([(PROJECTS_DIR, "claude")] + [(d, "codex") for d in CODEX_SESSION_DIRS]
+             + [(QWEN_SESSION_DIR, "qwen")])
     for root, kind in roots:
         if not root.is_dir():
             continue
@@ -274,7 +290,7 @@ def _recent_files(since: float) -> list[tuple[Path, str]]:
 
 
 def _collect(since: float) -> dict[str, tuple[str, str, tuple]]:
-    """request key -> (source, codex account id, record), deduplicated across files."""
+    """request key -> (source, codex account id / qwen provider, record), deduplicated across files."""
     merged: dict[str, tuple[str, str, tuple]] = {}
     live = set()
     for path, kind in _recent_files(since):
@@ -342,9 +358,14 @@ def get_timeline(bucket: str = "minute", span: int | None = None,
             continue
         if source == "codex":
             account = accounts.codex_account_at(codex_logins, at, codex_account) or None
+        elif source == "qwen":
+            account = codex_account or None  # provider, not a login
         else:
             account = accounts.account_at(logins, at)
-        account_name = names.get((source, account)) if account else None
+        if source == "qwen":
+            account_name = account.upper() if account else None
+        else:
+            account_name = names.get((source, account)) if account else None
         if group == "model":
             series_id, other = f"model:{model}", f"{source}:{account or ''}"
         else:

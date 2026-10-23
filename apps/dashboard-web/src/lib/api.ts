@@ -154,8 +154,8 @@ export interface FilteredTokensData {
   }[];
   models: {
     model: string;
-    source: "claude" | "codex";
-    billing: "api" | "subscription";
+    source: "claude" | "codex" | "qwen";
+    billing: "api" | "subscription" | "unpriced";
     input_tokens: number;
     output_tokens: number;
     cost_usd: number;
@@ -163,12 +163,16 @@ export interface FilteredTokensData {
   sources?: Record<
     "claude" | "codex",
     { sessions: number; messages: number; tokens: number; cache_tokens: number; cost_usd: number }
-  >;
+  > & {
+    // absent on an api that predates the Qwen source
+    qwen?: { sessions: number; messages: number; tokens: number; cache_tokens: number; cost_usd: number };
+  };
   projects: {
     project: string;
     sessions: number;
     messages: number;
     tokens_total: number;
+    cache_tokens: number;
     cost_usd: number;
   }[];
 }
