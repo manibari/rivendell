@@ -16,6 +16,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import sqlite3
+import threading
 import time
 from collections import defaultdict
 from functools import lru_cache
@@ -29,7 +31,7 @@ from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, estimate_codex_cost,  # noqa:
 from lib.tokens_qwen import is_qwen_model, iter_qwen_sessions
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
-_CACHE_TTL = 60.0  # seconds; full JSONL parse takes ~1-2s for 500MB
+_CACHE_TTL = 60.0  # seconds; refresh merged usage after one minute
 _FILE_CACHE_VERSION = 4  # v4: project names resolve ~/Code case-insensitively
 
 # Pricing per million tokens
@@ -113,6 +115,9 @@ def _estimate_cost(model: str, input_t: int, output_t: int,
 
 
 _CACHE: dict[str, Any] = {"ts": 0.0, "result": None}
+_FILTERED_CACHE: dict[tuple[str | None, str | None], tuple[float, FilteredUsage]] = {}
+_FILTERED_LOCK = threading.Lock()
+_FILE_AGG_CACHE: dict[str, tuple[float, int, dict]] = {}
 
 
 def _cached_full_usage() -> "FilteredUsage":
@@ -127,8 +132,7 @@ def _cached_full_usage() -> "FilteredUsage":
 def get_all_time_usage() -> "FilteredUsage":
     """Public alias for the cached all-time usage. Use for default
     (no-date-filter) dashboard queries — avoids re-parsing 500MB+ of JSONL
-    on every request. For date-filtered queries, call `get_filtered_usage`
-    directly (uncached)."""
+    on every request. Date-filtered queries use their own result cache."""
     return _cached_full_usage()
 
 
@@ -458,11 +462,34 @@ class FilteredUsage:
 
 def get_filtered_usage(date_start: str | None = None,
                        date_end: str | None = None) -> FilteredUsage:
-    """Parse all JSONL sessions once, filtered by date range.
+    """Return a cached merge of per-file aggregates for the date range.
 
     date_start/date_end are ISO date strings (YYYY-MM-DD), inclusive.
-    If both are None, returns all data.
+    If both are None, returns all data. Concurrent callers share one merge.
     """
+    key = (date_start, date_end)
+    with _FILTERED_LOCK:
+        cached = _FILTERED_CACHE.get(key)
+        if cached and time.monotonic() - cached[0] < _CACHE_TTL:
+            return cached[1]
+        result = _compute_filtered_usage(date_start, date_end)
+        _FILTERED_CACHE[key] = (time.monotonic(), result)
+        return result
+
+
+def _compute_filtered_usage(date_start: str | None,
+                            date_end: str | None) -> FilteredUsage:
+    """Merge per-file aggregates, sharing one lazy SQLite connection."""
+    connection: list[sqlite3.Connection | None] = [None]
+    try:
+        return _merge_filtered_usage(date_start, date_end, connection)
+    finally:
+        if connection[0] is not None:
+            connection[0].close()
+
+
+def _merge_filtered_usage(date_start: str | None, date_end: str | None,
+                          connection: list[sqlite3.Connection | None]) -> FilteredUsage:
     # Per-project accumulators
     projects: dict[str, dict] = defaultdict(lambda: {
         "sessions": set(), "messages": 0, "tool_calls": 0,
@@ -491,7 +518,7 @@ def get_filtered_usage(date_start: str | None = None,
         for jsonl_path in project_dir.rglob("*.jsonl"):
             # Cached per-file aggregate (parse once per file version); the date
             # filter applies at merge time. See _file_agg_cached for why.
-            file_agg = _file_agg_cached(jsonl_path, project_name)
+            file_agg = _file_agg_cached(jsonl_path, project_name, connection=connection)
             _merge_file_agg(
                 file_agg, date_start, date_end,
                 projects, models_agg, daily_agg, all_sessions,
@@ -500,7 +527,8 @@ def get_filtered_usage(date_start: str | None = None,
 
     # Codex rollouts: same aggregate shape, same cache, same merge.
     for jsonl_path in iter_codex_sessions():
-        file_agg = _file_agg_cached(jsonl_path, "codex", parser=_parse_codex)
+        file_agg = _file_agg_cached(jsonl_path, "codex", parser=_parse_codex,
+                                    connection=connection)
         _merge_file_agg(
             file_agg, date_start, date_end,
             projects, models_agg, daily_agg, all_sessions,
@@ -509,7 +537,8 @@ def get_filtered_usage(date_start: str | None = None,
 
     # Qwen runs through the Codex CLI: same rollout format, own source.
     for jsonl_path in iter_qwen_sessions():
-        file_agg = _file_agg_cached(jsonl_path, "qwen", parser=_parse_qwen)
+        file_agg = _file_agg_cached(jsonl_path, "qwen", parser=_parse_qwen,
+                                    connection=connection)
         _merge_file_agg(
             file_agg, date_start, date_end,
             projects, models_agg, daily_agg, all_sessions,
@@ -737,7 +766,8 @@ def _parse_jsonl_granular(path: Path, fallback_project: str) -> dict:
 
 
 def _file_agg_cached(path: Path, fallback_project: str,
-                     parser: Callable[[Path, str], dict] = _parse_jsonl_granular) -> dict:
+                     parser: Callable[[Path, str], dict] = _parse_jsonl_granular,
+                     connection: list[sqlite3.Connection | None] | None = None) -> dict:
     """Per-file aggregate with a SQLite cache keyed on (mtime, size).
 
     `parser` selects the source format (Claude Code rows by default, Codex
@@ -751,15 +781,24 @@ def _file_agg_cached(path: Path, fallback_project: str,
     an old 148MB session parses ONCE ever; a cold start re-parses only files
     that changed since last seen (normally just the active sessions).
     """
-    import sqlite3
-
     try:
         st = path.stat()
     except OSError:
         return {}
-    db_path = _history_db_path()
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(db_path), timeout=10)
+    cache_key = f"v{_FILE_CACHE_VERSION}:{path}"
+    cached = _FILE_AGG_CACHE.get(cache_key)
+    if cached and cached[0] == st.st_mtime and cached[1] == st.st_size:
+        _remember_codex_sessions(cached[2], parser)
+        return cached[2]
+
+    owns_connection = connection is None
+    if connection is None:
+        connection = [None]
+    if connection[0] is None:
+        db_path = _history_db_path()
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        connection[0] = sqlite3.connect(str(db_path), timeout=10)
+    conn = connection[0]
     try:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS jsonl_file_cache (
@@ -769,7 +808,6 @@ def _file_agg_cached(path: Path, fallback_project: str,
                 agg TEXT NOT NULL
             )
         """)
-        cache_key = f"v{_FILE_CACHE_VERSION}:{path}"
         row = conn.execute(
             "SELECT mtime, size, agg FROM jsonl_file_cache WHERE path = ?",
             (cache_key,),
@@ -780,9 +818,11 @@ def _file_agg_cached(path: Path, fallback_project: str,
             except json.JSONDecodeError:
                 agg = None  # corrupt cache row → re-parse below
             if agg is not None:
+                _FILE_AGG_CACHE[cache_key] = (st.st_mtime, st.st_size, agg)
                 _remember_codex_sessions(agg, parser)
                 return agg
         agg = parser(path, fallback_project)
+        _FILE_AGG_CACHE[cache_key] = (st.st_mtime, st.st_size, agg)
         _remember_codex_sessions(agg, parser)
         conn.execute(
             "INSERT INTO jsonl_file_cache(path, mtime, size, agg) VALUES (?, ?, ?, ?) "
@@ -792,7 +832,8 @@ def _file_agg_cached(path: Path, fallback_project: str,
         conn.commit()
         return agg
     finally:
-        conn.close()
+        if owns_connection:
+            conn.close()
 
 
 def _remember_codex_sessions(agg: dict, parser: Callable) -> None:

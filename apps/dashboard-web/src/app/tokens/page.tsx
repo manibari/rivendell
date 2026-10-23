@@ -75,8 +75,10 @@ export default function TokensPage() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    // Route default load to /api/tokens (cached, all-time). Only hit /filtered
-    // when user actually picks a date — that path re-parses JSONL.
+    // The default 30-day view has dates and uses /filtered; clearing both
+    // date fields requests the all-time /api/tokens view.
+    setData(null);
+    setErr(null);
     let endpoint: string;
     if (dateStart || dateEnd) {
       const params = new URLSearchParams();
@@ -90,11 +92,6 @@ export default function TokensPage() {
       .then(setData)
       .catch((e) => setErr(e.message));
   }, [dateStart, dateEnd]);
-
-  if (err)
-    return <p style={{ color: "var(--status-err)" }}>Error: {err}</p>;
-  if (!data)
-    return <p style={{ color: "var(--text-muted)" }}>載入中...</p>;
 
   const dateInputStyle: React.CSSProperties = {
     background: "var(--surface)",
@@ -161,7 +158,7 @@ export default function TokensPage() {
         )}
       </div>
 
-      <MetricsRow
+      {data && <><MetricsRow
         metrics={[
           {
             label: "總 Session",
@@ -199,12 +196,17 @@ export default function TokensPage() {
           )}
           。
         </p>
-      )}
+      )}</>}
 
       <LiveUsage />
 
       <QuotaPanel />
 
+      {err ? (
+        <p style={{ color: "var(--status-err)" }}>錯誤：{err}</p>
+      ) : !data ? (
+        <p style={{ color: "var(--text-muted)" }}>載入中...</p>
+      ) : (<>
       {/* Daily usage chart — recharts re-colored with token palette */}
       {data.daily.length > 0 && (
         <section className="mt-8">
@@ -386,6 +388,7 @@ export default function TokensPage() {
           </table>
         </div>
       </section>
+      </>)}
     </div>
   );
 }

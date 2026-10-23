@@ -1,6 +1,7 @@
 """Skill catalog and role documentation API."""
 from __future__ import annotations
 
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -73,11 +74,18 @@ def api_doc(doc_path: str) -> dict[str, Any]:
     return {"path": str(target.relative_to(_DOCS_ROOT.parent)), "content": target.read_text(encoding="utf-8")}
 
 
-# Cache for skill usage scan (recompute at most every 10 min)
+# Per-file skill counts; directory metadata is checked on each request.
 _usage_cache: dict[str, Any] = {}
+# FastAPI runs sync endpoints in a thread pool: one scan at a time.
+_usage_lock = threading.Lock()
 
 
 def _parse_skill_usage() -> dict[str, list[dict[str, Any]]]:
+    with _usage_lock:
+        return _scan_skill_usage()
+
+
+def _scan_skill_usage() -> dict[str, list[dict[str, Any]]]:
     """Scan Claude Code session JSONL files.
 
     Counts two signals per skill per day:
@@ -85,69 +93,85 @@ def _parse_skill_usage() -> dict[str, list[dict[str, Any]]]:
     - ``Skill`` tool calls with ``skill`` input matching the skill name (manual /skill invocations)
     """
     import json as _json
-    import time as _time
-
-    cache_ts: float = _usage_cache.get("ts", 0.0)
-    if _time.time() - cache_ts < 600 and "data" in _usage_cache:
-        return _usage_cache["data"]  # type: ignore[return-value]
-
     raw: dict[str, dict[str, int]] = {}  # {skill_name: {date: count}}
     projects_dir = Path.home() / ".claude" / "projects"
+    files: dict[str, tuple[float, int, dict[str, dict[str, int]]]] = _usage_cache.setdefault("files", {})
+    seen: set[str] = set()
 
-    def _add(skill_name: str, date: str) -> None:
-        if skill_name not in raw:
-            raw[skill_name] = {}
-        raw[skill_name][date] = raw[skill_name].get(date, 0) + 1
+    def _add(counts: dict[str, dict[str, int]], skill_name: str, date: str) -> None:
+        daily = counts.setdefault(skill_name, {})
+        daily[date] = daily.get(date, 0) + 1
 
     if projects_dir.exists():
         for jsonl_file in projects_dir.rglob("*.jsonl"):
+            path = str(jsonl_file)
             try:
-                with open(jsonl_file, encoding="utf-8", errors="ignore") as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        try:
-                            obj = _json.loads(line)
-                        except Exception:
-                            continue
-                        timestamp = obj.get("timestamp", "")
-                        if not timestamp:
-                            continue
-                        date = str(timestamp)[:10]
-                        msg = obj.get("message", {})
-                        content = msg.get("content", [])
-                        if not isinstance(content, list):
-                            continue
-                        for item in content:
-                            if not isinstance(item, dict):
-                                continue
-                            if item.get("type") != "tool_use":
-                                continue
-                            tool_name = item.get("name", "")
-                            inp = item.get("input", {})
-
-                            if tool_name == "Read":
-                                # Auto-triggered: Claude reads SKILL.md
-                                file_path = str(inp.get("file_path", ""))
-                                if not file_path.endswith("SKILL.md"):
-                                    continue
-                                parts = file_path.replace("\\", "/").split("/")
-                                try:
-                                    idx = parts.index("SKILL.md")
-                                    skill_name = parts[idx - 1] if idx > 0 else None
-                                except ValueError:
-                                    skill_name = None
-                                if skill_name:
-                                    _add(skill_name, date)
-
-                            elif tool_name == "Skill":
-                                # Manual /skill-name invocation
-                                skill_name = str(inp.get("skill", "")).strip()
-                                if skill_name:
-                                    _add(skill_name, date)
-            except Exception:
+                stat = jsonl_file.stat()
+            except OSError:
                 continue
+            seen.add(path)
+            cached = files.get(path)
+            if cached and cached[0] == stat.st_mtime and cached[1] == stat.st_size:
+                counts = cached[2]
+            else:
+                counts = {}
+                try:
+                    with open(jsonl_file, encoding="utf-8", errors="ignore") as f:
+                        for line in f:
+                            if '"Skill"' not in line and "SKILL.md" not in line:
+                                continue
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                obj = _json.loads(line)
+                            except Exception:
+                                continue
+                            timestamp = obj.get("timestamp", "")
+                            if not timestamp:
+                                continue
+                            date = str(timestamp)[:10]
+                            msg = obj.get("message", {})
+                            content = msg.get("content", [])
+                            if not isinstance(content, list):
+                                continue
+                            for item in content:
+                                if not isinstance(item, dict):
+                                    continue
+                                if item.get("type") != "tool_use":
+                                    continue
+                                tool_name = item.get("name", "")
+                                inp = item.get("input", {})
+
+                                if tool_name == "Read":
+                                    # Auto-triggered: Claude reads SKILL.md
+                                    file_path = str(inp.get("file_path", ""))
+                                    if not file_path.endswith("SKILL.md"):
+                                        continue
+                                    parts = file_path.replace("\\", "/").split("/")
+                                    try:
+                                        idx = parts.index("SKILL.md")
+                                        skill_name = parts[idx - 1] if idx > 0 else None
+                                    except ValueError:
+                                        skill_name = None
+                                    if skill_name:
+                                        _add(counts, skill_name, date)
+
+                                elif tool_name == "Skill":
+                                    # Manual /skill-name invocation
+                                    skill_name = str(inp.get("skill", "")).strip()
+                                    if skill_name:
+                                        _add(counts, skill_name, date)
+                except Exception:
+                    continue
+                files[path] = (stat.st_mtime, stat.st_size, counts)
+            for name, daily in counts.items():
+                target = raw.setdefault(name, {})
+                for date, count in daily.items():
+                    target[date] = target.get(date, 0) + count
+
+    for path in files.keys() - seen:
+        del files[path]
 
     result: dict[str, list[dict[str, Any]]] = {
         name: sorted(
@@ -156,8 +180,6 @@ def _parse_skill_usage() -> dict[str, list[dict[str, Any]]]:
         )
         for name, daily in raw.items()
     }
-    _usage_cache["data"] = result
-    _usage_cache["ts"] = _time.time()
     return result
 
 
