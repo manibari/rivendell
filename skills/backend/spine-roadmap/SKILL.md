@@ -22,7 +22,7 @@ description: >
   CHANGELOG / ROADMAP / progress text after the fact (doc-drift-sync); a one-off
   script or throwaway prototype; the team already runs Jira / Linear as the SoT.
 tags: [backend, roadmap, tickets, work-packages, release, spine, reference]
-version: 1.2.0
+version: 1.2.1
 source: manual
 ---
 
@@ -168,6 +168,9 @@ the tracker owns current status; CHANGELOG owns what shipped.
 | Owner service | `app/development/tracker.py` | dependency gate (can't start/finish before deps are done); `done` requires a matching released delivery; every change writes immutable history |
 | Operator CLI | `scripts/development_tracker.py` | `list / import / create / change / history / export-todos`; requires `--operator` (no silent identity); `--body` JSON file; `import` only adds missing tickets, never overwrites status |
 | Portal + docs | `docs/development/README.md`, `frontend/src/features/development/` | 開發藍圖 / 開發進度 / 版本管理 three pages share the same ledger; 15 per page, filters in URL |
+
+The portal as a product area (entry, who sees it, pages, links, guards) is
+`spine-dev-center`. This skill keeps the ticket and delivery rules.
 
 The part to keep even if you simplify everything else: **optimistic concurrency**.
 An agent editing a ticket must send the `row_version` it read and the source

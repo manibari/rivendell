@@ -30,6 +30,7 @@
 | 18 | idempotent ingestion(upsert/dedup) | 抓回的資料冪等寫入 | candidate(scraper) | `spine-ingestion` |
 | 19 | AI-vision extract(拍照→AI 當 OCR) | 圖→AI 抽結構,identify→normalize→cache→generate→persist | **skill ✅** | `ai-vision-extract`(AI-feature 家族;iihi 來源,n=1 待第 2 驗) |
 | 20 | AI 助理 in-app assistant | 產品內 agentic 助理:只透過工具碰資料、照提問者權限、來源核對、每次工具呼叫留稽核 | **skill ✅** | `spine-assistant`(Yellow-Chick 寫入走 Gate + PTI-ARES 唯讀,2 家收斂;ChimesERP 是下一個消費者,2026-10-20) |
+| 21 | 開發者模式 dev center | 產品內給老闆與開發者的區域:開發藍圖(圖)、開發進度(票)、版本與交付,另可加系統紀錄、文件與圖;模式＝路由、後端守門、一個來源一個寫入者、只有人能驗收 | **skill ✅** | `spine-dev-center`(Yellow-Chick 平台後台 + PTI-ARES 透明度 + ChimesERP 開發中心,3 家收斂;誰能看依部署型態決定,2026-10-27) |
 
 > **兩個 spine family + 共用核心**(2026-06-27 盤 chimesflow CRM + mops scraper 後發現):
 > - **web-app spine**:#1-2-3-4-5-8-9-10-12(auth/rbac/logs/roadmap/版本/feedback/notif/audit/settings)

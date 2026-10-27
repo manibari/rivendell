@@ -216,6 +216,14 @@
     {
       "phrase": "打包成 container",
       "expect": "docker-compose-setup"
+    },
+    {
+      "phrase": "開發者模式",
+      "expect": "spine-dev-center"
+    },
+    {
+      "phrase": "開發中心",
+      "expect": "spine-dev-center"
     }
   ]
 }

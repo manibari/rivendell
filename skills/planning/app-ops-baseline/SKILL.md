@@ -15,7 +15,7 @@ description: >
   SKIP: backend-only services, CLI tools, scrapers, single-page report generators,
   libraries — anything without a multi-user admin/settings surface.
 tags: [workflow, scaffold, gate]
-version: 1.1.0
+version: 1.1.1
 user_invocable: true
 allowed-tools: "Read, Bash, Grep, Glob, Skill"
 ---
@@ -77,6 +77,10 @@ For each: state **include / defer / N-A + reason**. Default = include. A deferre
 must carry a one-line why and a follow-up note, not vanish.
 
 ## Step 2 — Hand off
+
+#1 開發 roadmap, #2 系統日誌 and #3 版本管理 together make the developer area
+(開發中心 / 開發者模式). When the app needs that area, build it with `spine-dev-center`
+(Yellow-Chick, PTI-ARES and ChimesERP references); it decides who may see it.
 
 Pass the agreed checklist into the standard build flow via the `Skill` tool
 (`requirement` for stories/acceptance, then `mockup`, then implement). If the project
