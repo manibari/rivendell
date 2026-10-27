@@ -17,7 +17,7 @@ description: >
   (gstack-codex); 3+ independent investigations in parallel (agent-dispatch); an LLM
   provider inside a product app (that is the app's own provider code).
 tags: [workflow, agents]
-version: 2.1.0
+version: 2.2.0
 languages: all
 ---
 
@@ -39,7 +39,7 @@ every executor; only step 3 changes.
 |---|---|---|
 | `qwen` | `code-run exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
 | `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT login in `~/.codex`, weekly quota |
-| `claude` | Agent tool, `isolation: "worktree"`, brief as the prompt | Claude session quota |
+| `claude` | Agent tool (a fresh agent, never `fork`), `isolation: "worktree"`, brief as the prompt | Claude session quota |
 
 Do not switch the executor by yourself. If the executor cannot run (no key,
 proxy down, quota used up), stop and tell the user the error and the
@@ -184,6 +184,21 @@ watchdog then reported a 2239 s stall and the round ended with no report.
 claude: call the Agent tool with `isolation: "worktree"`,
 `run_in_background: true`, and the brief as the prompt. Do not do the work in
 this session.
+
+#### Several tickets at the same time: no fork
+
+A `fork` subagent copies the whole conversation into each of its calls. In the
+week of 2026-10-21, two ChimesERP sessions gave each ticket to a fork ("<ID> brief
+and Codex run"). Each fork started with 270k to 620k tokens of context and made
+47 to 85 calls. The 79 forks read 2.4 billion tokens: 57% of that week's usage.
+
+- Write each brief in the main session. Start each qwen or codex run from the
+  main session with `code-run exec` in the background. Runs can overlap; each one
+  has its own worktree.
+- A lane that needs its own agent (the `claude` executor, or a long review) gets a
+  fresh agent (`subagent_type` general-purpose or claude) with the brief path and
+  the steps in its prompt. The brief holds everything the lane needs.
+- Do the review gate (step 5) in the main session, one run at a time.
 
 ### 4. Read the result
 

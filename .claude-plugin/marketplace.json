@@ -23,7 +23,7 @@
       "description": "開發流程：需求 → 使用流程 → 畫面 → 系統設計 → 開票 → 派工給 Codex 寫程式 → 驗收",
       "source": "./",
       "strict": false,
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": [
         "charts"
       ],
