@@ -10,17 +10,21 @@ description: >
   route; each page reads one source with one writer service; history is append-only;
   only a human acceptance closes a ticket; every object has a deep link. Yellow-Chick
   is the standard shape (platform back office); PTI-ARES (透明度) has the most complete
-  content; PTI-ARES and ChimesERP (開發中心) converge to the Yellow-Chick shape.
+  content; PTI-ARES and ChimesERP (開發中心) converge to the Yellow-Chick shape. A new
+  system starts on day 1 with blueprint files, tickets split from them and a version
+  file; the pages come after the shell. 意見回饋 is the intake: sent in the general
+  mode, triaged here, answered by the version that ships the fix.
   TRIGGER when: building or changing a developer area in a product; "開發者模式",
   "開發中心", "管理中心／開發中心", "開發藍圖", "開發進度", "版本管理頁", "透明度頁",
-  "developer mode", "dev center", "讓老闆看到開發進度", "對照架構和 logs"; deciding who
+  "developer mode", "dev center", "讓老闆看到開發進度", "對照架構和 logs", "新系統第一天",
+  "回饋怎麼變成票"; deciding who
   may see the developer area or which pages it has.
   SKIP when: ticket IDs, statuses and done rules only (spine-roadmap); version
   numbers and the release gate (spine-versioning); who counts as an admin
   (spine-rbac); planning the ops checklist of a new app (app-ops-baseline);
   drawing one figure (system-design, chart-design).
 tags: [backend, frontend, admin, roadmap, tickets, versions, logs, spine, reference]
-version: 1.1.0
+version: 1.2.0
 source: manual
 ---
 
@@ -128,6 +132,52 @@ Keep these differences; they do not conflict with the standard:
 - **Release check**: `scripts/check_release.py` before the CI release tag; commit
   trailers `Milestone:` and `Ticket:` (`scripts/hooks/commit-msg`).
 
+## A new system: the first day
+
+Owner, 2026-10-27: 「第一天要先有開發藍圖」「基於開發藍圖，分 ticket」「有了 ticket 開發，就會有版本管理」.
+
+The loop: blueprint, then tickets, then development and merge, then delivery and
+acceptance, then a version, then the blueprint status (a check passes with
+evidence). When the build differs from the blueprint, change the blueprint.
+
+Day 1, before any page exists, write these as files in Git (the Yellow-Chick shape):
+
+1. **The blueprint**: the target architecture figures (`system-design`) and the
+   capability items, each with one acceptance sentence and yes/no checks
+   (`spine-roadmap`, capability layer).
+2. **Tickets split from the items**, with fixed IDs, in `TODOS.md` (`spine-roadmap`,
+   light tier). One item usually needs several tickets, and one ticket can advance
+   several items (`advances`). A ticket that does not come from the blueprint (a
+   hotfix) is still a ticket; link it to an item when it changes a capability.
+3. **The version file and the deliveries ledger** (`spine-versioning`,
+   `spine-roadmap`).
+
+After login, roles and the shell exist, build the pages of this skill. They read the
+same files, so nothing is typed twice. Move status into the DB tracker (full tier)
+when two writers start to overwrite each other, or when the owner reads progress in
+the app.
+
+## 意見回饋 (feedback)
+
+Feedback is the way into the loop from outside; the version is where the loop
+answers it. The owner added it to the standard on 2026-10-27. None of the three
+products has it inside the developer area yet: ChimesERP has 意見回饋 in the user
+menu, and ChimesFlow has a full feedback module (`app-ops-baseline` #4). Yellow-Chick
+needs it too.
+
+- **Two halves.** The form to send feedback is in the general mode, for every user.
+  The triage list is in the developer area, for the owner and the developers.
+- **Feedback is not a ticket.** It keeps the user's own words as requirement
+  evidence. The status of work is only on tickets.
+- **Each feedback ends in one of three ways**, and the list shows which:
+  - a ticket (a defect or a small change), linked both ways;
+  - a new capability item in the blueprint first, then tickets;
+  - closed with a reason. Deferred is not dropped: keep the date and the decision.
+- **The version answers it.** When the linked ticket's delivery ships, the feedback
+  shows 「已在 <version> 處理」 and the person who sent it gets a notification.
+- **Nothing waits silently.** A feedback with no outcome after N days goes to the top
+  of the list. Pick N in the SD.
+
 ## Pages
 
 | Page | Shows | Source | Who writes |
@@ -136,6 +186,7 @@ Keep these differences; they do not conflict with the standard:
 | 開發進度 | Counts by status; the owner's rows first (待你驗收, 等你同意合併); filters; table or board; 15 per page; a drawer with editor, history, prerequisites, follow-on tickets and deliveries | Ticket and event tables | The tracker service: admin buttons, the CLI (`--operator` required), agent API with scopes |
 | 版本與交付 | A version card (name, version, build, branch, bump rules), then versions, deliveries for a version, and a delivery drawer | Delivery and release tables | Sync from the source (PTI) or the tracker (ERP). People fill only the acceptance date, the basis and the deployments |
 | 系統紀錄 (optional) | Access log, job runs and security events for each module; no personal data | Log files and tables | The application |
+| 意見回饋 (triage) | Feedback with the sender's words, its outcome (ticket, blueprint item, or closed with a reason) and the version that answered it | Feedback table | Users send it in the general mode; the owner and developers set the outcome |
 | 文件與圖 (optional) | Allow-listed documents and figures | A bundle made at image build, with a secret and personal-data scan | The build script |
 
 A pending-work signal helps the owner: YC's bell shows 「開發票 N 張等你驗收 →」 and
@@ -144,7 +195,9 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
 ## Build order
 
 1. Start from the Yellow-Chick shape and the PTI-ARES content ("The standard and the
-   gaps"). Write any difference, and its reason, in the SD.
+   gaps"). Write any difference, and its reason, in the SD. In a new system the
+   blueprint, tickets and version files exist from day 1 ("A new system: the first
+   day").
 2. Tracker tables, the one writer service and the CLI (spine-roadmap, full tier).
    Tests: transitions, the append-only trigger, 409 on a stale version.
 3. API: read routes for the audience, write routes for admins, acceptance for a person
@@ -155,7 +208,7 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
    figures need system-design or qa-dataflow first).
 6. Deep links, URL state and the links between pages.
 7. The version badge or card.
-8. The pending-work signal for the owner.
+8. The pending-work signal for the owner, and 意見回饋 (triage) once users exist.
 9. A manual chapter for every page.
 10. Tests: route guards (401, 403, and 404 in a deployment without the area), one e2e
     deep link for each object type, the phone layout.
