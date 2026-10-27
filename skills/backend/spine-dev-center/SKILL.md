@@ -8,9 +8,9 @@ description: >
   figures), what work is open (開發進度, tickets) and what shipped (版本與交付),
   next to the system's own logs. The mode is a route prefix; the backend guards every
   route; each page reads one source with one writer service; history is append-only;
-  only a human acceptance closes a ticket; every object has a deep link. Three real
-  implementations: Yellow-Chick (platform back office), PTI-ARES (透明度, read by
-  every user) and ChimesERP (開發中心, admin only, internal deployment only).
+  only a human acceptance closes a ticket; every object has a deep link. Yellow-Chick
+  is the standard shape (platform back office); PTI-ARES (透明度) has the most complete
+  content; PTI-ARES and ChimesERP (開發中心) converge to the Yellow-Chick shape.
   TRIGGER when: building or changing a developer area in a product; "開發者模式",
   "開發中心", "管理中心／開發中心", "開發藍圖", "開發進度", "版本管理頁", "透明度頁",
   "developer mode", "dev center", "讓老闆看到開發進度", "對照架構和 logs"; deciding who
@@ -20,7 +20,7 @@ description: >
   (spine-rbac); planning the ops checklist of a new app (app-ops-baseline);
   drawing one figure (system-design, chart-design).
 tags: [backend, frontend, admin, roadmap, tickets, versions, logs, spine, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -84,15 +84,49 @@ own the data rules:
    version and build commit, which opens 版本管理. ERP: a version card from
    `VERSION`, the docs bundle manifest and the Alembic heads.
 
-## Decisions (they differ; pick with this table)
+## The standard and the gaps
 
-| Decision | Seen | Pick |
-|---|---|---|
-| Who sees the area | YC: platform operator. PTI: all signed-in users read, admin writes. ERP: admin, and only in the company's own deployment | A multi-tenant service, or a product installed at customers: admin or operator only. In a customer deployment the routes do not exist (ERP mounts the routers only in its internal group; a customer gets 404). One paying customer who wants to watch the build: let them read (PTI), keep writes with admin |
-| Where the spec lives | YC: spec in Git (`TODOS.md`, `docs/development/*.md`), status in the DB. ERP: spec and status in the DB, `TODOS.md` is an export. PTI: `data/roadmap.json` in Git, tickets in the DB, deliveries made from roadmap.json | One writable home for status (spine-roadmap rule 3). Spec in Git when people review diffs; in the DB when agents write tickets through an API |
-| Entry | YC: 「平台後台」 in the account menu. PTI: a side-nav group 「透明度」. ERP: 切換到 開發中心 in the avatar menu | Account menu when only admins see it; side-nav group when every user reads |
-| Extra pages | ERP: 架構文件與圖, 系統紀錄對照 (logs for each module). YC: a source-document drawer on every page. PTI: a 使用手冊 chapter | Add the logs page when the owner compares behavior with the design. Add docs and figures when the docs ship as a bundle |
-| Ticket numbers | YC: names (DEV-TRACKER-STORE). PTI: running numbers (PTI-123). ERP: both (ERP-295 plus a name) | spine-roadmap |
+Owner, 2026-10-27: 「yellow chick 才是標準的，未來 PTI ARES 跟 CHIMES ERP 也要同步成這樣」,
+「目前 PTIARES 在長肉上是最完整的」. Thus Yellow-Chick sets the shape: entry, guard,
+pages, where the data lives. PTI-ARES sets the content: what goes inside each page.
+A new product starts from the Yellow-Chick shape and the PTI-ARES content.
+
+| Part | Standard (Yellow-Chick) | PTI-ARES now | ChimesERP now |
+|---|---|---|---|
+| Who sees it | Platform operator only; a tenant owner gets 403 | Every signed-in user reads, admin writes (by design: 「透明度，全角色」) | Admin only, and only in the internal deployment |
+| Entry | Account menu link 「平台後台」, shown only to an operator; the bell links pending acceptances | Side-nav group 「透明度」 | Avatar menu 切換到 開發中心 |
+| Route | `/admin/operations?view=blueprint\|development\|versions` | `/roadmap`, `/progress`, `/changelog` | `/dev/*` |
+| Spec and status | Spec in Git (`docs/development/*.md`, `TODOS.md`), read through an allow-list; status in the DB | `data/roadmap.json` in Git; tickets in the DB; deliveries made from roadmap.json | Spec and status in the DB; `TODOS.md` is an export (a deliberate difference, its SD §8 #2) |
+| Ticket IDs | Names (`DEV-TRACKER-STORE`) | Running numbers (`PTI-123`) | Both (`ERP-295` and a name) |
+| 開發藍圖 | Five architecture views (系統分層, 模組關係, 守門機制, 功能流程, 業務領域), 子項目資料流, 驗收關卡, 規則清冊, 交付回顧 | 系統架構, 子項目資料流, 能力分組 with 合約驗收, 規則清冊, 出貨回顧 | Docs and figures pages; `/dev/roadmap` as a figure is on a branch (ERP-295) |
+| Source documents | A drawer on every page | Not found | Docs pages from the bundle |
+| Logs | Elsewhere in the back office | Elsewhere (admin group) | 系統紀錄對照 inside the area |
+
+Keep these differences; they do not conflict with the standard:
+
+- ChimesERP mounts the area only in its internal deployment, and the customer image
+  has no docs bundle (CI checks it). Use this in any product that is installed at
+  customers.
+- ChimesERP's logs page inside the area answers 「對比當前的 logs」.
+
+### Content to copy from PTI-ARES (the most complete today)
+
+- **Capability items with checks and evidence.** Each item has an acceptance
+  sentence and yes/no checks; a check passes only with evidence; status is derived
+  (`backend/app/host/meta.py:83-129`). Tickets record work, items record capability:
+  「票與細項是兩層，數字不能互相換算」 (spine-roadmap).
+- **合約驗收 card** on top of 能力分組: the customer-facing gates, apart from the
+  capability groups.
+- **Deliveries made from the source.** A sync builds deliveries from
+  `roadmap.json` at startup, from the CLI or from a button; fields that come from the
+  source are locked (422 `source_field_locked`); people fill only the acceptance
+  date, the basis and the deployments. A failed sync shows red.
+- **Version badge** in the side nav (version and build commit), which opens 版本管理.
+- **Deep links between pages**: `/roadmap?m=<item>`, `/progress?ticket=<id>`,
+  `/changelog?view=deliveries&version=&delivery=<id>`.
+- **使用手冊 chapter** for the area (add the 開發進度 step that PTI-ARES misses).
+- **Release check**: `scripts/check_release.py` before the CI release tag; commit
+  trailers `Milestone:` and `Ticket:` (`scripts/hooks/commit-msg`).
 
 ## Pages
 
@@ -109,8 +143,8 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
 
 ## Build order
 
-1. Decide the audience and the home of the spec (Decisions table). Write both in the
-   SD.
+1. Start from the Yellow-Chick shape and the PTI-ARES content ("The standard and the
+   gaps"). Write any difference, and its reason, in the SD.
 2. Tracker tables, the one writer service and the CLI (spine-roadmap, full tier).
    Tests: transitions, the append-only trigger, 409 on a stale version.
 3. API: read routes for the audience, write routes for admins, acceptance for a person
