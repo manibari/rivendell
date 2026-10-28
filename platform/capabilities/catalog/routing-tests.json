@@ -6,6 +6,14 @@
       "expect": "spine-assistant"
     },
     {
+      "phrase": "微軟登入",
+      "expect": "spine-sso"
+    },
+    {
+      "phrase": "AADSTS",
+      "expect": "spine-sso"
+    },
+    {
       "phrase": "管理後台要不要獨立",
       "expect": "spine-rbac"
     },
@@ -172,6 +180,14 @@
     {
       "phrase": "誰能寫這張表",
       "expect": "system-design"
+    },
+    {
+      "phrase": "規則完成度",
+      "expect": "rule-status-report"
+    },
+    {
+      "phrase": "開發週報",
+      "expect": "rule-status-report"
     },
     {
       "phrase": "開工作票",

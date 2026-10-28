@@ -28,6 +28,7 @@
 | 16 | HTTP fetch client(retry/backoff) | 爬蟲抓取共用 client | candidate(scraper) | `spine-http-fetch` |
 | 17 | scrape scheduler / job runner | 排程跑爬蟲 job + runner | candidate(scraper) | `spine-job-scheduler` |
 | 18 | idempotent ingestion(upsert/dedup) | 抓回的資料冪等寫入 | candidate(scraper) | `spine-ingestion` |
+| 19 | SSO 公司帳號登入 | Microsoft Entra 登入、白名單、自動建帳號、Graph 行事曆同一註冊 | **skill ✅** | `spine-sso`(core 收斂:AZURE_AD_* / id_token 檢查 / 網域 / 白名單 / 密碼備援;分歧只在 flow:MSAL SPA vs 伺服器端 code flow;ChimesFlow + people-ops + ChimesERP 審計 2026-10-28) |
 | 19 | AI-vision extract(拍照→AI 當 OCR) | 圖→AI 抽結構,identify→normalize→cache→generate→persist | **skill ✅** | `ai-vision-extract`(AI-feature 家族;iihi 來源,n=1 待第 2 驗) |
 | 20 | AI 助理 in-app assistant | 產品內 agentic 助理:只透過工具碰資料、照提問者權限、來源核對、每次工具呼叫留稽核 | **skill ✅** | `spine-assistant`(Yellow-Chick 寫入走 Gate + PTI-ARES 唯讀,2 家收斂;ChimesERP 是下一個消費者,2026-10-20) |
 | 21 | 開發者模式 dev center | 產品內給老闆與開發者的區域:開發藍圖(圖)、開發進度(票)、版本與交付,另可加系統紀錄、文件與圖;模式＝路由、後端守門、一個來源一個寫入者、只有人能驗收 | **skill ✅** | `spine-dev-center`(標準＝Yellow-Chick 平台後台;內容最完整＝PTI-ARES 透明度;PTI-ARES 與 ChimesERP 開發中心要同步成 YC 的形狀;第一天先有藍圖→拆票→版本;意見回饋是入口,2026-10-27) |

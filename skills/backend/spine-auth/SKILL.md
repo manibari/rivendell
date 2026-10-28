@@ -15,8 +15,8 @@ description: >
   password hashing / get_current_user to a FastAPI + Postgres product; standing
   up a new fleet product that needs users (pti-ares, ic-yms, tukey-*, mops admin).
   SKIP when: frontend-only auth UI with no backend; a non-user internal pipeline
-  with no login (mops-style scraper service); OAuth/SSO-only with no local
-  passwords (a different module); a non-FastAPI backend.
+  with no login (mops-style scraper service); Microsoft / Entra SSO or OAuth-only
+  sign-in (spine-sso); a non-FastAPI backend.
 tags: [backend, auth, jwt, fastapi, spine, security, reference]
 version: 1.0.0
 source: manual
