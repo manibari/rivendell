@@ -24,7 +24,7 @@ The repository is organized by ownership. See [repository layout](docs/architect
 skills/
 ├── platform/   # platform 循環：rivendell 自我改善（harvest/retro/skill 產線）(13)
 ├── agents/     # 自動化 Agent：排程、觀測、persona、開發派工 (6)
-├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (8)
+├── planning/   # 需求與規劃：requirement → user-flow → mockup → system-design → plans (9)
 ├── workflow/   # dev 循環工具與 Session 維運 (16)
 ├── qa/         # QA 與驗收：測試、旅程、資料流稽核 (5)
 ├── quality/    # 程式品質、審查、文字打磨 (5)
@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (132 skills)
+## Skills Catalog (133 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -149,6 +149,7 @@ as release notes.
 | **planning-with-files** | `/planning-with-files` 或自動 | Manus-style file-based planning with task_plan.md, findings.md, and progress.md |
 | **requirement** | `/requirement` 或自動 | 需求定義：先釘統一語言表（ubiquitous language，一個概念一個名字），再寫 user stories 與驗收標準 |
 | **system-design** | `/system-design` 或自動 | SA/SD：資料模型、介面契約、關鍵流程、功能關係圖(target)；職責邊界分三面向——邏輯(bounded context)、實體(目錄結構)、資料(aggregate root 唯一寫入者) |
+| **system-port** | 自動 | 系統搬移：把一套運作中的系統逐頁搬進另一套。先定規則、更新並釘住原系統版本、寫搬移清單、本機跑原系統對照、照原樣搬、已有的頁面比較後留較好的、小批合成大票、每條線共用一份規則 |
 | **user-flow** | `/user-flow` 或自動 | 使用者旅程圖（畫面切換、happy path / 錯誤分支）；主角是使用者不是系統，泛用「畫流程圖」走 chart-design |
 | **writing-plans** | 自動 | Create detailed implementation plans with bite-sized tasks for engineers with |
 
@@ -327,7 +328,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
-| dev | 23 | 23 | 9 | 7 |
+| dev | 24 | 23 | 9 | 7 |
 | shared | 1 | 14 | 2 | — |
 
 
