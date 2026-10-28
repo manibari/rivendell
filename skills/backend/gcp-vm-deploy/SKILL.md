@@ -29,6 +29,11 @@ prepares scripts, checks, and runs what it is allowed to run.
   Resources"). Do not try another route. Write an idempotent script (`create-infra.sh`, each step
   `describe || create`), show what it creates, and let the owner run it with `! bash <path>`.
   Read-only `gcloud ... list/describe` is fine for Claude.
+- **Claude cannot run a production deploy or a data move to the live VM by itself.** The
+  classifier refused `move-data-to-cloud.sh --force` as "Production Deploy", although the ticket
+  plan had that step and the owner asked why the site was empty. An earlier owner request does not
+  count. At go-live, ask for one explicit word in the chat (for example 「上線」) and list the
+  steps it covers. In the same message, give the `!` commands, so the owner can also run them.
 - **Never touch the other systems in the project.** List every VM, IP, and firewall rule first
   and name them in the plan as "not touched".
 - **Confirm the money and exposure decisions in one question set:** region, machine type, disk,
@@ -142,9 +147,23 @@ Microsoft sign-in.
    - The restore half runs the copy of the script that is deployed on the VM. A fix to the script
      needs a deploy before the rerun.
    - Start only `db migrate api scheduler web` after the restore; leave Caddy to go-live.
-3. When `dig +short <name>` returns the VM IP: start `caddy`, check the certificate, sign in, and
-   walk the main pages.
-4. Point the other tools at the cloud (tracker CLI URL, agent credentials) and tell the team.
+   - Run the local half from a checkout at the same commit as the VM release. The owner's main
+     checkout can be behind: on ChimesERP it was 31 commits behind, because the local site runs
+     `npm run dev` from it and changes only on the owner's word. A worktree at `origin/main` works;
+     the script finds the source stack by its compose project name.
+3. Check DNS on public resolvers, not on the Mac: `dig +short <name> @1.1.1.1` and `@8.8.8.8`.
+   Let's Encrypt asks public DNS. The Mac keeps a negative answer for some time: `curl` said
+   "Could not resolve host" while both public resolvers already returned the VM IP. To clear the
+   Mac cache, the owner runs `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`.
+4. Go-live order: (a) freeze writes on the old stack (tracker steps, data entry); (b) run the data
+   move with `--force`; (c) start `caddy`; (d) check the certificate, sign in, and walk the main
+   pages. Move the data before Caddy starts. Users then never see the rehearsal data, and nobody
+   writes rows that the move deletes.
+5. Point the other tools at the cloud (tracker CLI URL, agent credentials) and tell the team.
+   After the move, write nothing more to the old tracker: the cloud does not get those rows.
+6. While the DNS hand-off is open, check DNS at the start of each session (step 3). On
+   ChimesERP the record went live and nobody saw it; the owner found the empty site first.
+   When it resolves, tell the owner in one line: "DNS works; the site waits for the go-live word".
 
 ## Gotchas (ChimesERP, 2026-10-28)
 
