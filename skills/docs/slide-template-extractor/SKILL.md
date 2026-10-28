@@ -4,11 +4,14 @@ loop: sales
 pdca: plan
 description: >
   Extract design system from existing PPTX/Google Slides → locked HTML slide template
-  with CSS variables. Stops style drift across deck generations.
-  TRIGGER: "把這份簡報的風格做成 template", "extract slide design", "鎖定簡報風格".
-  SKIP: create from scratch (pitch-deck / sales-material); edit existing PPTX (office-pptx).
+  with CSS variables. Stops style drift across deck generations. When the client has no
+  deck, take the brand colors and logo from the client's website or from a system we built
+  for the client, and check each color's contrast before it holds text.
+  TRIGGER: "把這份簡報的風格做成 template", "extract slide design", "鎖定簡報風格",
+  "簡報模板", "做一個 X 的簡報模板".
+  SKIP: writing a deck's content (pitch-deck / sales-material); edit existing PPTX (office-pptx).
 tags: [docs, workflow]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebFetch"
 ---
@@ -19,14 +22,20 @@ Convert an existing brand deck → locked HTML template that pitch-deck and sale
 
 ## Output Location
 
-By default, save extracted templates to `mockups/slide-templates/{name}.html` in the current project, or to a project-specific location if the user specifies one.
+- If the owner's template folder `~/Work/ChimesAI/範本/presentations/` exists, save
+  `{name}-pitch.html` and `{name}-pitch-sample.png` there. Add one row to the "HTML 風格"
+  table of its `README.md`: style, file, use, the source of the tokens, the colors that are
+  decoration only (with their contrast), the sample file and the date.
+- Else save to `mockups/slide-templates/{name}.html` in the current project, or to the
+  place the user names.
 
 ---
 
 ## Phase 1: Identify Source
 
 Ask the user (or detect from context):
-- **Source type**: Local .pptx file? Google Slides URL? Google Drive file?
+- **Source type**: Local .pptx file? Google Slides URL? Google Drive file? No deck at all
+  (go to Phase 2b)?
 - **Target name**: e.g. `chimes-ai`, `cht-corporate`, `sabre-2026`
 - **Brand context**: What client/company is this for?
 
@@ -57,6 +66,35 @@ URL pattern `/presentation/d/{ID}/edit` where `getGoogleSlidesContent` works.
 ```
 
 If `downloadFile` fails with `exportSizeLimitExceeded` (large native Slides), use `getGoogleSlidesContent` + multiple thumbnails instead.
+
+---
+
+## Phase 2b: No deck to extract from
+
+When the client has no deck, take the brand from these sources, in this order:
+
+1. **A system that we built for the client.** Its theme file and logo files hold the exact
+   values (2026-10-28 example: `~/Code/Rightek-CRM/frontend/src/lib/theme.ts` and
+   `public/rightek-logo-*.svg`).
+2. **The client's website.** Read the CSS custom properties and the computed colors of the
+   header, the buttons and the links. Take the logo from the site header; SVG first.
+3. **The user**, for each value that is still missing. Do not invent a brand color.
+
+Write the source of each token in a comment next to it in `:root`.
+
+Then check each color before it holds text:
+
+1. Compute its contrast ratio against each background where it can hold text (white, the
+   page background, the dark background).
+2. 4.5:1 or more: the color can hold text. For text of 24px or more, 3:1 is enough.
+3. Less: the color is decoration only (bars, icons, chart fills). Mark it in `:root`
+   (「淺底上不放字」). Add a text variant for the dark background when needed
+   (`--accent-on-dark`).
+
+(2026-10-28, Rightek: the teal accent `#28C2B6` has 2.21:1 on white, so it is decoration
+only. Text uses the dark teal `#03515D`.)
+
+Then go to Phase 4 with these tokens. Phase 3 needs a source deck.
 
 ---
 
@@ -197,13 +235,28 @@ Use this skeleton — every template MUST have:
 
 ## Phase 6: Verify & Hand Off
 
-1. Save to `mockups/slide-templates/{name}.html`
-2. Open in browser: `open mockups/slide-templates/{name}.html`
-3. Show user the file path and ask for visual approval
-4. If they request tweaks, edit ONLY the `:root` tokens or specific slide variants
+1. Save the template (see Output Location).
+2. Check every page type with the slide-review script. Do not write a second checker.
+   - Split the template into one HTML file per `.slide` section, each with the same
+     `<head>`, in a scratch folder `pages/`. Add
+     `<style>body{padding:0;background:none}.slide{margin:0;box-shadow:none}</style>` to
+     each `<head>`. Without it, the preview padding of the template moves the page off the
+     canvas, and each page gets a false `figure/overflow` error.
+   - Run the script. It finds text outside the page, wrapped titles and text below the
+     smallest font size, and writes one annotated PNG per page:
+     ```bash
+     S="$(cd -P "${CLAUDE_SKILL_DIR}" && pwd)"
+     node "$S/../../docs/slide-review/scripts/review-deck.mjs" <scratch>/pages --canvas 1280x720
+     ```
+     If it prints `playwright not found`, do slide-review Step 0, item 3.
+   - Fix the template, not the split files. Then split and run again.
+3. Put the page PNGs together in one overview image, 2 columns. Read it yourself, then
+   show it to the user. Save it next to the template as `{name}-pitch-sample.png`.
+4. Ask for visual approval. A tweak changes ONLY the `:root` tokens or one page type.
+5. Register the template (see Output Location).
 
 Then update the user's slide-generating skills to use this template:
-> 已建立 `mockups/slide-templates/{name}.html`。
+> 已建立 `{template path}`。
 > 未來生成 {brand} 的簡報時，pitch-deck / sales-material 應該優先讀這個檔案的 tokens 和 layout，
 > 不要自己發明新風格。
 
@@ -227,3 +280,6 @@ Then update the user's slide-generating skills to use this template:
 Already-extracted templates (read these to see the output format):
 - `mockups/slide-templates/chimes-ai.html` — dark navy + cream cards (Tukey AutoML deck)
 - `mockups/slide-templates/cht-corporate.html` — white + CHT blue (智慧製造產品介紹)
+- `~/Work/ChimesAI/範本/presentations/rightek-pitch.html` — no source deck; brand from the
+  client's website through its CRM theme file; warm white + dark teal, teal as decoration
+  only; 7 page types; sample `rightek-pitch-sample.png` (2026-10-28)
