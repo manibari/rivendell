@@ -180,3 +180,19 @@ Microsoft sign-in.
   row counts and the 41 upload files matched.
 - Scripts that live on the owner's machine (`deploy-dev.sh`, rules files) block colleagues. Move
   them into `scripts/ops/` in the same ticket.
+- **CLI tools that use a token, not a session, fail behind the frontend proxy.** The tracker CLI
+  sends `Authorization: Agent <id>:<token>`. The Next `/api/*` proxy needs the session cookie and
+  drops that header, so every CLI call to the cloud returned 401. Fix in the Caddyfile: a matcher
+  on the path and `header_regexp Authorization ^Agent\s`, `handle` it with `reverse_proxy api:8080`,
+  and put everything else in a second `handle` to `web:3000`. Before go-live, list every non-browser
+  client (CLI, webhooks, agents) and test each one through the public name.
+- Test a Caddy routing change before a deploy: one Docker network, two `caddy respond` stubs with
+  the aliases `api` (`:8080`, body "api") and `web` (`:3000`, body "web"), the real Caddyfile with
+  `ERP_DOMAIN=http://erp.example.com`, then `curl -H 'Host: ...'` with and without the header.
+  `caddy adapt` shows if a backslash in a regexp survived.
+- The classifier also refuses database reads on the live VM over SSH ("Production Reads"). Check
+  the moved data through the app (its API, its CLI, a signed-in page), not with `psql`.
+- While the Mac DNS cache is stale, screenshot the public site with
+  `--host-resolver-rules="MAP <name> <ip>"` (headless Chrome). Headless Chrome keeps a minimum
+  window width of about 500 px, so a 390 px screenshot cuts the right side; use Playwright device
+  emulation for phone widths.
