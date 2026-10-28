@@ -190,6 +190,10 @@ Microsoft sign-in.
   the aliases `api` (`:8080`, body "api") and `web` (`:3000`, body "web"), the real Caddyfile with
   `ERP_DOMAIN=http://erp.example.com`, then `curl -H 'Host: ...'` with and without the header.
   `caddy adapt` shows if a backslash in a regexp survived.
+- Run the deploy with its full output in a file and check the exit code (`> deploy.txt 2>&1; echo "exit $?"`).
+  A `grep` filter on the output hid an SSH timeout once, and the deploy looked silent instead of failed.
+  The SSH rule allows one `/32`: a laptop on a phone hotspot or another office gets a new public IP
+  (`curl -s https://api.ipify.org`), and the owner reruns the allow script before the deploy.
 - The classifier also refuses database reads on the live VM over SSH ("Production Reads"). Check
   the moved data through the app (its API, its CLI, a signed-in page), not with `psql`.
 - While the Mac DNS cache is stale, screenshot the public site with
