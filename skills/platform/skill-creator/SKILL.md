@@ -9,7 +9,7 @@ description: >
   or optimize a skill's description for better triggering accuracy.
   DO NOT TRIGGER when: using existing skills normally, or editing non-skill files.
 tags: [meta]
-version: 1
+version: 1.1.0
 user_invocable: false
 ---
 
@@ -157,6 +157,29 @@ hooks:
 ```
 
 The `|| true` prevents hook noise from blocking the conversation when the script is non-critical.
+
+**File path rule (plugin install and symlink install)** — A skill can be installed as a
+Claude Code plugin (a copied folder) or by `sk deploy` (a symlink in `~/.claude/skills/`).
+One rule works for both. `${CLAUDE_SKILL_DIR}` expands in SKILL.md in both cases; with the
+symlink it gives the symlink path.
+
+- A file of this skill: `${CLAUDE_SKILL_DIR}/<file>`.
+- A file of another skill, or of the repo root: get the real folder first, then go up.
+
+  ```bash
+  S="$(cd -P "${CLAUDE_SKILL_DIR}" && pwd)"
+  node "$S/../../<category>/<skill>/scripts/<file>"
+  ```
+
+- Do not write `${CLAUDE_SKILL_DIR}/../..`. Node and `cd` without `-P` remove `..` before
+  they follow the symlink, so the path goes up from `~/.claude/skills/` and the file is
+  not found.
+- Do not write `~/.claude/skills/<name>/...` or an absolute repo path in a skill that
+  other people install.
+- Codex does not expand `${CLAUDE_SKILL_DIR}`. A Codex brief gives full paths.
+
+(Source: `docs/plans/2026-10-23-rivendell-product.md`, design item 3; tested on the symlink
+install and on a plugin copy from GitHub.)
 
 ### Writing Style
 
