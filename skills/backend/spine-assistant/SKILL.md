@@ -10,8 +10,8 @@ description: >
   owns the provider choice, and a model failure is a clear error, never a silent
   switch. Two real implementations: Yellow-Chick (secretary + AI employees, gated
   writes, provider roster, quota, memory) and PTI-ARES (read-only Q&A over its own MCP
-  server). Default for an internal business system (ERP): read-only first, gated
-  writes later.
+  server). ChimesERP adds per-user ChatGPT login and an intake card (2026-10-28).
+  Default for an internal business system (ERP): read-only first, gated writes later.
   TRIGGER when: adding an AI assistant, chat assistant, agent or copilot to a product;
   "AI 助理", "問答助理", "AI 秘書", "做一個 agent", "agentic", "讓 AI 查系統資料",
   "讓 AI 幫忙建單", "assistant tools", "tool calling over our data"; deciding
@@ -22,7 +22,7 @@ description: >
   dev work (agent-headless, agent-persona) / 開發用 agent 排程; a chat bot on Telegram
   (telegram-bot); picking a coding executor (agent-code-dispatch).
 tags: [backend, ai, agent, assistant, llm, mcp, audit, spine, reference]
-version: 1.0.0
+version: 1.1.0
 source: manual
 ---
 
@@ -207,10 +207,47 @@ Do the steps in this sequence. Do not start a step before the previous check pas
   Do not raise an error that rolls back the request.
 - **Provider read in seven places (CoBuild, per YC `registry.py`).** One missed place
   gave a bug nobody could trace. This is why rule 5 has a test.
+- **uvloop refuses the Popen user arguments (2026-10-28, ChimesERP ERP-299).** Under
+  uvicorn with uvloop, `user`, `group`, `extra_groups` and `umask` in a subprocess call
+  fail, so 「連接 ChatGPT」 failed at start. Switch the user with `setpriv` in argv.
+- **A strict output schema lists every field (2026-10-28, ChimesERP ERP-142).** Strict
+  structured output refuses an open object: each object needs
+  `"additionalProperties": false`, and `required` holds every property. The first
+  intake schema had an open `fields` object; ERP-142 lists each card field, with
+  `["string", "null"]` for a value that can be missing.
 
-## ChimesERP starting point
+## ChimesERP: per-user login and intake (built 2026-10-27 to 10-28)
 
-ChimesERP has no assistant. Start at Tier A and plug into what exists. **Permissions:**
+ChimesERP has the first part of a Tier A assistant: an intake card on the home page. A
+user drops a file or pastes text. The model classifies it (business card, document,
+customer reply, and others), and the item goes to 待分類. A business card is filed only
+after the user confirms the company and the fields (ERP-142). Design:
+`docs/design/2026-10-20-home-assistant-sd.md`. Code: `backend/app/assistant/`.
+
+What it adds to this recipe:
+
+- **Each user signs in with an own ChatGPT account.** `codex_login.py` runs
+  `codex login --device-auth` with a home folder for each user (`CODEX_HOME`). The page
+  shows the URL and the code; the code is valid for 15 minutes. A workspace that turned
+  device-code login off gives the reason `device_auth_disabled`.
+- **Each user runs as an own OS identity.** `isolation.py` gives each user a run UID.
+  It starts Codex through `setpriv --reuid --regid --clear-groups --no-new-privs` and
+  sets mode 700 on the data folders (payslips, onboarding files, uploads, logs). Check
+  in the container: user A cannot read the login of user B, and no run identity can
+  read payroll files, uploads or secrets.
+- **The model gets the item, not the system.** `model_client.py` runs
+  `codex exec --ephemeral -s read-only --ignore-user-config --output-schema <file>` in a
+  new temporary folder. It sends the content on stdin and deletes the folder after the
+  run. The prompt says "do not run commands or read other files". The log line holds
+  only the result code, the size and the seconds.
+- **The audit log does not show intake content.** The intake target is in
+  `NO_NAME_TYPES` (`backend/app/services/audit_targets.py`). An admin cannot read what
+  another user gave the assistant.
+- **The real-model check needs the user.** Only the user's own ChatGPT login runs the
+  real model. Claude tests the flow with a fake `codex` binary and a test account, then
+  asks the user to try one real item.
+
+The notes below apply when the assistant gets tools. **Permissions:**
 `backend/app/middleware/auth.py:102` `require_permission(entity, action)` holds the
 level lookup inside a `Depends` closure. Move that lookup into a plain function. Then
 the dependency and each tool call the same function (YC `can()` shape). Row scope stays
