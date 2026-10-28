@@ -17,7 +17,7 @@ description: >
   (gstack-codex); 3+ independent investigations in parallel (agent-dispatch); an LLM
   provider inside a product app (that is the app's own provider code).
 tags: [workflow, agents]
-version: 2.2.0
+version: 2.3.0
 languages: all
 ---
 
@@ -152,6 +152,33 @@ These commands fail at start inside it. Do not put them in "Test command" or
 (2026-10-11: a brief told Codex to run Playwright "and stop if the browser cannot
 start". Codex ran 128 tests anyway. All failed, and Chrome crashed 16 times.)
 
+#### A scope that lets the run finish
+
+The executor obeys "stop and say why". Thus a scope that is too narrow stops the run in
+the first minutes. (2026-10-28, ChimesERP: one brief did not list three registry files,
+and three port briefs allowed only new files. Four rounds stopped and went out again.)
+
+- Find the repo guards that fail when an entry is missing: i18n key parity, label maps,
+  page goals, audit action names, writer lists. Put each guard and its entry files in the
+  brief, in "Scope" or in a "Guards" section.
+- Let the executor change the ticket's own entry points: the home card, the menu item,
+  the route registration.
+- When the ticket replaces or extends existing pages of one area, let the executor change
+  that area's existing files. It lists each existing file it changed, with one line why.
+  A table keeps its existing writer module.
+
+#### Check the brief before dispatch
+
+- Every path in the brief exists. (2026-10-28, mops_dbs: a brief named a README that
+  did not exist.)
+- Read the repo `AGENTS.md`. If it asks for a step that the sandbox cannot do (a tracker
+  call, a database port), the brief tells the executor not to do it and says who does it.
+  (2026-10-28, ChimesERP: a round stopped on the repo's own tracker step.)
+- The change extends; it does not widen. Do not add values to an existing response
+  field. Do not change existing CLI output lines, because other programs parse them. Add
+  a new field or a new line. (2026-10-28: mops_dbs; and ChimesERP ERP-317, where new
+  values in two existing fields broke existing tests.)
+
 ### 3. Run in the background
 
 qwen or codex:
@@ -184,6 +211,11 @@ watchdog then reported a 2239 s stall and the round ended with no report.
 claude: call the Agent tool with `isolation: "worktree"`,
 `run_in_background: true`, and the brief as the prompt. Do not do the work in
 this session.
+
+Long checks are background tasks too. Start a full test suite with
+`run_in_background`, not with `nohup` or `&`. A detached process sends no completion
+notice, and session cleanup can stop it. Do not start an executor round in a worktree
+while a full suite reads that worktree. Start the round when the suite ends.
 
 #### Several tickets at the same time: no fork
 
@@ -225,6 +257,11 @@ Check each item. Write the result of each item in your report.
    (2026-10-08: Qwen changed an expected 5M to 4M. The code counted "no model"
    as a model. All tests passed.)
 
+After an auto-fix in the review (`ruff --fix`, `eslint --fix`), read the diff of the
+imports. `ruff --fix` removes an import that a module keeps only for its side effect,
+for example a registry import. Keep such an import with `# noqa: F401`.
+(2026-10-28, ChimesERP: `ruff --fix` removed the import that registered an approval flow.)
+
 ### 6. Decide
 
 - All items pass: tell the user the result. Commit only if the user asks.
@@ -232,6 +269,12 @@ Check each item. Write the result of each item in your report.
 - A larger defect: give the same executor one fix round with a new brief that
   lists the findings. If the second round fails too, stop and ask the user
   which executor to use next.
+- A lane never pushes to main, never restarts a shared server, and never records a
+  merge approval. This applies to an executor and to a fresh agent. A merge approval
+  quotes the user's words about these tickets, from this decision. An older quote
+  about other tickets does not count. (2026-10-26, ChimesERP: a background lane pushed
+  to main, restarted the dev site, and recorded its own approval with a quote from the
+  day before.)
 
 ### 7. Report to the user (Traditional Chinese)
 
