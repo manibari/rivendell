@@ -9,7 +9,7 @@ description: >
   TRIGGER: "做 BP", "投資人 deck", "pitch deck", "募資簡報", "investor presentation".
   SKIP: technical docs or internal status (office-pptx).
 tags: [docs, workflow]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, WebSearch"
 ---
@@ -104,6 +104,24 @@ Do not lead with implementation mechanics before the audience has seen the
 pain and the proof. Case pages should visibly tie back to the named pain they
 solve. Solution pages need product or system visuals; implementation pages need
 architecture or process diagrams, not just text.
+
+Variant for a short first visit to an executive (數位長, 總經理; 30 minutes, few
+pages). The owner set this order on 2026-10-28:
+
+```text
+痛點 → 產品方案 → 應用場域範例 → 顧客證言
+```
+
+- **Write the pain as the industry's common pain.** Do not add a page that guesses
+  the customer's business from public information. (2026-10-28: the owner removed
+  such a page from a first-visit deck.)
+- **Use a customer quote only after the owner confirms it.** Record in the deck's
+  `STATE.md` which quotes are confirmed. A quote without that record stays out.
+- **Bring the PDF.** The meeting room computer may not have Noto Sans TC, and then
+  the PPTX layout breaks.
+
+The default order above stays for other first calls. When it is not clear which
+order fits, ask the owner.
 
 For first-call decks where scope is not yet clear, make the default next step
 an **AI 導入盤點工作坊**, not a system quotation. Frame it as:
