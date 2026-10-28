@@ -8,7 +8,7 @@ description: >
   or project has a database but no migration tool configured.
   DO NOT TRIGGER when: project has no database, or migrations are already set up and user did not ask about them.
 tags: [backend]
-version: 1
+version: 1.1.0
 source: manual
 user_invocable: false
 ---
@@ -119,6 +119,18 @@ When the user modifies a model or schema:
    # Re-apply (confirms rollback works)
    alembic upgrade head
    ```
+
+   Run this on the production engine (PostgreSQL), not only on SQLite. SQLite does not
+   enforce foreign keys by default, so a defect in a foreign key passes there.
+   (2026-10-28, ChimesERP 0041: one `ForeignKey` object was shared by two columns. The
+   SQLite tests passed; the PostgreSQL upgrade failed. Give each column its own
+   `ForeignKey`.)
+
+4. **Two branches add a migration at the same point**: when you merge them, chain the
+   migrations into one line. Set each `down_revision` so the heads become one
+   (`alembic heads` shows one head). Then run upgrade, downgrade and upgrade again from an
+   empty database. (2026-10-28: ChimesERP wave 2a became 0042 → 0044 → 0045; TWstock #25
+   and #26 both added a migration step at the same place.)
 
 ### Step 4: Add Migration Check to CI
 
