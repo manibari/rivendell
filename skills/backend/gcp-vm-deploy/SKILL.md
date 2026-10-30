@@ -8,10 +8,12 @@ description: >
   firewall, reserved IP, SSH access when the operator has only the Editor role, the scripts the
   owner must run because Claude may not create cloud resources, production containers, Caddy
   HTTPS, backups to Cloud Storage, the one-time data move from a local stack, DNS hand-off to a
-  network admin, and go-live. Learned on ChimesERP ERP-316 (2026-10-28).
+  network admin, go-live, and after go-live the nightly deploy from the owner's Mac and user
+  accounts on the live site. Learned on ChimesERP ERP-316 (2026-10-28) and ERP-347 (2026-10-30).
   TRIGGER when: "部署到 GCP", "上雲端主機", "開一台 VM", "搬到雲端", "erp.xxx 上線", "給同事一個網址",
-  deploying a compose app to a GCP VM, moving a local stack's data to a cloud VM, or a GCP SSH /
-  IAP / firewall / static IP problem during such a deploy.
+  "夜間自動部署", "雲端建帳號", deploying a compose app to a GCP VM, moving a local stack's data to
+  a cloud VM, a GCP SSH / IAP / firewall / static IP problem during such a deploy, a nightly
+  deploy that fails, or a script that creates users on the live site.
   DO NOT TRIGGER when: choosing a hosting platform (deploy), writing Dockerfiles or compose for
   local use only (docker-compose-setup), Cloudflare Tunnel exposure (cloudflare-tunnel-provision,
   tunnel-proxy-deploy), Cloud Run or GKE.
@@ -164,6 +166,44 @@ Microsoft sign-in.
 6. While the DNS hand-off is open, check DNS at the start of each session (step 3). On
    ChimesERP the record went live and nobody saw it; the owner found the empty site first.
    When it resolves, tell the owner in one line: "DNS works; the site waits for the go-live word".
+
+## 8. After go-live: nightly deploy and user accounts (ChimesERP, 2026-10-30)
+
+Nightly deploy from the owner's Mac (launchd, 00:00):
+
+- **Read the deploy tools from the release, not from the checkout.** The owner's checkout was
+  68 commits behind and had no `deploy-cloud.sh`, so `sed` on it stopped the run. The LaunchAgent
+  runs `git fetch -q origin main && bash <(git show origin/main:scripts/ops/nightly-deploy.sh)`,
+  and the script does `git archive $NEW scripts | tar -x -C $TMP` before it reads any default.
+  Add a test: a checkout without the deploy tool still deploys.
+- The classifier refuses to install a LaunchAgent ("Unauthorized Persistence"). Give the owner
+  the `cp` and `launchctl load` lines. A job loaded after midnight runs first on the next night.
+- The script writes failures only to its summary log. An empty screen after `--dry-run` is a
+  failure: read the last line of `~/Library/Logs/<app>/nightly-deploy.log` and the newest detail log.
+- `ssh: connect to host ... port 22: Operation timed out` means the `/32` rule has an old IP. The
+  Mac must be awake and on the same network at 00:00 as when the owner ran the allow script.
+- `gcloud` reauth fails under `!` ("cannot prompt during non-interactive execution"). Give a
+  `.command` file that runs `gcloud auth login && <allow script> && <dry run>`. Check the result
+  with `gcloud auth print-access-token >/dev/null` and `firewall-rules describe ... sourceRanges`.
+  A `describe` that fails on auth makes a `describe || create` script try `create`.
+
+User accounts on the live site (no user admin page yet):
+
+- **Scripts sign in through the frontend, like a browser.** POST `/session/login` with JSON
+  `{email, password}` keeps the session cookie in the client, then call `/api/...` with it. A direct
+  POST to `/api/auth/login` gets 401 from the frontend proxy (no cookie), even with the correct
+  password. ChimesERP lost three owner rounds and one admin sign-in to this 401, which looked like
+  a wrong password. Test the request path before the owner runs a script.
+- The classifier refused a demo admin sign-in on production to create a user ("Identity Not
+  Given"). One owner sentence that names the account and the action unblocked it:
+  「可以用 admin2 幫 Marina 建帳號」. Ask for that sentence first; send an owner-run script only
+  when no such account exists.
+- The owner's own password: Claude never types it. Owner-run `.command` files read it with
+  `getpass` and `tee` the result lines (never the password) to a log that Claude reads, so the
+  owner does not paste output.
+- A temporary password goes to a mode 600 file. Hand it over with
+  `cut -f2 <file> | tr -d '\n' | pbcopy` and say only the length. `/api/auth/register` sets
+  `must_change_password`; production allows a password sign-in for role admin only.
 
 ## Gotchas (ChimesERP, 2026-10-28)
 
