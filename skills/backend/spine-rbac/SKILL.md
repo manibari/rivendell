@@ -14,12 +14,14 @@ description: >
   require_admin / require_permission / "給人用要分權限" to a FastAPI product;
   deciding how granular authz should be; a product's roles outgrowing admin/member;
   where the admin backend lives ("管理後台要不要獨立", "後台要不要拆成另一個 app",
-  platform admin vs tenant owner).
+  platform admin vs tenant owner); "使用者管理", "加帳號", "B2C 後台". A system that
+  more than one person uses needs sign-in, roles and a user page from day 1; a B2C
+  product puts every admin function in a back office apart from the user area.
   SKIP when: single-user / no multi-role product (no RBAC needed); authentication
   only with no authorization (that's spine-auth); row-level data scoping mechanics
   specifically (a sub-concern noted here but deeper in each product's utils/rbac).
 tags: [backend, rbac, authz, permissions, fastapi, spine, security, reference]
-version: 1.1.0
+version: 1.2.0
 source: manual
 ---
 
@@ -61,7 +63,8 @@ to forget for that route. **Always enforce via Depends.**
 - 2-3 role strings on the user; `require_role("admin")` / `require_admin(user)`; a single
   superuser via `require_owner` (admin + `username == OWNER_USERNAME`).
 - **When**: ≤3 roles, only devs change who-can-do-what, no per-entity granularity.
-- Cost: ~20 lines. No tables, no admin UI.
+- Cost: ~20 lines. No permission tables. You still need the user page (below) when a
+  second person signs in.
 
 ### Tier 2 — data-driven Role×Entity×Level matrix (chimesflow)
 - `role_permissions` table (role × entity × level ∈ {read, write}); a `SEED_MATRIX`
@@ -91,6 +94,29 @@ The proven path: **keep `require_role` working** while you add `require_permissi
 endpoints one at a time (swap the `Depends`); seed the matrix so `admin` keeps full access
 from day one; delete `require_role` only after the last endpoint moves. Never big-bang.
 
+## Day 1: sign-in, roles and the user page
+
+When more than one person will use the system, open these tickets on day 1. Do not
+wait until the owner finds the gap.
+
+- Sign-in (`spine-auth`, `spine-sso`), roles (the tier above), and a guard on every
+  route with personal data.
+- **The user page.** The permission system is not done until an admin manages people
+  in the product, with no script:
+  - a list with search: name, e-mail, role, status, last sign-in;
+  - add a person with a role and a temporary password, shown once with a copy
+    button; the person must change it at the first sign-in;
+  - change the role (and the department, if rows are scoped by department);
+  - disable and enable; do not delete, because audit rows point to the person;
+  - reset to a new temporary password, with an audit row.
+
+Two products found the gap late:
+
+- TWstock (2026-10-20): no sign-in at all. Anyone could read `/api/my/*`. The owner
+  asked 「是不是沒有做權限管理系統？」.
+- ChimesERP (2026-10-30, ERP-348): the user endpoints existed, but no screen used
+  them. A colleague's admin account took an owner-run script and three failed rounds.
+
 ## Admin surface: same app, separate identity (audit 2026-10-20)
 
 Where does the admin backend live? Four products, checked in code:
@@ -112,6 +138,19 @@ Where does the admin backend live? Four products, checked in code:
 - **A separate admin deploy needs a reason.** Examples: the admin must not be reachable
   from the public internet, or admins need a different login (SSO, MFA). Write the
   reason in an ADR.
+- **B2C (anyone can sign up): the admin is apart from the user area.** The owner
+  (TWstock, 2026-10-20): 「b2c 的產品，管理員的後台應該是獨立的」.
+  - The user area has no admin menu. Move every admin function (API keys, data
+    quality, recalculation, users) to the back office.
+  - The back office is its own route (`/admin`) with its own layout, API prefix and
+    dependency, as Yellow-Chick's `/admin/operations`.
+  - Grant the operator role from the host (a CLI), never from a page.
+  - The back office shows account data (e-mail, sign-up date, last sign-in), not the
+    users' private data.
+  - Optional: an access proxy in front of `/admin` (Cloudflare Access) that admits
+    only the owner. Sign-in for users stays in the product.
+- **Internal or B2B tool: an admin center inside the same app**, guarded by role
+  (ChimesERP 管理中心).
 
 ## Gotchas — from the audit
 
@@ -143,4 +182,7 @@ Where does the admin backend live? Four products, checked in code:
   `docs/design/admin/2026-09-26-platform-admin-entry-sd.md`; ChimesERP
   `backend/app/routers/admin_logs.py`; ChimesFlow `backend/app/middleware/auth.py`;
   PTI-ARES `backend/app/features/platform/identity/README.md`
+- User page: ChimesERP ERP-348 (`GET /api/auth/users`, `PUT /api/auth/users/{id}`,
+  `POST /api/auth/register` with `must_change_password`). B2C back office: TWstock
+  auth flows U1 to U5 (session 2026-10-20)
 - Pairs with [[spine-auth]] (decision 3 there defers here). Registry: `rivendell/docs/spine-modules.md` (#2).
