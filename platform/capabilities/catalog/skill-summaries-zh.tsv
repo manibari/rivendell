@@ -11,7 +11,6 @@ markdown-file-ssot	後端	Markdown + YAML frontmatter 作為半結構化資料 S
 oauth-token-vault	後端	OAuth 2.0 flow + Fernet 加密 token 儲存（FastAPI + PostgreSQL）
 sqlite-to-postgres	後端	SQLite → PostgreSQL 遷移指南：語法差異、schema 轉換、連線層更新
 docker-compose-setup	後端	Docker Compose 多服務設定（Next.js + FastAPI + Postgres/Redis）：Dockerfile、dev/prod compose.yml、.env.example、healthcheck
-rbac-permissions	後端	全端 RBAC 權限設計：角色階層、FastAPI decorator 保護、React AuthContext + AuthGuard
 vector-search-setup	後端	FastAPI 向量搜尋知識庫建置：embedding 套件選型、資料模型、語意搜尋 API、索引管理
 audio-transcription-flow	後端	音檔上傳 → speech-to-text → 逐字稿顯示 的完整 web 流程（Whisper 整合）
 

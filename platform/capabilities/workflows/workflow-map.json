@@ -220,9 +220,9 @@
       "source": "local",
       "desc": "商業簡報：discovery → narrative → HTML → PPTX"
     },
-    "rbac-permissions": {
+    "spine-rbac": {
       "source": "local",
-      "desc": "全端 RBAC：FastAPI decorator + React AuthGuard"
+      "desc": "權限：分層、Depends 守門、使用者管理頁、B2C 後台、前端權限檢查"
     },
     "rfq-writer": {
       "source": "local",
@@ -1405,7 +1405,7 @@
       "skills": [
         "oauth-token-vault",
         "protect-secrets",
-        "rbac-permissions"
+        "spine-rbac"
       ]
     },
     {

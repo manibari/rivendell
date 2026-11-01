@@ -9,20 +9,25 @@ description: >
   Role×Entity×Level matrix). So this is a TIER-DECISION skill: it gives the two
   archetypes, when to pick each, the one thing that DOES converge (enforce via a
   FastAPI Depends factory, never an in-body check), and the proven Tier1→Tier2
-  migration path (chimesflow walked it itself).
+  migration path (chimesflow walked it itself). Also the frontend permission check
+  (read what the backend allows; never a second rule list) and the role x route test
+  table, merged from rbac-permissions (2026-11-02).
   TRIGGER when: adding roles / permissions / 權限 / 權限管理 / access control /
   require_admin / require_permission / "給人用要分權限" to a FastAPI product;
   deciding how granular authz should be; a product's roles outgrowing admin/member;
   where the admin backend lives ("管理後台要不要獨立", "後台要不要拆成另一個 app",
-  platform admin vs tenant owner); "使用者管理", "加帳號", "B2C 後台". A system that
+  platform admin vs tenant owner); "使用者管理", "加帳號", "B2C 後台"; "RBAC",
+  "role-based access", "user roles", "每個人只能看自己的", "多人帳號", "admin/member 分權",
+  "內外帳", "誰能看什麼", "auth guard", "protect routes", "permission middleware". A system that
   more than one person uses needs sign-in, roles and a user page from day 1; a B2C
   product puts every admin function in a back office apart from the user area.
   SKIP when: single-user / no multi-role product (no RBAC needed); authentication
   only with no authorization (that's spine-auth); row-level data scoping mechanics
   specifically (a sub-concern noted here but deeper in each product's utils/rbac).
 tags: [backend, rbac, authz, permissions, fastapi, spine, security, reference]
-version: 1.2.0
+version: 1.3.0
 source: manual
+user_invocable: true
 ---
 
 # spine-rbac
@@ -63,8 +68,8 @@ to forget for that route. **Always enforce via Depends.**
 - 2-3 role strings on the user; `require_role("admin")` / `require_admin(user)`; a single
   superuser via `require_owner` (admin + `username == OWNER_USERNAME`).
 - **When**: ≤3 roles, only devs change who-can-do-what, no per-entity granularity.
-- Cost: ~20 lines. No permission tables. You still need the user page (below) when a
-  second person signs in.
+- Cost: ~20 lines. A `role` column with a CHECK constraint on the allowed values; no
+  permission tables. You still need the user page (below) when a second person signs in.
 
 ### Tier 2 — data-driven Role×Entity×Level matrix (chimesflow)
 - `role_permissions` table (role × entity × level ∈ {read, write}); a `SEED_MATRIX`
@@ -80,6 +85,7 @@ to forget for that route. **Always enforce via Depends.**
 - **Row scope** = which *records* (DEPT / OWN / ALL) → chimesflow keeps this SEPARATE in
   `app/utils/rbac.py`, the matrix dep only does allow/deny. If you need "managers see
   their dept's rows only", that's a different mechanism — don't cram it into the matrix.
+- Row scope goes in the query (`WHERE owner_id = :user_id`), not only in a role check.
 
 ## Decision rubric
 
@@ -93,6 +99,74 @@ chimesflow's own code comment: *"Replaces `require_role(...)` once endpoints are
 The proven path: **keep `require_role` working** while you add `require_permission`; migrate
 endpoints one at a time (swap the `Depends`); seed the matrix so `admin` keeps full access
 from day one; delete `require_role` only after the last endpoint moves. Never big-bang.
+
+## Frontend: show only what the backend allows
+
+The backend guard is the security. The frontend guard only keeps users away from
+buttons and pages that will fail.
+
+- **Ask the backend; do not copy the rules.** One endpoint returns what the current
+  user may do. ChimesERP: `GET /api/permissions/me` returns `{entity: "none" | "read" |
+  "write"}` (`backend/app/routers/permissions.py`), and the frontend reads it with
+  `permissionsMe()` (`frontend/src/lib/flow-api.ts`). Do not keep a role list or a
+  role rank in the frontend. It drifts from the backend.
+- **One provider, one hook.** After sign-in, load the user and the permissions once.
+  Give the components a `can(entity, level)` helper.
+- **A route guard for each page group**, with three results:
+  - loading: show a spinner, not the page (no flash of content or of 權限不足);
+  - no session (401): go to sign-in, then come back to the same URL;
+  - no permission (403): show 權限不足 with a way back, and clear the cached data of
+    that area (Yellow-Chick `OperatorAccess`).
+- **Hide the actions that the user cannot do** (menu items, buttons) with `can(...)`.
+  A direct URL still meets the route guard, and the backend still returns 403.
+- **After a role change, load the permissions again**, or end the session. An old
+  permission list shows actions that now fail.
+
+```tsx
+// Shape only. The backend sends the permissions and enforces them.
+type Level = "none" | "read" | "write";
+const Auth = createContext<{ user: User | null; perms: Record<string, Level>; isLoading: boolean }>(
+  { user: null, perms: {}, isLoading: true });
+
+export function useCan() {
+  const { perms } = useContext(Auth);
+  return (entity: string, level: "read" | "write" = "read") =>
+    perms[entity] === "write" || (level === "read" && perms[entity] === "read");
+}
+
+export function RequirePermission({ entity, level = "read", children }: Props) {
+  const { user, isLoading } = useContext(Auth);
+  const can = useCan();
+  if (isLoading) return <Spinner />;
+  if (!user) return <RedirectToSignIn />;            // keeps the current URL
+  if (!can(entity, level)) return <NoPermission />;  // 權限不足
+  return <>{children}</>;
+}
+```
+
+## Tests: one role x route table
+
+One parametrized test holds the whole rule. Add a row for each guarded route and
+each role, and a row with no session.
+
+```python
+@pytest.mark.parametrize("role,method,path,expected", [
+    (None,     "GET",  "/api/partners",   401),  # no session
+    ("member", "GET",  "/api/partners",   200),
+    ("member", "POST", "/api/partners",   403),  # read, not write
+    ("admin",  "POST", "/api/partners",   201),
+    ("member", "GET",  "/api/auth/users", 403),  # the user page is for admins
+    ("admin",  "GET",  "/api/auth/users", 200),
+])
+async def test_role_access(role, method, path, expected, client, login_as, sample_body):
+    headers = await login_as(role) if role else {}
+    resp = await client.request(method, path, headers=headers, json=sample_body(method, path))
+    assert resp.status_code == expected
+```
+
+Row scope needs its own test. User A asks for a record of user B and gets 404, not
+403, so the answer does not show that the record exists. (TWstock flow U2:
+「改別人的資料一律回『找不到』」.)
 
 ## Day 1: sign-in, roles and the user page
 
