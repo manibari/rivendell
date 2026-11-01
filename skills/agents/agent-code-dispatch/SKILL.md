@@ -17,7 +17,7 @@ description: >
   (gstack-codex); 3+ independent investigations in parallel (agent-dispatch); an LLM
   provider inside a product app (that is the app's own provider code).
 tags: [workflow, agents]
-version: 2.3.0
+version: 2.4.0
 languages: all
 ---
 
@@ -275,6 +275,10 @@ for example a registry import. Keep such an import with `# noqa: F401`.
   about other tickets does not count. (2026-10-26, ChimesERP: a background lane pushed
   to main, restarted the dev site, and recorded its own approval with a quote from the
   day before.)
+- After the user approves the merge, do the merge flow of `spine-versioning` ("The
+  merge flow for one ticket"): ticket to `review`, one new version, the release record,
+  the blueprint, generated data, then push. (2026-10-28 to 11-01: ChimesERP and TWstock
+  merged tickets with no new version, and the developer pages disagreed.)
 
 ### 7. Report to the user (Traditional Chinese)
 

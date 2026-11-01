@@ -8,7 +8,8 @@ description: >
   figures), what work is open (開發進度, tickets) and what shipped (版本與交付),
   next to the system's own logs. The mode is a route prefix; the backend guards every
   route; each page reads one source with one writer service; history is append-only;
-  only a human acceptance closes a ticket; every object has a deep link. Yellow-Chick
+  only a human acceptance closes a ticket; every object has a deep link; the pages
+  join on the ticket (blueprint module, ticket, version). Yellow-Chick
   is the standard shape (platform back office); PTI-ARES (透明度) has the most complete
   content; PTI-ARES and ChimesERP (開發中心) converge to the Yellow-Chick shape. A new
   system starts on day 1 with blueprint files, tickets split from them and a version
@@ -24,7 +25,7 @@ description: >
   (spine-rbac); planning the ops checklist of a new app (app-ops-baseline);
   drawing one figure (system-design, chart-design).
 tags: [backend, frontend, admin, roadmap, tickets, versions, logs, spine, reference]
-version: 1.2.0
+version: 1.3.0
 source: manual
 ---
 
@@ -53,7 +54,7 @@ own the data rules:
 - The ops checklist when a new app is planned: `app-ops-baseline`.
 - The figures on the blueprint page: `system-design`, `qa-dataflow`, `chart-design`.
 
-## Rules (all three agree)
+## Rules (1 to 9: all three agree; 10: the owner, 2026-11-02)
 
 1. **The mode is the route.** A route prefix is the mode: ERP `/dev/*`, YC
    `/admin/operations?view=blueprint|development|versions`, PTI `/roadmap`,
@@ -87,6 +88,20 @@ own the data rules:
 9. **The product shows its own version and build.** PTI: a side-nav badge with the
    version and build commit, which opens 版本管理. ERP: a version card from
    `VERSION`, the docs bundle manifest and the Alembic heads.
+10. **The three pages join on the ticket: module, ticket, version.** Each ticket names
+    one blueprint module when it is created (`spine-roadmap` rule 6). Each release
+    lists its tickets (`spine-versioning`). Thus:
+    - a blueprint box lists its tickets with live status and shows the newest version
+      that changed it;
+    - a ticket shows its place on the blueprint (架構位置) and its version;
+    - a version lists its tickets and their modules.
+
+    Add a test: every ticket module is a box on the blueprint, and every released
+    ticket has a version. ChimesERP has box to tickets (each box lists its `apps`; the
+    page reads `/api/dev-center/tracker/tickets?app=<key>`), ticket to 架構位置
+    (ERP-314) and version to tickets (ERP-357). The owner (2026-11-02): the version
+    did not move with each change and was not linked to the blueprint modules, in
+    ChimesERP and in TWstock.
 
 ## The standard and the gaps
 
@@ -102,7 +117,7 @@ A new product starts from the Yellow-Chick shape and the PTI-ARES content.
 | Route | `/admin/operations?view=blueprint\|development\|versions` | `/roadmap`, `/progress`, `/changelog` | `/dev/*` |
 | Spec and status | Spec in Git (`docs/development/*.md`, `TODOS.md`), read through an allow-list; status in the DB | `data/roadmap.json` in Git; tickets in the DB; deliveries made from roadmap.json | Spec and status in the DB; `TODOS.md` is an export (a deliberate difference, its SD §8 #2) |
 | Ticket IDs | Names (`DEV-TRACKER-STORE`) | Running numbers (`PTI-123`) | Both (`ERP-295` and a name) |
-| 開發藍圖 | Five architecture views (系統分層, 模組關係, 守門機制, 功能流程, 業務領域), 子項目資料流, 驗收關卡, 規則清冊, 交付回顧 | 系統架構, 子項目資料流, 能力分組 with 合約驗收, 規則清冊, 出貨回顧 | Docs and figures pages; `/dev/roadmap` as a figure is on a branch (ERP-295) |
+| 開發藍圖 | Five architecture views (系統分層, 模組關係, 守門機制, 功能流程, 業務領域), 子項目資料流, 驗收關卡, 規則清冊, 交付回顧 | 系統架構, 子項目資料流, 能力分組 with 合約驗收, 規則清冊, 出貨回顧 | Three architecture views (系統分層, 模組關係, 功能流程) and 子項目資料流 from `docs/development/blueprint.json`; a box lists its tickets with live status (ERP-314) |
 | Source documents | A drawer on every page | Not found | Docs pages from the bundle |
 | Logs | Elsewhere in the back office | Elsewhere (admin group) | 系統紀錄對照 inside the area |
 
@@ -149,8 +164,13 @@ Day 1, before any page exists, write these as files in Git (the Yellow-Chick sha
    light tier). One item usually needs several tickets, and one ticket can advance
    several items (`advances`). A ticket that does not come from the blueprint (a
    hotfix) is still a ticket; link it to an item when it changes a capability.
-3. **The version file and the deliveries ledger** (`spine-versioning`,
-   `spine-roadmap`).
+3. **The version file, the deliveries ledger and the local version gate**
+   (`spine-versioning`, `spine-roadmap`). From the first merge, each merged ticket
+   gets its version in the merge flow.
+
+When more than one person will use the system, open the tickets for sign-in, roles
+and the user page on day 1 too (`spine-rbac`). TWstock ran with no sign-in until the
+owner asked on 2026-10-20.
 
 After login, roles and the shell exist, build the pages of this skill. They read the
 same files, so nothing is typed twice. Move status into the DB tracker (full tier)
@@ -224,7 +244,8 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
 - **Unused endpoints stay behind.** PTI's frontend never calls `/api/changelog` or
   `/api/roadmap/doc`. Remove or wire each endpoint.
 - **"Released" needs a test.** ERP's `scripts/release.py` did not call
-  `record_release`, so the released step was never recorded.
+  `record_release`, and the tracker had no route for it. 版本與交付 showed 0 releases
+  and 162 unreleased deliveries while main was at 0.96.0 (ERP-357, 2026-10-31).
 - **A `TODOS.md` round trip breaks.** ERP's import broke when lines got running
   numbers (ERP-294). Keep the export one way, and export again on a conflict.
 - **Client names in documents.** ERP keeps them only in a bundle that only the
@@ -263,12 +284,13 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
 | Centers and guards | `backend/app/platform/centers.py`, `profile.py:162`; `backend/app/router_groups.py:204-224`; `frontend/src/lib/shell-menu.ts`; `frontend/src/components/dev-sidebar.tsx`, `dev-gate.tsx` |
 | Tracker | `backend/app/devcenter/tracker/{service,api,access}.py`; `scripts/devtracker.py`; `docs/development/tracker-for-agents.md` |
 | Docs, version, logs | `scripts/build_dev_docs.py`; `backend/app/devcenter/module_map.py`; CI check `.github/workflows/backend-ci.yml:66,70` |
+| Blueprint and versions | `docs/development/blueprint.json`, `backend/app/devcenter/blueprint.py`, `frontend/src/components/dev-blueprint-detail.tsx`; `frontend/src/components/dev-releases.tsx`; `scripts/release.py`, `scripts/hooks/pre-push` |
 | Design | `docs/design/2026-10-20-shell-centers-i18n-sd.md`, `2026-10-23-dev-tracker-sd.md`; mockups `docs/mockups/2026-10-21-shell-centers.html` (`d-dev`), `2026-10-23-dev-tracker.html` |
 | Tests | `backend/tests/test_devcenter_*.py`, `test_centers.py`, `test_devtracker_cli.py`; `frontend/e2e/dev-center.spec.ts`, `dev-tracker.spec.ts`, `dev-tracker-phone.spec.ts` |
 
-Status on 2026-10-27: ERP's DEV-* tickets are on main and wait for the owner's
-acceptance (`review`). DEV-CENTER-PROGRESS (ERP-295, `/dev/roadmap` as a figure) is on
-a branch.
+Status on 2026-10-31: ERP-314 (開發藍圖 as architecture views; ticket bars moved to
+開發進度), ERP-357 (版本與交付 lists each version with its tickets) and ERP-358 (local
+version gate) are on main and wait for the owner's acceptance (`review`).
 
 ## Sources
 

@@ -7,7 +7,8 @@ description: >
   (feature, task, hotfix) gets a FIXED ticket ID before code, the ticket's spec lives
   in Git while its status lives in one tracked place, a ticket only reaches "done"
   through an accepted + released delivery, and ROADMAP.md is a view derived from the
-  tickets, not a second list. Two tiers: light (TODOS.md fixed IDs + deliveries
+  tickets, not a second list. The merge sets the ticket to review and makes its
+  version; each ticket names its 開發藍圖 module. Two tiers: light (TODOS.md fixed IDs + deliveries
   ledger, any repo) and full (DB tracker + admin portal + operator CLI, products with
   a platform-admin surface). Optional capability layer on top: 細項 with acceptance +
   checks + evidence, status derived — tickets record WORK, 細項 record CAPABILITY, one
@@ -22,7 +23,7 @@ description: >
   CHANGELOG / ROADMAP / progress text after the fact (doc-drift-sync); a one-off
   script or throwaway prototype; the team already runs Jira / Linear as the SoT.
 tags: [backend, roadmap, tickets, work-packages, release, spine, reference]
-version: 1.2.1
+version: 1.3.0
 source: manual
 ---
 
@@ -35,7 +36,7 @@ the tickets instead of being hand-maintained beside them. Pairs with
 [[spine-versioning]] (version is the data, roadmap is the view) and
 [[doc-drift-sync]] (keeps the text files agreeing).
 
-## The four rules (both tiers)
+## The rules (both tiers)
 
 1. **Fixed ID before code.** `^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$`, e.g. `CRM-RELATIONSHIPS`,
    `HOTFIX-OAUTH-QUOTA`. The ID never changes when the title does. Commits, plans, QA
@@ -50,6 +51,15 @@ the tickets instead of being hand-maintained beside them. Pairs with
    pointing at a delivery that lists the ticket in `work_ids` and has a version,
    `verified_on`, evidence sources and a deployment record. "已合入 main" is
    `review` (待驗收). **發版不等於驗收** — say so in the roadmap header.
+5. **The merge moves the ticket, and the merge makes a version.** Set the ticket to
+   `review` and release its version in the same merge flow (`spine-versioning`, "The
+   merge flow for one ticket"). TWstock (2026-11-02): 13 merged tickets stayed
+   `in_progress`, so 版本紀錄 listed 10 of the 23 tickets that waited for release.
+6. **Each ticket names its module when it is created.** The module is a box on the
+   開發藍圖. The blueprint reads the module's tickets, and the ticket shows its place
+   (ChimesERP DEV-TRACKER-MODULE: the module is required on create; ERP-314). A
+   ticket whose module is not on the blueprint means the blueprint is out of date:
+   change the blueprint in the same ticket.
 
 ## Two layers: tickets = work, 細項 = capability
 
@@ -259,6 +269,10 @@ snapshot. It does not replace the tracker or the discussion channel.
   unreadable, don't render an empty roadmap (YC reader raises instead of showing 0).
 - **Ticket IDs are not version numbers.** Don't name tickets `V0-12-X`; the version
   a ticket lands in is the delivery's field, set at release time.
+- **Stage names are not version numbers either.** With one version for each merged
+  ticket, a stage planned as "0.2" is passed after two features. Name a stage by its
+  content (導覽, 美股) and let 版本與交付 show which versions shipped it. (TWstock
+  `docs/development/roadmap.json` plans its stages as `"version": "0.1"`, `"0.2"`.)
 - **Don't let a ticket status stand in for a capability.** "RULES-ENGINE 完成" says
   the work closed; whether the engine can do X is the 細項's checks.
 - **Deferred ≠ dropped.** Owner said "later" → `deferred` with the date/decision in
