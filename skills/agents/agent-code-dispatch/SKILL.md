@@ -3,21 +3,23 @@ name: agent-code-dispatch
 loop: dev
 pdca: do
 description: >
-  Give one scoped coding ticket to an executor (Qwen, Codex, or a Claude subagent)
-  in its own git worktree, then review the work before it reaches the user. Claude
-  plans and reviews; the executor writes the code. The default executor is a rule in
-  the global CLAUDE.md (開發分工); the user can name another executor for one ticket.
-  Owns `scripts/code-run` (the launcher; `sk code` on the owner's machine) and the GMI
-  proxy that lets codex drive Qwen (127.0.0.1:8004).
+  Give one scoped coding ticket to an executor (Qwen, Codex, Gemini, or a Claude
+  subagent) in its own git worktree, then review the work before it reaches the user.
+  Claude plans and reviews; the executor writes the code. The default executor is a rule
+  in the global CLAUDE.md (開發分工); the user can name another executor for one ticket.
+  Owns `scripts/code-run` (the launcher; `sk code` on the owner's machine), the GMI
+  proxy that lets codex drive Qwen (127.0.0.1:8004), and the Chimes GPT Gateway setup
+  that lets codex drive Gemini.
   TRIGGER when: a ticket or planned change is ready to implement and the next step is
   writing code; or the user says "派給 Qwen", "給 Codex 寫", "這張 Claude 寫", "用 Qwen 做",
-  "qwen 開發", "dispatch to qwen", "run this on codex", "換人寫", or asks to compare
-  executors on a ticket.
+  "qwen 開發", "派給 Gemini", "給 Gemini 寫", "gemini 開發", "同步用 gemini",
+  "dispatch to qwen", "run this on codex", "換人寫", or asks to compare executors on a
+  ticket.
   DO NOT TRIGGER when: Codex is wanted as a second-opinion review or consult
   (gstack-codex); 3+ independent investigations in parallel (agent-dispatch); an LLM
   provider inside a product app (that is the app's own provider code).
 tags: [workflow, agents]
-version: 2.4.0
+version: 2.5.0
 languages: all
 ---
 
@@ -34,11 +36,16 @@ every executor; only step 3 changes.
    `~/.claude/CLAUDE.md` (section 開發分工; add the section if it is missing), then use it.
 3. Else: use the default from that line. If there is no such line (a new machine or
    another user), ask the user once which executor to use, and offer to add the line.
+4. Parallel lanes. When that line allows gemini next to the default (owner 2026-11-02:
+   「開發 ticket 可以同步用 gemini」) and two or more independent tickets are ready,
+   give some tickets to gemini and run them at the same time as the default lane.
+   One ticket goes to one executor. Name the executor of each ticket in the report.
 
 | Executor | How it runs | Account / cost |
 |---|---|---|
 | `qwen` | `code-run exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
 | `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT login in `~/.codex`, weekly quota |
+| `gemini` | `code-run exec --executor gemini` (codex CLI + Chimes GPT Gateway, no proxy) | Company gateway key; default model `gemini-4-argon`, `-m gemini-3.8-flash` for small tickets |
 | `claude` | Agent tool (a fresh agent, never `fork`), `isolation: "worktree"`, brief as the prompt | Claude session quota |
 
 Do not switch the executor by yourself. If the executor cannot run (no key,
@@ -68,6 +75,11 @@ The two Qwen defects:
 One sample is not a benchmark. But defect 2 is the kind that passes every test.
 Thus the review gate in step 5 is mandatory for every executor, Claude included.
 
+Gemini (2026-11-02): only a smoke task so far (fix one function, add one function):
+`gemini-4-argon` finished in 22 s with about 36k tokens. No ticket comparison yet.
+Codex prints `Model metadata for gemini-... not found` as an `error` item at the
+start. It uses fallback metadata; the run continues. The summary `error` stays empty.
+
 Do not give any executor these tickets without a design from Claude first:
 schema migrations, auth, permissions, secrets, deploy scripts, design across modules.
 
@@ -78,6 +90,14 @@ schema migrations, auth, permissions, secrets, deploy scripts, design across mod
   does not work. Never type or paste the key for the user.
   Check: `python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" key-check` prints `key found`.
 - codex: `codex login` done in `~/.codex`. Quota per account shows on `/tokens`.
+- gemini: the administrator gives the user a personal gateway key (`sk-...`).
+  The user stores it with `scripts/set-gateway-key.command` (Keychain item
+  `sk-chimes-gateway-key`), the same way as the GMI key. Paste the key one time:
+  a double paste stores a key that the gateway refuses (`token_not_found_in_db`).
+  Check: `code-run key-check --executor gemini` prints `key found`.
+  `code-run` gives the key to codex only. It sets `shell_environment_policy.exclude`,
+  because without it `env` in a model command prints the key (seen 2026-11-02).
+  Gateway: `https://gpt-gateway.chimes.ai/v1` (LiteLLM, Responses API with streaming).
 - claude: nothing.
 
 Port 8004 belongs to the GMI proxy (`platform/deployment/ports.conf`).
@@ -181,10 +201,10 @@ and three port briefs allowed only new files. Four rounds stopped and went out a
 
 ### 3. Run in the background
 
-qwen or codex:
+qwen, codex, or gemini:
 
 ```bash
-python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" exec --executor <qwen|codex> -C <worktree> --brief-file <brief> [--network]
+python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" exec --executor <qwen|codex|gemini> -C <worktree> --brief-file <brief> [--network]
 ```
 
 Run it with `run_in_background`. Do not poll. The command prints the run
@@ -224,7 +244,7 @@ week of 2026-10-21, two ChimesERP sessions gave each ticket to a fork ("<ID> bri
 and Codex run"). Each fork started with 270k to 620k tokens of context and made
 47 to 85 calls. The 79 forks read 2.4 billion tokens: 57% of that week's usage.
 
-- Write each brief in the main session. Start each qwen or codex run from the
+- Write each brief in the main session. Start each qwen, codex, or gemini run from the
   main session with `code-run exec` in the background. Runs can overlap; each one
   has its own worktree.
 - A lane that needs its own agent (the `claude` executor, or a long review) gets a

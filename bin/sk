@@ -77,7 +77,7 @@ Deploy & Infrastructure:
   todo [--fix]        One page of what is still outstanding: down services,
                       uncommitted work, ROADMAP backlog. --fix applies the AUTO
                       items, --notify pushes to Telegram when anything is RED.
-  code exec --executor qwen|codex -C <dir> --brief-file <f>
+  code exec --executor qwen|codex|gemini -C <dir> --brief-file <f>
                       Run one coding ticket on an executor via codex exec
                       (agent-code-dispatch). Also: code proxy start|stop|status.
   work-root get <key> Print this machine's registered work folder (data/work-roots.conf).

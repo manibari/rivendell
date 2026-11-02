@@ -2,15 +2,17 @@
 """code-run: run one coding task on an executor through `codex exec`.
 
 Usage:
-  code-run exec --executor qwen|codex -C <dir> (--brief-file <file> | --brief <text>)
+  code-run exec --executor qwen|codex|gemini -C <dir> (--brief-file <file> | --brief <text>)
                 [-m <model>] [--network]
   code-run proxy start|stop|status      (the GMI proxy that the qwen executor uses)
-  code-run key-check                    (the GMI key)
+  code-run key-check [--executor qwen|gemini]   (the GMI key or the Chimes Gateway key)
 
 Executors:
   qwen   GMI Qwen. Starts the proxy when it is not running and uses
          CODEX_HOME=~/.codex-qwen, so /tokens counts the run as Qwen.
   codex  The ChatGPT Codex login in ~/.codex, with its own default model.
+  gemini Gemini through the Chimes GPT Gateway (LiteLLM, Responses API), with
+         CODEX_HOME=~/.codex-gemini. No proxy: codex calls the gateway directly.
 The claude executor is not run here: Claude runs it as a worktree subagent
 (see SKILL.md).
 
@@ -20,13 +22,16 @@ global CLAUDE.md, and the caller passes it each time, so there is one source.
 Each run goes to ~/.local/state/sk/code-runs/<stamp>-<executor>-<dir name>/:
   brief.md     the task text
   events.jsonl codex --json events
-  last.md      the final message from Qwen
+  last.md      the final message from the executor
   stderr.log   codex stderr
 The last stdout line is a JSON summary: exit code, seconds, token usage,
 changed files.
 
-Key: GMI_API_KEY from the environment, else the macOS Keychain item
-"sk-gmi-api-key". The key goes to the proxy through its environment only.
+Keys (the environment first, else the macOS Keychain item):
+  qwen   GMI_API_KEY, Keychain "sk-gmi-api-key". It goes to the proxy only.
+  gemini CHIMES_GATEWAY_API_KEY, Keychain "sk-chimes-gateway-key". It goes to
+         codex only; shell_environment_policy keeps it out of the commands that
+         the model runs, and the sandbox refuses `ps`.
 """
 from __future__ import annotations
 
@@ -49,10 +54,17 @@ PROXY = HERE / "qwen_codex_proxy.py"
 HOME = Path.home() / ".codex-qwen"
 PID_FILE = HOME / "proxy.pid"
 RUNS = Path.home() / ".local" / "state" / "sk" / "code-runs"
-EXECUTORS = ("qwen", "codex")
+EXECUTORS = ("qwen", "codex", "gemini")
 PORT = int(os.environ.get("QWEN_PROXY_PORT", 8004))
 KEYCHAIN_SERVICE = "sk-gmi-api-key"
 QWEN_MODEL = os.environ.get("QWEN_MODEL", "Qwen/Qwen3.8-27B")
+GEMINI_HOME = Path.home() / ".codex-gemini"
+GATEWAY_KEY_ENV = "CHIMES_GATEWAY_API_KEY"
+GATEWAY_KEYCHAIN_SERVICE = "sk-chimes-gateway-key"
+GATEWAY_URL = os.environ.get("CHIMES_GATEWAY_BASE_URL", "https://gpt-gateway.chimes.ai/v1")
+# The gateway has gemini-4-argon (flagship) and gemini-3.8-flash (fast, cheap).
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-4-argon")
+SECRET_ENV = ("GMI_API_KEY", GATEWAY_KEY_ENV)
 # Watchdog. A run is stalled when, for IDLE_LIMIT_MIN, codex wrote no event, its
 # process group used almost no CPU, and it received no bytes (code_run_liveness).
 # Long thinking still uses CPU, so it is not a stall. The owner (2026-10-12): 15 min
@@ -70,16 +82,24 @@ no CPU, no network). Its edits are still in this worktree. First read `git statu
 """
 
 
-def gmi_key() -> str:
-    key = os.environ.get("GMI_API_KEY", "").strip()
+def secret(env_name: str, service: str) -> str:
+    key = os.environ.get(env_name, "").strip()
     if key:
         return key
     try:
-        out = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
+        out = subprocess.run(["security", "find-generic-password", "-s", service, "-w"],
                              capture_output=True, text=True, check=False)
     except FileNotFoundError:
         return ""
     return out.stdout.strip() if out.returncode == 0 else ""
+
+
+def gmi_key() -> str:
+    return secret("GMI_API_KEY", KEYCHAIN_SERVICE)
+
+
+def gateway_key() -> str:
+    return secret(GATEWAY_KEY_ENV, GATEWAY_KEYCHAIN_SERVICE)
 
 
 def proxy_up() -> bool:
@@ -219,8 +239,23 @@ def cmd_exec(args) -> int:
     before = set(git_changes(cwd))
     cmd = ["codex", "exec", "-C", str(cwd), "-s", "workspace-write",
            "--json", "-o", str(run_dir / "last.md")]
-    env = {k: v for k, v in os.environ.items() if k != "GMI_API_KEY"}
+    env = {k: v for k, v in os.environ.items() if k not in SECRET_ENV}
     model = args.model
+    if args.executor == "gemini":
+        key = gateway_key()
+        if not key:
+            sys.exit(f"no gateway key: set {GATEWAY_KEY_ENV} or add Keychain item "
+                     f"'{GATEWAY_KEYCHAIN_SERVICE}' (open set-gateway-key.command)")
+        GEMINI_HOME.mkdir(parents=True, exist_ok=True)
+        model = model or GEMINI_MODEL
+        cmd += ["-c", "model_provider=chimesgw",
+                "-c", 'model_providers.chimesgw.name="Chimes Gateway"',
+                "-c", f'model_providers.chimesgw.base_url="{GATEWAY_URL}"',
+                "-c", f'model_providers.chimesgw.env_key="{GATEWAY_KEY_ENV}"',
+                "-c", 'model_providers.chimesgw.wire_api="responses"',
+                # Without this, `env` in a model command prints the key (seen 2026-11-02).
+                "-c", 'shell_environment_policy.exclude=["CHIMES_GATEWAY_*", "GMI_*"]']
+        env.update(CODEX_HOME=str(GEMINI_HOME), **{GATEWAY_KEY_ENV: key})
     if args.executor == "qwen":
         proxy_start()
         model = model or QWEN_MODEL
@@ -286,7 +321,8 @@ def main() -> int:
     group = ex.add_mutually_exclusive_group(required=True)
     group.add_argument("--brief-file")
     group.add_argument("--brief")
-    ex.add_argument("-m", "--model", help=f"qwen default {QWEN_MODEL}; codex default from ~/.codex")
+    ex.add_argument("-m", "--model", help=f"qwen default {QWEN_MODEL}; gemini default {GEMINI_MODEL} "
+                                          "(or gemini-3.8-flash); codex default from ~/.codex")
     ex.add_argument("--idle-min", type=float, default=IDLE_LIMIT_MIN,
                     help="stop codex after this many minutes with no event, CPU or network")
     ex.add_argument("--retries", type=int, default=RETRIES,
@@ -297,14 +333,17 @@ def main() -> int:
                     help="allow network in the sandbox (needed for a local DB or a dev server)")
     px = sub.add_parser("proxy")
     px.add_argument("action", choices=["start", "stop", "status"])
-    sub.add_parser("key-check")
+    kc = sub.add_parser("key-check")
+    kc.add_argument("--executor", choices=("qwen", "gemini"), default="qwen")
     args = parser.parse_args()
 
     if args.cmd == "exec":
         return cmd_exec(args)
     if args.cmd == "key-check":
-        print("key found" if gmi_key() else f"no key (Keychain item '{KEYCHAIN_SERVICE}')")
-        return 0 if gmi_key() else 1
+        found, service = ((gateway_key(), GATEWAY_KEYCHAIN_SERVICE) if args.executor == "gemini"
+                          else (gmi_key(), KEYCHAIN_SERVICE))
+        print("key found" if found else f"no key (Keychain item '{service}')")
+        return 0 if found else 1
     if args.action == "start":
         proxy_start()
         print(f"proxy up on 127.0.0.1:{PORT}")
