@@ -155,7 +155,7 @@ Write the brief to the scratchpad as `brief-<slug>.md`. Use this order:
 End with: files changed, test command output (last 20 lines), anything you could not do.
 ```
 
-#### Sandbox limits (qwen, codex)
+#### Sandbox limits (qwen, codex, gemini)
 
 The codex sandbox blocks access to the macOS window server and to the GPU.
 These commands fail at start inside it. Do not put them in "Test command" or
@@ -168,6 +168,10 @@ These commands fail at start inside it. Do not put them in "Test command" or
   local image or video models.
 - `uv run`: the sandbox cannot write `~/.cache/uv`. Run `uv sync` in the worktree
   before dispatch, and give `.venv/bin/python ...` commands.
+- `ps`, and other setuid programs (`/bin/ps` is `-rwsr-xr-x root`). The sandbox
+  refuses to run them: `Operation not permitted: 'ps'`. Thus a test that counts or
+  reads processes fails inside. Run that test in step 5. (2026-11-03, Gemini: all 4
+  tests of a process-group guard failed in the sandbox and passed outside it.)
 
 (2026-10-11: a brief told Codex to run Playwright "and stop if the browser cannot
 start". Codex ran 128 tests anyway. All failed, and Chrome crashed 16 times.)
