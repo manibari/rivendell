@@ -218,7 +218,11 @@ files). Run files are in `~/.local/state/sk/code-runs/<stamp>-<executor>-<dir>/`
 A watchdog samples the run every 10 s. The run is alive while, in the last
 minute (`--idle-min 1`), codex wrote an event, its process tree used CPU (a
 command runs, or the model streams; long thinking counts), or it received bytes.
-All three still for a minute is a stall: the watchdog stops codex and every
+For gemini the default is 3 min: through the gateway it often sends no bytes for
+60 to 120 s before a long reply. (2026-11-03 to 11-05: 16 of 38 gemini runs stopped on
+the 1 min limit; codex runs at the same time did not. The owner approved 3 min on
+2026-11-05.) The summary records the limit as `idle_min`.
+All three still for the limit is a stall: the watchdog stops codex and every
 command it started, then continues once in the same worktree (`--retries 1`,
 the brief plus a "read git diff first" note). The summary lists `attempts` and
 `stalls`; `error` starts with `stalled:` or `timeout:` (90 min, `--timeout-min`)
@@ -313,8 +317,8 @@ defects found.
 
 ```bash
 CR="${CLAUDE_SKILL_DIR}/scripts/code-run"
-python3 "$CR" exec --executor <qwen|codex> -C <dir> --brief-file <file> [-m <model>] [--network]
-                  [--idle-min 1] [--retries 1] [--timeout-min 90]
+python3 "$CR" exec --executor <qwen|codex|gemini> -C <dir> --brief-file <file> [-m <model>] [--network]
+                  [--idle-min 1 (gemini 3)] [--retries 1] [--timeout-min 90]
 python3 "$CR" proxy start|stop|status     # GMI proxy for qwen
 python3 "$CR" key-check                   # GMI key for qwen
 ```

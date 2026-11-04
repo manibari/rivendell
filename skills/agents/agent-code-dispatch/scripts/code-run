@@ -70,6 +70,10 @@ SECRET_ENV = ("GMI_API_KEY", GATEWAY_KEY_ENV)
 # Long thinking still uses CPU, so it is not a stall. The owner (2026-10-12): 15 min
 # was too long, "時間就是金錢"; a stall is handled by one automatic continuation.
 IDLE_LIMIT_MIN = 1
+# Gemini through the gateway often sends no bytes for 60 to 120 s before a long reply.
+# From 2026-11-03 to 11-05, 16 of 38 gemini runs stopped on the 1 min limit. Codex runs
+# at the same time did not stop. The owner approved 3 min for gemini (2026-11-05).
+GEMINI_IDLE_LIMIT_MIN = 3
 TOTAL_LIMIT_MIN = 90
 SAMPLE_S = 10
 RETRIES = 1
@@ -302,6 +306,7 @@ def cmd_exec(args) -> int:
         "usage": usage,
         "error": error,
         "attempts": attempt + 1,
+        "idle_min": args.idle_min,
         "stalls": stalls,
         "changed": [c for c in git_changes(cwd) if c not in before],
         "run_dir": str(run_dir),
@@ -323,8 +328,9 @@ def main() -> int:
     group.add_argument("--brief")
     ex.add_argument("-m", "--model", help=f"qwen default {QWEN_MODEL}; gemini default {GEMINI_MODEL} "
                                           "(or gemini-3.8-flash); codex default from ~/.codex")
-    ex.add_argument("--idle-min", type=float, default=IDLE_LIMIT_MIN,
-                    help="stop codex after this many minutes with no event, CPU or network")
+    ex.add_argument("--idle-min", type=float, default=None,
+                    help="stop codex after this many minutes with no event, CPU or network "
+                         f"(default {GEMINI_IDLE_LIMIT_MIN} for gemini, {IDLE_LIMIT_MIN} for others)")
     ex.add_argument("--retries", type=int, default=RETRIES,
                     help="after a stall, continue this many times in the same worktree")
     ex.add_argument("--timeout-min", type=float, default=TOTAL_LIMIT_MIN,
@@ -338,6 +344,8 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.cmd == "exec":
+        if args.idle_min is None:
+            args.idle_min = GEMINI_IDLE_LIMIT_MIN if args.executor == "gemini" else IDLE_LIMIT_MIN
         return cmd_exec(args)
     if args.cmd == "key-check":
         found, service = ((gateway_key(), GATEWAY_KEYCHAIN_SERVICE) if args.executor == "gemini"
