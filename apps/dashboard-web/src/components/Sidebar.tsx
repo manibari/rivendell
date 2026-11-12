@@ -56,12 +56,14 @@ const NAV: NavNode[] = [
     label: "系統健康",
     icon: Activity,
     children: [
-      { kind: "link", href: "/health/disk", label: "磁碟容量", icon: HardDrive },
+      { kind: "section", label: "硬體" },
       { kind: "link", href: "/health/sensors", label: "系統監控", icon: Thermometer },
-      { kind: "link", href: "/health/ssot", label: "SSOT 漂移", icon: GitCompare },
+      { kind: "link", href: "/health/disk", label: "磁碟容量", icon: HardDrive },
+      { kind: "section", label: "軟體" },
       { kind: "link", href: "/health/agents", label: "排程健康", icon: CalendarClock },
       { kind: "link", href: "/health/errors", label: "最近錯誤", icon: FileWarning },
       { kind: "link", href: "/health/git", label: "Git 衛生", icon: GitBranch },
+      { kind: "link", href: "/health/ssot", label: "SSOT 漂移", icon: GitCompare },
     ],
   },
   // ── 做事 ──────────────────────────────────────────────────────────────
@@ -321,8 +323,13 @@ function SidebarNav() {
       return (
         <p
           key={key}
-          className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider"
-          style={{ color: "var(--text-subtle)", paddingTop: key === "n-0" ? 0 : 14 }}
+          className="pr-3 pb-1 text-[11px] font-semibold uppercase tracking-wider"
+          style={{
+            color: "var(--text-subtle)",
+            // Nested sections (a header's sub-groups) indent with their links.
+            paddingLeft: depth === 0 ? 12 : 32,
+            paddingTop: key === "n-0" || key.endsWith("-0") ? (depth === 0 ? 0 : 4) : depth === 0 ? 14 : 8,
+          }}
         >
           {node.label}
         </p>
