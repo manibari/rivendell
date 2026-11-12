@@ -47,6 +47,19 @@ If a `discovery-summary.md` exists in the project, read it first — most info i
 - **時程估計**: 工期（週數）
 - **報價有效期**: 預設 30 天
 
+### When our work is one item of a tender
+
+Read the tender acceptance clauses before the quote.
+
+1. Find the acceptance clause of our item.
+2. Check if a fail on our item stops the acceptance of the whole project and its final payment.
+3. Put the result in the risk list of the quote.
+4. If the clause has no number, propose the measurement method. Use `sow-writer`
+   `references/acceptance-criteria.md` section 6 (optimization with no baseline data).
+
+(2026-10-28: in an airport air-conditioning tender, the AI item had no number in its
+acceptance clause, and the whole project could not pass acceptance without it.)
+
 ### Pricing reference (Lórien defaults, 2026)
 
 | 項目 | 費用範圍 | 備注 |

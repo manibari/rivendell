@@ -8,7 +8,7 @@ description: >
   TRIGGER: "寫 SOW", "工作說明書", "顧問合約", "AI 導入合約", "consulting agreement".
   SKIP: sales pitch (pitch-deck); internal plan (writing-plans); simple quote (markdown).
 tags: [docs, workflow, business]
-version: 1.0.0
+version: 1.1.0
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
@@ -66,6 +66,14 @@ For each major work item, gather:
 ### Contacts
 - **甲方主窗口/副窗口**: 姓名 + email
 - **乙方主窗口/副窗口**: 姓名 + email + 電話
+
+### Acceptance (required — read `references/acceptance-criteria.md` first)
+For each deliverable, gather the 8 elements: 對象、指標與算法、**輸入條件**、測試資料、
+**對照基準**、門檻、判定程序、**排除與例外**. Do not write section 五 until elements 3, 5, 8 are known.
+- **資料狀態**: does the system have a manual preparation step? If yes, define each data state
+  (raw / prepared and frozen / processed) and who prepares it
+- **對照基準**: who sets the answer key? Is a third-party tool involved? (default: not a pass condition)
+- **甲方資料義務**: which data the client gives, in which format, by which date
 
 ### Other
 - **保固期間**: default 1 year from final acceptance
@@ -184,12 +192,19 @@ gantt
 
 ## 五、驗收程序與標準
 
+### 5.1 驗收程序
+
 1. 乙方完成各里程碑交付後，以書面（含電子郵件）通知甲方驗收
 2. 甲方應於收到驗收通知後 **5 個工作日內**完成檢視，並以書面回覆驗收結果
 3. 甲方逾期未回覆者，視同驗收通過
 4. 如甲方提出修正意見，乙方應於 10 個工作日內完成修正並重新提交驗收
 5. 第 4 項修正後仍未通過者，雙方應召開協調會議釐清爭議
-6. {特定交付物之具體驗收項目} 詳見**附件 A**
+6. 驗收測試資料、指標算法與判定程序詳見**附件 A**
+
+### 5.2 驗收標準
+
+{Use the 5.2 template in references/acceptance-criteria.md: 驗收通則 + one table per milestone
+with columns 編號 | 驗收標準 | 輸入 | 驗證方式. Every row is pass/fail and names its input data state.}
 
 ---
 
@@ -338,8 +353,9 @@ Default in this skill: NTD 10,000 / 人天 (blended rate)
 1. Save to `docs/sow/{client-shortname}-{year}.md`
 2. Show user a summary of: 總人天, 總金額, 里程碑日期, 付款條件
 3. Ask if any sections need adjustment
-4. Offer to convert to .docx via `office-docx` skill if needed
-5. If `images/gantt.png` is referenced, generate it from the Mermaid block (use `mmdc` CLI if available)
+4. Run the checks in `references/acceptance-criteria.md` section 5 on every criterion; report gaps
+5. Offer to convert to .docx via `office-docx` skill if needed
+6. If `images/gantt.png` is referenced, generate it from the Mermaid block (use `mmdc` CLI if available)
 
 ---
 
