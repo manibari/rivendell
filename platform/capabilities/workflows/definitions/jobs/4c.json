@@ -33,7 +33,7 @@
       "gate": null
     },
     {
-      "text": "sow-writer · iot-factory-report（UPW／壓縮機／冷凍機）· internal-comms（週報、3P、事故）· doc-coauthoring（多方長文件）· gdoc-report-builder · office-docx / office-pdf / office-xlsx · chart-design → mermaid-diagram / excalidraw-diagram",
+      "text": "sow-writer · iot-factory-report（UPW／壓縮機／冷凍機）· rule-status-report（規則引擎客戶週報）· internal-comms（週報、3P、事故）· doc-coauthoring（多方長文件）· gdoc-report-builder · office-docx / office-pdf / office-xlsx · chart-design → mermaid-diagram / excalidraw-diagram",
       "gaps": [],
       "stage": "Do",
       "note": "Word 內嵌圖不是 slide，尺寸另算",
@@ -48,6 +48,11 @@
         {
           "source": "rivendell",
           "name": "iot-factory-report",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "rule-status-report",
           "mode": "core"
         },
         {

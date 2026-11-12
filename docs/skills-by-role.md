@@ -214,7 +214,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` · `metadata-workshop` · `discovery-interview` | 五欄位 brief；先梳理客戶知識 |
-| Do | `sow-writer` · `iot-factory-report`（UPW／壓縮機／冷凍機）· `internal-comms`（週報、3P、事故）· `doc-coauthoring`（多方長文件）· `gdoc-report-builder` · `office-docx` / `office-pdf` / `office-xlsx` · `chart-design` → `mermaid-diagram` / `excalidraw-diagram` | Word 內嵌圖不是 slide，尺寸另算 |
+| Do | `sow-writer` · `iot-factory-report`（UPW／壓縮機／冷凍機）· `rule-status-report`（規則引擎客戶週報）· `internal-comms`（週報、3P、事故）· `doc-coauthoring`（多方長文件）· `gdoc-report-builder` · `office-docx` / `office-pdf` / `office-xlsx` · `chart-design` → `mermaid-diagram` / `excalidraw-diagram` | Word 內嵌圖不是 slide，尺寸另算 |
 | Check | `de-slopify` 審查文體 · `say-it-plain` · `check-html-figure.mjs` | 三欄收據：機械檢查／截圖／人眼分開寫 |
 | Act | `knowledge-graph` · 沒 skill 的報告類型（市調、EHS、排程）記 `.learnings/FEATURE_REQUESTS.md`，接到真案子再抽 | |
 

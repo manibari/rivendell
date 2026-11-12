@@ -36,7 +36,7 @@ skills/
 ├── invest/     # invest 循環：MOPS 抓取 → 投資研究 (2)
 ├── hr/         # hr 循環：JD、履歷分析 (2)
 ├── knowledge/  # knowledge 循環：影音抓讀 → 知識庫 (6 + _shared)
-└── docs/       # 文件處理與簡報 (19)
+└── docs/       # 文件處理與簡報 (20)
 ```
 
 ## 安裝成 Claude Code plugin
@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (132 skills)
+## Skills Catalog (133 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -311,6 +311,7 @@ as release notes.
 | **office-pptx** | 自動 | PowerPoint (.pptx) 建立、編輯、分析，支援版面配置、講者備註與 Codex 圖片資產 placement |
 | **office-xlsx** | 自動 | 試算表 (.xlsx/.csv) 建立、編輯、分析，支援公式與資料視覺化 |
 | **pitch-deck** | `/pitch-deck` 或自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
+| **rule-status-report** | `/rule-status-report` 或自動 | 規則引擎的客戶定期報告：規則逐條狀態＋對帳 recall（附上期對照），先定框架再產頁，逐頁截圖自核 |
 | **slide-office-hours** | `/slide-office-hours` 或自動 | Red-team review for a B2B presales deck storyline (storyline. |
 | **slide-review** | `/slide-review` 或自動 | 簡報逐頁排版檢查：每頁跑切版、字級、換行、重疊檢查並截圖，Claude 判讀色塊與主標，修正最多三輪，寫 review.md 給定版前檢查 |
 | **slide-template-extractor** | `/slide-template-extractor` 或自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
@@ -328,7 +329,7 @@ as release notes.
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
 | dev | 24 | 22 | 9 | 7 |
-| shared | 1 | 14 | 2 | — |
+| shared | 1 | 15 | 2 | — |
 
 
 ## Anthropic 文件 skill（本機副本，不在 repo 內）
