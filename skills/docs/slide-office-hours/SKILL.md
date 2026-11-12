@@ -102,6 +102,7 @@ If any required field missing → ❌ Layer 0, force user to fill before review 
 | Organizing structure | 沒有 / 自相矛盾 / 寫了但跟 slide 骨架對不起來 | 重定義結構，且每個 operator 猜題都對到結構的一格 |
 | Fact-check items | 少於 5 個 / 任一個沒附 source | 補到 5 個都有 source |
 | Solutions | capability雜燴（>5 條 bullet 或沒有 focused angle）| 收斂到 1-3 個 focused angle，砍掉「我們也能做 X、Y、Z」的雜燴 |
+| 無資訊量的話 | 標題、核心訊息或封面有聽眾早就知道、或不影響他決定的句子：「OOO 都做到了」「今天不用先簽合約」「討論稿，不是定案」這類自我表態 | 刪掉；進度改用狀態圖或表呈現。每句都要回答「聽眾聽完能做什麼決定」（Peter 2026-10-15）|
 
 #### Layer 2: Stage-specific
 
