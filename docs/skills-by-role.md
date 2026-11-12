@@ -10,7 +10,7 @@
 >
 > 維護規則：角色、工作、PDCA 與技能引用的結構化來源在 `platform/capabilities/workflows/definitions/`；這頁保留人工說明與圖。更新流程時同步此頁，`sk check workflows` 會比對兩者並檢查技能覆蓋。
 > 某件工作需要更細的展開（狀態機、資料欄位、缺口優先序），另開 `docs/loops/<loop>-<工作>.md`，這裡只連過去。
-> 更新：2026-09-07。
+> 更新：2026-11-11。
 
 ---
 
@@ -46,7 +46,46 @@
 
 ## 1. 產品開發者
 
-你在做：蓋新產品、加功能、修 bug、重構、部署。對應 `~/.claude/CLAUDE.md` 的「UI Feature / New Page」與「Backend-only / Bug Fix」。
+你在做：蓋新產品、加功能、修 bug、重構、部署。開工前先過「開發方式三問」：做什麼（走哪件工作）、多大（開工前要有什麼）、誰寫（派給哪個執行者）。逐步清單是 dashboard 的兩條流程：`platform/capabilities/workflows/playbooks/ui.json`（有畫面）與 `backend.json`（後端、修 bug、重構）。
+
+### 開發方式三問：做什麼、多大、誰寫
+
+**一、做什麼** → 決定走哪件工作。
+
+| 手上的事 | 走 | 重點 |
+|---|---|---|
+| 新產品 | 1a | 只跑一次：定範圍、接好骨架、第一次上線 |
+| 新功能、新頁面（有畫面） | 1b | 需求 → 使用者流程 → mockup → 系統設計 → 任務清單 |
+| 後端功能、修 bug、重構、把既有功能 API 化 | 1c | bug 先找根因；動資料表或模組介面先做系統設計 |
+| 部署、開網域、搬機器 | 1d | 不綁功能；每一輪 1b／1c 上線都會經過 |
+| iOS app | 1e | 規劃同 1b |
+| rivendell 自己的 skill | 8a | 先查外面有沒有現成的 |
+| 有指標可量、要反覆試的改進 | 5e | 夜間跑，指標變好才留下 |
+
+**二、多大** → 決定開工前要有什麼。判斷不出來就往上一級。
+
+| 層級 | 怎麼認 | 開工前要有什麼 |
+|---|---|---|
+| 1 小修 | 修 bug、改文案或設定，不加新行為 | 一個票號就夠；`dev-process-gate` 不擋修補 |
+| 2 單模組功能 | 加新行為，一張票做得完，不碰第 3 級的項目 | 有畫面走 1b 主線；`system-design` 會自己判 Skip |
+| 3 跨模組 | 動資料表、模組之間的介面、新的資料儲存、登入或權限、金鑰、部署腳本 | `system-design` 是硬關卡；Claude 先定設計再派工，不直接交給執行者 |
+| 4 產品／架構 | 一張票做不完，要改整體結構或開新產品 | `requirement` 與 `system-design` 先行，`writing-plans` 拆成多張票分批派 |
+
+**例：把既有功能 API 化至少是 3**——API 就是模組之間的介面。核心還黏在畫面上、要先拆出來才能呼叫的，是 4。
+
+**版號不看層級，看每張合併的票**：功能 MINOR，其他 PATCH（`spine-versioning`）。
+
+**三、誰寫** → 寫程式交給執行者，Claude 規劃與驗收（`agent-code-dispatch`）。
+
+| 情況 | 做法 |
+|---|---|
+| 一般開發票 | Claude 寫 brief → 執行者在獨立 worktree 寫 → Claude 做六項驗收，過了才交給你 |
+| 預設給哪個執行者 | 看 `~/.claude/CLAUDE.md` 的「開發分工」（依 repo 所在資料夾與票的大小）；這頁不另抄，免得兩份不一致 |
+| 你指定這張給誰 | 只換這一張，不改預設 |
+| 執行者跑不起來 | 停下來回報、列出可換的執行者，由你選 |
+| 幾張獨立的票同時跑 | 每張一個 worktree，在主 session 各自背景啟動；不用 fork |
+| Claude 直接改 | 只有驗收時順手的小修，和 rivendell 自己的設定維運；回報裡寫明 |
+| 3 個以上獨立問題要同時查 | `agent-dispatch`（查問題，不是寫票） |
 
 ### 1a 新產品起手（greenfield）
 
@@ -62,7 +101,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `system-design` → `writing-plans` ｜ 視情況：`gstack-office-hours` (gstack，值不值得做)、`chimesflow-design`（新前端）、`ui-ux-pro-max`（挑風格）、`planning-with-files`（多步驟要追蹤進度時取代 writing-plans）｜ 自動：`dev-process-gate`、`plan-check-style` | 主線六步；畫面定了之後、拆任務之前先過 `system-design`（SA/SD：資料模型 / 職責邊界 / 介面契約 / 功能關係圖 target），動到 schema / 跨模組 / 新 store 時是 HARD GATE；跳步會被 gate 擋 |
-| Do | `executing-plans` → `frontend-design` ｜ 視情況：`gstack-freeze` / `gstack-unfreeze` (gstack，重構時鎖穩定區) | 分批執行有 checkpoint |
+| Do | `executing-plans` → `agent-code-dispatch`（每張票派給執行者，畫面要求照 `frontend-design` 寫進 brief）｜ 視情況：`gstack-freeze` / `gstack-unfreeze` (gstack，重構時鎖穩定區) | 照任務清單一張一張派；每張都要 Claude 驗收過才算完成 |
 | Check | `qa-planner` → `qa-auto` → `gstack-review` (gstack) ｜ 視情況：`qa-journey`（有旅程要走）、`qa-dataflow`（動到資料寫入時 HARD GATE）、`gstack-qa`、`gstack-design-review` (gstack) | QA 計畫 → 自動測試 → diff 審查 |
 | Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) ｜ 自動：`spine-versioning` | 合併部署、盯回歸、更新文件；沒 bump 版本 push 會被擋 |
 
@@ -71,7 +110,7 @@
 | | 用誰 | 說明 |
 |---|---|---|
 | Plan | `task-brief` → `gstack-investigate` (gstack，bug 才要) → `system-design`（動到 schema / 跨模組傳遞 / 新增 store 時 HARD GATE；純內部邏輯小改由它自己判 Skip）｜ 視情況：`backend-async-jobs`（慢工作先決定同步 / job / pipeline）、`spine-rbac`（權限先選 tier；管理後台放哪）、`spine-assistant`（產品要內建 AI 助理） | 先找根因再動手；沒畫面也要有 SA/SD —— 它產出的 target 功能關係圖就是事後 `qa-dataflow` 的對照基準 |
-| Do | 對應功能的那一支 ｜ 視情況：`spine-auth` · `spine-rbac` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `dev-size-gate`（資料夾直接放超過 20 檔要歸納、檔案超過 800 行要拆；CI 守衛＋拆檔步驟）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）· `agent-code-dispatch`（一張票派給 Qwen／Codex 寫，Claude 驗收）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 一次只會用到其中一兩支，看功能是什麼 |
+| Do | 對應功能的那一支（做法寫進 brief）→ `agent-code-dispatch`（派給執行者寫，Claude 驗收）｜ 視情況：`spine-auth` · `spine-rbac` · `db-migration` · `sqlite-to-postgres` · `vector-search-setup` · `imap-smtp-integration` · `oauth-token-vault` · `telegram-bot` · `mcp-builder` · `firebase-backend` · `audio-transcription-flow` · `ai-vision-extract` · `dev-size-gate`（資料夾直接放超過 20 檔要歸納、檔案超過 800 行要拆；CI 守衛＋拆檔步驟）· `concurrent-session-git`（多 session 共用 tree）· `resolving-merge-conflicts`（卡衝突）· `agent-dispatch`（3 個以上獨立問題）｜ 自動：`gstack-careful` (gstack，破壞性指令前) | 派工與驗收每張票都要；視情況那些看功能挑一兩支 |
 | Check | `qa-testing` → `gstack-review` (gstack) ｜ 視情況：`qa-dataflow`（資料流反證）、`gstack-codex` (gstack，第二意見)、`repro-exam`（要給人標準考題） | |
 | Act | `deploy` → `gstack-canary` (gstack) ｜ 視情況：`gstack-benchmark` (gstack，動到請求路徑) ｜ 自動：`doc-drift-sync` | |
 

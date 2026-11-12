@@ -19,7 +19,13 @@
     },
     {
       "num": "2",
-      "action": "實作"
+      "action": "實作",
+      "chips": [
+        {
+          "key": "agent-code-dispatch",
+          "category": "core"
+        }
+      ]
     },
     {
       "num": "3",

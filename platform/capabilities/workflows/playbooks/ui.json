@@ -102,6 +102,12 @@
     {
       "num": "7",
       "action": "實作（implement）",
+      "chips": [
+        {
+          "key": "agent-code-dispatch",
+          "category": "core"
+        }
+      ],
       "optionals": [
         {
           "label": "遇到 bug:",

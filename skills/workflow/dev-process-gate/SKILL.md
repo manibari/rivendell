@@ -24,8 +24,8 @@ Ensure the team follows the design-first workflow before writing code.
 ```
 0. Demand          1. Requirement  →  2. User Flow  →  3. Design           →  4. Mockup           →  5. System Design    →  6. Development                              →  7. QA           →  8. CI/CD
    /gstack-            /requirement      /user-flow     /gstack-design-        /mockup →               /system-design          /planning-with-files →                       /gstack-qa          /ci-pipeline
-   office-hours                                         consultation +         /gstack-design-html                             /gstack-plan-eng-review                      /qa-dataflow
-                                                        /gstack-design-
+   office-hours                                         consultation +         /gstack-design-html                             /gstack-plan-eng-review →                    /qa-dataflow
+                                                        /gstack-design-                                                                        /agent-code-dispatch
                                                         shotgun
 ```
 
@@ -81,6 +81,11 @@ Report what's missing and suggest the next step:
 **If system design exists but no implementation plan:**
 > Design artifacts are ready. Let's plan the implementation.
 > I'll use `/planning-with-files` → `/gstack-plan-eng-review` (and `/gstack-plan-design-review` for UI tasks).
+
+**If an implementation plan exists but no code yet:**
+> The plan is ready. I'll give each ticket to an executor with `/agent-code-dispatch`.
+> The executor writes the code in its own worktree. I review each result before you get it.
+> The default executor is a rule in `~/.claude/CLAUDE.md` (開發分工).
 
 **If development is complete but no tests:**
 > Implementation looks done. Before we call it finished, let's verify it works.

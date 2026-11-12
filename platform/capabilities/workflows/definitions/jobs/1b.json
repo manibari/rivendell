@@ -78,16 +78,21 @@
       "gate": null
     },
     {
-      "text": "executing-plans → frontend-design ｜ 視情況：gstack-freeze / gstack-unfreeze (gstack，重構時鎖穩定區)",
+      "text": "executing-plans → agent-code-dispatch（每張票派給執行者，畫面要求照 frontend-design 寫進 brief）｜ 視情況：gstack-freeze / gstack-unfreeze (gstack，重構時鎖穩定區)",
       "gaps": [],
       "stage": "Do",
-      "note": "分批執行有 checkpoint",
+      "note": "照任務清單一張一張派；每張都要 Claude 驗收過才算完成",
       "id": "1b-do",
       "order": 2,
       "skill_refs": [
         {
           "source": "rivendell",
           "name": "executing-plans",
+          "mode": "core"
+        },
+        {
+          "source": "rivendell",
+          "name": "agent-code-dispatch",
           "mode": "core"
         },
         {
@@ -106,7 +111,7 @@
           "mode": "conditional"
         }
       ],
-      "action": "分批執行有 checkpoint",
+      "action": "照任務清單一張一張派；每張都要 Claude 驗收過才算完成",
       "condition": null,
       "gate": null
     },
