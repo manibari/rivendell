@@ -25,9 +25,18 @@ languages: all
 | --- | --- | --- |
 | < 300k | 什麼都不用做 | — |
 | ≥ 300k（`.compact-threshold`） | `/compact` | log 已落地，壓縮無損；省下之後每回合重載肥前文的 token |
-| ≥ 600k（`.restart-threshold`） | 產交接單 → 關掉 session → 另開 | 到這個量級 compact 不划算：它是**有損摘要**，而且會讓整份 **prompt cache 失效**。乾淨新 session + 一頁交接單起手約 5k tokens；compact 完常常還留 50k+ 的摘要殘渣 |
+| ≥ 600k（`.restart-threshold`） | 產交接單 → 關掉 session → 另開 | 到這個量級 compact 不划算：它是**有損摘要**，而且會讓整份 **prompt cache 失效**。乾淨新 session + 一頁交接單起手約 50k tokens（系統提示 + CLAUDE.md + skill 清單就佔這麼多）；compact 完是同樣的底再疊上摘要，而且快取要重建 |
 
-門檻是估的，不是實測值 —— 依專案調（見下方設定）。
+預設值是估的。2026-10 依 PTI-ARES / Yellow-Chick 實測（見下）把本機兩層都設成 450k：
+壓縮那層實際上沒人用，直接提醒換手。
+
+**實測（2026-09-16 ~ 09-30，兩專案 33 個 session）：**
+
+- 新 session 第一次呼叫的前文中位數 48–51k，不是 5k。
+- 每次呼叫都重讀整份前文，耗量 ≈ 前文大小 × 呼叫次數；PTI-ARES 前 3 大 session 佔總量 76%。
+- 換手提醒出現 27 次，實際換手 2 次 —— 機制有效的前提是提醒後真的換手。
+- 模擬（上限值，未計新 session 重讀檔案的成本）：門檻 600k 省 19–34%、450k 省 39–46%、300k 省 55–61%。
+- 省的主要是用量額度：快取讀取單價低，且為訂閱制。
 
 ## 運作機制（三個 hook，零手動）
 
@@ -154,6 +163,8 @@ echo 480    > ~/.claude/session-logs/.handoff-ttl-min     # 交接單有效分�
 ```
 
 - 門檻越低 → 越早提醒 → context 越精簡越省 token，但可能太頻繁中斷。
+- 兩層設成同一個值 = 跳過 `/compact` 提醒，直接提醒換手（本機目前 450k / 450k）。
+- 設定檔不在任何 repo 裡，換機器要重設。
 - 提醒狀態依 session 分開（`<專案>/.compact-remind-<session>`），記錄「上次叫到第幾層、
   在多少 token」。
 - TTL 的用途是防呆：三天前的交接單自動注回只會誤導。
