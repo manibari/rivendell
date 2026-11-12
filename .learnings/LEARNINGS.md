@@ -732,3 +732,15 @@ category: best_practice
   hook、launchd plist、`~/.claude/*` 都屬於這類：**程式碼進 git ≠ 行為會發生**。
   新增 global hook 的流程是「改 manifest + 跑 install」，手動註冊等於只在自己機器上有。
 - **Related**: 同日「janitor 只搬檔不 commit」是同一個家族——**做完的事沒有落地機制**。
+
+## 2026-11-05 — 派工驗收：畫面類的票，字面定義要拿真截圖對過再交
+
+- **Category**: process（agent-code-dispatch 驗收關）
+- **情境**: PTI-ARES PTI-560，使用者要「截圖的異常項目佔全圖的 75%」。Claude 把「異常項目」寫成
+  「量測線本身」進派工說明，Gemini 照字面做對、23 個測試全過。用 Playwright 擷取 PB0009 九種規則
+  才發現：短量測線放大後只剩兩塊色塊，看不出是哪兩顆元件，比舊圖更難懂。使用者看了 A／B 對照圖選 B：
+  「截圖上畫出來的紅框」才是他說的異常項目。
+- **Rule**: 輸出是給人看的圖（截圖、報告圖、圖表）時，驗收關要**擷取真畫面、跟舊版並排**，
+  把定義上的取捨（A／B）連圖一起給使用者選，再定案；單元測試只證明「照定義做」，證明不了定義對。
+- **How to apply**: 派工說明寫「X 佔 N%」這類視覺目標時，在「Claude runs after review」列出
+  要擷取哪幾種代表案例（最小、最大、各型別各一）。工具：`render_items` 同路徑的無頭頁＋`capture`。
