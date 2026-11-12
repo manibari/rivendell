@@ -7,7 +7,8 @@
 ```
 knowledge/
 ├── content/
-│   └── videos/                      # 影片摘要（video-transcript skill 產出）
+│   ├── videos/                      # 影片摘要（video-transcript skill 產出）
+│   └── codebases/                   # 讀別人程式碼得到的設計心得（手寫 note.md，2026-11-07 起）
 └── entities/
     └── kg.py                        # 實體知識讀寫 API；資料仍在 ~/.claude/knowledge/
 ```
