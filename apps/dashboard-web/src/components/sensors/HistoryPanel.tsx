@@ -36,6 +36,7 @@ const GROUPS: { title: string; charts: Spec[] }[] = [
   { title: "溫度與散熱", charts: [
     { key: "temp.cpu", title: "CPU 溫度（實線平均 / 虛線峰值）", unit: "°C", peak: true },
     { key: "temp.gpu", title: "GPU 溫度（實線平均 / 虛線峰值）", unit: "°C", peak: true },
+    { key: "temp.memory", title: "記憶體溫度（實線平均 / 虛線峰值）", unit: "°C", peak: true },
     { key: "fan.0", title: "風扇（實線 F0 / 虛線 F1）", unit: "RPM", second: "fan.1" },
   ] },
   { title: "電池", charts: [

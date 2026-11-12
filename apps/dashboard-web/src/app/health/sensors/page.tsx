@@ -184,6 +184,8 @@ function Readings({ d, series }: { d: Ok; series: Series }) {
           sub={`${d.gpu.core_count ?? "?"} 核 · ${d.gpu.watts?.toFixed(2) ?? "—"} W`} series={series["gpu"] ?? EMPTY} />
         {groups.cpu && <Tile title="CPU 溫度" value={groups.cpu.avg} unit="°C"
           sub={`最高 ${groups.cpu.max}°C`} series={series["t:cpu"] ?? EMPTY} flag={heat(groups.cpu.max)} />}
+        {groups.memory && <Tile title="記憶體溫度" value={groups.memory.avg} unit="°C"
+          sub={`最高 ${groups.memory.max}°C`} series={series["t:memory"] ?? EMPTY} flag={heat(groups.memory.max)} />}
         {sys && <Tile title="系統總功耗" value={sys.watts} unit="W" series={series["p:PSTR"] ?? EMPTY} />}
         {bat && <Tile title="電池" value={bat.percent} unit="%" digits={0}
           sub={bat.state_label} />}

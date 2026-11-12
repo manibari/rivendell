@@ -40,6 +40,10 @@ TIMEOUT_S = 10
 TEMP_GROUPS: list[tuple[str, str, re.Pattern[str]]] = [
     ("cpu", "CPU 核心", re.compile(r"^T[pe]\w\w$")),
     ("gpu", "GPU", re.compile(r"^Tg\w\w$")),
+    # Tm* = unified memory on the SoC package (Stats: Tm02..Tm09 on M1,
+    # Tm0p/Tm1p/Tm2p "Memory Proximity" on M4). Apple does not document the
+    # keys; an M5 Pro exposes ~40 of them, a few probes 10 C above the rest.
+    ("memory", "記憶體", re.compile(r"^Tm\w\w$")),
     ("ssd", "SSD (NAND)", re.compile(r"^TH0\w$")),
     ("battery", "電池", re.compile(r"^TB\dT$")),
     ("airflow_l", "左出風口", re.compile(r"^TaL[PTFW]$")),

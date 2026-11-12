@@ -79,11 +79,15 @@ export default function LaptopMap({ groups, fans, otherCount }: {
 
         {/* logic board with SoC, SSD and Wi-Fi */}
         <rect x={275} y={55} width={450} height={250} rx={12} fill="var(--accent-bg)" stroke="var(--border-strong)" />
-        <text x={285} y={297} fontSize={16} fill="var(--text-subtle)">主機板</text>
+        <text x={285} y={75} fontSize={16} fill="var(--text-subtle)">主機板</text>
         <Spot x={420} y={85} w={170} h={98} label="CPU" value={g.cpu?.max}
           sub={g.cpu ? `平均 ${g.cpu.avg}°` : undefined} />
-        <Spot x={420} y={190} w={170} h={98} label="GPU" value={g.gpu?.max}
+        {/* second row spans the package: GPU die and the unified memory beside
+            it both run hot, and a flagged value ("86.8° 偏高") needs ~200 px */}
+        <Spot x={290} y={190} w={200} h={98} label="GPU" value={g.gpu?.max}
           sub={g.gpu ? `平均 ${g.gpu.avg}°` : undefined} />
+        <Spot x={500} y={190} w={215} h={98} label="記憶體" value={g.memory?.max}
+          sub={g.memory ? `平均 ${g.memory.avg}°` : undefined} />
         <Spot x={600} y={85} w={115} h={98} label="SSD" value={g.ssd?.max} />
         <Spot x={290} y={85} w={120} h={98} label="Wi-Fi" value={g.wifi?.max} />
 
