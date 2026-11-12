@@ -172,6 +172,16 @@ These commands fail at start inside it. Do not put them in "Test command" or
   refuses to run them: `Operation not permitted: 'ps'`. Thus a test that counts or
   reads processes fails inside. Run that test in step 5. (2026-11-03, Gemini: all 4
   tests of a process-group guard failed in the sandbox and passed outside it.)
+- Vitest when `frontend/node_modules` is a symlink to another checkout: vite writes
+  `node_modules/.vite-temp/` and the target is outside the writable root (EPERM).
+  Tell the executor not to run vitest, and run it in step 5. (2026-11-04, Yggdrasil:
+  both the Codex and the Gemini lane stopped on it.)
+
+Backend tests do not prove the screen works. Step 5 walks the changed screens with the
+real API (a live spec on a scratch `*_test` database). (2026-11-04, Yggdrasil question
+rounds: every backend test passed, but the frontend sent the body through `JSON.stringify`
+twice, so every answer got 422; and 「下一關」 kept the old round's done card because the
+router reused the component. Only the browser walk found both.)
 
 (2026-10-11: a brief told Codex to run Playwright "and stop if the browser cannot
 start". Codex ran 128 tests anyway. All failed, and Chrome crashed 16 times.)
