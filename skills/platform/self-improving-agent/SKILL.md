@@ -465,6 +465,6 @@ Don't add to .gitignore - learnings become shared knowledge.
 ## Integration with Other Skills
 
 This skill works with:
-- skills/systematic-debugging - Log errors discovered during debugging
-- skills/post-change-qa - Log issues found during QA
-- skills/code-reviewer - Log patterns found during review
+- gstack-investigate - Log errors discovered during debugging
+- gstack-qa - Log issues found during QA
+- gstack-review - Log patterns found during review

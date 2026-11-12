@@ -6,8 +6,8 @@ description: >
   Cross-framework test strategy and writing guidance for pytest, Vitest, and Swift Testing.
   TRIGGER when: user writes tests, asks about testing strategy, mocking patterns,
   test structure, or says "write tests" / "add test coverage".
-  DO NOT TRIGGER when: debugging (use systematic-debugging), reviewing existing code
-  (use code-reviewer), or security testing (use security-review).
+  DO NOT TRIGGER when: debugging (use gstack-investigate), reviewing existing code
+  (use gstack-review), or security testing (use gstack-cso).
 tags: [quality, testing]
 version: 1
 source: manual
@@ -305,11 +305,11 @@ Rules:
 
 | After using... | QA Testing suggests... |
 |----------------|----------------------|
-| **systematic-debugging** | Write a regression test that reproduces the fixed bug |
-| **code-reviewer** | Add missing test coverage identified in review |
-| **security-review** | (Out of scope — security tests are handled by security-review) |
+| **gstack-investigate** | Write a regression test that reproduces the fixed bug |
+| **gstack-review** | Add missing test coverage identified in review |
+| **gstack-cso** | (Out of scope — gstack-cso handles security tests) |
 
-When fixing a bug with systematic-debugging, always suggest:
+When fixing a bug with gstack-investigate, always suggest:
 > "Bug fixed. Want me to write a regression test to prevent this from recurring?"
 
 ## 9. Quick Reference Cheatsheet

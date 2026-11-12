@@ -6,8 +6,8 @@ description: >
   Auto-generate test code from QA plan or code diff, execute tests, and report coverage gaps.
   TRIGGER when: user says /qa-auto, "auto generate tests", "自動產生測試", QA plan exists and needs execution,
   or qa-planner just completed.
-  DO NOT TRIGGER when: manually writing tests (use qa-testing), only running existing tests (use post-change-qa),
-  planning what to test (use qa-planner), or debugging test failures (use systematic-debugging).
+  DO NOT TRIGGER when: manually writing tests (use qa-testing), only running existing tests (use gstack-qa),
+  planning what to test (use qa-planner), or debugging test failures (use gstack-investigate).
 when_to_use: when test code needs to be auto-generated from a QA plan or code changes, then executed
 version: 1.0.0
 tags: [quality, testing, automation]
@@ -22,8 +22,8 @@ Auto-generate test code from QA plans or code diffs, execute tests, and report r
 ## Position in Workflow
 
 ```
-qa-planner → QA AUTO → post-change-qa
-(what to test)  (generate + run)  (visual verify)
+qa-planner → QA AUTO → gstack-qa
+(what to test)  (generate + run)  (browser check)
               ^^^^^^^^^^^
               you are here
 ```
@@ -316,14 +316,14 @@ npx vitest run --coverage src/feature.test.ts
 ### Next Steps
 - [ ] Fix duplicate email handling (bug found)
 - [ ] Add test for admin-only branch (coverage gap)
-- [ ] Run `/post-change-qa` for visual verification
+- [ ] Run `/gstack-qa` for the browser check
 ```
 
 ### 4.2 Handoff
 
 After reporting:
-- If all pass → suggest running `post-change-qa` for visual verify
-- If failures found → ask user whether to investigate (use systematic-debugging)
+- If all pass → suggest running `gstack-qa` for the browser check
+- If failures found → ask user whether to investigate (use gstack-investigate)
 - If coverage gaps → ask user whether to add more tests
 
 ## Rules
@@ -342,9 +342,9 @@ After reporting:
 |-------|-------------|
 | **qa-planner** | Reads QA plan as input; if no plan exists, does lightweight analysis |
 | **qa-testing** | Uses qa-testing's framework templates and mock patterns |
-| **post-change-qa** | Hands off to post-change-qa for server restart + visual verify |
-| **systematic-debugging** | If generated tests reveal bugs, suggest systematic-debugging |
-| **code-reviewer** | Generated tests can be reviewed with code-reviewer |
+| **gstack-qa** | Hands off to gstack-qa for the browser check |
+| **gstack-investigate** | If generated tests reveal bugs, suggest gstack-investigate |
+| **gstack-review** | Generated tests can be reviewed with gstack-review |
 
 ## Skip Conditions
 

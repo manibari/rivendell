@@ -88,7 +88,7 @@ Report what's missing and suggest the next step:
 
 Specifically check:
 1. **Acceptance criteria coverage** — each criterion in the requirement should have at least one test
-2. **UI behavior tests** — key user interactions from the user-flow should be tested (use webapp-testing for web, XCUITest for iOS)
+2. **UI behavior tests** — key user interactions from the user-flow should be tested (use gstack-qa for web, XCUITest for iOS)
 3. **Unit tests** — core logic added during development should have unit tests
 
 **If all stages complete including tests but no CI:**
@@ -99,7 +99,7 @@ This is a suggestion, not a hard gate — skip if the user is not interested.
 
 **If all stages complete including tests:**
 > Feature is complete with tests. Ready for code review.
-> Run **code-reviewer** for a final check if desired.
+> Run **gstack-review** for a final check if desired.
 
 ### Step 3: Respect Overrides
 

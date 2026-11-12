@@ -42,7 +42,7 @@ Fetch today's tender announcements from the g0v API. Paginate through all pages.
 If the g0v API is unavailable (HTTP error, timeout, or empty response when tenders are expected):
 
 ```
-1. Use web-scraper skill (Playwright) to navigate web.pcc.gov.tw
+1. Use the gstack-scrape skill (headless browser) to navigate web.pcc.gov.tw
 2. Go to public tender search page
 3. Set search criteria: 公告日期 = today, 招標方式 = 公開徵求
 4. Extract listing table

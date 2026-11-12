@@ -156,7 +156,7 @@ Each file is a filtered table of programs matching that industry.
 ## Error Handling
 
 - If WebFetch fails (anti-scraping), fall back to WebSearch for the same information
-- If WebSearch also fails, try the web-scraper skill (Playwright-based) as last resort
+- If WebSearch also fails, try the gstack-scrape skill (headless browser) as last resort
 - Log errors but continue with other sources
 - Never crash the entire scraper for one source failure
 

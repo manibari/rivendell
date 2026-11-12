@@ -54,9 +54,9 @@ Based on feedback:
 ### Step 5: Complete Development
 
 After all tasks complete and verified:
-- Announce: "I'm using the Finishing a Development Branch skill to complete this work."
-- Switch to skills/collaboration/finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+- Run the full test suite and show the output
+- Ask the user to choose: merge to the base branch, ship with a PR (`gstack-ship`), keep the branch, or discard it
+- Do the choice only after the user answers
 
 ## When to Stop and Ask for Help
 

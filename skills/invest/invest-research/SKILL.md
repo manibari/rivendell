@@ -7,7 +7,7 @@ description: >
   Local news_stock + autonomous web search. Monitors holdings, weekly alpha scans,
   rebalancing proposals.
   TRIGGER: "投資研究", "開始研究", "持續追蹤", research stocks / portfolio / backtests.
-  SKIP: code debugging (systematic-debugging); UI work.
+  SKIP: code debugging (gstack-investigate); UI work.
 tags: [workflow, finance]
 version: 1
 source: manual
@@ -789,7 +789,7 @@ On session start, **always read this file first** to resume.
 | **planning-with-files** | Use for multi-day research projects with progress tracking |
 | **office-xlsx** | Export backtest results and portfolio to spreadsheet |
 | **office-pdf** | Generate formatted research report PDF |
-| **webapp-testing** | Verify news_stock web dashboard displays correctly |
+| **gstack-qa** | Verify news_stock web dashboard displays correctly |
 | **agent-dispatch** | Run multiple stock analyses in parallel |
 
 ## Data Freshness

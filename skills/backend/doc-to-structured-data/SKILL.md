@@ -127,4 +127,4 @@ Report validation results before finalizing.
 - **office-pdf**: reads/creates PDFs, no domain-aware extraction
 - **office-xlsx**: reads/creates spreadsheets, no document-to-table parsing
 - **office-docx**: reads/creates Word docs, no structured extraction pipeline
-- **web-scraper**: scrapes web pages, not local documents
+- **gstack-scrape**: scrapes web pages, not local documents

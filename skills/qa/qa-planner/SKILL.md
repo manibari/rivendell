@@ -6,8 +6,8 @@ description: >
   Analyze code changes to generate a structured QA plan with impact analysis, test cases, and risk assessment.
   TRIGGER when: feature implementation is complete, before PR review, user says /qa-planner or "plan QA",
   or dev-process-gate detects missing QA stage.
-  DO NOT TRIGGER when: writing test code (use qa-testing), running existing tests (use post-change-qa),
-  debugging failures (use systematic-debugging), or user explicitly skips QA.
+  DO NOT TRIGGER when: writing test code (use qa-testing), running existing tests (use gstack-qa),
+  debugging failures (use gstack-investigate), or user explicitly skips QA.
 when_to_use: when a feature or fix is complete and needs a structured QA plan before testing
 version: 1.0.0
 tags: [quality, testing, planning]
@@ -22,7 +22,7 @@ Analyze code changes and generate a structured QA plan. This skill bridges the g
 ## When to Use
 
 ```
-writing-plans → executing-plans → [code complete] → QA PLANNER → qa-auto → post-change-qa
+writing-plans → executing-plans → [code complete] → QA PLANNER → qa-auto → gstack-qa
                                                      ^^^^^^^^^^^
                                                      you are here
 ```
@@ -225,8 +225,8 @@ Proceed with `/qa-auto` to generate and execute tests?
 | **executing-plans** | After plan execution completes → qa-planner runs |
 | **qa-auto** | qa-planner output feeds into qa-auto for test generation |
 | **qa-testing** | qa-planner recommends frameworks; qa-testing provides templates |
-| **post-change-qa** | After qa-auto completes → post-change-qa runs visual verify |
-| **review-pr** | qa-planner output can be attached to PR for reviewer context |
+| **gstack-qa** | After qa-auto completes → gstack-qa runs the browser check |
+| **gstack-review** | qa-planner output can be attached to PR for reviewer context |
 | **dev-process-gate** | dev-process-gate triggers qa-planner when QA stage is missing |
 
 ## Skip Conditions

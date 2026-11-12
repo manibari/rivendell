@@ -44,7 +44,7 @@ WebSearch: "[company_name] Wikipedia"
 WebFetch: [official about page]
 ```
 
-If WebFetch fails (anti-scraping), use the **web-scraper** skill as fallback.
+If WebFetch fails (anti-scraping), use the **gstack-scrape** skill as fallback.
 
 **104 job postings (TW companies — standard step, not optional):**
 

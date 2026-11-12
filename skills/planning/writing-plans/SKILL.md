@@ -43,7 +43,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For Claude:** Use `${SUPERPOWERS_SKILLS_ROOT}/skills/collaboration/executing-plans/SKILL.md` to implement this plan task-by-task.
+> **For Claude:** Use the `executing-plans` skill to implement this plan task by task. To give the code to an executor, use the `agent-code-dispatch` skill.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -110,17 +110,17 @@ After saving the plan, offer execution choice:
 
 **"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
 
-**1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
+**1. Dispatch (this session)** - I write one brief per task, the default executor writes the code, and I review each result
 
 **2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
 
 **Which approach?"**
 
-**If Subagent-Driven chosen:**
-- Use skills/collaboration/subagent-driven-development
+**If Dispatch chosen:**
+- Use the `agent-code-dispatch` skill
 - Stay in this session
-- Fresh subagent per task + code review
+- One brief per task + the review gate
 
 **If Parallel Session chosen:**
 - Guide them to open new session in worktree
-- New session uses skills/collaboration/executing-plans
+- New session uses the `executing-plans` skill
