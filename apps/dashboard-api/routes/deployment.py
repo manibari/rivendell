@@ -255,11 +255,11 @@ _DESKTOP_PROJECTS = {"macOS", "tailscale", "Discord", "Steam", "WeChat"}
 
 
 def _repo_of(path: str | None) -> str | None:
-    """~/Code/X/... or ~/Rightek/engineering/repos/X/... -> X (the repo name)."""
+    """~/Code/X/... or ~/Work/Rightek/engineering/repos/X/... -> X (the repo name)."""
     if not path or path == "/":
         return None
     home = str(Path.home())
-    for root in ("Code", "code", "Rightek/engineering/repos", "Projects", "Company/engineering/repos"):
+    for root in ("Code", "code", "Work/Rightek/engineering/repos", "Rightek/engineering/repos", "Projects", "Company/engineering/repos"):
         prefix = f"{home}/{root}/"
         if path.startswith(prefix):
             return path[len(prefix):].split("/", 1)[0]
