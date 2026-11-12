@@ -24,7 +24,8 @@ Statuses per port:
 
 Numbering rule (ports.conf header): a project with an `@id | PP | NAME`
 line must use ports R PP i (R in 3/5/6/8/9). `off_rule` lists claims that do
-not; projects without an id (desktop apps, system) are not checked.
+not; projects without an id (desktop apps, system) are not checked. A project
+can hold several ids for its lanes; an id held by two projects is reported too.
 
 Added 2026-09-27 (Peter): trip-atlas OTP sat on mops_dbs's 8081 and nothing
 said so, because the old check only asked "is this port registered", never
@@ -59,26 +60,41 @@ class Claim:
 ROLE_DIGITS = {"3": "web", "5": "postgres", "6": "redis", "8": "http", "9": "storage"}
 
 
-def parse_ids(path: Path = CONF) -> dict[str, str]:
-    """{project: PP} from `@id | PP | PROJECT` lines."""
-    ids: dict[str, str] = {}
+def parse_ids(path: Path = CONF) -> dict[str, list[str]]:
+    """{project: [PP, ...]} from `@id | PP | PROJECT` lines.
+
+    A project can hold more than one id (2026-11-13): ten ports per role are
+    too few for projects that run many parallel lanes (ChimesERP review lanes,
+    Yellow-Chick lane worktrees). The first id is the main one.
+    """
+    ids: dict[str, list[str]] = {}
     if path.exists():
         for raw in path.read_text(encoding="utf-8").splitlines():
             parts = [x.strip() for x in raw.split("|")]
             if len(parts) >= 3 and parts[0] == "@id" and re.fullmatch(r"\d\d", parts[1]):
-                ids[parts[2]] = parts[1]
+                ids.setdefault(parts[2], []).append(parts[1])
     return ids
 
 
-def off_rule(claim: Claim, ids: dict[str, str]) -> str | None:
+def off_rule(claim: Claim, ids: dict[str, list[str]]) -> str | None:
     """Why a claim breaks the numbering rule, or None when it follows it."""
-    pp = ids.get(claim.project)
-    if pp is None:
+    pps = ids.get(claim.project)
+    if not pps:
         return None
     digits = str(claim.port)
-    if len(digits) != 4 or digits[0] not in ROLE_DIGITS or digits[1:3] != pp:
-        return f"{claim.project} 的編號是 {pp}，{claim.port} 不符合 R{pp}i"
+    if len(digits) != 4 or digits[0] not in ROLE_DIGITS or digits[1:3] not in pps:
+        shown = "／".join(pps)
+        return f"{claim.project} 的編號是 {shown}，{claim.port} 不符合 R{pps[0]}i"
     return None
+
+
+def shared_ids(ids: dict[str, list[str]]) -> list[str]:
+    """Ids issued to more than one project. Each one hides overlaps from off_rule."""
+    holders: dict[str, list[str]] = {}
+    for project, pps in ids.items():
+        for pp in pps:
+            holders.setdefault(pp, []).append(project)
+    return [f"編號 {pp} 同時發給 {', '.join(ps)}" for pp, ps in sorted(holders.items()) if len(ps) > 1]
 
 
 def bad_owner(claim: Claim) -> str | None:
@@ -288,7 +304,7 @@ def evaluate(conf: Path | None = None) -> tuple[list[PortState], dict[str, str |
             st.detail = f"{owner.project} 正在用；{', '.join(others)} 也登記了 {port}，啟動時會撞"
         states.append(st)
     errs: dict[str, Any] = {"listener_error": lerr, "docker_error": derr,
-                            "off_rule": [r for c in claims if (r := off_rule(c, ids))],
+                            "off_rule": shared_ids(ids) + [r for c in claims if (r := off_rule(c, ids))],
                             "bad_owner": [r for c in claims if (r := bad_owner(c))]}
     return states, errs
 
