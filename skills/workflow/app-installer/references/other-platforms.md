@@ -2,7 +2,7 @@
 
 Status: **read from cadcraft, not built and tested in rivendell yet** (2026-10-09).
 State this to the user when you use it, and test on the target OS before you call it done.
-Source files: `~/Code/Artcraft/cadcraft/packaging/{windows,linux}/`, `.github/workflows/release.yml`,
+Source files: `~/Code/Personal/Artcraft/cadcraft/packaging/{windows,linux}/`, `.github/workflows/release.yml`,
 `docs/releasing.md`.
 
 ## Windows: MSI with WiX v5

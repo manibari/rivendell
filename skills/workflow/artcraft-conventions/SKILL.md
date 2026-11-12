@@ -25,7 +25,7 @@ registry. The GUI, the CLI and the MCP server all call that registry. A feature 
 until an agent can call it and a test proves it end to end.
 
 Sources (read them for detail; this skill is the digest, checked on 2026-10-11):
-`~/Code/Artcraft/pdfcraft/AGENTS.md` §3–4, `~/Code/Artcraft/cadcraft/docs/mcp.md`,
+`~/Code/Personal/Artcraft/pdfcraft/AGENTS.md` §3–4, `~/Code/Personal/Artcraft/cadcraft/docs/mcp.md`,
 `packaging/macos/package.sh` in each repo, and Yellow Chick
 `docs/design/mcp/2026-10-09-external-mcp-tools-sd.md`. The shared team standard is
 `storytold/craftrules` (internal; not on this machine).
@@ -34,7 +34,7 @@ Sources (read them for detail; this skill is the digest, checked on 2026-10-11):
 
 | Item | Rule |
 | --- | --- |
-| Folder | `~/Code/Artcraft/<name>craft/`, one git repository per craft |
+| Folder | `~/Code/Personal/Artcraft/<name>craft/`, one git repository per craft |
 | Binaries | `<name>craft` (the app) and `<name>craft-cli` (CLI, MCP, scripts) |
 | Rules file | `AGENTS.md` is the source; `CLAUDE.md` imports it; AGENTS.md wins on conflict |
 | License | `MIT OR Apache-2.0`, with `NOTICE` and `LICENSE-*` |
@@ -117,7 +117,7 @@ Yellow Chick runs crafts on its local program host (`app/tool_host/`, launchd jo
 
 ## 6. Checklist for a new craft
 
-- [ ] Repo at `~/Code/Artcraft/<name>craft`, AGENTS.md, license, attribution, version in one place
+- [ ] Repo at `~/Code/Personal/Artcraft/<name>craft`, AGENTS.md, license, attribution, version in one place
 - [ ] Every feature is a command in one registry; GUI, CLI and MCP call it
 - [ ] `<name>craft-cli mcp` on stdio, opt-in, protocol versions above, snake_case tools, `isError` messages
 - [ ] `--root` honoured; atomic writes; outputs as paths

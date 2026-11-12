@@ -74,7 +74,7 @@ If `downloadFile` fails with `exportSizeLimitExceeded` (large native Slides), us
 When the client has no deck, take the brand from these sources, in this order:
 
 1. **A system that we built for the client.** Its theme file and logo files hold the exact
-   values (2026-10-28 example: `~/Code/Rightek-CRM/frontend/src/lib/theme.ts` and
+   values (2026-10-28 example: `~/Code/Rightek/Rightek-CRM/frontend/src/lib/theme.ts` and
    `public/rightek-logo-*.svg`).
 2. **The client's website.** Read the CSS custom properties and the computed colors of the
    header, the buttons and the links. Take the logo from the site header; SVG first.
