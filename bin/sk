@@ -3412,8 +3412,8 @@ daily_sessions = {d: 0 for d in dates}
 daily_calls = {d: 0 for d in dates}
 proj_totals = defaultdict(lambda: defaultdict(int))
 
-SKIP_PARENT_DIRS = {'Documents', 'Projects', 'Desktop', 'repos', 'src', 'code', 'dev',
-                    'Company', 'engineering'}
+SKIP_PARENT_DIRS = {'documents', 'projects', 'desktop', 'repos', 'src', 'code', 'dev',
+                    'company', 'engineering'}  # compared lowercased (~/Code vs ~/code)
 home_prefix = os.path.expanduser('~').replace('/', '-')
 
 for pdir in glob.glob(os.path.join(base, '*/')):
@@ -3421,7 +3421,7 @@ for pdir in glob.glob(os.path.join(base, '*/')):
     proj = dir_name
     if proj.startswith(home_prefix):
         parts = proj[len(home_prefix):].lstrip('-').split('-')
-        while parts and parts[0] in SKIP_PARENT_DIRS:
+        while parts and parts[0].lower() in SKIP_PARENT_DIRS:
             parts.pop(0)
         proj = '-'.join(parts) or dir_name
     proj = proj.rstrip('-')
