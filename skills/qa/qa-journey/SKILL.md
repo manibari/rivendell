@@ -16,7 +16,7 @@ description: >
   writing test code (use qa-testing), planning test cases from a diff (use qa-planner),
   or designing the flow diagram itself (use user-flow).
 when_to_use: when a web app needs end-to-end UX validation through a persona's eyes — task completion, navigation wiring, and friction measurement rather than functional bug hunting
-version: 1.0.0
+version: 1.1.0
 tags: [quality, ux, journey, persona]
 languages: all
 user_invocable: true
@@ -98,6 +98,30 @@ Each ledger entry: step number, screen (screenshot path), what the persona was t
 to do, what happened, event type. Functional bugs found along the way (500s, broken
 buttons) go in a separate list — they are gstack-qa territory, report them but do not
 let them dominate the friction narrative.
+
+## Step 2b — Keep the app up for the whole walk
+
+A journey (or a batch of acceptance journeys) can run for many minutes. The app must
+stay up the whole time, and a crash mid-walk must not cost you the steps already done.
+
+1. **Start in the background, log to a file.** Launch the server / worker with Bash
+   `run_in_background`, stdout and stderr redirected to a log file with line-buffered
+   output (e.g. `PYTHONUNBUFFERED=1`) — buffered output shows nothing when you look.
+2. **Wait with Monitor, not a hand-rolled loop.** Use Monitor with an until-condition
+   (port listening, health endpoint 200, a "ready" line in the log). Do not write
+   `while ...; do sleep` polling or foreground sleeps.
+3. **Crash mid-walk → stop, restart, resume.** If a step errors because the app died or
+   hung: TaskStop the background task, clear stray processes on its port
+   (`lsof -i :<port>`), restart via step 1, and resume from the last ledger step — do
+   not restart the whole journey. Log the crash in the functional-bugs list.
+4. **One screenshot per step, numbered.** Save as `<NN>-<step>.png` in one directory
+   so the journey log can link each step to its evidence.
+5. **Several journeys = a checklist with a denominator.** When validating N journeys
+   against a work package's acceptance criteria, mark each one pass / fail / not run,
+   with its screenshot, and report `passed/N`. A journey that did not run is 未判讀,
+   never counted as passed.
+6. **Clean up.** At the end, TaskStop everything you started and confirm the ports are
+   free — stray uvicorn / worker processes break the next session.
 
 ## Step 3 — Friction report
 
