@@ -25,7 +25,7 @@ Gmail requires a specific App Password (not your account password):
 **Critical**: Use the password WITH spaces in the config. Strip spaces in code:
 
 ```python
-password = config["password"].replace(" ", "")  # "rzae flyt vxlo zfky" → "rzaeflytxvlozfky"
+password = config["password"].replace(" ", "")  # "xxxx xxxx xxxx xxxx" → "xxxxxxxxxxxxxxxx"
 ```
 
 Gmail IMAP/SMTP settings:
