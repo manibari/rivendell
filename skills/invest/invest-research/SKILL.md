@@ -142,7 +142,7 @@ When the research thesis goes beyond local pools, **actively search for stocks**
 
 | Strategy | Search Queries | Use Case |
 |----------|---------------|----------|
-| Thematic | `"top [theme] stocks 2026"`, `"[industry] market leaders"` | New sectors or trends not in local pools |
+| Thematic | `"top [theme] stocks [current year]"`, `"[industry] market leaders"` | New sectors or trends not in local pools |
 | Screener | `"finviz screener [criteria]"`, `"stock screener PE < 15 ROE > 20"` | Quantitative filtering across all markets |
 | Analyst picks | `"Goldman Sachs top picks"`, `"Morningstar 5-star stocks"` | Institutional consensus |
 | Insider activity | `"insider buying [sector] SEC filings"` | Smart money signals |
@@ -168,7 +168,7 @@ When the research thesis goes beyond local pools, **actively search for stocks**
 #### Example: Discovering a Robotics Pool
 
 ```
-WebSearch: "top robotics automation stocks 2026"
+WebSearch: "top robotics automation stocks [current year]"
 WebSearch: "ROBO ETF top 10 holdings"
 WebSearch: "industrial automation market leaders revenue growth"
 

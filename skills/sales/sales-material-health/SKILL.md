@@ -109,4 +109,4 @@ Generate a report at `materials/HEALTH_REPORT.md`:
 
 LaunchAgent: `com.sk.agent.sales.sales-material-health`
 Schedule: Sunday 09:00
-Runner: `scripts/sales-material-health.sh`
+Runner: `scripts/material-health.sh`

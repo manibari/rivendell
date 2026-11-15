@@ -211,12 +211,12 @@ For API endpoints or cross-boundary changes:
 ```python
 # pytest example for FastAPI
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from app.main import app
 
 @pytest.mark.asyncio
 async def test_create_resource_returns_201():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/api/resource", json={
             "name": "test",
             "value": 42,
@@ -225,8 +225,9 @@ async def test_create_resource_returns_201():
     data = response.json()
     assert data["name"] == "test"
 
+@pytest.mark.asyncio
 async def test_create_resource_validates_input():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post("/api/resource", json={})
     assert response.status_code == 422
 ```

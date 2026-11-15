@@ -44,11 +44,11 @@ every executor; only step 3 changes.
 | Executor | How it runs | Account / cost |
 |---|---|---|
 | `qwen` | `code-run exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
-| `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT login in `~/.codex`, weekly quota |
+| `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT account logged in to `~/.codex` when the run starts; weekly quota |
 | `gemini` | `code-run exec --executor gemini` (codex CLI + Chimes GPT Gateway, no proxy) | Company gateway key; default model `gemini-4-argon`, `-m gemini-3.8-flash` for small tickets |
 | `claude` | Agent tool (a fresh agent, never `fork`), `isolation: "worktree"`, brief as the prompt | Claude session quota |
 
-Do not switch the executor by yourself. If the executor cannot run (no key,
+Do not switch the executor by yourself. Quota used up means the run's own `error` in `summary.json`, not a quota reading. If the executor cannot run (no key,
 proxy down, quota used up), stop and tell the user the error and the
 alternatives. The user picks.
 
@@ -89,7 +89,11 @@ schema migrations, auth, permissions, secrets, deploy scripts, design across mod
   `scripts/set-gmi-key.command` in Finder. It needs a TTY, so the `!` prefix
   does not work. Never type or paste the key for the user.
   Check: `python3 "${CLAUDE_SKILL_DIR}/scripts/code-run" key-check` prints `key found`.
-- codex: `codex login` done in `~/.codex`. Quota per account shows on `/tokens`.
+- codex: `codex login` done in `~/.codex`. A codex run spends the weekly quota of the
+  account logged in to `~/.codex` when the run starts. `/tokens` shows every account
+  and suggests the next one; that suggestion is not the executor's account. Read the
+  row of the account logged in to `~/.codex`. qwen runs (`~/.codex-qwen`) and gemini
+  runs (`~/.codex-gemini`) use no ChatGPT quota.
 - gemini: the administrator gives the user a personal gateway key (`sk-...`).
   The user stores it with `scripts/set-gateway-key.command` (Keychain item
   `sk-chimes-gateway-key`), the same way as the GMI key. Paste the key one time:

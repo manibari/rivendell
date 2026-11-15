@@ -98,8 +98,7 @@ Include both the Mermaid source and the screen inventory table.
 After saving, prompt:
 
 > **User flow complete.** {N} screens identified.
-> Next step: create wireframes — use the `ui-ux-pro-max` skill for layout and component guidance,
-> or `frontend-design` to jump straight to high-fidelity mockups.
+> Next step: `/gstack-design-consultation` (or `chimesflow-design` when no design system is set), then `/mockup`. The full chain is in `requirement` Step 6.
 >
 > Need a PNG of the Mermaid flowchart for slides / docs / external sharing?
 > Hand the `.mmd` (or the fenced ` ```mermaid ` block from this file) to

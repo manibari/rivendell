@@ -101,8 +101,8 @@ wave 1 was attendance, work logs, HR base and the customer area.)
 Run each source system on this machine to take screenshots and to check behavior.
 
 - Use demo data only. Do not use production data or production URLs.
-- Bind every server and database to 127.0.0.1. Register each port first
-  (`data/ports.conf` where it exists).
+- Bind every server and database to 127.0.0.1. Register each port in rivendell's
+  `data/ports.conf` first (the only port registry) and check with `sk check ports`.
 - Give each source its own compose project name. Do not touch other stacks or volumes.
 - Use one script with `start`, `stop` and `status` for all parts.
 - Keep demo account credentials in a mode-600 file. Never print them.

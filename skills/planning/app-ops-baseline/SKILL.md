@@ -27,7 +27,7 @@ they enter the plan up front and points at ChimesFlow's working implementation a
 reference to copy from — so they aren't bolted on late or reinvented.
 
 Same pattern as `chimesflow-design`: the SoT is ChimesFlow's real code; this skill is
-the gate/loader, not the builder. See `~/.claude/CLAUDE.md` → "Cross-Repo Strategy".
+the gate/loader, not the builder.
 
 ## Hard Rules
 
@@ -52,7 +52,7 @@ Confirm the target is a product/web app with a UI and users. If not → skip and
 ## Step 1 — Emit the baseline checklist
 
 Fold this into the requirement / plan. Each item → mirror the ChimesFlow reference
-(`CF=${CHIMESFLOW_DIR:-$HOME/code/ChimesFlow}`):
+(`CF=${CHIMESFLOW_DIR:-$HOME/Code/Personal/ChimesFlow}`):
 
 | # | Baseline feature | ChimesFlow reference (read before copying) |
 |---|------------------|--------------------------------------------|
@@ -63,7 +63,7 @@ Fold this into the requirement / plan. Each item → mirror the ChimesFlow refer
 | 5 | **API 金鑰** | FE `settings/api-keys/` · BE `routers/api_keys.py`, `models/api_key.py`, `schemas/api_key.py` |
 | 6 | **一般設定** | FE `settings/` (shell that hosts changelog + api-keys + general prefs) |
 
-**Second reference for #1 and #3 — Yellow-Chick** (`YC=~/Code/Yellow-Chick`). ChimesFlow
+**Second reference for #1 and #3 — Yellow-Chick** (`YC=~/Code/Personal/Yellow-Chick`). ChimesFlow
 shows the user-facing surface; Yellow-Chick shows the dev-side mechanism behind it:
 fixed-ID tickets, status tracker with history, deliveries ledger, and a CI release
 gate. Plan both sides when the app will ship versions:
@@ -93,5 +93,4 @@ also adopts ChimesFlow's design, pair with `chimesflow-design` at UI time.
 - The six are full-stack in ChimesFlow (FE page + DB table + migration + router), but
   thin — pages are 1–3 files because logic lives in shared components/APIs. Copying one
   is bounded work, not a project.
-- This is prompt-routed, not a hook (a hook would over-fire on every file touch).
-  `~/.claude/CLAUDE.md` new-app / requirement flow should call it at planning time.
+- It is prompt-routed by its TRIGGER text.

@@ -28,12 +28,12 @@ user_invocable: true
 
 3. **Resolve each hunk.** Preserve both intents where possible. Where incompatible, pick the one
    matching the merge's stated goal and note the trade-off. Do **not** invent new behaviour.
-   Always resolve; never `--abort`.
+   If a hunk cannot be resolved from its sources, stop and ask the user instead of aborting or guessing.
 
 4. Discover the project's **automated checks** and run them — typically typecheck, then tests,
    then format. Fix anything the merge broke.
 
-5. **Finish the merge/rebase.** Stage everything and commit. If rebasing, continue the rebase
+5. **Finish the merge/rebase.** Stage the resolved files by path (`git add -- <files>`) and commit. If rebasing, continue the rebase
    process until all commits are rebased.
 
 ## Try the merge somewhere disposable first

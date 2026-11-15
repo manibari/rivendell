@@ -396,7 +396,7 @@ To record execution history to the dashboard DB, source `sk-exec-lib` from riven
 
 ```bash
 # Must export BEFORE sourcing — not inline
-export SK_EXEC_REPO_DIR="$HOME/Documents/Projects/rivendell"
+export SK_EXEC_REPO_DIR="${SK_EXEC_REPO_DIR:-$HOME/Code/Personal/rivendell}"
 
 # Guard so the script still works without rivendell installed
 if [ -f "$SK_EXEC_REPO_DIR/bin/sk-exec-lib" ]; then
@@ -427,7 +427,7 @@ Tips for better visibility:
 ## Portability
 
 Hardcoded paths in launchd plists break when moving to a new machine. For managing multiple agents portably, see the **Portable Multi-Agent Fleet Pattern** in the `agent-launchd` skill, which provides:
-- Declarative `agents.conf` — all agents in one file
+- Declarative `agents/registry/<name>.md` files — one per agent
 - Auto-detect PATH (conda, homebrew, npm)
 - Compiled C launcher with FDA for `~/Documents/` access
 - One-command bootstrap: `./bin/sk-setup-agents`

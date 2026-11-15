@@ -3,7 +3,7 @@ name: auto-stage
 loop: platform
 pdca: do
 description: >
-  PostToolUse hook — auto git-stages files after Claude Edit/Write/MultiEdit.
+  PostToolUse hook — auto git-stages files after Claude Edit/Write.
   Skips .env, node_modules. Catalog visibility only; no slash invocation.
 tags: [git, hook, automation]
 version: 1.0.0

@@ -50,7 +50,7 @@ This skill is the **periodic compaction pass**. Distinct from
 |---------|--------|
 | User says "整理 learnings", "跨專案 distillation", "promotion sprint" | conversation |
 | `wc -l ~/.claude/learnings/LEARNINGS.md` > ~600 lines (≈ 30 entries) | size |
-| `find ~/Documents/Projects -name LEARNINGS.md -path '*/.learnings/*' \| xargs wc -l \| tail -1` > 2000 | aggregate size |
+| `find ~/Code -name LEARNINGS.md -path '*/.learnings/*' \| xargs wc -l \| tail -1` > 2000 | aggregate size |
 | `workflow-retro` flags "same theme in 3+ projects' `.learnings/`" | retro signal |
 | It's been > 30 days since last `reports/learnings-promotion-sprint-*.md` | calendar |
 
@@ -183,7 +183,7 @@ the audit trail — next sprint will diff against it to see what's new vs.
 already-distilled.
 
 If you're running this from a project that doesn't have a `reports/`
-directory, default to the rivendell repo (`~/Documents/Projects/rivendell/reports/`)
+directory, default to the rivendell repo's `reports/`
 since rivendell hosts the meta-tooling.
 
 ## Output checklist
@@ -216,14 +216,14 @@ corpus in front of you so duplicates collapse.
 The 2026-05-13 manual run is the canonical example of what this skill
 codifies. Stats from that sprint:
 
-- 11 projects swept (`~/Documents/Projects/*/.learnings/`) + global vault
+- 11 projects swept (`*/.learnings/`) + global vault
 - 125 entries classified
 - 24 generic → 14 distilled rules into `~/.claude/CLAUDE.md`
 - 17 platform-meta → 6 rules into `rivendell/.claude/CLAUDE.md`
 - 67 project-specific → stayed put
 - 17 dropped (stale / already-fixed / too narrow)
 
-Read `~/Documents/Projects/rivendell/reports/learnings-promotion-sprint-2026-05-13.md`
+Read `reports/learnings-promotion-sprint-2026-05-13.md`
 to see the full output structure — section ordering, merge notation, "Why
 generic" justification per rule, and the per-project stamping at the end.
 

@@ -78,8 +78,8 @@ as `[confirmed]` (company-authored) with the posting date.
 ### 3a. Recent News (past 6-12 months)
 
 ```
-WebSearch: "[company_name] news 2026"
-WebSearch: "[company_name] 新聞 2025 2026"          # TW companies
+WebSearch: "[company_name] news [current year]"
+WebSearch: "[company_name] 新聞 [previous year] [current year]"          # TW companies
 WebSearch: "[company_name] press release"
 ```
 
@@ -125,7 +125,7 @@ WebSearch: "[company_name] jobs software engineer"
 ```
 WebSearch: "[company_name] challenges problems"
 WebSearch: "[company_name] digital transformation"
-WebSearch: "[industry] trends challenges 2026"
+WebSearch: "[industry] trends challenges [current year]"
 ```
 
 **Analysis angles:**

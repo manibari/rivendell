@@ -26,6 +26,7 @@ Create UI mockups that conform to the project's design system, from low-fidelity
 Before creating any mockup, locate and read the project's design system:
 
 **Search order:**
+0. A design contract already loaded in this session (from `chimesflow-design` or `timeleft-style`), or a project `DESIGN.md` that names one
 1. `design-system/*/MASTER.md`
 2. `docs/design-system.md`
 3. `docs/design-system/*.md`
@@ -41,9 +42,7 @@ Before creating any mockup, locate and read the project's design system:
 - Anti-patterns (explicitly forbidden patterns)
 - Dark/light mode strategy
 
-**If no design system is found, STOP and tell the user:**
-
-> This project has no design system. Create one first — define color palette, typography, spacing, and component patterns in `design-system/MASTER.md` before proceeding with mockups.
+If none is found, run `chimesflow-design` first; stop and ask only if that also fails.
 
 ## Responsive rules (mandatory)
 

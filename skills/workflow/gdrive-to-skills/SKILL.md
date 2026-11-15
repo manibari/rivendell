@@ -90,13 +90,13 @@ For each confirmed document:
 | Architecture / design doc | `docs/` | `arch-{topic}` |
 | Deploy / DevOps procedure | `workflow/` | `deploy-{topic}` |
 | API reference / integration | `docs/` | `ref-{topic}` |
-| Business rules / domain knowledge | `knowledge/` | `domain-{topic}` |
+| Business rules / domain knowledge | the loop's directory (`sales/`, `gov/`, `invest/`, `hr/`), else `docs/` | `domain-{topic}` |
 | Checklist / review process | `quality/` | `checklist-{topic}` |
 | Onboarding / how-to guide | `docs/` | `guide-{topic}` |
-| Meeting notes / decisions | `knowledge/` | `decisions-{topic}` |
-| Other | `knowledge/` | `{topic}` |
+| Meeting notes / decisions | the loop's directory (`sales/`, `gov/`, `invest/`, `hr/`), else `docs/` | `decisions-{topic}` |
+| Other | `docs/` | `{topic}` |
 
-3. If a new category (e.g. `knowledge/`) is needed, create it
+3. Do not use `skills/knowledge/` for company documents: it holds the content-digest loop. If a new category is needed, create it
 
 ### Step 4: Generate Skills
 
@@ -116,6 +116,8 @@ skills/{category}/{skill-name}/
 name: {skill-name}
 description: "{One-line description}. Auto-imported from Google Drive: {original filename}."
 tags: [{category}]
+loop: <sales|gov|invest|hr|knowledge|platform|dev|shared>
+pdca: <plan|do|check|act>
 source: "gdrive:{document_id}"
 imported_at: "{YYYY-MM-DD}"
 ---

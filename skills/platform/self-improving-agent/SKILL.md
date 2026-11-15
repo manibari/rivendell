@@ -209,7 +209,7 @@ Roughly monthly (or when `~/.claude/learnings/LEARNINGS.md` exceeds ~30 entries)
 4. Platform-meta → promote to `<platform-repo>/.claude/CLAUDE.md`
 5. Save a classification report (e.g. `reports/learnings-promotion-sprint-YYYY-MM-DD.md`) for history
 
-See `~/Documents/Projects/rivendell/reports/learnings-promotion-sprint-2026-05-13.md` for the seed-sprint template.
+See `reports/learnings-promotion-sprint-2026-05-13.md` for the seed-sprint template.
 
 ### How to Promote
 
@@ -339,7 +339,7 @@ Use to filter learnings by codebase region:
 4. **Link related files** - makes fixes easier
 5. **Suggest concrete fixes** - not just "investigate"
 6. **Use consistent categories** - enables filtering
-7. **Promote aggressively** - if in doubt, add to CLAUDE.md
+7. **Promote on recurrence** - promote a learning when it recurs (2+ times) or the user asks; a one-off stays in `.learnings/`, because `~/.claude/CLAUDE.md` loads in every session.
 8. **Review regularly** - stale learnings lose value
 
 ## Hook Integration
@@ -415,7 +415,7 @@ A learning qualifies for skill extraction when ANY of these apply:
 ### Extraction Workflow
 
 1. **Identify candidate**: Learning meets extraction criteria
-2. **Create skill**: Create `~/.claude/skills/<skill-name>/SKILL.md`
+2. **Create skill**: in the rivendell repo run `sk create <category>/<skill-name>`.
 3. **Fill template**: Use YAML frontmatter (name, description, when_to_use, version, tags, languages) and write skill content
 4. **Update learning**: Set status to `promoted_to_skill`, add `Skill-Path`
 5. **Verify**: Read skill in fresh session to ensure it's self-contained

@@ -264,7 +264,7 @@ When managing multiple launchd agents across machines, hardcoded absolute paths 
 ```
 project/
 ├── agents/
-│   ├── agents.conf          # Declarative agent definitions
+│   ├── registry/            # One Markdown file per agent
 │   └── sk-agent-run.c       # Compiled launcher (gets FDA)
 └── bin/
     └── sk-setup-agents      # Bootstrap: detect PATH → compile → generate plists → load
@@ -272,25 +272,13 @@ project/
 
 New machine setup: `./bin/sk-setup-agents` → grant FDA → done.
 
-### 1. Declarative Config (`agents.conf`)
+### 1. Agent registry (`agents/registry/<name>.md`)
 
-All agents defined in one file — no plist editing needed:
-
-```
-# LABEL | PROJECT_REL | SCRIPT | SCHEDULE_TYPE | SCHEDULE_VALUE | LOG_DIR | EXTRA_ARGS
-#
-# SCHEDULE_TYPE: interval | calendar | calendar_multi | keepalive
-# SCHEDULE_VALUE:
-#   interval       → seconds (28800 = 8h)
-#   calendar       → H:MM or W:H:MM (W=weekday 0-6)
-#   calendar_multi → W1:H:MM,W2:H:MM
-#   keepalive      → - (always running)
-
-com.example.daily-task   | my-project | scripts/task.sh   | calendar       | 7:30         | logs
-com.example.weekly-task  | my-project | scripts/weekly.sh | calendar       | 0:10:00      | logs | weekly
-com.example.twice-weekly | my-project | scripts/scrape.sh | calendar_multi | 1:8:00,4:8:00 | logs
-com.example.web-server   | my-project | scripts/start.sh  | keepalive      | -            | logs
-```
+Use one Markdown file per agent. Its frontmatter has `schema_version: 2`,
+`name`, `kind`, `project`, `entry`, `schedule: {type, value}`, and `log_dir`.
+See `agents/registry/doctor.md` for an example. `sk-setup-agents` builds a
+temporary agents.conf from the registry with `bin/sk-registry-gen generate`.
+Do not edit agents.conf.
 
 ### 2. Compiled Launcher (`sk-agent-run.c`)
 
@@ -326,7 +314,7 @@ Why not just a shell script? macOS TCC blocks `/bin/bash` from accessing `~/Docu
 Key responsibilities:
 1. **Auto-detect PATH** — scans for conda, homebrew, npm global, ~/.local/bin
 2. **Compile launcher** — `cc -O2 -o ~/.local/bin/sk-agent-run agents/sk-agent-run.c`
-3. **Generate plists** — reads agents.conf, expands `$HOME`-relative paths
+3. **Generate plists** — reads an `agents/registry/<name>.md` file, expands `$HOME`-relative paths
 4. **Load into launchd** — unload-then-load each agent
 
 ```bash

@@ -14,7 +14,7 @@ description: >
   簡報 — "審查意見回來了", "要上台報告補助案", "書面審查意見表", "照官方簡報格式做".
   SKIP: finding subsidies to apply for (gov-subsidy-scraper); RFQ/tender responses
   (gov-rfq-writer); consulting contracts (sow-writer); customer-facing sales decks
-  (sales-deck-design — 那是對客戶提案，不是對審查委員).
+  (sales-material / slide-workflow — 那是對客戶提案，不是對審查委員).
 tags: [docs, business, government]
 version: 1.3.0
 source: manual

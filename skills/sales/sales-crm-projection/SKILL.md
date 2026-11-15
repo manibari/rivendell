@@ -66,4 +66,4 @@ Read [projection.md](projection.md) for the complete workflow.
 
 LaunchAgent: `com.sk.agent.sales.sales-crm-projection`
 Schedule: Daily 07:00
-Runner: `scripts/sales-crm-projection.sh`
+Runner: `scripts/crm-projection.sh`

@@ -4,7 +4,7 @@ loop: dev
 pdca: plan
 description: >
   UI/UX design intelligence with searchable database. 50+ styles, 97 color palettes,
-  57 font pairings, 25 chart types, 9 stacks.
+  57 font pairings, 25 chart types, 13 stacks.
   TRIGGER when: designing UI components, choosing color palettes or typography,
   building landing pages/dashboards, reviewing UX, or user says /ui-ux-pro-max.
   DO NOT TRIGGER when: backend-only work, CLI tools, or pure logic with no UI.
@@ -219,7 +219,7 @@ Get implementation-specific best practices. If user doesn't specify a stack, **d
 python3 ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<keyword>" --stack html-tailwind
 ```
 
-Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
+Available stacks: `html-tailwind`, `react`, `nextjs`, `astro`, `vue`, `nuxtjs`, `nuxt-ui`, `svelte`, `swiftui`, `react-native`, `flutter`, `shadcn`, `jetpack-compose`
 
 ---
 
@@ -238,7 +238,7 @@ Available stacks: `html-tailwind`, `react`, `nextjs`, `vue`, `svelte`, `swiftui`
 | `ux` | Best practices, anti-patterns | animation, accessibility, z-index, loading |
 | `react` | React/Next.js performance | waterfall, bundle, suspense, memo, rerender, cache |
 | `web` | Web interface guidelines | aria, focus, keyboard, semantic, virtualize |
-| `prompt` | AI prompts, CSS keywords | (style name) |
+| `icons` | Icon names, library, import code | (icon category) |
 
 ### Available Stacks
 

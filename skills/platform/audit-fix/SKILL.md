@@ -42,8 +42,8 @@ For each project's `.claude/settings.local.json`, classify every entry:
 | **one-off** | DELETE | `Bash(git -C /full/path commit -m "...")`, `Bash(find /Users/... -name ...)` |
 | **colon-style** | FIX → space-style | `Bash(git add:*)` → `Bash(git add *)` |
 | **commit-msg** | DELETE | `Bash(git commit -m "$(cat <<'EOF'...")` with embedded message |
-| **global-dup** | DELETE | `Bash(ls:*)`, `Bash(grep:*)`, `Bash(git push)` if global has `Bash(git *)` |
-| **project-tool** | KEEP | `Bash(pnpm --filter @pkg/name *)` only if not covered by global `Bash(pnpm *)` |
+| **global-dup** | DELETE | an entry identical to a global-baseline rule, or a read-only command Claude Code auto-allows (`Bash(ls:*)`, `Bash(grep:*)`) |
+| **project-tool** | KEEP | `Bash(pnpm *)`, `Bash(pnpm --filter @pkg/name *)` (project tooling stays project-local; see setup-permissions) |
 | **webfetch-work** | KEEP | `WebFetch(domain:...)` relevant to the project's domain (finance, marketing, etc.) |
 | **webfetch-noise** | DELETE | Game wikis, academic guides, one-off research domains |
 | **hooks** | KEEP | Any `hooks` configuration key — never modify |
@@ -54,7 +54,7 @@ For each project's `.claude/settings.local.json`, classify every entry:
 For each project, generate a change plan:
 
 ```
-Project: ~/Documents/Projects/<name>
+Project: <name>
   DELETE (N entries):
     - Bash(git -C /Users/.../project commit -m "...")  [one-off]
     - Bash(ls:*)  [global-dup]

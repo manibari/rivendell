@@ -48,9 +48,9 @@ Regenerate INDEX.md + by-industry/*.md
 
 | Source | URL | Frequency | source_id |
 |--------|-----|-----------|-----------|
-| 政府補助一站通 | https://grants.nat.gov.tw | 2x/week | grants_nat |
-| SBIR 小型企業創新研發 | https://www.sbir.org.tw | weekly | sbir |
-| SIIR 服務業創新研發 | https://www.siir.org.tw | weekly | siir |
+| 政府補助一站通 | https://grants.nat.gov.tw | down since 2026-07-23 (last checked 2026-08-10) — WebSearch fallback, see scraper.md | grants_nat |
+| SBIR 小型企業創新研發 | https://sbir.org.tw | weekly | sbir |
+| SIIR 服務業創新研發 | https://www.siir.org.tw | down since 2026-07-23 (last checked 2026-08-10) — WebSearch fallback, see scraper.md | siir |
 
 ## Workflow
 
@@ -80,7 +80,7 @@ funding_amount: "個別申請最高 1,000 萬元"
 eligibility: "依法登記之中小企業"
 industry_tags: [全產業]
 company_size: sme
-reference_url: "https://www.sbir.org.tw/..."
+reference_url: "https://sbir.org.tw/..."
 source_id: sbir
 last_scraped: "2026-03-16"
 status: active

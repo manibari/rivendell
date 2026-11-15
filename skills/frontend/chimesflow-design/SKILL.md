@@ -26,8 +26,7 @@ system**. This skill does not draw UI — it guarantees the design SoT is on the
 execution path *before* any generator runs, then delegates.
 
 Pattern mirrors `slide-office-hours` (storyline gate): the rule lives in a canonical
-markdown SoT, the skill is the loader that forces it into the prompt. See
-`~/.claude/CLAUDE.md` → "Cross-Repo Strategy".
+markdown SoT, the skill is the loader that forces it into the prompt.
 
 ## Hard Rules
 
@@ -52,13 +51,13 @@ markdown SoT, the skill is the loader that forces it into the prompt. See
 
 ```bash
 # Canonical location, overridable via env. Web vs mobile picks the variant.
-CF_DIR="${CHIMESFLOW_DIR:-$HOME/code/ChimesFlow}"
+CF_DIR="${CHIMESFLOW_DIR:-$HOME/Code/Personal/ChimesFlow}"
 WEB_SOT="$CF_DIR/docs/design-system.md"
 MOBILE_SOT="$CF_DIR/docs/design-system-mobile.md"
 
 ls -la "$WEB_SOT" "$MOBILE_SOT" 2>/dev/null
 # Fallback if ChimesFlow moved:
-[ -f "$WEB_SOT" ] || find "$HOME/code" "$HOME/Documents" -maxdepth 4 \
+[ -f "$WEB_SOT" ] || find "$HOME/Code" -maxdepth 4 \
   -path "*ChimesFlow*/docs/design-system.md" -not -path "*/node_modules/*" 2>/dev/null | head
 ```
 
@@ -67,7 +66,7 @@ Then **Read** the relevant file(s):
 - Target is **mobile / responsive-first** → Read `design-system-mobile.md` as well.
 
 If neither resolves → STOP:
-> 找不到 ChimesFlow design-system.md（預設 `~/code/ChimesFlow/docs/`）。
+> 找不到 ChimesFlow design-system.md（預設 `~/Code/Personal/ChimesFlow/docs/`）。
 > 設 `CHIMESFLOW_DIR` 或確認 repo 位置，再呼叫一次 — 我不會憑空編 token。
 
 ### Step 1 — Embed the contract
@@ -104,4 +103,4 @@ apply them, do not invent a new palette" (unless mode-b override was declared).
   non-antd / different-brand project, mode-b override is expected — keep ChimesFlow's
   **layout & component conventions**, swap the **brand color/type**, and record it.
 - This is intentionally NOT a hook (would over-fire on every file touch). It is
-  prompt-routed: `~/.claude/CLAUDE.md` UI flow should call it at Step 0 of new UI work.
+  prompt-routed by its TRIGGER text.

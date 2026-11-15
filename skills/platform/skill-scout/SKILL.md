@@ -18,7 +18,7 @@ user_invocable: true
 
 # Skill Scout
 
-Automates the workflow of discovering, evaluating, and porting skills from external repositories into the user's Claude Code skill library at `~/.claude/skills/`.
+Automates the workflow of discovering, evaluating, and porting skills from external repositories into the rivendell skill library at `skills/<category>/<skill-name>/`.
 
 This skill complements **skill-creator** — skill-creator builds skills from scratch; skill-scout finds and adapts existing ones from the community.
 
@@ -137,8 +137,11 @@ For each skill the user approves:
 ### 3.1 Create Directory
 
 ```bash
-mkdir -p ~/.claude/skills/<skill-name>/
+mkdir -p skills/<category>/<skill-name>/
 ```
+
+Create the directory in the rivendell repo (pick the category per
+`references/port-checklist.md`). After the port, run `./bin/sk deploy`.
 
 ### 3.2 Adapt SKILL.md
 
@@ -156,11 +159,13 @@ Apply these transformations in order:
    version: 1.0.0
    tags: [relevant, tags]
    languages: all
+   loop: <sales|gov|invest|hr|knowledge|platform|dev|shared>
+   pdca: <plan|do|check|act>
    user_invocable: true
    ---
    ```
 
-2. **Remove platform-specific references**: Strip mentions of OpenClaw, Clawdbot, ClawHub, Codex, Copilot, or other non-Claude-Code platforms from the body text. Do not just find-and-replace — read the context and rewrite sentences to make sense without those references.
+2. **Remove platform-specific references**: Strip mentions of OpenClaw, Clawdbot, ClawHub, Copilot, or other non-Claude-Code platforms from the body text. Do not just find-and-replace — read the context and rewrite sentences to make sense without those references.
 
 3. **Replace unavailable mechanisms**:
 
@@ -185,7 +190,7 @@ If the skill includes scripts:
 - Ensure they are POSIX-compatible shell scripts or Python 3
 - Make executable: `chmod +x <script>`
 - Adapt stdin/stdout format for Claude Code hooks if needed
-- Place scripts in `~/.claude/skills/<skill-name>/scripts/`
+- Place scripts in `skills/<category>/<skill-name>/scripts/`
 
 ### 3.4 Handle Hooks
 
@@ -203,7 +208,7 @@ After porting each skill:
 1. **File check**: Verify SKILL.md exists at the expected path and has valid YAML frontmatter
 2. **Script check**: If scripts exist, verify they are executable (`ls -la`)
 3. **Frontmatter check**: Verify required fields are present (name, description)
-4. **Content check**: Quick scan for leftover platform references (grep for "OpenClaw", "Clawdbot", "ClawHub", "Codex")
+4. **Content check**: Quick scan for leftover platform references (grep for "OpenClaw", "Clawdbot", "ClawHub")
 5. **Hook check**: If hooks are needed, verify the user has been informed
 
 Report verification results per skill.
@@ -216,8 +221,8 @@ Present a final summary:
 
 | Skill | Status | Path | Notes |
 |-------|--------|------|-------|
-| skill-a | Ported | `~/.claude/skills/skill-a/` | Ready to use |
-| skill-b | Ported | `~/.claude/skills/skill-b/` | Needs hook config (shown above) |
+| skill-a | Ported | `skills/<category>/skill-a/` | Ready to use |
+| skill-b | Ported | `skills/<category>/skill-b/` | Needs hook config (shown above) |
 | skill-c | Skipped | — | Incompatible (depends on cron) |
 
 ---
@@ -269,6 +274,8 @@ when_to_use: when X happens or user says Y
 version: 1.0.0
 tags: [tag1, tag2]
 languages: all
+loop: <sales|gov|invest|hr|knowledge|platform|dev|shared>
+pdca: <plan|do|check|act>
 user_invocable: true
 ---
 ```

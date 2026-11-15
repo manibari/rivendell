@@ -8,7 +8,7 @@ description: >
   and auto-promotes high-confidence keywords. TRIGGER when: building a scraper that
   filters by keywords, user wants to discover new filter terms, or mentions
   "關鍵字分析" / "keyword analysis" / "漏網之魚". DO NOT TRIGGER when: doing
-  one-time keyword research (use web-search), or NLP/ML classification tasks.
+  one-time keyword research (use WebSearch directly), or NLP/ML classification tasks.
 version: 1.0.0
 tags: [workflow, scraping, automation, data-quality]
 languages: [python, yaml]

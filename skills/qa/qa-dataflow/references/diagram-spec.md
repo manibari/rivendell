@@ -129,7 +129,7 @@ Dataset → Split → Run(+artifact) → ModelVersion(+registry 副本) → 推�
 就只畫「上傳 → 存檔 → 訓練」，結果圖看起來像這個產品只有存檔和派工 ——
 擁有這個產品的人第一眼就會說「怪怪的，我明明還有建專案、模型註冊、生命週期管理」。
 
-正確做法（也對映 `~/.claude/CLAUDE.md`「保留物理架構，疊加 overlay」那條）：
+正確做法：
 
 1. **先攤功能骨幹**：`ls routers/`、`find app -name page.tsx`、讀 models.py 的實體，
    把使用者看得到的步驟依序排出來 —— 不要憑常識猜這個產品「應該有什麼」。
@@ -143,9 +143,8 @@ Dataset → Split → Run(+artifact) → ModelVersion(+registry 副本) → 推�
 
 ## 版面
 
-沿用 `~/.claude/CLAUDE.md` 的 Diagram & Slide Output Defaults：
 
-- **16:9 固定 1600×900**，`overflow: hidden`。塞不下就拆多張，不要改成 portrait
+- 功能關係圖（主表）寬 1600–1900、高度隨內容，照 assets/function-map-template.html；其他圖 16:9 1600×900。塞不下就拆多張。
 - 字級：h1 32-36px、區塊大標 18-22px、卡片 title 16-20px、footer 10-12px。
   任何 <12px 的元素要說得出理由
 - 不同性質的東西用**不同的盒 + 不同色系**（來源 / 解析 / 產出 / 消費端），
@@ -172,9 +171,9 @@ actual 圖的價值在於它**帶結論**，不是單純描述。用三個符號
 
 **PTI-ARES —— actual / target 對照，手寫 HTML 16:9**
 
-- `~/code/PTI-ARES/docs/architecture/dataflow-actual-2026-08.html`
-- `~/code/PTI-ARES/docs/architecture/dataflow-target-2026-08.{html,png,excalidraw}`
-- 落差報告：`~/code/PTI-ARES/docs/architecture/pg-as-sor-gap-2026-08.md`
+- `~/Code/Chimes/PTI-ARES/docs/architecture/dataflow-actual-2026-08.html`
+- `~/Code/Chimes/PTI-ARES/docs/architecture/dataflow-target-2026-08.{html,png,excalidraw}`
+- 落差報告：`~/Code/Chimes/PTI-ARES/docs/architecture/pg-as-sor-gap-2026-08.md`
 
 看點：actual 圖上直接標 `✗ / △ / ✅` 判讀＋一句為什麼；target 另出一張，不用虛線暗示。
 
@@ -188,7 +187,7 @@ actual 圖的價值在於它**帶結論**，不是單純描述。用三個符號
   `node-應用-兩套實作-2026-08.html`
 - 落差報告＋INDEX：`dataflow-audit-2026-08-14.md`、`INDEX.md`
 
-全部在 `~/code/Verdandi-AutoML/docs/verification/`。
+全部在 `~/Code/Rightek/Norns-Verdandi-AutoML/docs/verification/`。
 
 看點：(a) 四張圖各答一個問題，不合併；(b) 主表的邊全部標了傳遞的識別碼；
 (c) 主表最後一帶是「關卡實況」四欄表；(d) 一個節點講不完就下鑽成獨立一張，
@@ -207,9 +206,7 @@ actual 圖的價值在於它**帶結論**，不是單純描述。用三個符號
 ## 自我截圖驗證（沒做不算完成）
 
 ```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-  --headless --disable-gpu --window-size=1640,950 \
-  --screenshot=/tmp/dataflow-check.png "file://<absolute-path>"
+node skills/docs/chart-design/references/check-html-figure.mjs <圖.html> --width 1900 --height auto --screenshot <圖.png>
 ```
 
 然後 Read 那張 PNG，肉眼確認：(a) 沒切版／溢出 (b) 沒有文字 wrap 成兩行

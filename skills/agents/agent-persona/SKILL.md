@@ -100,7 +100,7 @@ You are a {role} agent for the {project_name} project.
 ### Step 4: Configure Execution
 
 Generate the corresponding entries for:
-- `agents.conf` (launchd scheduling)
+- an `agents/registry/<name>.md` file (launchd scheduling)
 - `.claude/agents.json` (agent metadata)
 - Wrapper script in `bin/` (execution entry point)
 

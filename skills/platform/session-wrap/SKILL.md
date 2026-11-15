@@ -28,9 +28,9 @@ If there are uncommitted changes:
 
 1. Run `git diff --stat` to see what changed
 2. Run `git log --oneline -3` to check recent commit style
-3. Stage relevant files (skip `.env`, `node_modules`, `*.pyc`, `.DS_Store`)
+3. Stage only files this session changed; leave out `.env`, `node_modules`, `*.pyc`, `.DS_Store` and `reports/*` (scheduled agents own them). If another session shares the work tree, read the diff and version first.
 4. Write a commit message summarizing the session's work
-5. Commit with `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
+5. End the commit message with the attribution lines this session's harness gives, if any.
 
 If working tree is clean → skip, report "No uncommitted changes."
 

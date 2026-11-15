@@ -11,13 +11,23 @@ rivendell organizes by purpose, not by source:
 
 | Category | Use for |
 |----------|---------|
-| `meta/` | rivendell self-management (skill creation, harvest, retro) |
-| `workflow/` | cross-domain workflows (planning, agents, customer intel) |
-| `quality/` | testing, code review, documentation hygiene |
-| `git/` | version control workflows |
-| `frontend/` | UI design, iOS, mockups |
-| `backend/` | server-side, databases, integrations |
-| `docs/` | document creation/processing (offices files, MCP, comms) |
+| `agents/` | agent execution and monitoring |
+| `backend/` | server, database, and integrations |
+| `docs/` | documents and communication |
+| `frontend/` | UI design and implementation |
+| `git/` | version control |
+| `gov/` | government tenders and subsidies |
+| `hr/` | hiring |
+| `invest/` | investment research |
+| `knowledge/` | content intake and notes |
+| `planning/` | requirements and plans |
+| `platform/` | rivendell automation |
+| `qa/` | test and verification |
+| `quality/` | code and document quality |
+| `sales/` | sales work |
+| `workflow/` | cross-domain workflows |
+
+Also set `loop:` and `pdca:` per .claude/CLAUDE.md.
 
 Pick the one that matches what the skill *does for users*, not what
 its implementation uses.
@@ -47,6 +57,8 @@ description: >
   "<繁中 phrases too>", or otherwise indicates <intent>.
   DO NOT TRIGGER for: <existing skill> (use <name>),
   <existing skill> (use <name>). This skill is for <generic case>.
+loop: <sales|gov|invest|hr|knowledge|platform|dev|shared>
+pdca: <plan|do|check|act>
 when_to_use: >
   <One-sentence summary of the situation>
 version: 1.0.0
@@ -85,13 +97,13 @@ rewrite — don't `sed`-replace, because context matters.
 | "Anthropic's brand", "my company" | Either rewrite generically OR add a tone-adaptation note for zh-tw/non-Anthropic context |
 | `create_file`, `str_replace` (claude.ai artifact tools) | Replace with `Write` / `Edit` (Claude Code tools) |
 | References to claude.ai web interface | Either rewrite for Claude Code OR drop entirely |
-| OpenClaw / Clawdbot / ClawHub / Codex platform mentions | Drop or rewrite — rivendell uses Claude Code |
-| `cron` schedules baked into the skill | Move scheduling out: rivendell schedules via `agents.conf` + launchd |
+| OpenClaw / Clawdbot / ClawHub platform mentions | Drop or rewrite — rivendell uses Claude Code |
+| `cron` schedules baked into the skill | Move scheduling out: rivendell schedules via an `agents/registry/<name>.md` file + launchd |
 | `memory_search` (OpenClaw-specific) | Replace with `grep` in `~/.claude/` or filesystem reads |
 
 **Verification grep before commit:**
 ```bash
-grep -iE "anthropic|openclaw|clawdbot|clawhub|codex|claude\.ai" \
+grep -iE "anthropic|openclaw|clawdbot|clawhub|claude\.ai" \
     skills/<cat>/<skill>/SKILL.md \
   | grep -v "Ported from"   # source-attribution comment is OK
 ```
@@ -161,7 +173,7 @@ stripped, tone notes for zh-tw if applicable, examples/ bundled.>
 Both have source-attribution HTML comments, deployed via sk deploy,
 and verified for leftover platform references.
 
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+<attribution lines from the harness, if any>
 ```
 
 ## 8. After-port sanity check

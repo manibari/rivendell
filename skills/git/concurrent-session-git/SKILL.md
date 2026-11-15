@@ -39,8 +39,8 @@ clean and recoverable. Even a solo dev hits this — *you* are the other session
 3. **Check base-drift before branching / PR** — `git log origin/<base>..<base>`.
    If local base is ahead (unpushed commits), a squash-merge bundles them into
    your PR. Branch from `origin/<base>`, or push the local commits first.
-4. **Don't `reset --hard` a shared tree** — it destroys the other session's
-   uncommitted WIP. Use byte-exact un-bundle or `git stash` instead.
+4. **Don't `reset --hard` or `git stash` a shared tree** — both take the other session's uncommitted WIP
+   with them. Use the byte-exact un-bundle below instead.
 5. **Stop auto-committing a contended tree** — if a second session is actively
    editing, isolate (worktree) or pause it. Repeated per-step commits on a shared
    tree keep stealing the other's WIP.

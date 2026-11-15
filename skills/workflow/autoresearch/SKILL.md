@@ -35,7 +35,7 @@ metric improves, keep it; if not, revert instantly via git.
 
 ## Config Format (`autoresearch.yml`)
 
-Place this file in the project root or pass it via `--config`.
+Pass the file as the first argument: `sk-autoresearch <config.yml> [goal-name]`.
 
 ```yaml
 goals:
@@ -87,7 +87,6 @@ The bash runner implements the core loop:
    - e. Log iteration to dashboard DB via `_sk_exec_record_run`.
    - f. Sleep `cooldown_secs`, check iteration count.
 5. **Summary** — print best metric achieved, total iterations, keep/discard ratio.
-6. **Optionally merge** — if `--merge` flag, fast-forward merge back to the source branch.
 
 ### Pseudocode
 
@@ -137,13 +136,7 @@ individual iterations if needed.
 
 ### launchd
 
-Schedule via `agents.conf` like any other headless agent:
-
-```
-autoresearch  keyword-coverage  02:00  daily  sk-autoresearch --goal keyword-coverage
-```
-
-The `sk-launchd-gen` skill picks this up and generates the plist automatically.
+Schedule it with `agents/registry/autoresearch.md` (now `enabled: false`); `sk-setup-agents` generates the plist.
 
 ### dashboard
 
@@ -157,15 +150,6 @@ keep/discard decision, and token cost.
 Uses `_sk_exec_record_run` to log each iteration. The `metric_value` can
 be stored in the existing `cost_usd` field (repurposed) or in a dedicated
 `metric` column if the schema has been extended.
-
-### doctor
-
-`sk-agent-doctor` recognizes autoresearch failures:
-- Too many consecutive discards (stuck) → flag for human review
-- Verify command consistently failing → likely broken metric
-- Branch diverged from main → merge conflict risk
-
----
 
 ## When to Use vs Not
 

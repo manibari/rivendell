@@ -38,10 +38,12 @@ User: "幫我做奇美食品的提案簡報"
     │
     ├─ 4. Match Solutions → Read solutions/ by pain points
     │
-    ├─ 5. Assemble → Build HTML slides — MUST use locked template from
-    │                 mockups/slide-templates/ if one exists for this brand
-    │                 (e.g. chimes-ai.html, cht-corporate.html). Otherwise
-    │                 fall back to slide-blueprints.md.
+    ├─ 4b. Storyline gate → Write `storyline.md` from the matched material;
+    │                 reach `status: signed-off` with `slide-office-hours` before slides.
+    │                 Give the deck to the `sales` agent before it goes to the client.
+    │
+    ├─ 5. Assemble → Use the brand's locked template in `mockups/slide-templates/`
+    │                 when one exists; otherwise slide-blueprints.md.
     │
     ├─ 6. Convert → html2pptx (office-pptx skill)
     │
@@ -75,9 +77,7 @@ Read [matching.md](matching.md) for the matching algorithm.
 
 Read [slide-blueprints.md](slide-blueprints.md) for HTML templates per slide type.
 
-**CRITICAL**: Before generating any PPTX, read the office-pptx skill completely:
-- `~/.claude/skills/office-pptx/SKILL.md`
-- `~/.claude/skills/office-pptx/html2pptx.md`
+Read the office-pptx skill (`SKILL.md`, `html2pptx.md`) before you generate a PPTX; html2pptx accepts only the HTML it documents.
 
 ### Step 7: Output
 

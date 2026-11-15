@@ -18,6 +18,7 @@ Automatically recover working context after session compaction or when continuat
 ## Triggers
 
 ### Automatic Triggers
+- If a context-journal log tail was injected at session start, start from it and run Steps 2-3 only to confirm the state.
 - Session begins with a `<summary>` tag (compaction detected)
 - User message contains compaction indicators: "Summary unavailable", "context limits", "truncated", "compacted"
 
@@ -27,7 +28,7 @@ Automatically recover working context after session compaction or when continuat
 - User implies prior work exists but context is unclear
 - User asks "do you remember...?" or "we were working on..."
 
-**Do not wait for user to ask** -- if compaction is detected, proactively recover and present context.
+If compaction is detected, recover and present context.
 
 ---
 
@@ -104,27 +105,11 @@ find . -maxdepth 3 -name 'AGENTS.md' 2>/dev/null
 
 ```bash
 # Auto-generated memory files for this project
-PROJECT_DIR=$(pwd)
-PROJECT_HASH_DIRS=$(ls -d ~/.claude/projects/*/ 2>/dev/null)
-for dir in $PROJECT_HASH_DIRS; do
-  if [ -d "$dir/memory" ]; then
-    echo "=== Memory: $dir ==="
-    ls -lt "$dir/memory/" 2>/dev/null | head -5
-    for f in $(ls -t "$dir/memory/"* 2>/dev/null | head -3); do
-      echo "--- $f ---"
-      cat "$f"
-    done
-  fi
-done
-
-# Project-specific CLAUDE.md managed by Claude Code
-for dir in $PROJECT_HASH_DIRS; do
-  if [ -f "$dir/CLAUDE.md" ]; then
-    echo "=== Project CLAUDE.md: $dir ==="
-    cat "$dir/CLAUDE.md"
-  fi
-done
+MEM_DIR=~/.claude/projects/$(pwd | tr '/' '-')/memory
+ls -lt "$MEM_DIR" 2>/dev/null | head -5
 ```
+
+Read the three most recent files from this directory.
 
 ### Step 6: Check Self-Improving Agent Learnings (if active)
 
@@ -198,31 +183,13 @@ Present the recovered context, then prompt:
 
 ## Constraints
 
-- **MANDATORY:** Execute this protocol before responding "I don't have context" or asking clarifying questions when context appears missing
+- Run this protocol before you say you lack context or ask what the user meant.
 - Terminal scrollback is not accessible -- rely on filesystem artifacts only
 - Git history: last 15 commits and reflog of 20 entries (token budget)
 - Recently modified files: cap at 30 files, last 2 hours
 - Memory files: last 3 per project
 - If recovery yields nothing useful, state what was attempted and what sources were empty
 - Do NOT fabricate context -- report only what evidence supports
-
----
-
-## Auto-Trigger Detection
-
-At session start, scan for compaction indicators:
-
-```
-if message contains "<summary>":
-    trigger_context_recovery()
-elif message contains any of ["Summary unavailable", "context limits", "truncated", "compacted"]:
-    trigger_context_recovery()
-elif message matches continuation_patterns:
-    # "continue", "where were we", "what was I working on", etc.
-    trigger_context_recovery()
-```
-
-**Do not wait for user to ask** -- if compaction is detected, proactively recover and present context.
 
 ---
 

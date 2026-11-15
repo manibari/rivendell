@@ -91,12 +91,10 @@ Filesystem = Disk (persistent, unlimited)
 ## Critical Rules
 
 ### 1. Create Plan First
-Never start a complex task without `task_plan.md`. Non-negotiable.
+Never start a complex task without `task_plan.md`.
 
-### 2. The 2-Action Rule
-> "After every 2 view/browser/search operations, IMMEDIATELY save key findings to text files."
-
-This prevents visual/multimodal information from being lost.
+### 2. Save findings before they leave context
+Write key findings to `findings.md` before a compaction, a session end or a phase switch, and right after you read an image or PDF you will need later.
 
 ### 3. Read Before Decide
 Before major decisions, read the plan file. This keeps goals in your attention window.
@@ -154,7 +152,7 @@ AFTER 3 FAILURES: Escalate to User
 | Situation | Action | Reason |
 |-----------|--------|--------|
 | Just wrote a file | DON'T read | Content still in context |
-| Viewed image/PDF | Write findings NOW | Multimodal → text before lost |
+| Viewed image/PDF | Write findings to `findings.md` | Multimodal → text before lost |
 | Browser returned data | Write to file | Screenshots don't persist |
 | Starting new phase | Read plan/findings | Re-orient if context stale |
 | Error occurred | Read relevant file | Need current state to fix |

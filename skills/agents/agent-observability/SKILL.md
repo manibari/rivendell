@@ -26,7 +26,7 @@ Shell wrapper pattern:
 
 ```bash
 # At top of wrapper script
-export SK_EXEC_REPO_DIR="$HOME/Documents/Projects/rivendell"
+export SK_EXEC_REPO_DIR="${SK_EXEC_REPO_DIR:-$HOME/Code/Personal/rivendell}"
 if [ -f "$SK_EXEC_REPO_DIR/bin/sk-exec-lib" ]; then
   source "$SK_EXEC_REPO_DIR/bin/sk-exec-lib"
 fi

@@ -52,8 +52,7 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion"
 | **Light** | 動到既有模組內部邏輯，但介面契約不變；或只新增一個端點且沿用既有實體 | 只出 §1 §3 §4 §8（scope / 職責邊界 / 契約 / 未決事項），不畫圖或只畫一張序列圖 |
 | **Full** | **動到資料寫入**、**跨模組傳遞**、**新增 store**、新增/修改 schema、新增外部整合、或這是一個新功能的第一版 | 六節全出 + 圖組（見 Step 4） |
 
-Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不差**
-（「動到資料寫入 / 跨模組傳遞 / 新增 store」）。
+Full 檔的三個判準（動到資料寫入 / 跨模組傳遞 / 新增 store）就是事後要跑 `qa-dataflow` 的條件。
 理由：事前該設計的和事後該驗的是同一件事。事前跳過 Full，事後 `qa-dataflow`
 一定會挖到落差 —— 只是那時已經寫完了。
 
@@ -69,7 +68,7 @@ Full 檔的三個判準 **刻意跟 `qa-dataflow` 的 HARD GATE 條件一字不�
 |------|--------|-----------|
 | 需求 / 驗收標準 | `docs/requirements/<feature>.md`（`requirement` skill 產出） | 設計沒有對映對象，無法驗收 |
 | **統一語言表** | 同上文件，user stories 之前那張表 | §2 欄位命名沒有依據 → 同概念多名（`report_date` vs `date`），就是那條「踩過的坑」 |
-| 使用者流程 | `docs/user-flow/*` 或 requirement 內的流程段 | 序列圖會漏掉錯誤分支 |
+| 使用者流程 | `docs/flows/*-flow.md`（user-flow 產出）或 requirement 內的流程段 | 序列圖會漏掉錯誤分支 |
 | 畫面 | `mockups/<feature>.html`（多畫面：`mockups/<feature>/`）+ 元件清單（`mockup` skill Step handoff 的 component inventory） | 前端要的資料形狀是猜的 |
 | 既有資料模型 | `models.py` / ORM class / migration 目錄 / `.schema <table>` | schema delta 會寫成「新建」而其實是「改既有」 |
 | 既有介面 | `ls routers/`、`find app -name 'route.ts'`、OpenAPI schema | 會發明一個已經存在的端點 |

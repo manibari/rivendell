@@ -24,7 +24,7 @@ source: skill-lab
 # Task Brief — 任務定義教練
 
 > 來源：改編自 [`skill-lab`](https://github.com/Jacktsai2785/skill-lab)（Jack Tsai）的
-> `task-brief`。在 rivendell 歸入 `meta/`，定位為 **Step 0 任務定義 / 路由 gate**
+> `task-brief`。在 rivendell 歸入 `workflow/`，定位為 **Step 0 任務定義 / 路由 gate**
 > （獨立第二意見：Codex 2026-06-16）。框架整理自 YouTube「你不是不會寫 Prompt，
 > 是不會定義任務」。
 

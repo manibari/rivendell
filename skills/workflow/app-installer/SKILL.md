@@ -55,7 +55,7 @@ Read [references/bundled-runtimes.md](references/bundled-runtimes.md). Then:
 4. Run the clean-machine check on the runtime directories:
 
 ```bash
-~/Code/Personal/rivendell/skills/workflow/app-installer/scripts/check-macho-deps.sh <runtime-dir>
+"${CLAUDE_SKILL_DIR}/scripts/check-macho-deps.sh" <runtime-dir>
 ```
 
 **Done when:** the check exits 0. Every `RPATH ... EXISTS here` line is fixed, not ignored.
@@ -94,7 +94,7 @@ an upgrade path for the data schema, other CPU architectures, other platforms.
 
 - **Data lives outside the bundle**: `~/Library/Application Support/<App>`, logs in
   `~/Library/Logs/<App>`. A signed bundle is read-only, and an upgrade replaces it whole.
-- **Each app gets its own ports**, registered in `~/Code/Personal/rivendell/data/ports.conf`, apart from the dev ports.
+- **Each app gets its own ports**, registered in rivendell's `data/ports.conf` (check: `sk check ports`).
 - **One build script, one source of truth.** The version comes from the repo, the ports
   from the launcher; the script reads them and does not copy them.
 - **Commit with care when other sessions share the repo**: stage only the packaging files.

@@ -88,25 +88,18 @@ If `.claude/CLAUDE.md` does not exist, create it. This file is for Claude Code-s
 
 @AGENTS.md
 
-## Workflow
+## Claude-specific rules
 
-- Read existing code before modifying
-- Verify changes compile/pass before claiming done
-- Prefer editing existing files over creating new ones
-
-## Context Management
-
-- Use subagents for independent parallel tasks
-- Use plan mode for tasks requiring 10+ steps
+<!-- Only what differs from AGENTS.md: hooks, skills to use, paths not to touch -->
 ```
 
-### Step 4: Add .claude.local.md to .gitignore
+### Step 4: Add CLAUDE.local.md to .gitignore
 
-If `.gitignore` exists but doesn't include `.claude.local.md`, append it:
+If `.gitignore` exists but doesn't include `CLAUDE.local.md`, append it:
 
 ```
 # Claude Code local overrides
-.claude.local.md
+CLAUDE.local.md
 ```
 
 ### Step 5: Report
@@ -117,13 +110,13 @@ Show what was created/skipped:
 Created:
   - AGENTS.md (cross-tool team config)
   - .claude/CLAUDE.md (Claude-specific settings, imports AGENTS.md)
-  - .gitignore updated (added .claude.local.md)
+  - .gitignore updated (added CLAUDE.local.md)
 
 Skipped:
   - [file] already exists
 
 Next steps:
   - Review and customize AGENTS.md with your project specifics
-  - Add .claude.local.md for personal local overrides (not in git)
+  - Add CLAUDE.local.md for personal local overrides (not in git)
   - Restart Claude Code to pick up new config
 ```

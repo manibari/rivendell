@@ -26,7 +26,7 @@ Automated scraper that fetches government tender listings and maintains `materia
 ## Architecture
 
 ```
-g0v API → Filter 公開徵求 → Dedup vs existing .md files → Write/Archive → Regenerate INDEX
+g0v API → keyword filter → dedup vs existing .md → fetch detail, keep 招標資料.招標方式 = 公開徵求 → Write/Archive → Regenerate INDEX
 ```
 
 ### Data Flow
@@ -34,7 +34,7 @@ g0v API → Filter 公開徵求 → Dedup vs existing .md files → Write/Archiv
 ```
 WebFetch pcc-api.openfun.app
     ↓
-Filter brief.type = 公開徵求
+Fetch detail per new listing; keep 招標資料.招標方式 == 公開徵求
     ↓
 Read materials/tenders/cases/*.md frontmatter (dedup)
     ↓
@@ -135,7 +135,7 @@ Short English abbreviations (`AR`, `VR`, `BI`, `API`) are auto-rejected — they
 ## Observability
 
 - **exec-lib** writes run metadata to the dashboard DB on each execution
-- Progress logging uses **`[step N/5]`** prefix format for structured parsing
+- Progress logging uses **`[step N/6]`** prefix format for structured parsing
 - Dashboard renders a timeline view from plain Python log output — no special log framework needed
 
 ## Resilience

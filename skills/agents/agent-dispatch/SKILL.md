@@ -213,15 +213,7 @@ tmux new-session -d -s "$SESSION" -x 200 -y 50 \
   "cd '$WORKTREE' && claude --dangerously-skip-permissions"
 ```
 
-For Claude Code specifically:
-
-```typescript
-// Using Task() in Claude Code
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently, each in its own worktree
-```
+In Claude Code, call the Agent tool once per task in one message, each with `isolation: "worktree"` and the worker prompt above; use a fresh agent type, not `fork`. The calls run concurrently.
 
 ### Phase 4: Monitor and Steer
 

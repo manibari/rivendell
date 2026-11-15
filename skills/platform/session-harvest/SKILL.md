@@ -107,7 +107,7 @@ Output a structured report:
 - **用途**: What it would do
 - **觸發時機**: When it would activate
 - **涵蓋步驟**: The workflow it would encode
-- **分類建議**: Which category (meta/workflow/quality/frontend/backend/docs/git)
+- **分類建議**: which `skills/` directory (`ls skills/`) and which `loop:`
 - **來源**: What happened in this session that surfaced this pattern
 - **現有相似**: Any existing skill that partially overlaps (and how this differs)
 

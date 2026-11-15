@@ -144,7 +144,7 @@ Write to `reports/qa-journey-<flow>-<persona>-YYYY-MM-DD.md` in the target proje
 ```
 
 The wiring-gap section is the deliverable: it maps 1:1 to "缺的不多，是沒串" work items
-— each gap is a candidate lever (see Product Evolution Strategy: lever-first).
+— each gap is a candidate lever: wire existing parts together before you build new ones.
 
 ## Step 4 — Regression across releases
 
