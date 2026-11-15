@@ -25,10 +25,7 @@ allowed-tools: "Read, Edit, Write, Bash, Glob, AskUserQuestion"
 Check every slide of a deck before export. A script measures what it can. Claude
 reads each screenshot for the rest. A failure gets at most three iterations.
 
-This skill holds the slide layout rules. Until 2026-07-27 they were in the global
-CLAUDE.md ("Diagram & Slide Output Defaults"). That section is gone, so this file is
-now the source. Background: GitHub issue #2 (2026-06-03), plan
-`docs/plans/2026-10-20-slide-storyline-review-deck-index.md`.
+This skill is the source of the slide layout rules. Design: `docs/plans/2026-10-20-slide-storyline-review-deck-index.md`.
 
 ## Rules
 

@@ -261,8 +261,7 @@ Run dev: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up`
 
 ```bash
 # Auto-generate from docker-compose.yml env references
-grep -oP '\$\{[A-Z_]+[^}]*\}' docker-compose.yml | sort -u | \
-  sed 's/\${\([^:}]*\)[^}]*}/\1=/' > .env.example
+grep -oE '\$\{[A-Z_]+[^}]*\}' docker-compose.yml | sed -E 's/\$\{([A-Z_]+).*/\1=/' | sort -u > .env.example
 ```
 
 Always include these at minimum:
@@ -349,31 +348,29 @@ docker compose logs -f api
 
 ## Security Hardening Checklist
 
-Apply to EVERY production container:
+Apply to every production container. The reasons are in the Anti-Pattern Catalog and
+references/security-hardening.md.
 
-### Dockerfile Security (MUST)
+### Dockerfile
 
-- [ ] Non-root USER with explicit UID/GID (ALWAYS use `USER 1001:1001`)
-- [ ] No secrets in ENV, ARG, or COPY layers (use `--mount=type=secret` for build-time secrets)
-- [ ] Pinned base image tags (consider digest pinning for critical services)
-- [ ] `# syntax=docker/dockerfile:1` as first line (enables BuildKit features)
-- [ ] HEALTHCHECK instruction defined
-- [ ] Exec form for ENTRYPOINT/CMD (NOT shell form -- shell form breaks signal handling)
+- [ ] Use a non-root `USER 1001:1001`.
+- [ ] Keep secrets out of `ENV`, `ARG`, and `COPY`; use `--mount=type=secret`.
+- [ ] Pin base image tags; use a digest for critical services.
+- [ ] Put `# syntax=docker/dockerfile:1` first.
+- [ ] Define a HEALTHCHECK.
+- [ ] Use exec-form ENTRYPOINT/CMD; shell form drops SIGTERM.
 
-### Compose Security (MUST)
+### Compose
 
-- [ ] `cap_drop: ALL` on every service (add back only what is needed)
-- [ ] `security_opt: no-new-privileges=true` on every service
-- [ ] `read_only: true` with `tmpfs` for writable paths
-- [ ] `depends_on` with `condition: service_healthy` (NEVER use bare `depends_on`)
-- [ ] Resource limits: `memory`, `cpus`, `pids`
-
-### Compose Security (SHOULD)
-
-- [ ] `NEVER` use `--privileged` (use specific `--cap-add` instead)
-- [ ] `NEVER` use `latest` tag in production
-- [ ] `NEVER` store secrets in environment variables for passwords/tokens (use Docker secrets or mounted files)
-- [ ] `NEVER` use `container_name` on services you intend to scale
+- [ ] Set `cap_drop: ALL`; add back only what is needed.
+- [ ] Set `security_opt: no-new-privileges=true`.
+- [ ] Set `read_only: true` with `tmpfs` for writable paths.
+- [ ] Use `depends_on` with `condition: service_healthy`; bare `depends_on` waits only for start.
+- [ ] Set `memory`, `cpus`, and `pids` limits.
+- [ ] Do not use `--privileged`; use specific `cap_add` entries.
+- [ ] Do not use the `latest` tag in production.
+- [ ] Put passwords and tokens in Docker secrets or mounted files, not environment variables.
+- [ ] Do not use `container_name` on services you scale.
 
 ---
 
@@ -599,7 +596,7 @@ Check: Are they on the same network?
 
 | Issue | Fix |
 |-------|-----|
-| Port already in use | Check `port-map.html`, change `WEB_PORT`/`API_PORT` in `.env` |
+| Port already in use | Pick a free port in rivendell `data/ports.conf` (`sk check ports`), register it, then set `WEB_PORT`/`API_PORT` in `.env`. 3000 and 8000 belong to the rivendell dashboard. |
 | `Path(__file__).parent*N` wrong in container | Use env var: `Path(os.environ.get("REPORTS_DIR", fallback))` |
 | node_modules conflict | Mount override: `- /app/node_modules` in volumes |
 | Hot reload not working | Ensure dev override is loaded; check `WATCHPACK_POLLING=true` for Docker on macOS |

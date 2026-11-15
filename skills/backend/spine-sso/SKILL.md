@@ -7,8 +7,7 @@ description: >
   (AZURE_AD_* settings, id_token checks, company-domain limit, SSO allowlist, provisioning order,
   password sign-in kept as break-glass) plus the one DIVERGENT choice, the flow: browser MSAL
   (ChimesFlow) or server-side authorization code (people-ops, recommended). Also the Entra app
-  registration hand-off and the same registration for Graph calendar writes. Audit of ChimesFlow,
-  people-ops (hr.chimes.ai) and ChimesERP, 2026-10-28.
+  registration hand-off and the same registration for Graph calendar writes.
   TRIGGER when: "微軟登入", "Microsoft 登入", "公司帳號登入", "Entra", "Azure AD SSO", "串 SSO",
   adding or fixing company-account sign-in in a fleet product, an AADSTS error at sign-in, or
   registering an Entra app for sign-in or Outlook calendar sync.

@@ -113,7 +113,7 @@ mcp__google-drive__downloadFile(fileId, mimeType="application/pdf")
 
 ### Data-Driven Slides
 1. Create slides from template
-2. For each data row: duplicate a slide, replace placeholders, insert charts
+2. For each data row: duplicate a slide, replace placeholders, insert charts. Design each figure with `chart-design`.
 3. Reorder slides to match desired narrative
 4. Add speaker notes from data annotations
 

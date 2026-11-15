@@ -116,7 +116,10 @@ For each tool:
 - Helps clients understand and process tool outputs
 
 **Tool Description:**
-- Concise summary of functionality
+- What the tool does, when to use it and when not to
+- What each parameter means, with limits and defaults
+- What it returns, what it does not return, and how it fails
+- Precision over brevity: under-description is the most common cause of wrong calls
 - Parameter descriptions
 - Return type schema
 

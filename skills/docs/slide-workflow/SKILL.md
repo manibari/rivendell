@@ -44,7 +44,7 @@ Gated workflow + a pre-flight router. Each gate requires user confirmation befor
 
 ## Gate 0: storyline.md preflight
 
-**這道 gate 是 2026-05-03 加上的，原因：cd63836f session（光泉 deck）浪費 5 個 edit cycle 在「邊做邊發現 storyline 薄弱點」。沒簽核 storyline 就動工 = 浪費時間。**
+沒簽核 storyline 就動工，storyline 的弱點會在生成途中才浮現，每發現一次就要重做一輪。
 
 ```bash
 ls -la storyline.md 2>/dev/null
@@ -57,7 +57,7 @@ ls -la storyline.md 2>/dev/null
 | 存在 + frontmatter `status: signed-off` | 進 Gate 1 |
 | 存在、未簽核，`genre` 是 `presales` 或沒填 | STOP — 「找到 storyline.md 但還沒簽核。先跑 `/slide-office-hours` red-team 完才能進來。」 |
 | 存在、未簽核，`genre` 是 `internal` / `talk` / `report` / `other` | 跑 `scripts/storyline-selfcheck.sh storyline.md`。全部通過 → 加 `--sign` 簽核後進 Gate 1；有未通過 → 把未通過清單給用戶補，不代寫內容 |
-| 不存在 | STOP — 「沒找到 storyline.md。deck 沒 storyline 動工會浪費時間（參見 cd63836f 教訓）。B2B 提案從 `/slide-office-hours` 開始，會給你 template；內部、演講、報告用通用範本 `storyline-template-general.md`。」 |
+| 不存在 | STOP — 「沒找到 storyline.md。deck 沒 storyline 動工會浪費時間。B2B 提案從 `/slide-office-hours` 開始，會給你 template；內部、演講、報告用通用範本 `storyline-template-general.md`。」 |
 
 `genre` 沒填 = `presales`。自行簽核（`signed_by: self-check`）只對非 presales 有效，storyline gate hook 會擋 presales 的自行簽核（2026-10-20）。
 
@@ -286,6 +286,7 @@ ls ../*/mockups/slide-templates/*.html 2>/dev/null
 3. 每張 slide 使用 template 裡對應的 slide 類型（cover / section / cards / comparison / metrics / table）
 4. 如果大綱有 template 未提供的 slide 類型，用最接近的 slide 類型改造
 5. 存檔：`{output-dir}/{client}-deck.html`
+6. 數據圖、架構圖、流程圖這類 figure 交給 `chart-design`：它做 triage、套 style file、跑機械檢查並寫交付收據。
 
 **注意 CJK 字型**：如果 template 的 font stack 有 `Noto Sans TC`，確認 Google Fonts link 存在。
 

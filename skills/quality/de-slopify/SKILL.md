@@ -30,7 +30,7 @@ When given text to de-slopify:
 2. **Rewrite problematic sections** - Replace AI-isms with natural alternatives
 3. **Preserve meaning** - Keep the core message intact
 4. **Maintain voice** - Match the intended tone (formal, casual, technical, etc.)
-5. **Add soul** - Do not just remove bad patterns; inject actual personality
+5. **Keep it human** - in informal prose, replace removed patterns with real voice; in formal text, with plain neutral sentences.
 6. **Do a final anti-AI pass** - Ask: "What makes the below so obviously AI generated?" Answer briefly with remaining tells, then revise again to eliminate them
 
 **Core principle:** Read every line. Recast sentences. Use judgment. Use ultrathink.
@@ -50,7 +50,7 @@ If the user provides a writing sample (their own previous writing), analyze it b
 
 2. **Match their voice in the rewrite.** Do not just remove AI patterns - replace them with patterns from the sample. If they write short sentences, do not produce long ones. If they use "stuff" and "things," do not upgrade to "elements" and "components."
 
-3. **When no sample is provided,** fall back to the default behavior (natural, varied, opinionated voice from the PERSONALITY AND SOUL section below).
+3. **When no sample is provided,** keep the register the text already has. Add voice (opinions, first person, humor, tangents) only to informal prose such as blog posts; formal documents, dev docs (ASD-STE100) and 審查文體模式 keep a neutral register.
 
 
 ## PERSONALITY AND SOUL
@@ -472,8 +472,8 @@ agency, or client executive** — 補助計畫書, 標書, SOW, 提案書. Trigg
 Regular slop removal makes text sound human. This mode fixes a different failure:
 **the author's internal strategy leaking into the body text**. A proposal drafted
 with AI assistance often contains notes-to-self about how to win the review —
-deadly if the committee reads them. Real-case calibration: a proposal the author
-believed was clean still contained 12 instances across these three categories.
+deadly if the committee reads them. A proposal the author believed
+was clean can still hold a dozen of these.
 
 Scan the ENTIRE document for:
 
@@ -498,7 +498,7 @@ document these read as unexplained jargon AND as internal engineering voice.
 
 | Before | After |
 |---|---|
-| Recall-first 設計哲學 | 檢核設計原則——寧可多報、不可漏抓 |
+| Recall-first 設計哲學 | 檢核設計原則：寧可多報、不可漏抓 |
 | human-in-the-loop 機制 | 工程師於畫面上檢視、核可後放行 |
 
 ### C. 括號裡的內部視角註記 (parenthetical asides)
@@ -544,9 +544,6 @@ engineering artifact: **M1 / M2、P0 / P1、Phase 1、Sprint N、內部 WBS 編�
 - 官方章節代碼 (A1.1 / B2.1 / C3) when the reader is reviewing against a 計畫書
 - 民國年月 (105/09～110/06) for anything on a timeline
 - Otherwise name the event outright (「第一次現勘」, not 「M1」)
-
-This one used to live as a single example inside category A and was missed twice
-in real documents (2026-07-28). It is its own scan step now, not an illustration.
 
 ### Process for this mode
 

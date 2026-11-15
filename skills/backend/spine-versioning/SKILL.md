@@ -3,19 +3,10 @@ name: spine-versioning
 loop: dev
 pdca: act
 description: >
-  Canonical version + changelog for the product fleet — and crucially the
-  ENFORCEMENT that stops "forgot to bump". Audit (2026-06-27/28) of chimesflow,
-  family-fiscal, 孕: all three HAVE a version + changelog, but NONE has a gate, so
-  bumps get forgotten in flow (chimesflow's version stuck 4 releases via a silent
-  sed no-op; 孕 shipped a whole batch then back-filled v0.11.0). So unlike a normal
-  module, the canonical core here is the GATE (a pre-push / CI check: code changed
-  but version/CHANGELOG didn't → block), not the changelog data model. The decision
-  is dev-facing CHANGELOG.md vs user-facing in-app "更新歷程" (most products want both).
+  Canonical version + changelog for the product fleet, enforcement first: a pre-push or CI gate blocks a push where code changed but the version / CHANGELOG did not. Decides dev-facing CHANGELOG.md vs user-facing 更新歷程 (most want both). Reference gate: Yellow-Chick scripts/checks/check_release.py.
   TRIGGER when: adding version / changelog / release notes / 更新歷程 / 版本號 /
   bump / "顯示版本" to a product; setting up release hygiene; OR right after someone
   says "I'll remember to bump next time" (that's the signal to install the gate).
-  Yellow-Chick (2026-09) is the first product WITH the gate: owner-defined bump
-  rules, hotfix-needs-ticket, and scripts/checks/check_release.py in CI.
   Owner rule 2026-10-31: one version for each merged ticket (feature = MINOR, any
   other ticket = PATCH), made in the merge flow right after the merge, recorded
   with its ticket, and checked by a local pre-push gate (ChimesERP ERP-357, ERP-358).

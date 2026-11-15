@@ -143,8 +143,9 @@ what was said, and what was on screen (from Step 3).
 ## Step 5 — Archive (optional, offer it)
 
 ```bash
-bash "$SHARED/save_note.sh" /tmp/transcript.txt "<one-line summary>"
-# → knowledge/videos/YYYY-MM-DD-<title>/note.md  + rebuilt INDEX. Cures read-but-never-saved.
+# Write the summary to /tmp/summary.md first.
+bash "$SHARED/save_note.sh" /tmp/transcript.txt /tmp/transcript.txt.meta /tmp/summary.md
+# → knowledge/content/videos/YYYY-MM-DD-<title>/note.md + rebuilt INDEX.
 ```
 
 ## Notes & gotchas

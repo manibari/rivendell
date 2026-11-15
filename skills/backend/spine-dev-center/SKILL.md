@@ -288,10 +288,6 @@ links to 開發進度. Developer tickets do not light the bell's red dot (YC dec
 | Design | `docs/design/2026-10-20-shell-centers-i18n-sd.md`, `2026-10-23-dev-tracker-sd.md`; mockups `docs/mockups/2026-10-21-shell-centers.html` (`d-dev`), `2026-10-23-dev-tracker.html` |
 | Tests | `backend/tests/test_devcenter_*.py`, `test_centers.py`, `test_devtracker_cli.py`; `frontend/e2e/dev-center.spec.ts`, `dev-tracker.spec.ts`, `dev-tracker-phone.spec.ts` |
 
-Status on 2026-10-31: ERP-314 (開發藍圖 as architecture views; ticket bars moved to
-開發進度), ERP-357 (版本與交付 lists each version with its tickets) and ERP-358 (local
-version gate) are on main and wait for the owner's acceptance (`review`).
-
 ## Sources
 
 - Survey of the three repos on 2026-10-27 (main branches; ERP branches for the parts

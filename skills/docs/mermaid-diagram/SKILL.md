@@ -204,7 +204,7 @@ Do **not** use these types — they lack structural argument capability or are t
 
 **How to render:**
 ```bash
-bash .claude/skills/mermaid-diagram-skill/references/render_mermaid.sh <path.mmd> [output.png]
+bash "${CLAUDE_SKILL_DIR}/references/render_mermaid.sh" <path.mmd> [output.png]
 ```
 First run downloads mmdc via npx — may take ~30s.
 
@@ -285,7 +285,6 @@ Write `visual_review: passed` only after you have actually Read the PNG.
 21. Eye flows naturally through the diagram?
 22. Line crossings minimized (tried reordering + rankDir if needed)?
 
-**Cleanup**
-Once a user is happy with the output, remove any temporary output like pngs or mmd files.
+**Cleanup**: after the user accepts the diagram, delete the intermediate renders from your iterations. Keep the delivered `.mmd` (or edited `.md`) and the final PNG.
 
 <!-- Ported from: https://github.com/mgranberry/mermaid-diagram-skill by skill-scout on 2026-05-15 -->

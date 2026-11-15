@@ -83,7 +83,7 @@ For each deliverable, gather the 8 elements: 對象、指標與算法、**輸入
 
 ## Phase 2: Generate SOW
 
-Save to `docs/sow/{client-shortname}-{year}.md`. Use this exact 12-section structure:
+Save to `docs/sow/{client-shortname}-{year}.md`. Use this section structure (一 to 十三), in this order:
 
 ```markdown
 # 工作說明書（Statement of Work）

@@ -232,6 +232,10 @@ provided source assets instead.
 
 ---
 
+## Storyline gate (BD, first-call and other B2B sales decks)
+
+Run slide-workflow Gate 0 before Phase 3: `storyline.md` must carry `status: signed-off` from `/slide-office-hours`.
+
 ## Phase 3: HTML Slides
 
 ### CRITICAL: Use a Locked Template First
@@ -258,11 +262,13 @@ Generate one HTML file per 3-4 slides, or a single-file multi-slide deck using a
 - One main idea per slide — supporting content is secondary
 - Max 5 bullet points; prefer visuals (Codex images, charts, icons, diagrams) over text
 - Brand color: **always inherit from the locked template's `:root` variables**, never invent
-- Font: Inter or Geist Sans (load from Google Fonts if HTML)
+- Font: the locked template's font stack. A Chinese deck needs a CJK font first (`'Noto Sans TC'` or `'PingFang TC'`).
 - Generated images are visual assets only: overlay all copy, callouts, data labels,
   and logos as native HTML/PPT elements so the deck remains editable and readable.
 
 ### HTML slide template
+
+Use this skeleton only for the temporary version the user approved earlier in this phase; replace its colors and font with the brand tokens.
 
 ```html
 <!DOCTYPE html>
@@ -303,7 +309,7 @@ Generate one HTML file per 3-4 slides, or a single-file multi-slide deck using a
 - **Problem**: quote/story from a real user, then stats
 - **Cover / section**: Codex-generated full-bleed image with safe area for title
 - **Solution**: Codex-generated context image or real product screenshot plus native 3-step flow
-- **Market**: TAM/SAM/SOM concentric circles or bar chart
+- **Market**: TAM/SAM/SOM concentric circles or bar chart. Design each figure with `chart-design`.
 - **Traction**: metric cards (`<div class="metric">`)
 - **Competition**: 2×2 positioning matrix (CSS grid)
 - **Team**: headshot placeholder + name + 1-line bio
@@ -316,7 +322,7 @@ Run this before Phase 4. Once the deck is a PPTX in someone's inbox it is too
 late, and this is the stage investor / BD decks fail most often: the copy tells
 the reader what to conclude instead of showing them the evidence.
 
-**Step 0 — load the SoT.** Read `skills/quality/de-slopify/SKILL.md` §審查文體模式
+**Step 0 — load the SoT.** Read `~/.claude/skills/de-slopify/SKILL.md` §審查文體模式
 and bring categories **D (自我評價)** and **E (內部代號)** into the working prompt.
 The two sweeps below are the floor, not the whole check.
 

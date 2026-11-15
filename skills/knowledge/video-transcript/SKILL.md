@@ -15,7 +15,7 @@ description: >
   doesn't say "字幕" — if the content lives in an online video, this is the skill.
   DO NOT TRIGGER when: cutting a highlight clip out of a video (use video-clip-extract), producing a
   subtitle FILE / .srt for re-upload or translation-with-timing (use subtitle-file), transcribing a
-  local audio/video file (that's a Whisper job), or the link is a plain web page (fetch it directly).
+  local audio/video file (use local-media-transcribe), or the link is a plain web page (fetch it directly).
 tags: [media, content, video, youtube]
 version: 2.0.0
 user_invocable: true

@@ -196,9 +196,7 @@ ticket SoT.
 
 ## Other channels: GitHub issues, code review, QA, file bundles
 
-Peter decided this on 2026-10-15. On that date, Yellow-Chick, PTI-ARES and the
-light-tier repos had 0 GitHub issues. rivendell had 3 stale spec issues. The tracker
-stays the SoT. The other channels feed it or read from it. They do not hold status.
+Owner decision (2026-10-15): the tracker stays the SoT. The other channels feed it or read from it; they do not hold status.
 
 | Channel | Answers | Do not use it for |
 |---|---|---|

@@ -16,10 +16,9 @@ same source skills into both Claude Code (`~/.claude/skills`) and Codex
 (`${CODEX_HOME:-~/.codex}/skills`).
 
 Gstack skills are intentionally not copied into this repo. They come from the
-separate `gstack` checkout, whose location is machine-dependent — this file used
-to name `/Users/manibari/code/gstack`, which is the previous machine's path and
-resolves to nothing after the move. Same rule as `.claude/CLAUDE.md` line 15:
-derive the path, don't hardcode it. Find the checkout with
+separate `gstack` checkout, whose location is machine-dependent. Derive the path;
+do not hardcode it (`.claude/CLAUDE.md`, "Never hardcode the repo/project name").
+Find the checkout with
 `git -C "$(dirname "$PWD")/gstack" rev-parse --show-toplevel` or wherever
 `external_skill_pack` in `sk bootstrap` put it; Codex-specific generated skills
 live under that repo's `.agents/skills/gstack-*`, linked into

@@ -115,8 +115,7 @@ curl -fSL "<audio-url>" -o /tmp/ch-ep.mp3
 bash "$SHARED/local_transcribe.sh" /tmp/ch-ep.mp3 /tmp/ch-item.txt   # mlx-whisper, offline
 ```
 
-`local_transcribe.sh` writes no `.meta` sidecar, so build one before archiving — otherwise the note
-loses its title and URL:
+`local_transcribe.sh` writes a `.meta` whose title is the audio file name and which has no URL. Overwrite it with the episode title and URL before archiving:
 
 ```bash
 printf 'title: %s\nurl: %s\nlang: \nkind: asr\n' "<title>" "<page-or-audio-url>" > /tmp/ch-item.txt.meta
@@ -218,10 +217,7 @@ correctly before letting it write to git unattended. When ready, it follows the 
 other rivendell agents:
 
 1. Add `bin/sk-channel-scrape-cron` (mirror `bin/sk-harvest-cron`) invoking this skill headless.
-2. Add to `agents/agents.conf`:
-   ```
-   com.sk.agent.rivendell.yt-channel-scraper | rivendell | bin/sk-channel-scrape-cron | calendar | 9:00 | reports
-   ```
+2. Add `agents/registry/yt-channel-scraper.md`, copied from `agents/registry/TEMPLATE.md` (for the shape, see `agents/registry/harvest.md`). `agents/agents.conf` is generated from the registry; do not edit it.
 3. `./bin/sk agent start yt-channel-scraper` to generate the plist and load it.
 
 Two things to settle before that switch: committing the new notes (`./bin/sk agent commit

@@ -2,7 +2,7 @@
 
 ## Design System
 
-Always read `dashboard-next/DESIGN.md` before making any visual / UI / styling change.
+Always read `DESIGN.md` (in this directory) before making any visual / UI / styling change.
 All color, typography, spacing, layout, and component decisions are defined there.
 Do not deviate from DESIGN.md without explicit user approval, and update the
 "Decisions Log" section at the bottom of DESIGN.md when a deviation is approved.
@@ -18,9 +18,7 @@ font-family strings outside `globals.css`, blue/purple/indigo accent usage, etc.
 
 ## Fonts
 
-Self-hosted in `public/fonts/` (Geist Variable + Geist Mono Variable, .woff2).
-@font-face declarations in `globals.css`. Do not switch to Google Fonts CDN —
-portability across machines is a design constraint.
+Self-hosted in `src/fonts/` (Geist Variable + Geist Mono Variable, .woff2), loaded with `next/font/local` in `src/app/layout.tsx`. Do not switch to Google Fonts CDN — portability across machines is a design constraint.
 
 ## Workflow page
 
@@ -31,9 +29,7 @@ permanent redirect for legacy bookmarks. Sub-routes per flow:
 
 Source of truth is `platform/capabilities/workflows/playbooks/*.json` in the
 repo root. The page loads each playbook through `/api/capabilities/playbooks/{id}`;
-`playbook-data.ts` contains display types only. The current local
-`~/.claude/CLAUDE.md` has no "Development Workflow" section, so it is not a
-mirror of the playbooks on this host.
+`playbook-data.ts` contains display types only.
 
 `FlowView.tsx` renders one flow as a vertical step list with `↳` branch
 lines for `optionals`. `[flow]/page.tsx` wires the breadcrumb, title, and

@@ -9,7 +9,7 @@ description: >
   owner must run because Claude may not create cloud resources, production containers, Caddy
   HTTPS, backups to Cloud Storage, the one-time data move from a local stack, DNS hand-off to a
   network admin, go-live, and after go-live the nightly deploy from the owner's Mac and user
-  accounts on the live site. Learned on ChimesERP ERP-316 (2026-10-28) and ERP-347 (2026-10-30).
+  accounts on the live site.
   TRIGGER when: "部署到 GCP", "上雲端主機", "開一台 VM", "搬到雲端", "erp.xxx 上線", "給同事一個網址",
   "夜間自動部署", "雲端建帳號", deploying a compose app to a GCP VM, moving a local stack's data to
   a cloud VM, a GCP SSH / IAP / firewall / static IP problem during such a deploy, a nightly
@@ -215,9 +215,6 @@ User accounts on the live site (no user admin page yet):
   so the backup timer could not upload while a manual run could. Set
   `Environment=PATH=...:/snap/bin` in the unit and prove it with `systemctl start <unit>` plus
   `gcloud storage ls <bucket>`.
-- Rehearsal results on ChimesERP: 3 tries. (1) `pg_restore --clean` into a newer schema failed;
-  (2) the failed run left `api` stopped and the deploy's backup step needed it; (3) passed:
-  row counts and the 41 upload files matched.
 - Scripts that live on the owner's machine (`deploy-dev.sh`, rules files) block colleagues. Move
   them into `scripts/ops/` in the same ticket.
 - **CLI tools that use a token, not a session, fail behind the frontend proxy.** The tracker CLI

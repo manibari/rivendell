@@ -2,7 +2,7 @@
 name: doc-to-structured-data
 loop: shared
 pdca: do
-description: Parse unstructured technical documents (.doc, .pdf, .xlsx) into structured CSV/JSON — handles format detection, extraction strategy selection, domain-specific field recognition, and multi-table output with validation.
+description: Parse unstructured technical documents (.doc, .pdf, .xlsx) into structured CSV/JSON — format detection, extraction strategy, domain field recognition, multi-table output with validation. TRIGGER when: user asks to "extract data from document", "parse this spec", "convert to CSV/JSON", "把這份文件結構化", or has a technical document (.doc/.pdf/.xlsx) that needs tabular extraction. DO NOT TRIGGER when: simple PDF text reading (office-pdf), creating documents (office-docx/pptx), or already-structured data.
 tags: [backend, data-extraction, document-processing]
 version: 1
 source: harvest-2026-03-19
@@ -10,9 +10,6 @@ user_invocable: true
 ---
 
 # doc-to-structured-data
-
-TRIGGER when: user asks to "extract data from document", "parse this spec", "convert to CSV/JSON", "把這份文件結構化", or has a technical document (.doc/.pdf/.xlsx) that needs tabular extraction.
-DO NOT TRIGGER when: simple PDF text reading (use office-pdf), creating documents (use office-docx/pptx), or working with already-structured data.
 
 ## When This Skill Adds Value
 

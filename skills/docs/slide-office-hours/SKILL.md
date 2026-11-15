@@ -22,9 +22,7 @@ Storyline red-team gate. **Reviews** a user-written `storyline.md`, never **prop
 
 The leverage point in deck-building is storyline review, not slide generation. AI's default content voice = 「公開資料合理推測」voice = the failure mode this skill exists to catch.
 
-**Scope: B2B presales only** (`genre: presales`, or no `genre`). Since 2026-10-20 an
-internal deck, a talk or a report uses `genre: internal | talk | report | other` and
-signs off with the self-check script, not with this skill:
+**Scope: B2B presales only** (`genre: presales`, or no `genre`). An internal deck, a talk or a report uses `genre: internal | talk | report | other` and signs off with the self-check script:
 
 ```bash
 "${CLAUDE_SKILL_DIR}/../../docs/slide-workflow/scripts/storyline-selfcheck.sh" --sign storyline.md
@@ -35,7 +33,7 @@ deck still goes through this review.
 
 ## Hard Rules
 
-These four rules are non-negotiable. Violating any of them = skill failure.
+These four rules define the review. The user owns the storyline content; this skill only tests it.
 
 1. **Never propose storyline content.** Only challenge what user wrote. If user asks「那我該寫什麼」, return:
    > 我不能 propose — 我能做的是挑戰你提的東西。先寫個 bullet 我來戳。

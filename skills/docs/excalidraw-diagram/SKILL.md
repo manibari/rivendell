@@ -33,17 +33,6 @@ Generate `.excalidraw` JSON files that **argue visually**, not just display info
 
 **Setup:** If the user asks you to set up this skill (renderer, dependencies, etc.), see `README.md` for instructions.
 
-> **RESOLVED (2026-08-09):** `render_template.html` now pins
-> `https://esm.sh/@excalidraw/excalidraw@0.17.6?bundle` and imports the
-> **default export** (`import mod from ...; const { exportToSvg } = mod;`) —
-> the pinned bundle resolves fine but exposes all APIs under `default`.
-> Note: jsdelivr `+esm` is NOT a viable workaround (its bundle ships a
-> syntax error, `Unexpected token ':'`).
->
-> Original issue (2026-05-16, for context): esm.sh latest had a transitive
-> dep 404 (`@braintree/sanitize-url@6.0.2/dist/constants.mjs`), so the ESM
-> graph failed and Playwright timed out at `__moduleReady`.
-
 ## Customization
 
 **All colors and brand-specific styles live in one file:** `references/color-palette.md`. Read it before generating any diagram and use it as the single source of truth for all color choices — shape fills, strokes, text colors, evidence artifact backgrounds, everything.
@@ -236,13 +225,13 @@ Before JSON, mentally trace how the eye moves through the diagram. There should 
 Only now create the Excalidraw elements. **See below for how to handle large diagrams.**
 
 ### Step 6: Render & Validate (MANDATORY)
-After generating the JSON, you MUST run the render-view-fix loop until the diagram looks right. This is not optional — see the **Render & Validate** section below for the full process.
+After generating the JSON, run the render-view-fix loop in Render & Validate.
 
 ---
 
 ## Large / Comprehensive Diagram Strategy
 
-**For comprehensive or technical diagrams, you MUST build the JSON one section at a time.** Do NOT attempt to generate the entire file in a single pass. This is a hard constraint — Claude Code has a ~32,000 token output limit per response, and a comprehensive diagram easily exceeds that in one shot. Even if it didn't, generating everything at once leads to worse quality. Section-by-section is better in every way.
+Build a comprehensive or technical diagram one section per edit. Each response stays short enough to finish without truncated JSON, and you can check each section's bindings before the next.
 
 ### The Section-by-Section Workflow
 
@@ -280,7 +269,7 @@ Each section should be independently understandable: its elements, internal arro
 
 ### What NOT to Do
 
-- **Don't generate the entire diagram in one response.** You will hit the output token limit and produce truncated, broken JSON. Even if the diagram is small enough to fit, splitting into sections produces better results.
+- **One section per edit**, even when the diagram would fit in one response, so you check bindings as you go.
 - **Don't use a coding agent** to generate the JSON. The agent won't have sufficient context about the skill's rules, and the coordination overhead negates any benefit.
 - **Don't write a Python generator script.** The templating and coordinate math seem helpful but introduce a layer of indirection that makes debugging harder. Hand-crafted JSON with descriptive IDs is more maintainable.
 
@@ -481,12 +470,12 @@ See `references/element-templates.md` for copy-paste JSON templates for each ele
 
 ## Render & Validate (MANDATORY)
 
-You cannot judge a diagram from JSON alone. After generating or editing the Excalidraw JSON, you MUST render it to PNG, view the image, and fix what you see — in a loop until it's right. This is a core part of the workflow, not a final check.
+You cannot judge a diagram from JSON alone. After you generate or edit the JSON, render it to PNG, read the image, and fix what you see.
 
 ### How to Render
 
 ```bash
-cd .claude/skills/excalidraw-diagram/references && uv run python render_excalidraw.py <path-to-file.excalidraw>
+cd "${CLAUDE_SKILL_DIR}/references" && uv run python render_excalidraw.py <absolute-path-to-file.excalidraw>
 ```
 
 This outputs a PNG next to the `.excalidraw` file. Then use the **Read tool** on the PNG to actually view it.
@@ -524,7 +513,7 @@ After generating the initial JSON, run this cycle:
 
 **5. Re-render & re-view** — Run the render script again and Read the new PNG.
 
-**6. Repeat** — Keep cycling until the diagram passes both the vision check (Step 2) and the defect check (Step 3). Typically takes 2-4 iterations. Don't stop after one pass just because there are no critical bugs — if the composition could be better, improve it.
+**6. Repeat, at most twice.** Stop when the diagram passes the vision check (Step 2) and the defect check (Step 3). If a second round does not reduce the defects, stop and report what is still wrong: repeated tweaks mean the pattern or the split is wrong.
 
 ### When to Stop
 
@@ -538,7 +527,7 @@ The loop is done when:
 ### First-Time Setup
 If the render script hasn't been set up yet:
 ```bash
-cd .claude/skills/excalidraw-diagram/references
+cd "${CLAUDE_SKILL_DIR}/references"
 uv sync
 uv run playwright install chromium
 ```

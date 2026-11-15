@@ -3,15 +3,7 @@ name: spine-rbac
 loop: dev
 pdca: plan
 description: >
-  Canonical RBAC tiering for the FastAPI product fleet. UNLIKE spine-auth, RBAC
-  has almost NO convergent code core — a real audit of family-fiscal vs chimesflow
-  (2026-06-27) found them at opposite tiers (hardcoded 2-role vs data-driven
-  Role×Entity×Level matrix). So this is a TIER-DECISION skill: it gives the two
-  archetypes, when to pick each, the one thing that DOES converge (enforce via a
-  FastAPI Depends factory, never an in-body check), and the proven Tier1→Tier2
-  migration path (chimesflow walked it itself). Also the frontend permission check
-  (read what the backend allows; never a second rule list) and the role x route test
-  table, merged from rbac-permissions (2026-11-02).
+  Canonical RBAC tiers for the FastAPI product fleet. Choose between fixed roles and a Role×Entity×Level matrix. Enforce permissions with a FastAPI Depends factory, keep frontend checks aligned with the backend, and test roles against routes.
   TRIGGER when: adding roles / permissions / 權限 / 權限管理 / access control /
   require_admin / require_permission / "給人用要分權限" to a FastAPI product;
   deciding how granular authz should be; a product's roles outgrowing admin/member;

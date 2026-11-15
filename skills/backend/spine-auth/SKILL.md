@@ -7,10 +7,7 @@ description: >
   (jose JWT + bcrypt + HS256, hash/verify/decode, a get_current_user Bearer
   dependency) PLUS the DIVERGENT policy decisions (single vs refresh token,
   tenant claim, simple vs data-driven RBAC, flat vs modular layout) you must
-  choose per product. Grounded in a real convergence audit of chimesflow +
-  family-fiscal (2026-06-27): the crypto core matches almost line-for-line; the
-  token policy and RBAC do NOT — so copying one product whole bakes in its
-  policy. First module of the fleet infra spine (see rivendell docs/spine-modules.md).
+  choose per product. First module of the fleet infra spine (see rivendell docs/spine-modules.md).
   TRIGGER when: adding auth / login / 帳密 / 帳號密碼 / JWT / token / 登入 /
   password hashing / get_current_user to a FastAPI + Postgres product; standing
   up a new fleet product that needs users (pti-ares, ic-yms, tukey-*, mops admin).

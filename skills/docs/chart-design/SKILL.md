@@ -181,14 +181,7 @@ correction_rounds: 0 | 1 | 2
 
 每個專案/客戶/品牌的風格存於 `styles/`：
 
-```
-skills/docs/chart-design/styles/
-├── example.md          # 模板，新專案 copy 改名
-├── richwave.md         # 立積電 (pending — 用 excalidraw / mermaid / 力成 HTML 為 baseline)
-├── powertech.md        # 力成 (pending — 用其 HTML deck 為 baseline)
-├── pitch-deck.md       # 投資人 BP 通用 (pending)
-└── iot-factory.md      # IoT/廠務報告通用 (pending)
-```
+List `styles/`. Each file's Brand / Project table names the project it serves. `example.md` is the template for a new one.
 
 Style file 內容規格：色盤 hex、字型 family + sizes、grid 規則、margin、axis style、legend position、reference deck path。範例見 `styles/example.md`。
 

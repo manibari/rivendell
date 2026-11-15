@@ -61,6 +61,8 @@ For each metric:
 
 ### Step 4: HTML Chart Generation
 
+Design each chart with `chart-design` (data-analysis class) and its style file. The snippet shows the plot calls only; take colors from the style file.
+
 Generate interactive charts using Python matplotlib or Chart.js:
 
 ```python

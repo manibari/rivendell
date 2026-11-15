@@ -144,12 +144,12 @@ Claude may also proactively suggest synthesis when it notices summaries are stal
 2. For each entity with facts modified since last synthesis:
    a. Load all facts from facts.jsonl
    b. Filter to status: "active" only
-   c. Write a new summary.md (3-8 lines):
+   c. Write a new summary (3-10 lines) with `python3 <rivendell>/scripts/kg.py summary <type> <slug>` (send the text on stdin):
       - Who/what is this entity
       - Current relationship/status
       - Key active facts
       - Last updated date
-   d. Mark any contradicted facts as superseded
+   d. Supersede contradicted facts with `python3 <rivendell>/scripts/kg.py add <type> <slug> --fact "<replacement>" --category <category> --supersedes <old-id>`
 3. Report what was synthesized
 ```
 
@@ -226,9 +226,9 @@ python3 <rivendell>/scripts/kg.py init   # dirs + git repo, idempotent
 
 ```markdown
 ### Knowledge Graph -- Entity Memory
-- Save durable facts to ~/.claude/knowledge/<type>/<slug>/facts.jsonl (append-only JSONL)
-- Never delete facts -- supersede instead ("status":"superseded","supersedes":"old-id")
-- When encountering a new notable entity, create its folder + initial fact + summary
+- Add durable facts with `python3 <rivendell>/scripts/kg.py add <type> <slug> --fact "<fact>" --category <category>`.
+- Supersede a fact with `python3 <rivendell>/scripts/kg.py add <type> <slug> --fact "<replacement>" --category <category> --supersedes <old-id>`.
+- Write a summary with `python3 <rivendell>/scripts/kg.py summary <type> <slug>` and send 3-10 lines on stdin.
 - Only recall on triggers (proper nouns, "remember/recall", or project keywords)
 - Inject summary.md only (max 5 lines); never inject facts.jsonl unless asked
 ```

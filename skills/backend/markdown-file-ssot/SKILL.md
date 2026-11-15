@@ -202,10 +202,14 @@ import remarkGfm from "remark-gfm";
 Always call `_cache.clear()` after writing/updating a file:
 
 ```python
-def upsert_item(key: str, content: str) -> None:
-    path = CASES_DIR / f"{key}.md"
-    path.write_text(content, encoding="utf-8")
-    _cache.clear()  # ← force reload on next request
+import re
+
+def upsert_item(key: str, title: str, content: str) -> None:
+    for old in CASES_DIR.glob(f"{key}-*.md"):
+        old.unlink()  # the title part of the name may have changed
+    safe = re.sub(r"[^\w一-鿿]", "", title)[:20]
+    (CASES_DIR / f"{key}-{safe}.md").write_text(content, encoding="utf-8")
+    _cache.clear()
 ```
 
 ## File Naming Convention

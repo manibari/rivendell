@@ -6,7 +6,7 @@ description: >
   Implement a complete audio upload → speech-to-text → transcript display workflow in a web app.
   TRIGGER when: user says "語音轉文字", "上傳音檔", "Whisper 整合", "轉逐字稿", "transcribe audio",
   "speech to text", "音檔上傳功能", or wants to add audio recording/transcription to their app.
-  DO NOT TRIGGER when: user just wants to transcribe a local file for personal use (use a CLI tool instead).
+  DO NOT TRIGGER when: the user wants a file already on disk transcribed for personal use (local-media-transcribe).
 tags: [backend, workflow]
 version: 1.0.0
 user_invocable: true

@@ -48,8 +48,7 @@ photo ──①identify──▶ AI:/identify  (image → just the NAME, the che
 3. **DB-backed cache + persist**: a `food_item` table keyed on the normalized name;
    `ON CONFLICT DO NOTHING` so concurrent writers + a fresh-vs-warm DB converge. Every
    unique item costs the AI once, ever, across all users.
-4. **Separate AI service** (`AI_URL`, its own port :8400, distinct from `BACKEND_URL`
-   :8300): keeps heavy model deps / GPU / long timeouts isolated from the web app, and
+4. **Separate AI service** (`AI_URL`, its own registered port in `data/ports.conf`, distinct from `BACKEND_URL`): keeps heavy model deps / GPU / long timeouts isolated from the web app, and
    makes the model swappable behind a stable HTTP contract (`/identify`, `/analyze`).
    Web↔services share an `INTERNAL_SECRET` header.
 

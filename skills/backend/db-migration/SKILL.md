@@ -63,11 +63,7 @@ def run_migrations_online():
     # ... standard alembic online migration
 ```
 
-4. Add to `alembic.ini`:
-   ```ini
-   sqlalchemy.url = postgresql://localhost/dbname
-   ```
-   And add a comment: `# Override with DATABASE_URL env var in production`
+4. Leave `sqlalchemy.url` empty in `alembic.ini`; `env.py` reads `DATABASE_URL` (above). A URL in `alembic.ini` ships dev credentials or points prod at dev.
 
 #### Prisma Migrate (Node.js / Prisma)
 
@@ -122,15 +118,12 @@ When the user modifies a model or schema:
 
    Run this on the production engine (PostgreSQL), not only on SQLite. SQLite does not
    enforce foreign keys by default, so a defect in a foreign key passes there.
-   (2026-10-28, ChimesERP 0041: one `ForeignKey` object was shared by two columns. The
-   SQLite tests passed; the PostgreSQL upgrade failed. Give each column its own
-   `ForeignKey`.)
+   Give each column its own `ForeignKey` object; a shared one passes on SQLite and fails the PostgreSQL upgrade.
 
 4. **Two branches add a migration at the same point**: when you merge them, chain the
    migrations into one line. Set each `down_revision` so the heads become one
    (`alembic heads` shows one head). Then run upgrade, downgrade and upgrade again from an
-   empty database. (2026-10-28: ChimesERP wave 2a became 0042 → 0044 → 0045; TWstock #25
-   and #26 both added a migration step at the same place.)
+   empty database.
 
 ### Step 4: Add Migration Check to CI
 

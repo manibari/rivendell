@@ -4,11 +4,7 @@ loop: dev
 pdca: do
 description: >
   Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet.
-  Audit (2026-06-27) of chimesflow / mops / family-fiscal: chimesflow + mops BOTH
-  converge on Alembic; family-fiscal hand-rolls a migrate_schema() and is the
-  "too small to bother" outlier. So the canonical core is real: Alembic migrations
-  + `alembic upgrade head` run on deploy = the dev↔prod sync mechanism. The one
-  decision is single-alembic (monolith) vs per-service alembic (monorepo, like mops).
+  Use Alembic migrations and run `alembic upgrade head` on deploy to sync dev and prod. Choose one Alembic tree or one per service.
   TRIGGER when: setting up DB migrations / schema changes / Alembic / "同步 db
   schema" / dev↔prod schema drift / "prod 的表跟 dev 對不上" / adding a column or
   table to a FastAPI + Postgres product; wiring migrations into a deploy/redeploy.
@@ -35,7 +31,7 @@ core converges** — chimesflow and mops both use Alembic; family-fiscal's hand-
    The deploy/redeploy script runs it **before the app starts serving**, so code and
    schema move together. chimesflow's `chimesflow-redeploy.sh` does exactly this and
    logs `ERR: alembic upgrade failed — schema may be out of sync` on failure (the ops
-   monitor surfaces that — ties to [[spine-deploy]]).
+   monitor surfaces that).
 3. **Direction is fixed**: autogenerate + edit in **dev**, commit the version file,
    `upgrade head` in **prod**. Never autogenerate against prod; never hand-edit prod schema.
 4. **Seed data = its own migration** (chimesflow: `release_items_seed_001.py`,
@@ -75,8 +71,7 @@ alembic upgrade head || { echo "ERR: alembic upgrade failed — schema out of sy
 - **Review autogenerate output — it's not magic**: Alembic misses some changes (server defaults,
   CHECK constraints, type widenings like mops's `002_widen_pct_columns`, enum changes). Read the
   generated migration before committing; add the bits it missed by hand.
-- **One head**: parallel branches (two devs autogenerate at once) create multiple heads →
-  `upgrade head` errors. Merge with `alembic merge` and keep a single head on main.
+- **One head**: two branches that each add a migration create two heads, and `upgrade head` errors. Chain them: set each `down_revision` so `alembic heads` shows one head, then run upgrade, downgrade, upgrade from an empty database (db-migration step 3.4).
 
 ## Sources (SoT)
 
@@ -84,5 +79,4 @@ alembic upgrade head || { echo "ERR: alembic upgrade failed — schema out of sy
   deploy sync in `~/code/ChimesFlow/scripts/deploy/wsl/chimesflow-redeploy.sh`;
   per-service variant `~/code/mops_dbs/services/{mops_rev,mops_cf,mops_notes}/alembic.ini`
 - Anti-pattern (outlier): `~/code/Family-Fiscal/backend/db.py` (`migrate_schema` / `_col_exists`)
-- Registry `rivendell/docs/spine-modules.md` (#7, shared core). Pairs with [[spine-deploy]]
-  (the deploy script that runs the upgrade).
+- Registry `rivendell/docs/spine-modules.md` (#7, shared core); the deploy module (#6) has no skill yet.

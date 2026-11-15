@@ -10,10 +10,10 @@ This document provides guidance on creating comprehensive evaluations for MCP se
 
 ### Evaluation Requirements
 - Create 10 human-readable questions
-- Questions must be READ-ONLY, INDEPENDENT, NON-DESTRUCTIVE
-- Each question requires multiple tool calls (potentially dozens)
-- Answers must be single, verifiable values
-- Answers must be STABLE (won't change over time)
+- Questions are read-only, independent and non-destructive, so they can run in any order against live data.
+- Each question needs several tool calls, sometimes dozens.
+- Each answer is one value, checked by string comparison.
+- Answers are stable: they do not change over time.
 
 ### Output Format
 ```xml
@@ -485,7 +485,7 @@ positional arguments:
 optional arguments:
   -h, --help            Show help message
   -t, --transport       Transport type: stdio, sse, or http (default: stdio)
-  -m, --model           Claude model to use (default: claude-3-7-sonnet-20250219)
+  -m, --model           Claude model to use (default: claude-opus-5-5)
   -o, --output          Output file for report (default: print to stdout)
 
 stdio options:
@@ -596,7 +596,7 @@ If many evaluations fail:
 ### Timeout Issues
 
 If tasks are timing out:
-- Use a more capable model (e.g., `claude-3-7-sonnet-20250219`)
+- Use a more capable model (e.g., `claude-opus-5-5`)
 - Check if tools are returning too much data
 - Verify pagination is working correctly
 - Consider simplifying complex questions
