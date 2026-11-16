@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (133 skills)
+## Skills Catalog (137 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -158,6 +158,7 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **app-installer** | `/app-installer` 或自動 | Package a product as an installer a customer opens with no developer tools: a macOS .app in a DMG, a Windows MSI, Linux deb/rpm/AppImage. |
+| **artcraft-conventions** | `/artcraft-conventions` | The conventions every Artcraft app follows… |
 | **autoresearch** | `/autoresearch` 或自動 | Autonomous goal-directed iteration loop for Claude Code agents. |
 | **ci-pipeline** | 自動 | 偵測專案 stack，自動產生 GitHub Actions CI workflow（lint、test、build）+ pre-commit config |
 | **claude-to-telegram** | `/claude-to-im setup` | 設定 Telegram 橋接器遠端控制 Claude Code，支援兩種實作方式 |
@@ -165,7 +166,7 @@ as release notes.
 | **context-recovery** | 自動 + hook | Session 壓縮後自動復原工作上下文，使用 Git 狀態與專案 metadata |
 | **deploy** | 自動 | 推薦部署平台，產生部署配置（Dockerfile、fly.toml、vercel.json）+ CD workflow |
 | **dev-process-gate** | 自動 | 開發守門：確保 requirement → flow → wireframe → mockup → dev → QA testing 流程不跳步 |
-| **env-doctor** | 自動 | 為專案產生 `doctor.sh`（或 `doctor. |
+| **env-doctor** | 自動 | 為專案產生 `doctor.sh` 或 `doctor.py`，檢查環境並協助跨機器排錯 |
 | **gdrive-to-skills** | `/gdrive-to-skills` | 讀取 Google Drive 文件，分類並自動建立 knowledge skills |
 | **init-project** | 自動 | 專案缺少 CLAUDE.md / AGENTS.md 時自動初始化，偵測框架自動填入 |
 | **plan-check-style** | 自動 | 進入 plan mode 做前端任務時，自動掃描並套用 style skills |
@@ -211,6 +212,7 @@ as release notes.
 | **frontend-design** | 自動 | 設計哲學 — 產出獨特、避免 AI 感的 production-grade UI |
 | **ios-integration** | 自動 | iOS 系統整合：App Extensions、Deep Links、Universal Links、App Groups、權限、地圖 |
 | **swiftui-patterns** | 自動 | SwiftUI iOS 17+ 架構模式：@Observable、MVVM、strict concurrency、NavigationStack |
+| **timeleft-style** | `/timeleft-style` | A warm, social, consumer look modelled on timeleft.com (studied 2026-10-11)… |
 | **ui-ux-pro-max** | `/ui-ux-pro-max` 或自動 | UI/UX 資料庫搜尋 — 97 色票、57 字體配對、50+ 風格、25 圖表類型，含 Python CLI |
 
 ### backend/ — 後端服務
@@ -224,15 +226,16 @@ as release notes.
 | **cloudflare-tunnel-provision** | `/cloudflare-tunnel-provision` 或自動 | Stand up a brand-new public domain for a self-hosted dockerized app behind a |
 | **db-migration** | 自動 | 偵測 DB stack，設定 migration 工具（Alembic/Prisma/Drizzle），指導安全 schema 變更 |
 | **doc-to-structured-data** | `/doc-to-structured-data` 或自動 | 非結構化技術文件（.doc/.pdf 測試計畫、規格書、datasheet）→ 結構化 CSV/JSON，含格式偵測、欄位對映、驗證 |
-| **docker-compose-setup** | `/docker-compose-setup` 或自動 | Set up Docker Compose for multi-service projects (Next. |
+| **docker-compose-setup** | `/docker-compose-setup` 或自動 | Set up Docker Compose for Next.js, FastAPI, and Postgres/Redis projects. |
 | **firebase-backend** | 自動 | Firebase 全方位開發：Firestore CRUD/queries、Cloud Functions (1st/2nd gen, TS+Python)、CLI、emulator、Security Rules、Auth、Hosting、GCP 整合 |
+| **gcp-vm-deploy** | 自動 | Put a dockerized app (FastAPI + Next.js + PostgreSQL, compose) on its own… |
 | **ic-lot-normalization** | 自動 | Domain reference for normalizing semiconductor lot / batch / product codes when |
 | **imap-smtp-integration** | 自動 | IMAP/SMTP Integration - Integrate email reading and sending via IMAP/SMTP into |
 | **markdown-file-ssot** | 自動 | Markdown File SSOT - Use Markdown files with YAML frontmatter as a data SSOT. |
 | **mcp-builder** | 自動 | 建立 MCP server 的指南（Python FastMCP / Node MCP SDK） |
 | **ml-eval-quality** | 自動 | Domain reference for the evaluation + quality backbone of an ML/AutoML |
 | **ml-model-registry** | 自動 | Domain reference for the model-registry / governance layer of an ML platform: |
-| **oauth-token-vault** | 自動 | OAuth Token Vault - Implement OAuth 2. |
+| **oauth-token-vault** | 自動 | Implement OAuth 2.0 with encrypted token storage in FastAPI and PostgreSQL. |
 | **odb-dfm-reference** | 自動 | Domain reference for PCB manufacturing-side EDA — parsing ODB++ jobs and |
 | **spine-assistant** | 自動 | Canonical recipe for an in-app agentic AI assistant: tools are the only path to data, each call runs as the asking user, sources are checked, every tool attempt is audited. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
@@ -240,6 +243,7 @@ as release notes.
 | **spine-rbac** | `/spine-rbac` 或自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **spine-roadmap** | 自動 | Canonical 開票 + roadmap mechanism for the product fleet: every piece of work |
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
+| **spine-sso** | 自動 | Canonical Microsoft Entra ID (Office 365) sign-in for the product fleet: the… |
 | **spine-versioning** | 自動 | Canonical version + changelog for the product fleet — and crucially the |
 | **sqlite-to-postgres** | 自動 | SQLite → PostgreSQL/Supabase 遷移指南：語法差異、schema 轉換、資料遷移、驗證 |
 | **telegram-bot** | 自動 | grammY / python-telegram-bot 機器人開發指南：架構、Bot API、部署模式 |
@@ -257,7 +261,7 @@ as release notes.
 | **sales-keyword-discovery** | 自動 | Automated keyword discovery for scraper filter systems. |
 | **sales-material** | `/sales-material` | Assemble client-specific sales presentations by matching customer intelligence |
 | **sales-material-health** | `/sales-material-health` | Health check for the sales materials library — detects missing frontmatter |
-| **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov. |
+| **tw-company-lookup** | `/tw-company-lookup` 或自動 | Query Taiwan's official business registry (findbiz.nat.gov.tw) for company data. |
 
 ### gov/ — 政府案件
 
@@ -273,7 +277,7 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **invest-research** | `/invest-research` | Continuous portfolio agent: alpha discovery, risk, backtesting |
-| **mops-financial-scraper** | 自動 | Scrape listed/OTC company financials from Taiwan's MOPS (公開資訊觀測站, mopsov.twse. |
+| **mops-financial-scraper** | 自動 | Scrape Taiwan's MOPS (mopsov.twse.com.tw) financials for quant analysis. |
 
 ### hr/ — 人資
 
@@ -312,7 +316,7 @@ as release notes.
 | **office-xlsx** | 自動 | 試算表 (.xlsx/.csv) 建立、編輯、分析，支援公式與資料視覺化 |
 | **pitch-deck** | `/pitch-deck` 或自動 | 投資人/BP pitch deck 製作：discovery → narrative → Codex visual briefs → HTML slides → PPTX 匯出 |
 | **rule-status-report** | `/rule-status-report` 或自動 | 規則引擎的客戶定期報告：規則逐條狀態＋對帳 recall（附上期對照），先定框架再產頁，逐頁截圖自核 |
-| **slide-office-hours** | `/slide-office-hours` 或自動 | Red-team review for a B2B presales deck storyline (storyline. |
+| **slide-office-hours** | `/slide-office-hours` 或自動 | Review B2B presales deck storyline.md before slide generation. |
 | **slide-review** | `/slide-review` 或自動 | 簡報逐頁排版檢查：每頁跑切版、字級、換行、重疊檢查並截圖，Claude 判讀色塊與主標，修正最多三輪，寫 review.md 給定版前檢查 |
 | **slide-template-extractor** | `/slide-template-extractor` 或自動 | Extract design system from an existing PPTX or Google Slides deck and produce a |
 | **slide-workflow** | `/slide-workflow` 或自動 | 簡報 gated workflow：目的 → 風格鎖定 → 大綱 → 內容 → Codex 視覺資產 → 生成 → 審查 → 匯出 |
@@ -328,7 +332,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 6 | 5 |
-| dev | 24 | 22 | 9 | 7 |
+| dev | 26 | 24 | 9 | 7 |
 | shared | 1 | 15 | 2 | — |
 
 
