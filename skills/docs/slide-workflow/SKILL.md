@@ -9,7 +9,7 @@ description: >
   TRIGGER: "做簡報", "做 deck", "準備提案", "幫我做 slides", "簡報流程".
   SKIP: complete outline + locked template + "直接生成".
 tags: [docs, workflow]
-version: 1.1.1
+version: 1.2.0
 user_invocable: true
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
@@ -348,8 +348,27 @@ open {output-dir}/{client}-deck.html
 | **Google Slides**（多人協作編輯） | 客戶要邊看邊改 | `/gdoc-report-builder` |
 | **HTML deck**（線上分享 / 不要 PPTX 重量） | webinar / blog 內嵌 | `/gstack-design-html` |
 | **PDF**（email 附件 / 鎖定不能改） | 法務 / 投標附件 | print-to-PDF from HTML or PPTX export |
+| **PPTX 圖片版**（已定版的 HTML deck，畫面完全一樣） | 寄給客戶、不讓人改字 | `scripts/deck-export/html-deck-to-pptx.sh --image` |
+| **PPTX 可編輯版**（已定版的 HTML deck，文字可改） | 使用者或客戶要在 PowerPoint 裡改 | `scripts/deck-export/html-deck-to-pptx.sh` |
 
 存檔慣例：`{output-dir}/{client}-deck.{ext}`
+
+### 從既有 HTML deck 匯出 PPTX（deck-export）
+
+HTML deck 已經定版（每頁一個 `.slide` 元素，例如 1280×720），要變成 PPTX 時用這支，不要再照 html2pptx 的規則重寫 HTML。
+
+```bash
+S=~/.claude/skills/slide-workflow/scripts/deck-export
+$S/html-deck-to-pptx.sh deck.html out.pptx --title "公司名" --verify /tmp/cmp   # 可編輯版
+$S/html-deck-to-pptx.sh deck.html out-image.pptx --image --title "公司名"        # 圖片版
+```
+
+- **可編輯版**：文字是 PowerPoint 文字框，卡片、外框是 PowerPoint 圖形，截圖用原圖檔並照網頁裁切。字型寫成微軟正黑體，版面也用 PowerPoint 內附的微軟正黑體量，所以換行和網頁幾乎一樣。漸層、背景圖、偽元素、inline SVG 轉成透明 PNG（SVG 裡的文字仍是文字框）。
+- **圖片版**：每頁一張 2 倍截圖，保留網頁原本字型。
+- `--verify <dir>`：用 PowerPoint 存成 PDF，輸出 `cmp-NN.png`（上：網頁，下：PowerPoint）。交付前要逐頁 Read 這些圖。PowerPoint 沒反應（開檔 Parameter error -50）就跳過，回報使用者，不要重試超過兩次。
+- 匿名遮蔽必須先燒進圖檔。可編輯版放的是原圖，CSS 遮罩不會跟著過去。
+- 限制：表格轉成一格一個圖形，不是 PowerPoint 表格；box-shadow 不轉；少數句子換行可能差一個字。
+- 需要：rivendell 的 `node_modules`（playwright）、`uv`（自動帶 python-pptx、pillow）；`--verify` 需要 PowerPoint 和 `pdftoppm`。
 
 **定版（用戶說「定版」「OK」「歸檔」）**：有登記工作資料夾的機器，步驟只寫在工作資料夾 `CLAUDE.md` 的「簡報定版」一節（定版前檢查、搬到哪、更新索引）。這裡不重寫，避免兩份規則不一致。
 

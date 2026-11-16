@@ -4,7 +4,7 @@ loop: sales
 pdca: do
 description: "Assemble client-specific sales presentations by matching customer intelligence, case studies, solutions, and subsidies from the local materials library, then generating PPTX via html2pptx."
 tags: [sales, presentation, pptx, assembly, workflow]
-version: 1
+version: 2
 source: manual
 user_invocable: true
 when_to_use: "TRIGGER when: user says '幫我做客戶提案', '準備 B2B 提案', '做 X 公司的銷售簡報', '客戶提案素材', or /sales-material. DO NOT TRIGGER when: user wants an investor/pitch deck (use pitch-deck), editing an existing PPTX (use office-pptx), researching a company (use sales-customer-intel), or looking up subsidies (use gov-subsidy-scraper)."
@@ -45,7 +45,8 @@ User: "幫我做奇美食品的提案簡報"
     ├─ 5. Assemble → Use the brand's locked template in `mockups/slide-templates/`
     │                 when one exists; otherwise slide-blueprints.md.
     │
-    ├─ 6. Convert → html2pptx (office-pptx skill)
+    ├─ 6. Convert → html2pptx (office-pptx skill); for a finished HTML deck,
+    │                 slide-workflow `scripts/deck-export` (image or editable PPTX)
     │
     └─ 7. Output → materials/presentations/{client}_{date}.pptx
 ```
@@ -83,9 +84,36 @@ Read the office-pptx skill (`SKILL.md`, `html2pptx.md`) before you generate a PP
 
 Save to: `materials/presentations/{client-slug}_{YYYY-MM-DD}.pptx`
 
+## First Meeting Deck (owner rules, 2026-11-16)
+
+Use this shape when `storyline.md` has `stage: first-call`. The proposal table in the next section is for a later meeting, after the need is confirmed.
+
+1. Cover: company name, one background line, the services as chips, the date. The title is the company name only. Do not tell the buyer what they need.
+2. Our strengths: three sentences.
+3. Case index: one table, grouped by industry, numbered 01, 02, and so on. Columns: industry, number, project, system, AI applications (CV / ML / GPT ticks), page. The order agrees with the case pages.
+4. One page for each case: a highlight card, need, approach, system, AI applications, products used, status. Show the real picture when one exists.
+5. Products: one page in two tiers (AI platform; application systems). Each card lists the case numbers that use it.
+6. Deployment experience: one page, with one real case under it. The contact line goes on this page.
+
+Do not put these in a first deck: prices, an agenda, a next-step page, or common sense such as "white-label" or "we will not compete with you". Every project has system development and AI; do not sort projects into "system" and "AI" groups.
+
+Proof and anonymization (the `sales` agent holds the full rules):
+
+- Burn masks into the image files. A CSS mask does not travel into a PPTX or the assets folder. Check every screenshot for site, ship, account, program, partner and other brand names.
+- A vendor buyer knows its own customers. "Industry type + work done" can name a customer that must not be named.
+- Case pages show real customer projects only. Show a presales demo or an open opportunity as a product capability.
+- A number on a highlight card needs a measured source. Without one, state a function that the screen shows.
+- Product pictures show our own product screens.
+- Fill a template field on every page, or remove the field.
+- Never cite an informal talk or a hint from someone inside a customer.
+
+Before the deck leaves, give it to the `sales` agent. The owner decides on its findings.
+
+Export the final HTML deck with slide-workflow `scripts/deck-export`: `--image` gives the exact look; the default gives native text for edits in PowerPoint. Read each compare image before delivery.
+
 ## Slide Deck Structure
 
-A typical client proposal deck:
+A proposal deck (after the need is confirmed):
 
 | # | Slide | Source |
 |---|-------|--------|
@@ -107,6 +135,8 @@ A typical client proposal deck:
 ## Key Dependencies
 
 - `office-pptx` skill — html2pptx conversion (MUST read before generating)
+- `slide-workflow` skill — `scripts/deck-export` for a finished HTML deck
+- `sales` agent (`~/.claude/agents/sales.md`) — review before the deck leaves
 - `sales-customer-intel` skill — client research reports
 - `materials/` — all local material files
 - `reports/customer-intel/` — intel reports
