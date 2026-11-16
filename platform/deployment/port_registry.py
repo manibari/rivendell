@@ -44,7 +44,10 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
-CONF = HERE / "ports.conf"
+# The registry lives in data/ports.conf, the path that the global CLAUDE.md
+# names. It is one regular file, not a symlink: an edit tool replaced the old
+# symlink with a copy on 2026-11-15, and the check then read a stale file.
+CONF = HERE.parent.parent / "data" / "ports.conf"
 EPHEMERAL = 49152  # IANA dynamic range: a new number every boot, never registered
 
 

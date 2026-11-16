@@ -104,7 +104,7 @@ schema migrations, auth, permissions, secrets, deploy scripts, design across mod
   Gateway: `https://gpt-gateway.chimes.ai/v1` (LiteLLM, Responses API with streaming).
 - claude: nothing.
 
-Port 8004 belongs to the GMI proxy (`platform/deployment/ports.conf`).
+Port 8004 belongs to the GMI proxy (`data/ports.conf`).
 
 ## Procedure
 

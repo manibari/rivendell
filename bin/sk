@@ -3798,7 +3798,7 @@ cmd_check_ssot() {
 # real enforcement is the kernel returning EADDRINUSE.
 cmd_check_ports() {
   # One implementation, shared with the dashboard 部署 page (/api/ports):
-  # platform/deployment/port_registry.py. It checks not only "is this port
+  # platform/deployment/port_registry.py (registry: data/ports.conf). It checks not only "is this port
   # registered" but "is the REGISTERED project the one using it" — the gap that
   # let trip-atlas OTP sit on mops_dbs 8081 unnoticed (2026-09-27).
   local args=() quiet=false

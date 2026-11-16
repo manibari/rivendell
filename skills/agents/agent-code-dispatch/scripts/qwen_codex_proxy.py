@@ -16,7 +16,7 @@ DEV-QWEN-EXECUTOR-SHIM) into rivendell, which owns it for all projects.
 Config is environment only, so the key never reaches argv or a file:
   GMI_API_KEY      required
   GMI_BASE_URL     default https://api.gmi-serving.com/v1
-  QWEN_PROXY_PORT  default 8004 (registered in platform/deployment/ports.conf)
+  QWEN_PROXY_PORT  default 8004 (registered in data/ports.conf)
   QWEN_PROXY_LOG   default ~/.codex-qwen/proxy.log (one JSON object per line)
 """
 from __future__ import annotations
