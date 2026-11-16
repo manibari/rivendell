@@ -43,7 +43,7 @@
 
 ## Post-change rule
 
-After any skill change (add, remove, rename, modify description/trigger), run `./bin/sk readme`. It regenerates the Skills Catalog table and the count in its heading from SKILL.md frontmatter. Then read the README diff. The script replaces the whole Skills Catalog section, so put back any hand-written lines it removed. It keeps the existing description of a known skill and cuts a new one at the first period, so check those rows by hand. If you add a category, also add it to the Structure tree.
+After any skill change (add, remove, rename, modify description/trigger), make sure `./bin/sk readme` ran. It regenerates the Skills Catalog tables and the count in its heading from SKILL.md frontmatter. The sync-readme PostToolUse hook runs it after each Edit/Write of a `skills/*/*/SKILL.md` in the main tree (since 2026-11-16). Run it yourself after a rename, a removal, or a change in a worktree. Then read the README diff. The script keeps the section intro and the existing description of a known skill. It writes a short description for a new skill, cut at a sentence end or a word boundary; check that row. If you add a category, also add it to the Structure tree.
 
 ## Skill routing
 

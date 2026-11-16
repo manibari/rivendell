@@ -22,8 +22,13 @@ fi
 
 [ -z "$FILE_PATH" ] && exit 0
 
-# Resolve rivendell root (env override or canonical location)
-RIVENDELL_PATH="${RIVENDELL_PATH:-$HOME/Documents/Projects/rivendell}"
+# Resolve the rivendell root from this script's real location
+# (skills/platform/sync-readme/scripts/), so a repo move or a deploy symlink
+# does not break it. RIVENDELL_PATH overrides it.
+SCRIPT_DIR="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd -P)"
+RIVENDELL_PATH="${RIVENDELL_PATH:-$(cd "$SCRIPT_DIR/../../../.." && pwd -P)}"
+# Compare real paths: an edit through a symlinked path (~/Code/rivendell) must match too.
+FILE_PATH="$(realpath "$FILE_PATH" 2>/dev/null || printf '%s' "$FILE_PATH")"
 CATALOG_SCRIPT="$RIVENDELL_PATH/scripts/generate-readme-catalog.py"
 
 # ── Case 1: SKILL.md modified in rivendell ─────────────────────────────────
