@@ -14,6 +14,12 @@
       "why": "Migration writes are blocked while the repo's qa-dataflow function map is older than 30 days. Escape: SK_SKIP_DATAFLOW_GATE=1 or .dataflow-gate-off"
     },
     {
+      "event": "PreToolUse",
+      "matcher": "Read|Edit|Write|Bash",
+      "command": "~/.claude/skills/protect-secrets/scripts/protect-secrets-hook.sh",
+      "why": "protect-secrets: Read/Edit/Write of .env, private keys and credential files is blocked, and so is a Bash pipe from .env to curl. Owner decision 2026-11-16 (prompt-audit F6): install it on every machine."
+    },
+    {
       "event": "Stop",
       "command": "~/.claude/skills/context-journal/scripts/journal-stop-hook.sh",
       "why": "context-journal: append this turn (request / git delta / summary) to ~/.claude/session-logs/<project>/<session>.md so compaction and session handoff are lossless."

@@ -4,7 +4,7 @@ loop: platform
 pdca: do
 description: >
   PreToolUse hook — blocks Read/Edit/Write/Bash on .env, private keys, credentials.json.
-  Catalog visibility only; install via .claude/settings.json hooks. Hook is the only
+  Catalog visibility only; a global hook in data/global-hooks.json (sk hooks install). Hook is the only
   invocation path; no slash command.
 tags: [quality, security, hook]
 version: 1.0.0
@@ -35,7 +35,9 @@ Pure shell PreToolUse hook that blocks access to sensitive files before Claude c
 
 ## Installation
 
-Add to `~/.claude/settings.json`:
+This is a global hook (owner decision 2026-11-16). `data/global-hooks.json` lists it.
+Run `./bin/sk deploy`, then `./bin/sk hooks install`; do not edit `~/.claude/settings.json` by hand.
+`sk check` fails its [Global hooks] section when the hook is missing. The command registers this entry:
 
 ```json
 {

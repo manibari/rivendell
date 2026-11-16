@@ -33,7 +33,8 @@ PostToolUse hook that runs after every Edit/Write tool call. Automatically stage
 
 ## Installation
 
-Add to `~/.claude/settings.json`:
+This is a project hook, not a global hook. rivendell registers it in its own
+`.claude/settings.json` (committed), so it runs only in rivendell sessions:
 
 ```json
 {
@@ -44,7 +45,7 @@ Add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/skills/auto-stage/scripts/auto-stage-hook.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/skills/git/auto-stage/scripts/auto-stage-hook.sh"
           }
         ]
       }
@@ -52,6 +53,11 @@ Add to `~/.claude/settings.json`:
   }
 }
 ```
+
+To use it in another repo, add the same block to that repo's `.claude/settings.json`
+with the command `~/.claude/skills/auto-stage/scripts/auto-stage-hook.sh`. Do not add it
+to `~/.claude/settings.json`: it would stage edits in every repo, including repos where
+the user stages by hand.
 
 ## Notes
 
