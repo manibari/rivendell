@@ -81,8 +81,8 @@ and proper nouns can be wrong; flag uncertainty before quoting exactly.
 
 ## Step 2.5 — 可信度：read the script's own warnings before you read the transcript
 
-The script now reports three things on stderr and records them in `.meta`. Read them
-first — a bad transcript reads like a good one.
+Read the source-level and repetition warnings on stderr. Check the `.meta` file
+before you read the transcript — a bad transcript reads like a good one.
 
 **`mean_volume` (source level).** Below roughly −30 dB, whisper starts looping. The
 script normalizes by default, so this is usually just a note; it becomes a warning if

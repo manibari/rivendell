@@ -298,20 +298,14 @@ Never do these in mockups:
 
 After the mockup is approved, offer Figma export:
 
-### Option A: html-to-figma (preserves layers)
+### Option A: an HTML-to-Figma plugin (preserves layers)
 
-```bash
-# Install the CLI tool
-npm install -g @anthropic/html-to-figma
-
-# Convert HTML to Figma-compatible JSON
-html-to-figma mockups/<name>.html --output mockups/<name>.figma.json
-```
-
-Then import via the **html-to-figma Figma plugin**:
-1. Open Figma → Plugins → html-to-figma
-2. Paste the generated JSON
-3. Layers, text, and colors are preserved for manual adjustment
+There is no npm CLI for this step. `@anthropic/html-to-figma` does not exist, and
+`@builder.io/html-to-figma` (0.0.3, checked 2026-11-16) is a library with no command.
+For editable layers, use a Figma plugin that imports a web page as layers:
+1. Serve the mockup (for example `python3 -m http.server`) or publish it, so it has a URL.
+2. In Figma, open a community plugin that converts HTML to layers, and import the URL.
+3. Check one screen first: layers, text, and colors must be editable before you import the rest.
 
 ### Option B: Screenshot upload (fallback)
 

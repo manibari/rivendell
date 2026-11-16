@@ -8,6 +8,7 @@ From the sales-customer-intel report, extract:
 - `industry` — client's industry
 - `pain_points` — from Section 六
 - `tags` — any technology or domain keywords
+- `scale` — client's size, when available
 
 ## Case Study Matching
 

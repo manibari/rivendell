@@ -1,6 +1,6 @@
 # Mermaid Theming Reference
 
-This is the **single theming file** for the Mermaid Diagram skill. All brand styling is done through `classDef` semantic styles embedded directly in each diagram. No external config files, no `%%{init}%%` directives — diagrams are fully self-contained and render consistently in any context: GitHub (light and dark mode), VS Code, Obsidian, or the CLI render pipeline.
+This file defines Mermaid theming rules. Read the project's `chart-design/styles/<style-name>.md` for brand values. Put semantic `classDef` styles in each diagram. Do not use external config files or `%%{init}%%` directives. Diagrams must render in GitHub, VS Code, Obsidian, and the CLI pipeline.
 
 ---
 
@@ -38,6 +38,9 @@ class B trigger
 ```
 
 ### Brand palette
+
+When the project has a style file in `chart-design/styles/<style-name>.md` with
+`classDef` recipes (for example `rivendell.md`), use those recipes. Else use these defaults:
 
 | Concept | Fill | Stroke | Text | classDef line |
 | :--- | :--- | :--- | :--- | :--- |

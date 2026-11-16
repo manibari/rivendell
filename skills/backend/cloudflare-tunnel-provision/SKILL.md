@@ -51,7 +51,7 @@ Two host patterns seen in practice:
 ## Steps
 
 The reference script `references/provision-tunnel.sh` does all of this idempotently.
-Parameterize it with `HOST`, `TUNNEL_NAME`, `PROJ`, and the upstream `SERVICE:PORT`.
+Parameterize it with `HOST`, `TUNNEL_NAME`, `PROJ`, and `UPSTREAM` (`SERVICE:PORT`).
 
 1. **Verify token** → `GET /user/tokens/verify` (`"status":"active"`).
 2. **Resolve IDs** → account id from `GET /accounts`, zone id from

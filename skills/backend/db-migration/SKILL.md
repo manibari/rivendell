@@ -34,8 +34,7 @@ Scan the project for database indicators:
 | `mongoose` in Node.js deps | MongoDB / Mongoose | No formal migration needed (schema-less), but recommend migration scripts for data transforms |
 | `firebase-admin` with Firestore | Firestore | No formal migration (schema-less), but recommend Firestore Security Rules versioning |
 
-If no database is detected, inform the user and exit:
-> No database detected in this project. This skill is for projects with databases.
+If the repo has no database dependency, configuration, or database file, tell the user what you checked and stop.
 
 ### Step 2: Set Up Migration Tool
 
@@ -176,22 +175,15 @@ Always advise the user on these practices:
 ### Step 6: Report
 
 ```
-Project: ~/my-project
-Database: PostgreSQL (psycopg2 + SQLAlchemy)
+Project: <repo path>
+Database: <detected database and driver>
 
 Migration setup:
-  ✅ Alembic initialized (alembic/)
-  ✅ env.py configured with project metadata
-  ✅ Initial migration generated
+  <list only steps completed in this repo>
 
 Files created/modified:
-  + alembic.ini
-  + alembic/env.py
-  + alembic/versions/001_initial.py
+  <list only files created or modified in this repo>
 
 Next steps:
-  1. Review the migration: alembic/versions/001_initial.py
-  2. Apply locally: alembic upgrade head
-  3. Test rollback: alembic downgrade -1
-  4. Add migration check to CI (see suggestion above)
+  <list steps that apply to the detected migration tool and repo>
 ```

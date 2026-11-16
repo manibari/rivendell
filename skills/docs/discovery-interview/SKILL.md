@@ -134,7 +134,7 @@ After saving discovery-summary.md, suggest the next step:
 > Discovery 完成。建議下一步：
 > - **如果客戶願意進入提案階段** → 用 `sow-writer` 草擬 SOW
 > - **如果還在評估階段** → 先寫 RFQ（簡單版報價）
-> - **如果需要技術 workshop** → 排 Metadata Workshop（參考 lorien/docs/templates/metadata-workshop-checklist.md）
+> - **如果需要技術 workshop** → 排 Metadata Workshop（參考 `metadata-workshop` skill）
 
 ---
 

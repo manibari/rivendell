@@ -228,10 +228,12 @@ Before deploying to production, verify:
 |---------|------|
 | Auth | 9099 |
 | Functions | 5001 |
-| Firestore | 8080 |
+| Firestore | Choose a free port from rivendell `data/ports.conf` |
 | Storage | 9199 |
-| Hosting | 5000 |
+| Hosting | Choose a free port from rivendell `data/ports.conf` |
 | UI | 4000 |
+
+Register both selected ports in `data/ports.conf` before you start the emulators.
 
 ## Key Decisions
 

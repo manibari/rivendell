@@ -125,7 +125,7 @@ Write a JSON file with this structure:
       },
       "content_score": 2.7,
       "structure_score": 2.7,
-      "overall_score": 5.4
+      "overall_score": 5.3
     }
   },
   "output_quality": {

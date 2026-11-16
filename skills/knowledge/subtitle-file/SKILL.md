@@ -78,7 +78,8 @@ head -12 /tmp/out.srt          # indices sequential? timings intact? text transl
 ## Notes & gotchas
 
 - **429 rate-limiting**: same as the other media skills — the fetcher backs off and auto-impersonates
-  when curl_cffi is present; a persistent IP block needs time, not retries.
+  when curl_cffi is present. A persistent IP block needs time, not more retries: wait, then try again
+  later. Do not switch the source silently.
 - **.vtt output**: if the user needs `.vtt` (web `<track>`), SRT→VTT is trivial — prepend `WEBVTT\n\n`
   and change `,` to `.` in timestamps. Mention this; do it if asked.
 - **Validation**: an SRT is valid if blocks are `index / start --> end / text / blank`. If a player
