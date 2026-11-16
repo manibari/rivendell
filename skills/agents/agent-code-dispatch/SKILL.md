@@ -45,7 +45,7 @@ every executor; only step 3 changes.
 |---|---|---|
 | `qwen` | `code-run exec --executor qwen` (codex CLI + GMI proxy) | GMI per-token, price not recorded |
 | `codex` | `code-run exec --executor codex` (codex CLI) | ChatGPT account logged in to `~/.codex` when the run starts; weekly quota |
-| `gemini` | `code-run exec --executor gemini` (codex CLI + Chimes GPT Gateway, no proxy) | Company gateway key; default model `gemini-4-argon`, `-m gemini-3.8-flash` for small tickets |
+| `gemini` | `code-run exec --executor gemini` (codex CLI + Chimes GPT Gateway, no proxy) | Company gateway key; default model `gemini-4-argon`, also for small tickets (no `-m`) |
 | `claude` | Agent tool (a fresh agent, never `fork`), `isolation: "worktree"`, brief as the prompt | Claude session quota |
 
 Do not switch the executor by yourself. Quota used up means the run's own `error` in `summary.json`, not a quota reading. If the executor cannot run (no key,

@@ -89,7 +89,7 @@ changed=$(git diff --name-only "$range" 2>/dev/null)
 code=$(printf '%s\n' "$changed" | grep -vE '^(docs/|reports/|.*\.md$)' | head -1)
 ver=$(printf  '%s\n' "$changed" | grep -iE 'CHANGELOG|version\.(ts|py|json)|^package\.json$' | head -1)
 if [ -n "$code" ] && [ -z "$ver" ]; then
-  echo "⚠️  code changed but no version/CHANGELOG bump in this push."
+  echo "WARNING: code changed but no version/CHANGELOG bump in this push."
   echo "   bump the version + add a CHANGELOG entry, or: SKIP_VERSION_GATE=1 git push"
   [ "${SKIP_VERSION_GATE:-}" = "1" ] || exit 1
 fi

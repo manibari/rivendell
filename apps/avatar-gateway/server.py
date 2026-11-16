@@ -182,7 +182,7 @@ def run_anthropic_api(prompt: str) -> str:
     r = requests.post("https://api.anthropic.com/v1/messages",
                       headers={"x-api-key": key,
                                "anthropic-version": "2023-06-01"},
-                      json={"model": "claude-haiku-4-5-20251001",
+                      json={"model": "claude-haiku-5-5",
                             "max_tokens": 300,
                             "messages": [{"role": "user", "content": prompt}]},
                       timeout=CHAT_TIMEOUT)

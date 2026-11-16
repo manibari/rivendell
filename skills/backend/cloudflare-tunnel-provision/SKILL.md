@@ -82,14 +82,18 @@ Parameterize it with `HOST`, `TUNNEL_NAME`, `PROJ`, and the upstream `SERVICE:PO
 
 ```yaml
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:<version>   # pin a release tag, never :latest
     restart: unless-stopped
     depends_on:
-      - frontend
+      frontend:
+        condition: service_healthy   # bare depends_on waits only for start
     command: tunnel --config /etc/cloudflared/config.yml --no-autoupdate run
     volumes:
       - ./cloudflared:/etc/cloudflared:ro
 ```
+
+Replace `<version>` with a release tag from the cloudflared releases page (format
+`YYYY.M.P`). The `frontend` service needs a `healthcheck`; see `docker-compose-setup`.
 
 The `ingress.service` host (`frontend:3010`, `chimesflow `frontend:8080`) is the
 **compose service name**, resolved over the compose network — cloudflared runs in its

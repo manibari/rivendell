@@ -39,7 +39,7 @@
 - Prefix series: `agent-*`, `qa-*`, `spine-*`, `office-*`, `slide-*`, `session-*`, `context-*`, `skill-*`
 - Suffix series: `*-scraper`, `*-writer`, `*-diagram`
 - Intentionally NOT converged: plan family (`writing-plans` / `executing-plans` / `planning-with-files`) keeps upstream Anthropic names — recognition value > consistency.
-- Deferred: `self-improving-agent` → `agent-self-improve` needs a dedicated pass (coupled to the `~/.claude/settings.json` UserPromptSubmit hook and its own `scripts/*.sh`).
+- Deferred: `self-improving-agent` → `agent-self-improve` needs a dedicated pass (its own `scripts/*.sh` hold the name; `activator.sh` and `error-detector.sh` are not registered in `~/.claude/settings.json` or `data/global-hooks.json` as of 2026-11-16).
 
 ## Post-change rule
 

@@ -24,7 +24,7 @@ HOST_TAG=$(hostname -s 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9'
 REPORT_FILE="$REPORT_DIR/token-analysis-${DATE}-${HOST_TAG}.md"
 ERR_FILE="$REPORT_DIR/token-analysis-${DATE}-${HOST_TAG}-error.log"
 # Cheap model on purpose: this is nightly summarisation, not reasoning.
-ANALYSIS_MODEL="claude-haiku-4-5-20251001"
+ANALYSIS_MODEL="haiku"   # CLI alias: the newest Haiku, like the other crons
 
 mkdir -p "$REPORT_DIR"
 set +e; source "$REPO_DIR/bin/sk-exec-lib" 2>/dev/null || true; set -e

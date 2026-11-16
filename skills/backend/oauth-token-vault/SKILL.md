@@ -59,7 +59,7 @@ Add to `.env`:
 NEXUS_ENCRYPTION_KEY=<generated-key>
 ```
 
-**⚠️ Back up this key.** If lost, all stored tokens become unrecoverable.
+**Warning: back up this key.** If lost, all stored tokens become unrecoverable.
 
 ## Step 2: OAuth Service
 
