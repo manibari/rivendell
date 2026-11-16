@@ -4,7 +4,7 @@ loop: invest
 pdca: do
 description: >
   Continuous portfolio agent: alpha discovery, risk, backtesting, financial analysis.
-  Local news_stock + autonomous web search. Monitors holdings, weekly alpha scans,
+  Local TWstock_invest platform + autonomous web search. Monitors holdings, weekly alpha scans,
   rebalancing proposals.
   TRIGGER: "投資研究", "開始研究", "持續追蹤", research stocks / portfolio / backtests.
   SKIP: code debugging (gstack-investigate); UI work.
@@ -17,6 +17,23 @@ user_invocable: true
 # Investment Research
 
 Structured research workflow for finding alpha and managing risk, powered by the news_stock platform.
+
+## Data source (owner decision 2026-11-16)
+
+news_stock is retired. TWstock_invest (`~/Code/Personal/TWstock_invest`) replaces it.
+
+- TWstock_invest has no `macro.db`, `news.db` or `finance.db`. Its FastAPI backend
+  (local dev port in rivendell `data/ports.conf`, project 04) serves monthly revenue
+  (`/api/summary`, `/api/industry/...`, `/api/company/...`), the six indicators
+  (`/api/indicators/...`), valuation (`/api/valuation/...`) and industry news
+  (`/api/news/...`). Read `TWstock_invest/README.md` for the current routes.
+- Financials and prices reach that backend from the local `mops_*` APIs. Use the
+  backend; do not read its `.env` keys.
+- Macro data has no source yet. Mark a macro conclusion 未判讀; do not replace it
+  with web numbers without saying so.
+- The SQLite snippets below were written for news_stock. They need `NEWS_STOCK_DIR`
+  and stop with a KeyError when it is not set. Rewriting them for the TWstock_invest
+  API is an open ticket.
 
 ## Goals
 
@@ -45,7 +62,7 @@ Assess the macro backdrop before picking stocks. Use news_stock data directly.
 # Read from news_stock macro.db
 import sqlite3, os
 
-DB = os.path.expanduser(os.environ.get("NEWS_STOCK_DIR", "~/Documents/Projects/news_stock") + "/macro.db")
+DB = os.path.expanduser(os.environ["NEWS_STOCK_DIR"] + "/macro.db")
 conn = sqlite3.connect(DB)
 
 # Latest cycle for US and TW
@@ -91,7 +108,7 @@ indicators = conn.execute("""
 ### 1c. News Sentiment
 
 ```python
-NEWS_DB = os.path.expanduser(os.environ.get("NEWS_STOCK_DIR", "~/Documents/Projects/news_stock") + "/news.db")
+NEWS_DB = os.path.expanduser(os.environ["NEWS_STOCK_DIR"] + "/news.db")
 nconn = sqlite3.connect(NEWS_DB)
 
 # Recent news volume and sentiment keywords
@@ -114,7 +131,7 @@ Use two sources to build the research universe: **local DB pools** (existing dat
 ### Source A: Local Pools (news_stock finance.db)
 
 ```python
-FIN_DB = os.path.expanduser(os.environ.get("NEWS_STOCK_DIR", "~/Documents/Projects/news_stock") + "/finance.db")
+FIN_DB = os.path.expanduser(os.environ["NEWS_STOCK_DIR"] + "/finance.db")
 fconn = sqlite3.connect(FIN_DB)
 
 pools = fconn.execute("""
@@ -750,7 +767,7 @@ Maintain a running portfolio state file:
 | ... | | Web/Local | |
 ```
 
-Store this file at: `$NEWS_STOCK_DIR/reports/portfolio-state.md` (default: `~/Documents/Projects/news_stock/reports/portfolio-state.md`)
+Store this file at: `$NEWS_STOCK_DIR/reports/portfolio-state.md` (no default since news_stock is retired; the old place was `~/Documents/Projects/news_stock/reports/portfolio-state.md`)
 
 ### Persistence Across Sessions
 
@@ -761,7 +778,7 @@ import json, os
 from datetime import date
 
 STATE_FILE = os.path.expanduser(
-    os.environ.get("NEWS_STOCK_DIR", "~/Documents/Projects/news_stock") + "/reports/portfolio-state.json"
+    os.environ["NEWS_STOCK_DIR"] + "/reports/portfolio-state.json"
 )
 
 state = {
