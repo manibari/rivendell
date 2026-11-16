@@ -53,7 +53,7 @@ languages: all
 
 ```bash
 mkdir -p scripts/checks
-cp ~/Code/rivendell/skills/quality/dev-size-gate/scripts/check_size.py scripts/checks/
+cp "${CLAUDE_SKILL_DIR}/scripts/check_size.py" scripts/checks/
 ```
 
 **Step 2 — 產生舊帳清單**：

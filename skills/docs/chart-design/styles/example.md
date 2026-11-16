@@ -156,9 +156,9 @@ bar-radius          : __ px (top-corner rounding)
 matrix-cell-padding   : __ px
 matrix-quadrant-label-style : <H1 | H2 | tag>
 timeline-marker-shape : <circle | diamond | line>
-table-header-bg       : <hex>
-table-row-alt-bg      : <hex>
-table-highlight-bg    : <hex>   /* for 我方 / recommended tier */
+table-header-bg       : {brand-primary}
+table-row-alt-bg      : {panel}
+table-highlight-bg    : {positive}   /* for 我方 / recommended tier */
 ```
 
 ---
@@ -166,16 +166,16 @@ table-highlight-bg    : <hex>   /* for 我方 / recommended tier */
 ## System Architecture Defaults (if applicable)
 
 ```
-box-fill-default    : <hex>
-box-fill-frontend   : <hex>
-box-fill-backend    : <hex>
-box-fill-data       : <hex>
-box-fill-external   : <hex>
+box-fill-default    : {panel}
+box-fill-frontend   : {brand-primary}
+box-fill-backend    : {brand-secondary}
+box-fill-data       : {brand-tertiary}
+box-fill-external   : {neutral}
 box-border          : __px solid {ink}
 arrow-color         : {ink}
 arrow-sync-style    : solid
 arrow-async-style   : dashed
-boundary-fill       : <hex with low opacity>
+boundary-fill       : {brand-primary} with low opacity
 boundary-border     : dashed
 ```
 

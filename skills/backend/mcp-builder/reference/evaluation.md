@@ -208,7 +208,7 @@ After understanding the API and tools, USE the MCP server tools:
 - Ensure each subagent is only performing READ-ONLY, NON-DESTRUCTIVE, and IDEMPOTENT operations
 - BE CAREFUL: SOME TOOLS may return LOTS OF DATA which would cause you to run out of CONTEXT
 - Make INCREMENTAL, SMALL, AND TARGETED tool calls for exploration
-- In all tool call requests, use the `limit` parameter to limit results (<10)
+- If a tool supports `limit`, set it based on the result size and available context.
 - Use pagination
 
 ### Step 5: Task Generation

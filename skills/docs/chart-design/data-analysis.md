@@ -30,7 +30,7 @@
 ### Bar Chart (對比)
 
 - **預設 sorted by value（desc）**，除非語義要求順序（時間、流程）
-- N ≤ 6 → vertical bar；N > 6 → horizontal bar（標籤好讀）
+- N ≤ 6 → vertical bar；6 < N ≤ 8 → horizontal bar；N > 8 → sorted table
 - **不要 3D bar**，**不要漸層填色**（除非真的有第三維 data）
 - Stacked bar：最多 4 個 segment；超過 → 改 streamgraph 或拆圖
 - Bar width / gap 比例：bar 佔 60–70%，gap 30–40%（密集易讀）

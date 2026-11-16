@@ -1,4 +1,4 @@
-# media/ — 影音抓讀 skill 群
+# knowledge/ — 影音抓讀 skill 群
 
 一組處理「影音 → 可用產物」的 skill。線上的共用抓取引擎（yt-dlp）；本機檔案走 mlx-whisper ASR。**輸出型態各自不同**——這是它們各自成 skill、而非合成一個 skill 的理由。
 

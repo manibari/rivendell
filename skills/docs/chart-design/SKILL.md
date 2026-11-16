@@ -106,7 +106,7 @@ center_offset    = |chart_center - canvas_center| / canvas_dim  ≤ 0.05
 | 線性流程 / 時序步驟 (sequential, ordered) | flowchart / timeline / sankey | 2×2 / bar / 多欄 table / radar |
 | 二維 qualitative positioning (2 dims) | 2×2 matrix / scatter+quadrant | flowchart |
 | 趨勢 (over time, continuous) | line | bar（除非 N 離散點） |
-| 對比 N ≤ 8 離散項 | vertical bar；N > 6 用 horizontal | line / pie |
+| 對比 N ≤ 8 離散項 | N ≤ 6 用 vertical bar；N > 6 用 horizontal bar | line / pie |
 | 對比 N > 8 離散項 | sorted table | bar / pie |
 | 占比 part-of-whole (≤ 5 parts) | stacked bar / treemap；pie 慎用 | radar |
 | 分佈 (distribution) | histogram / box / violin | line / bar |

@@ -11,7 +11,7 @@ When user provides new information via chat, update BOTH md and Nexus.
 ### Trigger Patterns
 
 - "OO 公司的 IT 主管叫王小明" → update 三、關鍵人物
-- "把 deal potential 改成 high" → update 八、風險評估
+- "把 deal potential 改成 high" → update 八、業務策略建議 → 風險評估
 - "他們預算大概 500 萬" → update 四、財務狀況
 - "剛開完會，他們對 IoT 很有興趣" → update 二、近期動態 + 六、痛點
 
@@ -59,7 +59,7 @@ if 'notes' in changes and 'notes' in existing:
 | 三、關鍵人物 | `contact_name`, `contact_title`, `contact_email`, `contact_phone`, `decision_maker` |
 | 四、財務狀況 | `budget` |
 | 六、痛點與挑戰 | `pain_points` |
-| 八、風險評估 | `deal_potential` |
+| 八、業務策略建議 → 風險評估 | `deal_potential` |
 | 全域 | `notes` (append-style) |
 
 ### Field Extraction Rules

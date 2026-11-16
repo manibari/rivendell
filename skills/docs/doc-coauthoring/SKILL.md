@@ -97,7 +97,7 @@ Inform them clarifying questions will be asked once they've done their initial d
 
 When user signals they've done their initial dump (or after substantial context provided), ask clarifying questions to ensure understanding:
 
-Generate 5-10 numbered questions based on gaps in the context.
+Start with 5-10 numbered questions. Adapt the count to the context gaps.
 
 Inform them they can use shorthand to answer (e.g., "1: yes, 2: see #channel, 3: no because backwards compat"), link to more docs, point to channels to read, or just keep info-dumping. Whatever's most efficient for them.
 
@@ -116,7 +116,7 @@ If user wants to add more, let them. When ready, proceed to Stage 2.
 **Instructions to user:**
 Explain that the document will be built section by section. For each section:
 1. Clarifying questions will be asked about what to include
-2. 5-20 options will be brainstormed
+2. Start with 5-20 options; adapt the count to the section
 3. User will indicate what to keep/remove/combine
 4. The section will be drafted
 5. It will be refined through surgical edits
@@ -131,7 +131,7 @@ Ask which section they'd like to start with.
 Suggest starting with whichever section has the most unknowns. For decision docs, that's usually the core proposal. For specs, it's typically the technical approach. Summary sections are best left for last.
 
 If user doesn't know what sections they need:
-Based on the type of document and template, suggest 3-5 sections appropriate for the doc type.
+Based on the document type and template, start with 3-5 sections. Adapt the count to the document.
 
 Ask if this structure works, or if they want to adjust it.
 
@@ -149,19 +149,19 @@ Confirm the filename has been created and indicate it's time to fill in each sec
 
 ### Step 1: Clarifying Questions
 
-Announce work will begin on the [SECTION NAME] section. Ask 5-10 clarifying questions about what should be included:
+Announce work on the [SECTION NAME] section. Start with 5-10 clarifying questions:
 
-Generate 5-10 specific questions based on context and section purpose.
+Adapt the question count to the context and section purpose.
 
 Inform them they can answer in shorthand or just indicate what's important to cover.
 
 ### Step 2: Brainstorming
 
-For the [SECTION NAME] section, brainstorm [5-20] things that might be included, depending on the section's complexity. Look for:
+For the [SECTION NAME] section, start with 5-20 possible items. Adapt the count to its complexity. Look for:
 - Context shared that might have been forgotten
 - Angles or considerations not yet mentioned
 
-Generate 5-20 numbered options based on section complexity. At the end, offer to brainstorm more if they want additional options.
+Number the options. At the end, offer to brainstorm more if the user wants additional options.
 
 ### Step 3: Curation
 
@@ -201,7 +201,7 @@ As user provides feedback:
 
 ### Quality Checking
 
-After 3 consecutive iterations with no substantial changes, ask if anything can be removed without losing important information.
+After several iterations with no substantial changes, ask if anything can be removed without losing important information.
 
 When section is done, confirm [SECTION NAME] is complete. Ask if ready to move to the next section.
 
@@ -241,7 +241,7 @@ Perform the testing directly without user involvement using the Agent tool.
 
 Announce intention to predict what questions readers might ask when trying to discover this document.
 
-Generate 5-10 questions that readers would realistically ask.
+Start with 5-10 questions that readers would realistically ask. Adapt the count to the document.
 
 ### Step 2: Test with Sub-Agent
 

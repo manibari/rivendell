@@ -228,11 +228,12 @@ import json
 sqlite_conn = sqlite3.connect("data.db")
 sqlite_conn.row_factory = sqlite3.Row
 pg_conn = psycopg2.connect(os.environ["DATABASE_URL"])
+pg_cursor = pg_conn.cursor()
 
 # For each table:
 rows = sqlite_conn.execute("SELECT * FROM users").fetchall()
 for row in rows:
-    pg_conn.execute(
+    pg_cursor.execute(
         "INSERT INTO users (id, name, data, created_at) VALUES (%s, %s, %s, %s)",
         (row["id"], row["name"],
          json.dumps(json.loads(row["data"])) if row["data"] else None,  # TEXT → JSONB
@@ -242,7 +243,7 @@ for row in rows:
 pg_conn.commit()
 
 # Reset sequence after importing with explicit IDs
-pg_conn.execute("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))")
+pg_cursor.execute("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))")
 pg_conn.commit()
 ```
 

@@ -23,7 +23,7 @@ Convert client business knowledge → YAML metadata schemas that let AI agents s
 AI sees `TI-101 = 132.5` — meaningless. With metadata schema, AI sees:
 > "1號反應槽溫度 132.5°C，超過正常上限 120°C，需立即通知廠務部設備組"
 
-This is the consulting moat: same-industry second client = 80% schema reuse.
+This is the consulting moat: same-industry second client = 70% schema reuse.
 
 ## When to Run
 

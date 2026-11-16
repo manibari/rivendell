@@ -7,7 +7,7 @@ tags: [automation, subsidies, scraping, sales-enablement, local]
 version: 1
 source: manual
 user_invocable: true
-when_to_use: "TRIGGER when: user says /gov-subsidy-scraper, 'scrape subsidies', '更新補助', '爬補助', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single subsidy (use subsidy-research command instead)."
+when_to_use: "TRIGGER when: user says /gov-subsidy-scraper, 'scrape subsidies', '更新補助', '爬補助', or this skill is invoked by a headless agent on schedule. DO NOT TRIGGER when: user is manually researching a single subsidy."
 allowed-tools:
   - WebFetch
   - WebSearch

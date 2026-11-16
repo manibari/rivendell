@@ -137,8 +137,8 @@ than re-reading the dump yourself — keeps the main context clean.
 
 For each accepted rule:
 
-**Generic** → append to `~/.claude/CLAUDE.md`'s `## Engineering Gotchas`
-section (or create the section if absent). Keep the section ordered by
+**Generic** → append to `~/.claude/CLAUDE.md` under `### 技術陷阱` (the engineering
+gotchas section; create it if absent). Keep the section ordered by
 **recency of last promotion** so old rules drift to the top and new rules
 sit at the bottom — makes review easier next sprint.
 

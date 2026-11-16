@@ -33,7 +33,7 @@ When given text to de-slopify:
 5. **Keep it human** - in informal prose, replace removed patterns with real voice; in formal text, with plain neutral sentences.
 6. **Do a final anti-AI pass** - Ask: "What makes the below so obviously AI generated?" Answer briefly with remaining tells, then revise again to eliminate them
 
-**Core principle:** Read every line. Recast sentences. Use judgment. Use ultrathink.
+**Core principle:** Read every line. Recast sentences. Use judgment.
 
 
 ## Voice Calibration (Optional)
@@ -575,7 +575,7 @@ Some things are fine even if they seem "AI-like":
 
 1. Read the entire text once to understand overall tone and content
 2. If the user provided a voice sample, analyze it first (see Voice Calibration)
-3. Go through line by line using ultrathink
+3. Go through line by line
 4. For each sentence, ask: "Would a human writer actually phrase it this way?"
 5. Apply fixes: recast sentences, replace AI vocabulary, remove filler phrases
 6. Read the full text again to verify consistent tone
@@ -585,11 +585,7 @@ Some things are fine even if they seem "AI-like":
 
 ## Output Format
 
-Provide:
-1. Draft rewrite
-2. "What makes the below so obviously AI generated?" (brief bullets of remaining tells)
-3. Final rewrite (after fixing the remaining tells)
-4. A brief summary of changes made
+Provide the final rewrite and a brief summary of changes.
 
 
 ## Reference

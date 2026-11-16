@@ -9,8 +9,8 @@ description: >
   values, reusable target branches), the source running locally on demo data, port as-is,
   keep the better screen where the target already has one, small batches grouped into
   tickets, one shared rule file for every lane, golden-value parity when the language
-  changes. Source: ChimesERP taking in people-ops and ChimesFlow (ERP-298 to ERP-313,
-  2026-10-28); line-calendar-mobile Dart to Swift (2026-10-28).
+  changes. Source: ChimesERP taking in people-ops and ChimesFlow (2026-10-28);
+  line-calendar-mobile Dart to Swift (2026-10-28).
   TRIGGER when: "搬移清單", "系統搬移", "把舊系統搬進新系統", "搬功能", "兩套系統合併成一套",
   "port a system", "merge two systems into one", "rewrite in another language with parity";
   or work is about to port pages or modules from a running system into another one.
@@ -22,6 +22,8 @@ version: 1.0.0
 ---
 
 # system-port
+
+Source tickets: ERP-298 to ERP-313.
 
 A port moves a working system into another system. The source already works, so its
 pages, fields, steps and messages are the specification. The code is not the main risk.
