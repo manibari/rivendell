@@ -166,20 +166,45 @@ def extract_auto_description(fm: dict, skill_name: str) -> str:
         if pos > 10:
             desc = desc[:pos].strip()
 
-    # Trim trailing punctuation and whitespace
-    desc = desc.rstrip(". \n")
+    return shorten_description(desc.strip())
 
-    # Limit length
-    if len(desc) > 80:
-        for ch in (".", ",", " "):
-            pos = desc.rfind(ch, 0, 80)
-            if pos > 25:
-                desc = desc[: pos + (1 if ch == "." else 0)].strip()
-                break
-        else:
-            desc = desc[:77] + "..."
 
-    return desc
+def shorten_description(desc: str, limit: int = 80) -> str:
+    """Cut at a sentence or word boundary without splitting a parenthetical."""
+    if len(desc) <= limit:
+        return desc
+
+    sentence_ends = []
+    for match in re.finditer(r"\.(?=\s|$)|。", desc):
+        end = match.end()
+        if end > limit:
+            break
+        if re.search(r"\b(?:e\.g|i\.e)$", desc[:match.start()], re.IGNORECASE):
+            continue
+        sentence_ends.append(end)
+
+    if sentence_ends:
+        cut = sentence_ends[-1]
+        suffix = ""
+    else:
+        boundaries = list(re.finditer(r"\s+", desc[:limit]))
+        cut = boundaries[-1].start() if boundaries else limit - 1
+        suffix = "…"
+
+    prefix = desc[:cut].rstrip()
+    opens = []
+    for pos, char in enumerate(prefix):
+        if char in "(（":
+            opens.append((char, pos))
+        elif char in ")）" and opens and (opens[-1][0], char) in (("(", ")"), ("（", "）")):
+            opens.pop()
+    if opens:
+        prefix = prefix[:opens[0][1]].rstrip()
+        suffix = "…"
+    if suffix:
+        # Do not leave "...:…" or "...,…" when the cut falls after punctuation.
+        prefix = prefix.rstrip(" :;,，、：；—-")
+    return prefix + suffix
 
 
 # ── README catalog parser ─────────────────────────────────────────────────────
@@ -223,17 +248,13 @@ def scan_skills() -> dict:
 
 # ── Catalog section generator ─────────────────────────────────────────────────
 
-def generate_catalog_section(categories: dict, existing: dict) -> str:
+def generate_catalog_section(categories: dict, existing: dict, readme_text: str) -> str:
     total = sum(len(v) for v in categories.values())
-    lines = [
-        f"## Skills Catalog ({total} skills)",
-        "",
-        # Emitted by the generator so it survives every regeneration (this whole
-        # section is replaced on each `sk readme`).
-        "> 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。",
-        "> 下面的目錄照循環 / 資料夾分，是 skill 實體的所在；角色頁是使用者視角，同一支 skill 可出現在多個角色。",
-        "",
-    ]
+    intro_match = re.search(r"^## Skills Catalog[^\n]*\n.*?(?=^### )", readme_text, re.MULTILINE | re.DOTALL)
+    if not intro_match:
+        raise ValueError("Skills Catalog intro or first category heading not found")
+    intro = re.sub(r"^## Skills Catalog[^\n]*", f"## Skills Catalog ({total} skills)", intro_match.group(), count=1)
+    lines = []
 
     for cat in CATEGORY_ORDER:
         skills = categories.get(cat, [])
@@ -259,7 +280,7 @@ def generate_catalog_section(categories: dict, existing: dict) -> str:
             lines.append(f"| **{skill_name}** | {trigger} | {description} |")
         lines.append("")
 
-    return "\n".join(lines)
+    return intro + "\n".join(lines)
 
 
 # ── Loop × PDCA coverage table ────────────────────────────────────────────────
@@ -327,7 +348,7 @@ def main() -> int:
     readme_text = README_PATH.read_text()
     existing = parse_existing_catalog(readme_text)
     categories = scan_skills()
-    section = generate_catalog_section(categories, existing)
+    section = generate_catalog_section(categories, existing, readme_text)
     loop_section = generate_loop_pdca_section(categories)
     if loop_section:
         section = section + "\n" + loop_section
