@@ -11,4 +11,4 @@ log_dir: materials/clients
 label: com.sk.agent.sales.sales-crm-projection
 ---
 
-sales-assistant 已宣告退役（遷移 chimesflow）。純機械搬移保留 enabled:true 不打斷現跑 agent；待 chimesflow ready 再單獨 commit 改 enabled:false。
+sales-assistant 已宣告退役，未來由 ChimesERP 接手（owner 2026-11-16；原本寫遷移 chimesflow）。保留 enabled:true 不打斷現跑 agent；ChimesERP 接手後再單獨 commit 改 enabled:false。

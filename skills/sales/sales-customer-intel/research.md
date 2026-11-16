@@ -141,8 +141,12 @@ WebSearch: "[industry] trends challenges [current year]"
 Output the report to terminal AND save to file:
 
 ```
-~/Documents/Projects/sales-assistant/reports/customer-intel/[company_name]_[YYYY-MM-DD].md
+$SALES_ASSISTANT_DIR/reports/customer-intel/[company_name]_[YYYY-MM-DD].md
 ```
+
+sales-assistant is retired; ChimesERP will take over (owner 2026-11-16). When
+`SALES_ASSISTANT_DIR` is not set, save the report in the client folder's `1-presales/intel/`
+(see presales-pipeline).
 
 Create the directory if it doesn't exist.
 

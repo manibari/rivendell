@@ -5,7 +5,7 @@
 Run Python to query all active clients with deal aggregation:
 
 ```bash
-cd ~/Documents/Projects/sales-assistant
+cd "${SALES_ASSISTANT_DIR:?Set SALES_ASSISTANT_DIR. sales-assistant is retired; ChimesERP will take over}"
 python3 -c "
 from services.nexus.clients import get_all_clients
 import json
