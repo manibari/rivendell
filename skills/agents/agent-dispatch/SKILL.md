@@ -3,8 +3,9 @@ name: Dispatching Parallel Agents
 loop: platform
 pdca: do
 description: >
-  Use multiple Claude agents to investigate and fix independent problems concurrently,
-  each isolated in its own git worktree. Includes deterministic runner loops and
+  Use multiple Claude agents to investigate independent problems concurrently,
+  each isolated in its own git worktree. Code fixes go to executors through
+  agent-code-dispatch. Includes deterministic runner loops and
   changelog reconciliation.
   TRIGGER when: facing 3+ independent failures, tasks, or investigations that can
   be parallelized without shared state or dependencies.
@@ -30,6 +31,11 @@ a worktree. Review diffs before integrating. Reconcile changelogs at the end.
 
 ## Non-Negotiables
 
+- Workers investigate: find the cause, the files, and the fix. A worker does not write
+  the code fix. Write a brief for each fix and give it to an executor through
+  `agent-code-dispatch`; the global CLAUDE.md rule (開發分工) names the executor. A Claude
+  worker writes and commits code only when the user names `claude` as the executor for
+  that ticket (owner decision 2026-11-16, prompt-audit F9).
 - Keep every worker in its own branch and git worktree. Never let parallel workers
   edit the same checkout.
 - Do not start workers until you understand enough code, tests, docs, and constraints

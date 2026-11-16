@@ -179,7 +179,7 @@ actual 圖的價值在於它**帶結論**，不是單純描述。用三個符號
 
 **Verdandi-AutoML —— 一題一張的四圖分工，最完整的一套**
 
-- 功能關係圖（主表，多 band 手工正交排版）：`dataflow-functions-2026-08.{html,png,mmd}`
+- 功能關係圖（主表，多 band 手工正交排版）：`dataflow-functions-2026-08.{html,png,mmd}`（舊檔名；新的主表用 `dataflow-actual-<YYYY-MM>`）
 - 資料實體流：`dataflow-entities-2026-08.{html,png}`
 - 模組全景（清單，無邊）：`dataflow-modules-2026-08.{html,png}`
 - store rail actual / target：`dataflow-stores-{actual,target}-2026-08.{html,png}`

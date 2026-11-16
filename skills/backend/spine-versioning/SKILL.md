@@ -118,16 +118,18 @@ Yellow-Chick's bump rules came before the 2026-10-31 rule. Its gate and its vali
 still apply. Its batch rule ("one batch takes only the highest level", "commits do not
 bump") is replaced by one version for each merged ticket.
 
-**Bump rules** (owner-defined 2026-09-26, MINOR revised 09-28):
+**Yellow-Chick's practice** (its bump table of 2026-09-26, MINOR revised 09-28). Use
+the rule at the top for when to bump. Keep this table for the evidence that its
+validator asks for:
 
-| Part | When | Extra evidence required |
+| Part | When (Yellow-Chick, history) | Extra evidence required |
 |------|------|-------------------------|
 | PATCH | every ordinary update that goes live | — |
 | MINOR | a new module / feature goes live | `release.requirement_source` = a requirement doc or recorded owner decision |
 | MAJOR | owner decides | `release.decided_by` + basis |
 
-- One batch takes only the highest level; MINOR resets PATCH, MAJOR resets both.
-- **Commits, doc edits, dev-complete and local tests do NOT bump.** Restarting the same
+- MINOR resets PATCH; MAJOR resets both.
+- Commits on a ticket branch, dev-complete and local tests do not bump. Restarting the same
   build is not a release. Release = QA passed → service reloaded → version + page
   verified → local tag. "Every independently-acceptable segment ships a version."
 - **Hotfix needs a ticket** (`HOTFIX-*`, see [[spine-roadmap]]) and a PATCH release with

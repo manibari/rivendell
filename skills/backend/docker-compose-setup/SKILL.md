@@ -194,7 +194,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-myapp}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}   # no default password
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -369,7 +369,8 @@ references/security-hardening.md.
 - [ ] Set `memory`, `cpus`, and `pids` limits.
 - [ ] Do not use `--privileged`; use specific `cap_add` entries.
 - [ ] Do not use the `latest` tag in production.
-- [ ] Put passwords and tokens in Docker secrets or mounted files, not environment variables.
+- [ ] Production: put passwords and tokens in Docker secrets or mounted files, not environment variables. Local development: a git-ignored `.env` is acceptable.
+- [ ] Give a password no default: use `${VAR:?message}`, so a missing value stops `docker compose up`.
 - [ ] Do not use `container_name` on services you scale.
 
 ---
@@ -511,7 +512,7 @@ docker compose config fails
 |   +-- Check colons have space after them
 |   +-- Check strings with special chars are quoted
 +-- Variable interpolation error?
-|   +-- Unset variable? --> Use ${VAR:-default} or set in .env
+|   +-- Unset variable? --> Set it in .env (use ${VAR:-default} only for non-secret values)
 |   +-- Dollar sign in value? --> Escape with $$ (e.g., $$HOME)
 +-- Unknown attribute?
     +-- Check spelling and indentation level

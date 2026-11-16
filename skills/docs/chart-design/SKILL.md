@@ -6,7 +6,7 @@ description: >
   Chart / table / diagram sub-workflow shared by every report + deck skill.
   Three-class triage (data-analysis / business / system-architecture) routes to
   typed rules. Four universal rules: R1 canvas (≥80% fill, no >8% empty band),
-  R2 narrative-beat gate (no chart without storyline link), R3 homogeneity
+  R2 narrative-beat gate (no deck/report chart without storyline link), R3 homogeneity
   (same axes = same metric, same unit, same population), R4 type-to-structure
   (a linear flow is NEVER a 2×2 matrix). Per-project visual style lives in
   `styles/<name>.md`, loaded by the skill — not hardcoded.
@@ -76,13 +76,16 @@ center_offset    = |chart_center - canvas_center| / canvas_dim  ≤ 0.05
 
 ### R2: Narrative-Beat Gate (生成前 hard gate)
 
-**No beat, no chart.** 在生成任何 chart / table / 架構圖之前**強制**回答三題：
+**範圍（owner 2026-11-16）**：進簡報、報告、提案、客戶文件的圖，三題都要答。內部工程圖
+（README、設計文件、除錯用的圖）免答第 1 題，第 2、3 題照答。
+
+**No beat, no chart.** 在生成範圍內的 chart / table / 架構圖之前**強制**回答三題：
 
 1. 對應 `storyline.md` 哪一句？（必填，照抄那一句）
 2. 這張圖要 argue 什麼？一句話：__________
 3. 觀眾看完應該記得什麼？一句話：__________
 
-三題填不完整 → **STOP，不生成**。
+要答的題沒答完 → **STOP，不生成**。
 
 這條 gate 對齊 deck-building memory 的 storyline-first 原則 — chart 是論點的可視化，不是裝飾。一張無 beat 的 chart 是噪音。
 

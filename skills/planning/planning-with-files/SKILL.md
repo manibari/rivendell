@@ -184,6 +184,11 @@ If you can answer these, your context management is solid:
 - Single-file edits
 - Quick lookups
 
+**Implementation task list:** `writing-plans` writes it (bite-sized tasks for the engineer or
+the executor). `task_plan.md` here tracks phases, progress and decisions; it does not hold a
+second copy of the task list. When both are in use, a phase in `task_plan.md` points to the
+`writing-plans` file (owner decision 2026-11-16, prompt-audit F13).
+
 ## Templates
 
 Copy these templates to start:

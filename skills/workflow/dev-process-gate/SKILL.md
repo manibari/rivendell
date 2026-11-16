@@ -75,7 +75,8 @@ Report what's missing and suggest the next step:
 **If all design stages complete but no system design (`docs/design/*-sd.md`):**
 > The screens are settled but the system isn't. Before task breakdown I'll use `/system-design`
 > to lock the data model, module boundaries, interface contracts, and the target 功能關係圖.
-> HARD GATE when this feature touches schema / cross-module handoff / a new store.
+> When this feature touches schema / cross-module handoff / a new store, do not skip this
+> stage on your own initiative. Skip it only when the user says so (owner decision 2026-11-16).
 > Small internal-logic changes: `/system-design` Step 0 will mark it Skip and say why.
 
 **If system design exists but no implementation plan:**

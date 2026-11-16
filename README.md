@@ -133,7 +133,7 @@ as release notes.
 | Skill | 觸發方式 | 說明 |
 |-------|---------|------|
 | **agent-code-dispatch** | 自動 | Give one scoped coding ticket to an executor (Qwen, Codex, or a Claude subagent) |
-| **agent-dispatch** | 自動 | Use multiple Claude agents to investigate and fix independent problems |
+| **agent-dispatch** | 自動 | Use multiple Claude agents to investigate independent problems in parallel; code fixes go to executors |
 | **agent-headless** | `/agent-headless` | Pattern for running Claude Code as an automated |
 | **agent-launchd** | 自動 | Create / debug / manage macOS launchd LaunchAgents — plist generation |
 | **agent-observability** | 自動 | Make any script-based agent visible in rivendell: execution history |

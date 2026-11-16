@@ -10,7 +10,7 @@ Phase 4 的細節。一次稽核會生出七八個檔案，散著放等於沒交
 檔名要一眼看得出掛在主表哪裡：
 
 ```
-dataflow-functions-<YYYY-MM>          ← 主表
+dataflow-actual-<YYYY-MM>             ← 主表（system-design 的 target 版：dataflow-target-<YYYY-MM>）
 node-<帶>-<節點>-<YYYY-MM>            ← 某一格的細節（圖或稽核）
 dataflow-<視角>-<YYYY-MM>             ← 橫切視角（實體流轉、儲存層、模組全景）
 ```

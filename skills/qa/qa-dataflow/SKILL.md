@@ -221,7 +221,8 @@ bash <skill-dir>/scripts/seam-scan.sh [repo-path]
 
 交付清單，缺一會被退：
 
-- [ ] **功能關係圖** `dataflow-functions-<YYYY-MM>` —— **主表**，先做這張
+- [ ] **功能關係圖** `dataflow-actual-<YYYY-MM>` —— **主表**，先做這張。跟 system-design 的
+  `dataflow-target-<YYYY-MM>` 成對；舊專案已有的 `dataflow-functions-*` 不改名
 - [ ] `INDEX.md` —— 說明怎麼看、怎麼維護（範本：[assets/index-template.md](assets/index-template.md)）
 - [ ] 落差報告（.md）
 - [ ] 儲存層 `dataflow-stores-actual-<YYYY-MM>`（＋有書面宣稱時加 `-target`）
