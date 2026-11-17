@@ -89,11 +89,14 @@ Save to: `materials/presentations/{client-slug}_{YYYY-MM-DD}.pptx`
 Use this shape when `storyline.md` has `stage: first-call`. The proposal table in the next section is for a later meeting, after the need is confirmed.
 
 1. Cover: company name, one background line, the services as chips, the date. The title is the company name only. Do not tell the buyer what they need.
-2. Our strengths: three sentences.
-3. Case index: one table, grouped by industry, numbered 01, 02, and so on. Columns: industry, number, project, system, AI applications (CV / ML / GPT ticks), page. The order agrees with the case pages.
-4. One page for each case: a highlight card, need, approach, system, AI applications, products used, status. Show the real picture when one exists.
-5. Products: one page in two tiers (AI platform; application systems). Each card lists the case numbers that use it.
-6. Deployment experience: one page, with one real case under it. The contact line goes on this page.
+2. Who we are: one value line in the buyer's business words (for example 「使用 AI 技術減少浪費，加速企業實踐 ESG 目標」), our strengths in three sentences, the representative products, and a wall of customer and partner logos.
+3. Track record: one timeline from the founding year to this year. Each year lists product releases, awards, investors and accelerator programs, with real event photos.
+4. Case index: one table, grouped by industry, numbered 01, 02, and so on. Columns: industry, number, project, system, AI applications (CV / ML / GPT ticks), page. The order agrees with the case pages.
+5. One page for each case: a highlight card, need, approach, system, AI applications, products used, status. Show the real picture when one exists.
+6. Products: one page in two tiers (AI platform; application systems). Each card lists the case numbers that use it.
+7. Deployment experience: one page, with one real case under it. The contact line goes on this page.
+
+Why pages 2 and 3 (owner 2026-11-17, from a sales colleague's first-call deck, 大武山 v5): a first-call buyer does not know us yet. Build trust in the company before the cases and the products. Show who uses us and who recognized us, with names and years. Do not use adjectives. Keep this opening when the rest of the deck has another shape, for example products, then solution pages, then rollout.
 
 Do not put these in a first deck: prices, an agenda, a next-step page, or common sense such as "white-label" or "we will not compete with you". Every project has system development and AI; do not sort projects into "system" and "AI" groups.
 
@@ -101,6 +104,9 @@ Proof and anonymization (the `sales` agent holds the full rules):
 
 - Burn masks into the image files. A CSS mask does not travel into a PPTX or the assets folder. Check every screenshot for site, ship, account, program, partner and other brand names.
 - A vendor buyer knows its own customers. "Industry type + work done" can name a customer that must not be named.
+- Take the logo wall from the work folder's logo library (`素材/library/logos/`). A logo on the wall and an anonymous case page (「某煉油廠」) can together name the customer. Check each anonymous case against the wall.
+- A status on a case page agrees with the same item on the overview page. A caveat that changes what a number means (for example "academic study, not a customer result") stays on the slide, because the buyer gets the PDF without the speaker notes.
+- Write a change in plain words: 「降低 25–30%」, not 「−25–30%」.
 - Case pages show real customer projects only. Show a presales demo or an open opportunity as a product capability.
 - A number on a highlight card needs a measured source. Without one, state a function that the screen shows.
 - Product pictures show our own product screens.

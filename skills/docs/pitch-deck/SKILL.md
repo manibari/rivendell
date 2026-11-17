@@ -100,6 +100,9 @@ For B2B first-call decks, a strong default story order is:
 → 導入流程（架構圖 / 工作坊到 PoC 的流程圖）
 ```
 
+A first call to a sales prospect also opens with two trust pages after the cover:
+who we are and the track record. The rule is in sales-material ("First Meeting Deck").
+
 Do not lead with implementation mechanics before the audience has seen the
 pain and the proof. Case pages should visibly tie back to the named pain they
 solve. Solution pages need product or system visuals; implementation pages need
