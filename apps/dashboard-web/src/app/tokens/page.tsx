@@ -5,6 +5,7 @@ import { apiFetch, type FilteredTokensData } from "@/lib/api";
 import MetricsRow from "@/components/MetricsRow";
 import LiveUsage from "./LiveUsage";
 import QuotaPanel from "./QuotaPanel";
+import WasteReport from "./WasteReport";
 import {
   BarChart,
   Bar,
@@ -201,6 +202,8 @@ export default function TokensPage() {
       <LiveUsage />
 
       <QuotaPanel />
+
+      <WasteReport />
 
       {err ? (
         <p style={{ color: "var(--status-err)" }}>錯誤：{err}</p>
