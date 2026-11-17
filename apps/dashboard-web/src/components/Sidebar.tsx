@@ -23,6 +23,8 @@ import {
   ChevronRight,
   ChevronDown,
   UserRound,
+  Menu,
+  X,
 } from "lucide-react";
 import { apiFetch, type ProjectsData, type AgentsData } from "@/lib/api";
 import Logo from "./Logo";
@@ -269,9 +271,13 @@ function RunningAgentsPanel() {
 
 // useSearchParams forces a CSR bailout, so this part must live inside a
 // <Suspense> boundary. Extracted into its own component for that reason.
-function SidebarNav() {
+function SidebarNav({ onRouteChange }: { onRouteChange: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
+  useEffect(() => {
+    onRouteChange();
+  }, [pathname, queryString, onRouteChange]);
   const [manualExpanded, setManualExpanded] = useState<Set<string>>(
     () => new Set(),
   );
@@ -474,6 +480,8 @@ function SidebarNav() {
 
 export default function Sidebar() {
   const [projects, setProjects] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const closeDrawer = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     apiFetch<ProjectsData>("/api/projects")
@@ -481,50 +489,113 @@ export default function Sidebar() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
+    };
+    const desktopQuery = window.matchMedia("(min-width: 768px)");
+    const onDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) closeDrawer();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    desktopQuery.addEventListener("change", onDesktop);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      desktopQuery.removeEventListener("change", onDesktop);
+    };
+  }, [isOpen, closeDrawer]);
+
   return (
-    <aside
-      className="flex w-56 shrink-0 flex-col min-h-screen"
-      style={{
-        background: "var(--surface-2)",
-        borderRight: "1px solid var(--border)",
-      }}
-    >
-      <div className="px-4 pt-6 pb-1">
-        <Logo size={28} />
-      </div>
-      <p
-        className="px-4 pb-5 font-mono text-[11px]"
-        style={{ color: "var(--text-muted)", letterSpacing: "0.02em" }}
+    <>
+      <header
+        className="sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 md:hidden"
+        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
-        council of skills · refuge of work
-      </p>
-
-      {/* Project switcher */}
-      <div className="px-3 pb-4">
-        <select
-          className="w-full rounded-md px-2.5 py-1.5 text-xs font-mono"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            color: "var(--text)",
-          }}
+        <Logo size={28} />
+        <button
+          type="button"
+          aria-label="開啟選單"
+          aria-expanded={isOpen}
+          aria-controls="dashboard-sidebar"
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+          style={{ color: "var(--text)" }}
         >
-          <option value="">all projects</option>
-          {projects.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-      </div>
+          <Menu size={18} aria-hidden="true" />
+          選單
+        </button>
+      </header>
+      {isOpen && (
+        <button
+          type="button"
+          aria-label="關閉選單"
+          onClick={closeDrawer}
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: "var(--text)", opacity: 0.5 }}
+        />
+      )}
+      <aside
+        id="dashboard-sidebar"
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-56 shrink-0 flex-col overflow-y-auto transition-[transform,visibility] duration-150 motion-reduce:transition-none md:static md:z-auto md:h-auto md:min-h-screen md:translate-x-0 md:overflow-visible md:transition-none ${isOpen ? "visible translate-x-0" : "invisible -translate-x-full md:visible"}`}
+        style={{
+          background: "var(--surface-2)",
+          borderRight: "1px solid var(--border)",
+        }}
+        onClickCapture={(event) => {
+          if ((event.target as HTMLElement).closest("a[href]")) closeDrawer();
+        }}
+      >
+        <button
+          type="button"
+          aria-label="關閉選單"
+          onClick={closeDrawer}
+          className="absolute right-3 top-5 rounded-md p-2 md:hidden"
+          style={{ color: "var(--text)" }}
+        >
+          <X size={18} aria-hidden="true" />
+        </button>
+        <div className="px-4 pt-6 pb-1">
+          <Logo size={28} />
+        </div>
+        <p
+          className="px-4 pb-5 font-mono text-[11px]"
+          style={{ color: "var(--text-muted)", letterSpacing: "0.02em" }}
+        >
+          council of skills · refuge of work
+        </p>
 
-      <Suspense fallback={null}>
-        <SidebarNav />
-      </Suspense>
+        {/* Project switcher */}
+        <div className="px-3 pb-4">
+          <select
+            className="w-full rounded-md px-2.5 py-1.5 text-xs font-mono"
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+            }}
+          >
+            <option value="">all projects</option>
+            {projects.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div className="mt-auto">
-        <RunningAgentsPanel />
-      </div>
-    </aside>
+        <Suspense fallback={null}>
+          <SidebarNav onRouteChange={closeDrawer} />
+        </Suspense>
+
+        <div className="mt-auto">
+          <RunningAgentsPanel />
+        </div>
+      </aside>
+    </>
   );
 }
