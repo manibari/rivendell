@@ -96,7 +96,7 @@ Use this shape when `storyline.md` has `stage: first-call`. The proposal table i
 6. Products: one page in two tiers (AI platform; application systems). Each card lists the case numbers that use it.
 7. Deployment experience: one page, with one real case under it. The contact line goes on this page.
 
-Why pages 2 and 3 (owner 2026-11-17, from a sales colleague's first-call deck, 大武山 v5): a first-call buyer does not know us yet. Build trust in the company before the cases and the products. Show who uses us and who recognized us, with names and years. Do not use adjectives. Keep this opening when the rest of the deck has another shape, for example products, then solution pages, then rollout.
+Why pages 2 and 3 (owner 2026-11-17, from a sales colleague's first-call deck): a first-call buyer does not know us yet. Build trust in the company before the cases and the products. Show who uses us and who recognized us, with names and years. Do not use adjectives. Keep this opening when the rest of the deck has another shape, for example products, then solution pages, then rollout.
 
 Do not put these in a first deck: prices, an agenda, a next-step page, or common sense such as "white-label" or "we will not compete with you". Every project has system development and AI; do not sort projects into "system" and "AI" groups.
 
