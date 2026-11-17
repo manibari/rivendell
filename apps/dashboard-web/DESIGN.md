@@ -6,7 +6,7 @@ Source of truth for all visual decisions in `dashboard-next/`. Read this before 
 
 - **What this is:** Single-user desktop dashboard managing 90+ Claude Code skills, AI agents, and workflow gates.
 - **Who it's for:** Peter (manibari) — sole user. Internal tool, never customer-facing.
-- **Project type:** Personal dev tool / command center. Desktop only (no mobile RWD).
+- **Project type:** Personal dev tool / command center. Desktop first; usable on a phone (see Layout, mobile shell).
 - **Brand promise:** A quiet refuge for the work — dashboard stays neutral and functional; rivendell character lives in the logo and a single accent color.
 
 ## Aesthetic Direction
@@ -91,6 +91,7 @@ Two faces, three roles. Self-host both for portability (see Self-Hosting below).
 ## Layout
 
 - **App shell:** Left sidebar nav (collapsible, ~240px) + main canvas. Top breadcrumb on each page.
+- **Mobile shell (below 768 px, Tailwind `md`):** a sticky top bar with the logo and a 選單 button. The same sidebar opens as a drawer from the left over a backdrop; the backdrop, Escape, the close button and a route change close it. Main padding is 16px. At 768 px and wider the shell does not change.
 - **Max content width:** 1280px. Wider on workflow / chart-heavy pages where horizontal scroll is acceptable inside cards.
 - **Border radius:** `sm: 4px` for chips/inputs, `md: 6px` for cards, `lg: 8px` for large containers.
 - **Workflow page exception:** main canvas is a custom flowchart (React Flow or equivalent), not a CSS grid. Scrolls horizontally as needed.
@@ -182,3 +183,4 @@ Specific to this dashboard's flagship page. Detailed implementation lives in `da
 | 2026-05-15 | Workflow Map redesigned as 4-tab static playbook, moved under `/projects/[name]/workflow` | The encyclopedic skill-graph view (React Flow, `workflow.json` SoT) was not what Peter actually used. The mockup at `~/Documents/Peter/workflow-map.html` proposed a focused 4-tab playbook (UI Feature / Backend / Slide / Maintenance) that mirrors the canonical workflow in `~/.claude/CLAUDE.md`. Data SoT is now `dashboard-next/src/app/projects/[name]/workflow/playbook-data.ts` (TypeScript). React Flow is NOT used here — the page is static, click-a-chip-for-detail interaction only. Workflow Map removed from top-level sidebar; entry point is the rivendell project detail page. Mockup's blue/cyan chip palette mapped to rivendell tokens (forest-green accent, surface-2 + border-strong for gstack, dashed `--status-err` for critical). Tab icons use Lucide (`Palette` / `Wrench` / `Presentation` / `RotateCw`) instead of mockup's emoji to match DESIGN.md "Decoration level: Minimal." |
 | 2026-05-15 | Workflow Map: tried Azure ML-style read-only DAG (React Flow + dagre), reverted to list view | Built node-graph rendering (commit b7c54d0) with dagre auto-layout, smoothstep edges in accent-soft, custom step nodes carrying chips + branch lines inline. User reaction: "感覺效果不是很好". Reverted via 791c7d5. Hypotheses (untested — user didn't elaborate): (a) DAG adds visual noise without adding information vs the list (every step still carries the same chips); (b) sequential scan is faster in a vertical list than across a graph; (c) React Flow's grid background + zoom controls reintroduce "tool chrome" that violates calm/library mood. Keep the list view; if revisiting node-graph later, do not assume the data-shape carries — re-validate against actual UX gap, not aesthetic ambition. The graph code is recoverable from commit b7c54d0 via `git revert HEAD` of the revert commit. |
 | 2026-09-29 | Live token chart on `/tokens` uses one color per account or model | Peter asked to tell accounts (and models) apart by color on the minute/hour chart. Forest green stays the first series; further accounts use muted earth tones (`#b7791f`, `#9a4a3a`, `#475569`, `#6b7a2a`, `#8a6d5a`). Still no blue / purple / pink, and only this chart is categorical — the daily chart keeps the sequential greens. Bars update on a poll with no tween, so "no animated transitions" still holds. |
+| 2026-11-18 | Mobile shell: sidebar becomes a drawer below 768 px | At 375 px the always-on sidebar left a content column of about 100 px on every page (seen on the new `/tokens` 疑似浪費報告 section). Peter approved the fix (「修」). The drawer reuses the desktop sidebar; desktop is unchanged. This replaces "Desktop only (no mobile RWD)". |
