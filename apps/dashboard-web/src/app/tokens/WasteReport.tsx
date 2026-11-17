@@ -109,15 +109,18 @@ export default function WasteReport() {
             {current.window && <> · 資料區間 {current.window[0]} 到 {current.window[1]}</>}
           </p>
           <article
-            className="prose prose-sm max-w-none p-6"
+            className="prose prose-sm max-w-none p-4 sm:p-6 prose-p:[overflow-wrap:anywhere] prose-li:[overflow-wrap:anywhere] prose-code:before:content-none prose-code:after:content-none"
             style={{ color: "var(--text)", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", minWidth: 0 }}
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                table: ({ children, ...props }) => (
+                // `node` is react-markdown's AST node; it must not reach the DOM.
+                // A fixed minimum width keeps cells readable; the box scrolls instead.
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                table: ({ node: _node, children, ...props }) => (
                   <div className="max-w-full overflow-x-auto">
-                    <table {...props}>{children}</table>
+                    <table {...props} style={{ minWidth: 720 }}>{children}</table>
                   </div>
                 ),
               }}

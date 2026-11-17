@@ -52,6 +52,10 @@ Owner request 2026-11-18: 「叫 google 監控今天晚上各個 session 的 tok
    report path, and that the waste numbers are estimates (upper bounds).
 5. **When the background task ends**, read the final report and tell the user.
 
+The dashboard shows the same reports: page `/tokens`, section 疑似浪費報告 (API
+`/api/tokens/waste-reports`). It shows the newest report and lets the user pick an older
+one. Only file names `token-watch-<YYYY-MM-DD>-<host>.md` in `reports/` appear there.
+
 ## What Gemini marks
 
 Long context with no compact, cache rebuild after idle, repeated command or polling, tool
