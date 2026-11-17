@@ -217,6 +217,19 @@ and three port briefs allowed only new files. Four rounds stopped and went out a
   a new field or a new line. (2026-10-28: mops_dbs; and ChimesERP ERP-317, where new
   values in two existing fields broke existing tests.)
 
+#### A ticket that edits documents
+
+When a brief asks the executor to shorten or correct a document (SKILL.md, README, a
+design doc), the executor can remove facts with the old text. (2026-11-16, rivendell
+prompt audit: Codex removed the default classDef table of mermaid-theme.md and the 429
+rate-limit facts of subtitle-file. Only the review found them, and Claude put them back.)
+
+- Put this rule in the brief: "Keep every fact: a number, a date, a command, a path, a
+  table row, an incident note. If you remove a sentence, list it in the report with one
+  line why."
+- In the review, read each `-` line of the diff. Find each removed fact in the new text
+  or in the executor's list. Put back each fact that is in neither.
+
 ### 3. Run in the background
 
 qwen, codex, or gemini:
