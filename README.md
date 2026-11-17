@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (137 skills)
+## Skills Catalog (138 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -125,6 +125,7 @@ as release notes.
 | **skill-scout** | `/skill-scout` | 從 GitHub 與社群資源發現、評估、移植 Claude Code skills |
 | **sync-readme** | 自動 + hook | Keep README.md sections in sync with code structure across repos |
 | **token-quota-log** | statusLine | 記錄官方訂閱額度（Claude 5h／每週已用 %、重置時間），對照 token 用量；dashboard /tokens 帳號與額度 |
+| **token-waste-watch** | 自動 | Watch the token use of every AI work session on this machine for a time window… |
 | **workflow-retro** | 自動 | Weekly observability retrospective for the rivendell skills + agents system. |
 | **writing-great-skills** | `/writing-great-skills` | Reference for writing and editing skills well — the vocabulary and principles |
 
@@ -331,7 +332,7 @@ as release notes.
 | invest | 1 | 1 | — | — |
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
-| platform | 1 | 13 | 6 | 5 |
+| platform | 1 | 13 | 7 | 5 |
 | dev | 26 | 24 | 9 | 7 |
 | shared | 1 | 15 | 2 | — |
 

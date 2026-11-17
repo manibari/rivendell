@@ -256,6 +256,10 @@
     {
       "phrase": "開發中心",
       "expect": "spine-dev-center"
+    },
+    {
+      "phrase": "token 浪費報告",
+      "expect": "token-waste-watch"
     }
   ]
 }
