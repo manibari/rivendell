@@ -6,8 +6,10 @@ The key comes from $CHIMES_GATEWAY_API_KEY or the Keychain item "sk-chimes-gatew
 import json
 import os
 import subprocess
+import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 GATEWAY_URL = os.environ.get("CHIMES_GATEWAY_BASE_URL", "https://gpt-gateway.chimes.ai/v1")
 MODEL = os.environ.get("TOKEN_WATCH_MODEL", "gemini-4-argon")
@@ -47,7 +49,20 @@ def ask(instructions: str, prompt: str, timeout: int = 600) -> tuple[str, dict]:
             data = json.loads(r.read())
     except urllib.error.HTTPError as e:
         raise RuntimeError(f"gateway HTTP {e.code}: {e.read()[:300].decode(errors='replace')}") from None
-    return extract_text(data), data.get("usage") or {}
+    usage = data.get("usage") or {}
+    log_path = Path(os.environ.get("GEMINI_GATEWAY_LOG", str(Path.home() / ".codex-gemini" / "gateway-calls.jsonl")))
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8") as log:
+            log.write(json.dumps({
+                "ts": time.time(), "model": MODEL,
+                "input_tokens": usage.get("input_tokens", 0),
+                "output_tokens": usage.get("output_tokens", 0),
+                "caller": "token-waste-watch",
+            }) + "\n")
+    except OSError:
+        pass
+    return extract_text(data), usage
 
 
 if __name__ == "__main__":

@@ -75,11 +75,14 @@ export default function TokensPage() {
   const [data, setData] = useState<FilteredTokensData | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  const clearResults = () => {
+    setData(null);
+    setErr(null);
+  };
+
   useEffect(() => {
     // The default 30-day view has dates and uses /filtered; clearing both
     // date fields requests the all-time /api/tokens view.
-    setData(null);
-    setErr(null);
     let endpoint: string;
     if (dateStart || dateEnd) {
       const params = new URLSearchParams();
@@ -89,9 +92,11 @@ export default function TokensPage() {
     } else {
       endpoint = `/api/tokens`;
     }
+    let active = true;
     apiFetch<FilteredTokensData>(endpoint)
-      .then(setData)
-      .catch((e) => setErr(e.message));
+      .then((result) => { if (active) setData(result); })
+      .catch((e) => { if (active) setErr(e.message); });
+    return () => { active = false; };
   }, [dateStart, dateEnd]);
 
   const dateInputStyle: React.CSSProperties = {
@@ -132,7 +137,7 @@ export default function TokensPage() {
           <input
             type="date"
             value={dateStart}
-            onChange={(e) => setDateStart(e.target.value)}
+            onChange={(e) => { clearResults(); setDateStart(e.target.value); }}
             style={dateInputStyle}
           />
         </label>
@@ -141,13 +146,14 @@ export default function TokensPage() {
           <input
             type="date"
             value={dateEnd}
-            onChange={(e) => setDateEnd(e.target.value)}
+            onChange={(e) => { clearResults(); setDateEnd(e.target.value); }}
             style={dateInputStyle}
           />
         </label>
         {(dateStart || dateEnd) && (
           <button
             onClick={() => {
+              clearResults();
               setDateStart("");
               setDateEnd("");
             }}
@@ -185,7 +191,7 @@ export default function TokensPage() {
       />
       {data.sources && (
         <p className="mt-2" style={{ fontSize: 11, color: TEXT_SUBTLE, fontFamily: "monospace" }}>
-          合併 Claude Code + Codex + Qwen。Claude {data.sources.claude.sessions} sessions ·{" "}
+          合併 Claude Code + Codex + Qwen + Gemini。Claude {data.sources.claude.sessions} sessions ·{" "}
           {data.sources.claude.tokens.toLocaleString()} tokens；Codex {data.sources.codex.sessions} sessions ·{" "}
           {data.sources.codex.tokens.toLocaleString()} tokens · API 等值 ${data.sources.codex.cost_usd.toFixed(2)}
           （實付為 ChatGPT 訂閱費，此為 OpenAI 牌價換算）
@@ -193,6 +199,12 @@ export default function TokensPage() {
             <>
               ；Qwen {data.sources.qwen.sessions} sessions · {data.sources.qwen.tokens.toLocaleString()} tokens
               （GMI 價格未登錄，花費不計入）
+            </>
+          )}
+          {data.sources.gemini && (
+            <>
+              ；Gemini {data.sources.gemini.sessions} sessions · {data.sources.gemini.tokens.toLocaleString()} tokens
+              （公司 gateway，不計費用）
             </>
           )}
           。
@@ -315,7 +327,7 @@ export default function TokensPage() {
                     {m.model}
                   </td>
                   <td className="px-4 py-2 text-xs" style={{ color: TEXT_SUBTLE }}>
-                    {m.source === "codex" ? "Codex" : m.source === "qwen" ? "Qwen (Codex CLI)" : "Claude Code"}
+                    {m.source === "codex" ? "Codex" : m.source === "qwen" ? "Qwen (Codex CLI)" : m.source === "gemini" ? "Gemini (Codex CLI)" : "Claude Code"}
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums" style={{ color: "var(--text)" }}>
                     {m.input_tokens.toLocaleString()}
@@ -330,6 +342,9 @@ export default function TokensPage() {
                     )}
                     {m.billing === "unpriced" && (
                       <span style={{ color: TEXT_SUBTLE, fontSize: 10, marginLeft: 4 }}>未定價</span>
+                    )}
+                    {m.billing === "gateway" && (
+                      <span style={{ color: TEXT_SUBTLE, fontSize: 10, marginLeft: 4 }}>公司 gateway，不計費用</span>
                     )}
                   </td>
                 </tr>

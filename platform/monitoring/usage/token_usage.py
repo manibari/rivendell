@@ -29,6 +29,8 @@ from typing import Any, Callable
 from lib.tokens_codex import (UNKNOWN_CODEX_MODEL, estimate_codex_cost,  # noqa: F401
                               is_codex_model, iter_codex_sessions, parse_codex_session)
 from lib.tokens_qwen import is_qwen_model, iter_qwen_sessions
+from lib.tokens_gemini import (gateway_log_path, is_gemini_model, iter_gemini_sessions,
+                               parse_gateway_calls)
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _CACHE_TTL = 60.0  # seconds; refresh merged usage after one minute
@@ -82,24 +84,26 @@ class ModelSummary:
     cache_read_tokens: int
     cache_create_tokens: int
     cost_usd: float
-    source: str = "claude"      # "claude" | "codex" | "qwen"
+    source: str = "claude"      # "claude" | "codex" | "qwen" | "gemini"
     billing: str = "api"        # "api" (priced) | "subscription" (cost = API equivalent, not billed)
-                                # | "unpriced" (no price recorded, cost 0)
+                                # | "unpriced" (no price recorded, cost 0) | "gateway" (cost unknown)
 
 
 def model_source(model: str) -> str:
+    if is_gemini_model(model):
+        return "gemini"
     if is_qwen_model(model):
         return "qwen"
     return "codex" if is_codex_model(model) else "claude"
 
 
-_BILLING = {"claude": "api", "codex": "subscription", "qwen": "unpriced"}
+_BILLING = {"claude": "api", "codex": "subscription", "qwen": "unpriced", "gemini": "gateway"}
 
 
 def _estimate_cost(model: str, input_t: int, output_t: int,
                    cache_read: int, cache_create: int) -> float:
-    if is_qwen_model(model):
-        # GMI price not recorded; 0, never the Claude default below.
+    if is_qwen_model(model) or is_gemini_model(model):
+        # Neither provider price is recorded; 0, never the Claude default below.
         return 0.0
     if is_codex_model(model):
         # ChatGPT subscription: this is the OpenAI API list-price equivalent,
@@ -456,7 +460,7 @@ class FilteredUsage:
     total_messages: int
     total_cost_usd: float
     total_tokens: int
-    # per-source split of the combined totals: {"claude": {...}, "codex": {...}, "qwen": {...}}
+    # per-source split of the combined totals
     sources: dict[str, dict[str, int | float]] = field(default_factory=dict)
 
 
@@ -545,6 +549,19 @@ def _merge_filtered_usage(date_start: str | None, date_end: str | None,
             seen_requests,
         )
 
+    for jsonl_path in iter_gemini_sessions():
+        file_agg = _file_agg_cached(jsonl_path, "gemini", parser=_parse_gemini,
+                                    connection=connection)
+        _merge_file_agg(file_agg, date_start, date_end, projects, models_agg,
+                        daily_agg, all_sessions, seen_requests)
+
+    gateway_path = gateway_log_path()
+    if gateway_path.is_file():
+        file_agg = _file_agg_cached(gateway_path, "token-waste-watch",
+                                    parser=_parse_gateway, connection=connection)
+        _merge_file_agg(file_agg, date_start, date_end, projects, models_agg,
+                        daily_agg, all_sessions, seen_requests)
+
     # Build model summary
     model_results = []
     for model, m in models_agg.items():
@@ -600,6 +617,7 @@ def _merge_filtered_usage(date_start: str | None, date_end: str | None,
         "claude": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
         "codex": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
         "qwen": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
+        "gemini": {"sessions": 0, "messages": 0, "tokens": 0, "cache_tokens": 0, "cost_usd": 0.0},
     }
     for m in model_results:
         s = sources[m.source]
@@ -610,7 +628,8 @@ def _merge_filtered_usage(date_start: str | None, date_end: str | None,
         sources[_session_source(sid)]["sessions"] += 1
     for key in seen_requests:
         key = str(key)
-        src = "qwen" if key.startswith("qwen:") else "codex" if key.startswith("codex:") else "claude"
+        src = ("gemini" if key.startswith("gemini:") else "qwen" if key.startswith("qwen:")
+               else "codex" if key.startswith("codex:") else "claude")
         sources[src]["messages"] += 1
 
     return FilteredUsage(
@@ -635,11 +654,27 @@ def _parse_qwen(path: Path, fallback_project: str) -> dict:
     return agg
 
 
+def _parse_gemini(path: Path, fallback_project: str) -> dict:
+    agg = parse_codex_session(path, fallback_project, _cwd_to_project_name)
+    for day in agg.values():
+        for project in day.values():
+            for req in project.get("requests", []):
+                req["key"] = "gemini:" + req["key"].removeprefix("codex:")
+    return agg
+
+
+def _parse_gateway(path: Path, fallback_project: str) -> dict:
+    return parse_gateway_calls(path, fallback_project)
+
+
 _CODEX_SESSION_IDS: set[str] = set()
 _QWEN_SESSION_IDS: set[str] = set()
+_GEMINI_SESSION_IDS: set[str] = set()
 
 
 def _session_source(session_id: str) -> str:
+    if session_id in _GEMINI_SESSION_IDS:
+        return "gemini"
     if session_id in _QWEN_SESSION_IDS:
         return "qwen"
     return "codex" if session_id in _CODEX_SESSION_IDS else "claude"
@@ -837,9 +872,10 @@ def _file_agg_cached(path: Path, fallback_project: str,
 
 
 def _remember_codex_sessions(agg: dict, parser: Callable) -> None:
-    """Track which session ids came from Codex / Qwen so per-source session
+    """Track which session ids came from Codex / Qwen / Gemini so per-source session
     counts can be split after the shared merge."""
-    target = {_parse_codex: _CODEX_SESSION_IDS, _parse_qwen: _QWEN_SESSION_IDS}.get(parser)
+    target = {_parse_codex: _CODEX_SESSION_IDS, _parse_qwen: _QWEN_SESSION_IDS,
+              _parse_gemini: _GEMINI_SESSION_IDS, _parse_gateway: _GEMINI_SESSION_IDS}.get(parser)
     if target is None:
         return
     for day in agg.values():

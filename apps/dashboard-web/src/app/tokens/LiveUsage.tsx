@@ -25,7 +25,7 @@ interface Cell {
   requests: number;
 }
 
-type Source = "claude" | "codex" | "qwen";
+type Source = "claude" | "codex" | "qwen" | "gemini";
 
 interface Part {
   source: Source;
@@ -93,7 +93,7 @@ const SPANS: Record<Bucket, { value: number; label: string }[]> = {
 };
 const POLL_MS: Record<Bucket, number> = { minute: 5000, hour: 30000 };
 
-const SOURCE_NAME = { claude: "Claude Code", codex: "Codex", qwen: "Qwen" } as const;
+const SOURCE_NAME = { claude: "Claude Code", codex: "Codex", qwen: "Qwen", gemini: "Gemini" } as const;
 
 const accountLabel = (p: { source: Source; account: string | null; label: string | null }) =>
   `${SOURCE_NAME[p.source]} · ${p.label ?? (p.account ? p.account.slice(0, 8) : "帳號未判讀")}`;
@@ -331,7 +331,7 @@ export default function LiveUsage() {
         {data?.account_log_from
           ? `登入紀錄從 ${dayClock(data.account_log_from)} 開始，更早的用量標「帳號未判讀」。`
           : "這段時間沒有登入紀錄，Claude Code 用量標「帳號未判讀」。"}
-        Codex 帳號同樣照「當時登入的是誰」（換帳號後，跑到一半的 session 也算新帳號）；沒有登入紀錄的時段才用 session 建立時的帳號。Qwen 走 Codex CLI 接第三方供應商，沒有登入帳號，標的是供應商（例如 GMI）。
+        Codex 帳號同樣照「當時登入的是誰」（換帳號後，跑到一半的 session 也算新帳號）；沒有登入紀錄的時段才用 session 建立時的帳號。Qwen 與 Gemini 走 Codex CLI 接第三方供應商，沒有登入帳號，標的是供應商（例如 GMI）。
       </p>
     </section>
   );

@@ -56,11 +56,11 @@ _FIELDS = ("input", "output", "cache_read", "cache_create")
 @dataclass
 class _Tail:
     """Incremental read state for one JSONL file."""
-    kind: str                      # "claude" | "codex" | "qwen" (codex rollout format)
+    kind: str                      # "claude" | "codex" | "qwen" | "gemini"
     inode: int = 0
     offset: int = 0
     covered_from: float = 0.0      # records are complete from this epoch onward
-    account: str = ""              # codex: creator id; qwen: provider; claude: by timestamp
+    account: str = ""              # codex: creator id; qwen/gemini: provider; claude: by timestamp
     model: str = "unknown"         # codex only; claude rows name their own model
     session_id: str = ""
     prev_total: dict | None = None  # codex cumulative counter; None = need a baseline
@@ -135,7 +135,7 @@ def _codex_head(f, tail: _Tail, fallback_id: str) -> None:
             tail.model = payload.get("model") or tail.model
             break
         tail.session_id = payload.get("id") or payload.get("session_id") or fallback_id
-        if tail.kind == "qwen":
+        if tail.kind in ("qwen", "gemini"):
             tail.account = payload.get("model_provider") or ""
         else:
             tail.account = payload.get("creator_account_id") or ""
@@ -275,8 +275,9 @@ def _advance(path: Path, kind: str, since: float) -> _Tail | None:
 def _recent_files(since: float) -> list[tuple[Path, str]]:
     found: list[tuple[Path, str]] = []
     mirror_qwen_rollouts()  # scratchpad CODEX_HOMEs -> QWEN_SESSION_DIR
+    gemini_root = PROJECTS_DIR.parent.parent / ".codex-gemini" / "sessions"
     roots = ([(PROJECTS_DIR, "claude")] + [(d, "codex") for d in CODEX_SESSION_DIRS]
-             + [(QWEN_SESSION_DIR, "qwen")])
+             + [(QWEN_SESSION_DIR, "qwen"), (gemini_root, "gemini")])
     for root, kind in roots:
         if not root.is_dir():
             continue
@@ -290,7 +291,7 @@ def _recent_files(since: float) -> list[tuple[Path, str]]:
 
 
 def _collect(since: float) -> dict[str, tuple[str, str, tuple]]:
-    """request key -> (source, codex account id / qwen provider, record), deduplicated across files."""
+    """request key -> (source, account id / provider, record), deduplicated across files."""
     merged: dict[str, tuple[str, str, tuple]] = {}
     live = set()
     for path, kind in _recent_files(since):
@@ -358,11 +359,11 @@ def get_timeline(bucket: str = "minute", span: int | None = None,
             continue
         if source == "codex":
             account = accounts.codex_account_at(codex_logins, at, codex_account) or None
-        elif source == "qwen":
+        elif source in ("qwen", "gemini"):
             account = codex_account or None  # provider, not a login
         else:
             account = accounts.account_at(logins, at)
-        if source == "qwen":
+        if source in ("qwen", "gemini"):
             account_name = account.upper() if account else None
         else:
             account_name = names.get((source, account)) if account else None

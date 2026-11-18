@@ -66,6 +66,8 @@ def collect(since: float, until: float) -> dict[str, dict[tuple[str, str, str], 
             continue
         if source == "codex":
             account = accounts.codex_account_at(codex_spans, at, creator)
+        elif source == "gemini":
+            account = creator or None
         else:
             account = accounts.account_at(claude_spans, at)
         day = datetime.fromtimestamp(at).strftime("%Y-%m-%d")

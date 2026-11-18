@@ -13,8 +13,8 @@ def _models_payload(f) -> list[dict[str, Any]]:
     return [
         {
             "model": m.model,
-            "source": m.source,          # "claude" | "codex" | "qwen"
-            "billing": m.billing,        # "api" | "subscription" | "unpriced"
+            "source": m.source,          # "claude" | "codex" | "qwen" | "gemini"
+            "billing": m.billing,        # "api" | "subscription" | "unpriced" | "gateway"
             "input_tokens": m.input_tokens,
             "output_tokens": m.output_tokens,
             "cost_usd": m.cost_usd,
@@ -56,7 +56,7 @@ def api_tokens() -> dict[str, Any]:
             for d in get_daily_usage(days=None)
         ],
         "models": _models_payload(f),
-        # Combined totals above; this is the Claude / Codex / Qwen split of them.
+        # Combined totals above; this is the per-source split of them.
         "sources": f.sources,
         "projects": [
             {
@@ -107,7 +107,7 @@ def api_tokens_filtered(
             for d in _daily
         ],
         "models": _models_payload(f),
-        # Combined totals above; this is the Claude / Codex / Qwen split of them.
+        # Combined totals above; this is the per-source split of them.
         "sources": f.sources,
         "projects": [
             {
