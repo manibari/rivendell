@@ -76,16 +76,21 @@ def check(tree, scan):
                 continue
             defaults = [control for control in screen.get("controls", []) if control.get("state", "default") == "default"]
             matchers = own + ([] if state == "default" else defaults) + [control for _, _, control in layout]
+            # Unnamed controls of one role look the same, so a layout control with an empty
+            # name takes only one unnamed control of its role in each entry; the others are
+            # the page's own (2026-11-19: a role-only match hid two unlabeled page selects).
+            unnamed_layout = [(f"{layout_module['id']}.{layout_screen['id']}.{control['id']}", control)
+                              for layout_module, layout_screen, control in layout if control.get("name") == ""]
+            taken = set()
             for index, scanned in enumerate(entry.get("controls", [])):
                 place = ".".join(key) + f".controls[{index}]"
                 if not scanned.get("name"):
-                    layout_matches = [(layout_module, layout_screen, control)
-                                      for layout_module, layout_screen, control in layout
-                                      if control.get("name") == "" and matches(control, scanned)]
-                    for layout_module, layout_screen, control in layout_matches:
-                        layout_place = f"{layout_module['id']}.{layout_screen['id']}.{control['id']}"
+                    layout_place = next((lp for lp, control in unnamed_layout
+                                         if lp not in taken and matches(control, scanned)), None)
+                    if layout_place:
+                        taken.add(layout_place)
                         unlabeled_layout.setdefault(layout_place, set()).add(key[:2])
-                    if not layout_matches:
+                    else:
                         rows.append(row("UNLABELED", place, "控制項沒有可存取名稱"))
                 if not any(matches(control, scanned) for control in matchers):
                     rows.append(row("ORPHAN", place, f"樹上找不到 {scanned.get('role', '')}：{scanned.get('name', '')}"))

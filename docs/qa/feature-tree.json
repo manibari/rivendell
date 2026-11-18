@@ -4189,11 +4189,11 @@
         {
           "id": "name-workflow",
           "route": "/projects/[name]/workflow",
+          "redirect": "/projects/[name]/workflow/ui",
           "sample": {
             "name": "rivendell"
           },
-          "controls": [],
-          "redirect": "/projects/[name]/workflow/ui"
+          "controls": []
         },
         {
           "id": "main",
@@ -7561,8 +7561,8 @@
         {
           "id": "main",
           "route": "/workflow",
-          "controls": [],
-          "redirect": "/projects/rivendell/workflow"
+          "redirect": "/projects/rivendell/workflow/ui",
+          "controls": []
         }
       ]
     }

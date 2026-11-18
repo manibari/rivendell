@@ -103,6 +103,21 @@ class UnlabeledLayoutTests(unittest.TestCase):
         rows = screens.check(value, scan)
         self.assertEqual([row["code"] for row in rows], ["UNLABELED"] * 3)
 
+    def test_page_unlabeled_control_next_to_an_unlabeled_layout_control(self):
+        # The layout select takes one unnamed combobox per entry; a second one is the page's.
+        value = {"modules": [{"id": "demo", "screens": [
+            {"id": "shell", "layout": True, "controls": [{"id": "select", "role": "combobox", "name": ""}]},
+            {"id": "one", "route": "/one", "controls": [{"id": "engine", "role": "combobox", "name": ""}]},
+            {"id": "two", "route": "/two", "controls": []}]}]}
+        scan = {"schema": 1, "screens": [
+            entry("one", [{"role": "combobox", "name": ""}, {"role": "combobox", "name": ""}]),
+            entry("two", [{"role": "combobox", "name": ""}])]}
+        rows = screens.check(value, scan)
+        self.assertEqual(sorted((row["code"], row["place"]) for row in rows),
+                         [("UNLABELED", "demo.one.default.controls[1]"), ("UNLABELED", "demo.shell.select")])
+        layout_row = next(row for row in rows if row["place"] == "demo.shell.select")
+        self.assertIn("2 個畫面", layout_row["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()

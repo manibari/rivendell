@@ -1,4 +1,4 @@
-葉子 889 片：通過 0、失敗 0、沒有測試 266、未執行 0、不適用 623。紅燈 354 項，黃燈 6 項。
+葉子 889 片：通過 0、失敗 0、沒有測試 266、未執行 0、不適用 623。紅燈 271 項，黃燈 6 項。
 
 ## 1 樹的檢查
 
@@ -29,99 +29,14 @@
 
 | 代碼 | 位置 | 說明 |
 | --- | --- | --- |
-| UNLABELED | agents.label.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | agents.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | avatar.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | avatar.main.default.controls[14] | 控制項沒有可存取名稱 |
 | NOT_REACHED | avatar.main.key-entered.save-key | 畫面或狀態未到達 |
-| UNLABELED | docs.slug.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | harvest.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.agents.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.disk.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.errors.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.git.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.sensors.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | health.ssot.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | home.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | ports.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.name.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.name-workflow-flow.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.name-workflow-flow.skill-detail.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.name-workflow.default.controls[0] | 控制項沒有可存取名稱 |
-| ORPHAN | projects.name-workflow.default.controls[17] | 樹上找不到 button：rivendell |
-| ORPHAN | projects.name-workflow.default.controls[18] | 樹上找不到 button：/requirement |
-| ORPHAN | projects.name-workflow.default.controls[19] | 樹上找不到 button：/gstack-office-hours |
-| ORPHAN | projects.name-workflow.default.controls[20] | 樹上找不到 button：/user-flow |
-| ORPHAN | projects.name-workflow.default.controls[21] | 樹上找不到 button：/gstack-design-consultation |
-| ORPHAN | projects.name-workflow.default.controls[22] | 樹上找不到 button：/gstack-design-shotgun |
-| ORPHAN | projects.name-workflow.default.controls[23] | 樹上找不到 button：/mockup |
-| ORPHAN | projects.name-workflow.default.controls[24] | 樹上找不到 button：/gstack-design-html |
-| ORPHAN | projects.name-workflow.default.controls[25] | 樹上找不到 button：/planning-with-files |
-| ORPHAN | projects.name-workflow.default.controls[26] | 樹上找不到 button：/gstack-plan-eng-review |
-| ORPHAN | projects.name-workflow.default.controls[27] | 樹上找不到 button：/gstack-plan-design-review |
-| ORPHAN | projects.name-workflow.default.controls[28] | 樹上找不到 button：/gstack-plan-ceo-review |
-| ORPHAN | projects.name-workflow.default.controls[29] | 樹上找不到 button：/gstack-autoplan |
-| ORPHAN | projects.name-workflow.default.controls[30] | 樹上找不到 button：/agent-code-dispatch |
-| ORPHAN | projects.name-workflow.default.controls[31] | 樹上找不到 button：/gstack-investigate |
-| ORPHAN | projects.name-workflow.default.controls[32] | 樹上找不到 button：/gstack-freeze |
-| ORPHAN | projects.name-workflow.default.controls[33] | 樹上找不到 button：/gstack-unfreeze |
-| ORPHAN | projects.name-workflow.default.controls[34] | 樹上找不到 button：/gstack-careful |
-| ORPHAN | projects.name-workflow.default.controls[35] | 樹上找不到 button：/gstack-codex |
-| ORPHAN | projects.name-workflow.default.controls[36] | 樹上找不到 button：/gstack-review |
-| ORPHAN | projects.name-workflow.default.controls[37] | 樹上找不到 button：/gstack-qa |
-| ORPHAN | projects.name-workflow.default.controls[38] | 樹上找不到 button：/gstack-qa-only |
-| ORPHAN | projects.name-workflow.default.controls[39] | 樹上找不到 button：/gstack-design-review |
-| ORPHAN | projects.name-workflow.default.controls[40] | 樹上找不到 button：/gstack-land-and-deploy |
-| ORPHAN | projects.name-workflow.default.controls[41] | 樹上找不到 button：/gstack-ship |
-| ORPHAN | projects.name-workflow.default.controls[42] | 樹上找不到 button：/gstack-canary |
-| ORPHAN | projects.name-workflow.default.controls[43] | 樹上找不到 button：/gstack-document-release |
-| UNLABELED | projects.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.main.new-project.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | projects.main.edit-project.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | skills.name.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | skills.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[23] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[24] | 控制項沒有可存取名稱 |
-| UNLABELED | skills.main.roles-view.controls[0] | 控制項沒有可存取名稱 |
-| MISSING | skills.main.roles-view.raw-document | 樹上的控制項未出現在畫面 |
-| MISSING | skills.main.roles-view.role-choice | 樹上的控制項未出現在畫面 |
-| MISSING | skills.main.roles-view.job-anchor | 樹上的控制項未出現在畫面 |
-| MISSING | skills.main.roles-view.skill-link | 樹上的控制項未出現在畫面 |
-| UNLABELED | skills.roles.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | tokens.main.default.controls[0] | 控制項沒有可存取名稱 |
-| UNLABELED | workflow.main.default.controls[0] | 控制項沒有可存取名稱 |
-| ORPHAN | workflow.main.default.controls[17] | 樹上找不到 button：rivendell |
-| ORPHAN | workflow.main.default.controls[18] | 樹上找不到 button：/requirement |
-| ORPHAN | workflow.main.default.controls[19] | 樹上找不到 button：/gstack-office-hours |
-| ORPHAN | workflow.main.default.controls[20] | 樹上找不到 button：/user-flow |
-| ORPHAN | workflow.main.default.controls[21] | 樹上找不到 button：/gstack-design-consultation |
-| ORPHAN | workflow.main.default.controls[22] | 樹上找不到 button：/gstack-design-shotgun |
-| ORPHAN | workflow.main.default.controls[23] | 樹上找不到 button：/mockup |
-| ORPHAN | workflow.main.default.controls[24] | 樹上找不到 button：/gstack-design-html |
-| ORPHAN | workflow.main.default.controls[25] | 樹上找不到 button：/planning-with-files |
-| ORPHAN | workflow.main.default.controls[26] | 樹上找不到 button：/gstack-plan-eng-review |
-| ORPHAN | workflow.main.default.controls[27] | 樹上找不到 button：/gstack-plan-design-review |
-| ORPHAN | workflow.main.default.controls[28] | 樹上找不到 button：/gstack-plan-ceo-review |
-| ORPHAN | workflow.main.default.controls[29] | 樹上找不到 button：/gstack-autoplan |
-| ORPHAN | workflow.main.default.controls[30] | 樹上找不到 button：/agent-code-dispatch |
-| ORPHAN | workflow.main.default.controls[31] | 樹上找不到 button：/gstack-investigate |
-| ORPHAN | workflow.main.default.controls[32] | 樹上找不到 button：/gstack-freeze |
-| ORPHAN | workflow.main.default.controls[33] | 樹上找不到 button：/gstack-unfreeze |
-| ORPHAN | workflow.main.default.controls[34] | 樹上找不到 button：/gstack-careful |
-| ORPHAN | workflow.main.default.controls[35] | 樹上找不到 button：/gstack-codex |
-| ORPHAN | workflow.main.default.controls[36] | 樹上找不到 button：/gstack-review |
-| ORPHAN | workflow.main.default.controls[37] | 樹上找不到 button：/gstack-qa |
-| ORPHAN | workflow.main.default.controls[38] | 樹上找不到 button：/gstack-qa-only |
-| ORPHAN | workflow.main.default.controls[39] | 樹上找不到 button：/gstack-design-review |
-| ORPHAN | workflow.main.default.controls[40] | 樹上找不到 button：/gstack-land-and-deploy |
-| ORPHAN | workflow.main.default.controls[41] | 樹上找不到 button：/gstack-ship |
-| ORPHAN | workflow.main.default.controls[42] | 樹上找不到 button：/gstack-canary |
-| ORPHAN | workflow.main.default.controls[43] | 樹上找不到 button：/gstack-document-release |
+| UNLABELED | shell.sidebar.project-switcher | 控制項沒有可存取名稱，出現在 20 個畫面 |
 
 `UNLABELED`：控制項沒有可存取名稱。
 `NOT_REACHED`：掃描未到達畫面或狀態。
-`ORPHAN`：畫面上有、樹上沒有，控制項用途尚未記錄。
-`MISSING`：樹上的控制項沒有出現在畫面。
 
 ## 5 樹和測試
 

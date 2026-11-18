@@ -33,7 +33,7 @@ this file is correct.
 |---|---|---|
 | system | `schema` (= 1), `system`, `config` | - |
 | module | `id`, `name_zh`, `paths` (globs) | `status: "planned"`, `blueprint_id` |
-| screen | `id`, `route` (not for a layout screen) | `layout: true`, `sample`, `states` |
+| screen | `id`, `route` (not for a layout screen) | `layout: true`, `redirect`, `sample`, `states` |
 | control | `id`, `role`, `name`, `does`, `evidence`, `success`, `failure`, `cases` | `state`, `repeat: true` |
 | case | `id`, `kind`, `expect` | `status: "na"` + `na_reason`, `boundary: "recorder"` |
 
@@ -51,6 +51,12 @@ this file is correct.
 
 - A screen with `"layout": true` holds the controls that show on every screen (sidebar, top
   bar). It has no `route`. The scan does not open it alone; its controls match on every screen.
+- A screen with `"redirect": "<path>"` only sends the browser to another route (added
+  2026-11-19 for the dashboard `/workflow` pages). It has no `controls` and no `states`.
+  `[x]` segments in the path take values from `sample`. Check 2 compares the path of the
+  scan's `final_url` with it: same path, no row; other path, red `REDIRECT_BROKEN`; not
+  reached or no `final_url`, yellow `REDIRECT_UNCHECKED`. The controls that the scan finds on
+  a redirect screen belong to the target screen and are not `ORPHAN`.
 - A control with no `state` belongs to the state `default`: the page right after it loads.
 - `sample` gives one value for each dynamic segment: route `/agents/[label]`, sample
   `{"label": "com.sk.agent.demo"}`. A `[...x]` value can hold `/`.
@@ -87,6 +93,8 @@ A step is one object with one key:
 - One entry for each non-layout screen and state, including `default`.
 - `reached: false` and a Chinese text in `error` when the page or a step fails; then
   `controls` is empty.
+- `final_url`: the page URL after the load, the steps, and the idle wait; `null` when the
+  page did not load. Check 2 uses it for redirect screens.
 - `controls` lists each node with a role in: button, link, textbox, searchbox, combobox,
   checkbox, radio, switch, tab, menuitem, slider. A repeated control shows one time for each
   copy. A control with no name has `"name": ""`.
@@ -95,7 +103,9 @@ A step is one object with one key:
 
 1. Matchers: the controls of this screen with this state, the controls of this screen with
    state `default`, and the controls of each layout screen.
-2. A scanned control with an empty name is `UNLABELED`.
+2. A scanned control with an empty name is `UNLABELED`. When it matches a layout control
+   with an empty name, the report has one row for that layout control, with the number of
+   screens where it shows.
 3. A scanned control that no matcher matches is `ORPHAN` (same role and same name).
 4. A tree control of this screen with this state that matches no scanned control is `MISSING`.
 5. A layout control is `MISSING` only when it matches no control in any reached `default` entry.
