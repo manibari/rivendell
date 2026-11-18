@@ -534,7 +534,7 @@
       - dependency-down：不適用。
       - repeat：不適用。
       - side-effect：不適用。
-- 專案（140 片葉子）
+- 專案（203 片葉子）
   - name
     - 返回專案列表（back-to-projects）
       - happy：連結開啟。
@@ -695,6 +695,78 @@
       - happy：顯示專案卡片。
       - empty：沒有資料時仍能操作並顯示空白提示。
       - invalid-input：不適用。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 目標（一句話）（edit-goal）
+      - happy：欄位顯示新目標（一句話）。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 期限（edit-deadline）
+      - happy：欄位顯示新期限。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 預期收益（edit-expected-revenue）
+      - happy：欄位顯示新預期收益。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 潛在客戶（逗號分隔）（edit-potential-clients）
+      - happy：欄位顯示新潛在客戶（逗號分隔）。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 當前局勢（edit-situation-analysis）
+      - happy：欄位顯示新當前局勢。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 商業價值（edit-commercial-value）
+      - happy：欄位顯示新商業價值。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 阻礙（逗號分隔）（edit-blockers）
+      - happy：欄位顯示新阻礙（逗號分隔）。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 下一步（逗號分隔）（edit-next-steps）
+      - happy：欄位顯示新下一步（逗號分隔）。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
+      - no-permission：不適用。
+      - dependency-down：不適用。
+      - repeat：不適用。
+      - side-effect：不適用。
+    - 所需資源（edit-resources-needed）
+      - happy：欄位顯示新所需資源。
+      - empty：沒有資料時仍能操作並顯示空白提示。
+      - invalid-input：輸入錯誤值後顯示錯誤且資料不變。
       - no-permission：不適用。
       - dependency-down：不適用。
       - repeat：不適用。

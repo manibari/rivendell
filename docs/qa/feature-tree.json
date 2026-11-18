@@ -4192,7 +4192,8 @@
           "sample": {
             "name": "rivendell"
           },
-          "controls": []
+          "controls": [],
+          "redirect": "/projects/[name]/workflow/ui"
         },
         {
           "id": "main",
@@ -5049,6 +5050,501 @@
                   "expect": "不適用。"
                 }
               ]
+            },
+            {
+              "id": "edit-goal",
+              "role": "textbox",
+              "name": "目標（一句話）",
+              "state": "edit-project",
+              "does": "輸入專案使命的一句話目標。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:329",
+              "success": "欄位顯示新目標（一句話）。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新目標（一句話）。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-deadline",
+              "role": "textbox",
+              "name": "期限",
+              "state": "edit-project",
+              "does": "輸入專案使命的期限。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:330",
+              "success": "欄位顯示新期限。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新期限。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-expected-revenue",
+              "role": "textbox",
+              "name": "預期收益",
+              "state": "edit-project",
+              "does": "輸入專案使命的預期收益。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:331",
+              "success": "欄位顯示新預期收益。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新預期收益。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-potential-clients",
+              "role": "textbox",
+              "name": "潛在客戶（逗號分隔）",
+              "state": "edit-project",
+              "does": "輸入潛在客戶，並以逗號分成清單。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:332",
+              "success": "欄位顯示新潛在客戶（逗號分隔）。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新潛在客戶（逗號分隔）。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-situation-analysis",
+              "role": "textbox",
+              "name": "當前局勢",
+              "state": "edit-project",
+              "does": "輸入專案使命的當前局勢。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:333",
+              "success": "欄位顯示新當前局勢。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新當前局勢。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-commercial-value",
+              "role": "textbox",
+              "name": "商業價值",
+              "state": "edit-project",
+              "does": "輸入專案使命的商業價值。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:334",
+              "success": "欄位顯示新商業價值。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新商業價值。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-blockers",
+              "role": "textbox",
+              "name": "阻礙（逗號分隔）",
+              "state": "edit-project",
+              "does": "輸入阻礙，並以逗號分成清單。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:335",
+              "success": "欄位顯示新阻礙（逗號分隔）。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新阻礙（逗號分隔）。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-next-steps",
+              "role": "textbox",
+              "name": "下一步（逗號分隔）",
+              "state": "edit-project",
+              "does": "輸入下一步，並以逗號分成清單。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:336",
+              "success": "欄位顯示新下一步（逗號分隔）。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新下一步（逗號分隔）。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
+            },
+            {
+              "id": "edit-resources-needed",
+              "role": "textbox",
+              "name": "所需資源",
+              "state": "edit-project",
+              "does": "輸入專案使命所需資源。",
+              "evidence": "apps/dashboard-web/src/app/projects/page.tsx:337",
+              "success": "欄位顯示新所需資源。",
+              "failure": "操作失敗時畫面沒有變更，或顯示錯誤。",
+              "cases": [
+                {
+                  "id": "happy",
+                  "kind": "happy",
+                  "expect": "欄位顯示新所需資源。"
+                },
+                {
+                  "id": "empty",
+                  "kind": "empty",
+                  "expect": "沒有資料時仍能操作並顯示空白提示。"
+                },
+                {
+                  "id": "invalid-input",
+                  "kind": "invalid-input",
+                  "expect": "輸入錯誤值後顯示錯誤且資料不變。"
+                },
+                {
+                  "id": "no-permission",
+                  "kind": "no-permission",
+                  "status": "na",
+                  "na_reason": "沒有登入，只有一位本機使用者",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "dependency-down",
+                  "kind": "dependency-down",
+                  "status": "na",
+                  "na_reason": "此控制項不呼叫服務",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "repeat",
+                  "kind": "repeat",
+                  "status": "na",
+                  "na_reason": "此操作只讀取或切換畫面",
+                  "expect": "不適用。"
+                },
+                {
+                  "id": "side-effect",
+                  "kind": "side-effect",
+                  "status": "na",
+                  "na_reason": "此操作不呼叫外部系統",
+                  "expect": "不適用。"
+                }
+              ]
             }
           ]
         }
@@ -5144,6 +5640,12 @@
                   "click": {
                     "name": "角色 → 工作 → PDCA",
                     "role": "button"
+                  }
+                },
+                {
+                  "wait_for": {
+                    "name": "原文",
+                    "role": "link"
                   }
                 }
               ]
@@ -7059,7 +7561,8 @@
         {
           "id": "main",
           "route": "/workflow",
-          "controls": []
+          "controls": [],
+          "redirect": "/projects/rivendell/workflow"
         }
       ]
     }

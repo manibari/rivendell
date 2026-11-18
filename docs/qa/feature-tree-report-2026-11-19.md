@@ -1,4 +1,4 @@
-葉子 826 片：通過 0、失敗 0、沒有測試 239、未執行 0、不適用 587。紅燈 336 項，黃燈 6 項。
+葉子 889 片：通過 0、失敗 0、沒有測試 266、未執行 0、不適用 623。紅燈 354 項，黃燈 6 項。
 
 ## 1 樹的檢查
 
@@ -78,15 +78,6 @@
 | UNLABELED | projects.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | projects.main.new-project.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | projects.main.edit-project.controls[0] | 控制項沒有可存取名稱 |
-| ORPHAN | projects.main.edit-project.controls[17] | 樹上找不到 textbox：目標（一句話） |
-| ORPHAN | projects.main.edit-project.controls[18] | 樹上找不到 textbox：期限 |
-| ORPHAN | projects.main.edit-project.controls[19] | 樹上找不到 textbox：預期收益 |
-| ORPHAN | projects.main.edit-project.controls[20] | 樹上找不到 textbox：潛在客戶（逗號分隔） |
-| ORPHAN | projects.main.edit-project.controls[21] | 樹上找不到 textbox：當前局勢 |
-| ORPHAN | projects.main.edit-project.controls[22] | 樹上找不到 textbox：商業價值 |
-| ORPHAN | projects.main.edit-project.controls[23] | 樹上找不到 textbox：阻礙（逗號分隔） |
-| ORPHAN | projects.main.edit-project.controls[24] | 樹上找不到 textbox：下一步（逗號分隔） |
-| ORPHAN | projects.main.edit-project.controls[25] | 樹上找不到 textbox：所需資源 |
 | UNLABELED | skills.name.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[23] | 控制項沒有可存取名稱 |
@@ -311,6 +302,33 @@
 | NO_TEST | projects.main.save.repeat | 葉子沒有端到端測試 |
 | NO_TEST | projects.main.cancel-edit.happy | 葉子沒有端到端測試 |
 | NO_TEST | projects.main.cancel-edit.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-goal.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-goal.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-goal.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-deadline.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-deadline.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-deadline.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-expected-revenue.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-expected-revenue.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-expected-revenue.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-potential-clients.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-potential-clients.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-potential-clients.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-situation-analysis.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-situation-analysis.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-situation-analysis.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-commercial-value.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-commercial-value.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-commercial-value.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-blockers.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-blockers.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-blockers.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-next-steps.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-next-steps.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-next-steps.invalid-input | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-resources-needed.happy | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-resources-needed.empty | 葉子沒有端到端測試 |
+| NO_TEST | projects.main.edit-resources-needed.invalid-input | 葉子沒有端到端測試 |
 | NO_TEST | skills.name.back-to-skills.happy | 葉子沒有端到端測試 |
 | NO_TEST | skills.main.loop-view.happy | 葉子沒有端到端測試 |
 | NO_TEST | skills.main.loop-view.empty | 葉子沒有端到端測試 |
@@ -607,6 +625,33 @@
 | NO_TEST | projects.main.save.repeat | 尚未通過測試 |
 | NO_TEST | projects.main.cancel-edit.happy | 尚未通過測試 |
 | NO_TEST | projects.main.cancel-edit.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-goal.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-goal.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-goal.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-deadline.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-deadline.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-deadline.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-expected-revenue.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-expected-revenue.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-expected-revenue.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-potential-clients.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-potential-clients.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-potential-clients.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-situation-analysis.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-situation-analysis.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-situation-analysis.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-commercial-value.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-commercial-value.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-commercial-value.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-blockers.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-blockers.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-blockers.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-next-steps.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-next-steps.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-next-steps.invalid-input | 尚未通過測試 |
+| NO_TEST | projects.main.edit-resources-needed.happy | 尚未通過測試 |
+| NO_TEST | projects.main.edit-resources-needed.empty | 尚未通過測試 |
+| NO_TEST | projects.main.edit-resources-needed.invalid-input | 尚未通過測試 |
 
 
 ### 技能庫
