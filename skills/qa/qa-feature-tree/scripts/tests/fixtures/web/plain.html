@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>Plain fixture</title></head>
+<body>
+  <nav><a href="/plain">首頁</a></nav>
+  <main>
+    <button type="button" id="open">開啟對話框</button>
+    <dialog id="details">
+      <button type="button">確認</button>
+      <button type="button" id="close">取消</button>
+    </dialog>
+  </main>
+  <script>
+    document.querySelector('#open').addEventListener('click', () => {
+      document.querySelector('#details').showModal();
+    });
+    document.querySelector('#close').addEventListener('click', () => {
+      document.querySelector('#details').close();
+    });
+  </script>
+</body>
+</html>
