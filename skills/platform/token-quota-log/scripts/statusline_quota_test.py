@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for statusline-quota.py: per-session account binding.
+"""Unit tests for statusline-quota.py: current-login account attribution.
 
 The script file name carries a dash, so it is loaded with
 importlib.machinery.SourceFileLoader. All paths the script touches are
@@ -39,7 +39,6 @@ class StatusLineQuotaTest(unittest.TestCase):
             ("QUOTA_DIR", self.quota_dir),
             ("QUOTA_LOG", self.quota_dir / "claude-rate-limits.jsonl"),
             ("LAST_FILE", self.quota_dir / ".last-claude.json"),
-            ("SESSIONS_FILE", self.quota_dir / ".sessions-claude.json"),
             ("CLAUDE_CONFIG", self.config),
         ]:
             patcher = mock.patch.object(mod, name, value)
@@ -53,11 +52,14 @@ class StatusLineQuotaTest(unittest.TestCase):
             "organizationRateLimitTier": plan,
         }}))
 
-    def render(self, session_id: str, five_hour: float, now: float) -> str:
+    def render(self, session_id: str, five_hour: float, now: float,
+               subscription_type=None) -> str:
         data = {"rate_limits": {"five_hour": {
             "used_percentage": five_hour, "resets_at": 1}}}
         if session_id:
             data["session_id"] = session_id
+        if subscription_type is not None:
+            data["subscription_type"] = subscription_type
         with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(data))), \
                 mock.patch.object(mod, "time") as fake_time:
             fake_time.time.return_value = now
@@ -73,18 +75,18 @@ class StatusLineQuotaTest(unittest.TestCase):
         return [json.loads(line) for line in log.read_text().splitlines()
                 if line.strip()]
 
-    def test_session_keeps_first_account_after_login_switch(self):
+    def test_session_uses_current_account_after_login_switch(self):
         self.write_config("acct-a", "a@example.com", "claude_max_5x")
         first = self.render("S1", 50.0, now=1000.0)
-        self.assertIn("5h 50%", first)
+        self.assertEqual(first, "5h 50%\n")
         self.write_config("acct-b", "b@example.com", "claude_max_5x")
         second = self.render("S1", 73.0, now=2000.0)
-        self.assertIn("5h 73%", second)
+        self.assertEqual(second, "5h 73%\n")
         rows = self.rows()
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["account_id"], "acct-a")
-        self.assertEqual(rows[1]["account_id"], "acct-a")
-        self.assertEqual(rows[1]["label"], "a@example.com")
+        self.assertEqual(rows[1]["account_id"], "acct-b")
+        self.assertEqual(rows[1]["label"], "b@example.com")
 
     def test_new_session_started_after_switch_gets_new_account(self):
         self.write_config("acct-a", "a@example.com", "claude_max_5x")
@@ -104,34 +106,29 @@ class StatusLineQuotaTest(unittest.TestCase):
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[-1]["account_id"], "acct-b")
 
+    def test_no_session_map_is_written(self):
+        self.write_config("acct-a", "a@example.com", "claude_max_5x")
+        self.render("S1", 50.0, now=1000.0)
+        self.assertFalse((self.quota_dir / ".sessions-claude.json").exists())
+
     def test_same_limits_rendered_twice_writes_one_row(self):
         self.write_config("acct-a", "a@example.com", "claude_max_5x")
         self.render("S1", 50.0, now=1000.0)
         self.render("S1", 50.0, now=1100.0)
         self.assertEqual(len(self.rows()), 1)
 
-    def test_stale_session_entries_dropped_on_next_write(self):
-        sessions_path = self.quota_dir / ".sessions-claude.json"
-        sessions_path.write_text(json.dumps({"S1": {
-            "account_id": "acct-a", "label": "a@example.com",
-            "plan": "claude_max_5x", "first_seen": 1000.0}}))
-        self.write_config("acct-b", "b@example.com", "claude_max_5x")
-        self.render("S2", 10.0, now=1000.0 + 31 * 86400)
-        stored = json.loads(sessions_path.read_text())
-        self.assertNotIn("S1", stored)
-        self.assertIn("S2", stored)
+    def test_row_has_session_and_subscription_type(self):
+        self.write_config("acct-a", "a@example.com", "claude_max_5x")
+        self.render("S1", 50.0, now=1000.0, subscription_type="max")
+        self.assertEqual(self.rows()[0]["session_id"], "S1")
+        self.assertEqual(self.rows()[0]["subscription_type"], "max")
 
-    def test_broken_sessions_file_does_not_raise(self):
-        sessions_path = self.quota_dir / ".sessions-claude.json"
-        sessions_path.write_text("this is not json")
-        self.write_config("acct-b", "b@example.com", "claude_max_5x")
+    def test_broken_config_does_not_raise(self):
+        self.config.write_text("not json")
         output = self.render("S1", 50.0, now=1000.0)
         self.assertIn("5h 50%", output)
-        rows = self.rows()
-        self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]["account_id"], "acct-b")
-        stored = json.loads(sessions_path.read_text())
-        self.assertIn("S1", stored)
+        self.assertEqual(self.rows()[0]["account_id"], "")
+        self.assertIsNone(self.rows()[0]["subscription_type"])
 
 
 if __name__ == "__main__":

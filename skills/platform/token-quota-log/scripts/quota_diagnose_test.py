@@ -61,7 +61,7 @@ class QuotaDiagnoseTest(unittest.TestCase):
         self.write_jsonl(self.quota, rows)
         return self.quota
 
-    def test_usage_dedup_subagents_account_and_title(self):
+    def test_usage_dedup_subagents_active_account_and_title(self):
         project = self.projects / "-Users-dev-work"
         main = project / "parent-uuid.jsonl"
         sub = project / "parent-uuid" / "subagents" / "worker.jsonl"
@@ -69,10 +69,11 @@ class QuotaDiagnoseTest(unittest.TestCase):
         self.write_jsonl(main, [self.usage(1, "a", "r"), self.usage(1, "a", "r"),
                                 {"type": "custom-title", "customTitle": "Main task"}])
         self.write_jsonl(sub, [self.usage(2, "b", "r")])
-        self.write_jsonl(other, [self.usage(3, "c", "r")])
-        mapping = {"parent-uuid": {"account_id": "acct"},
-                   "other-uuid": {"account_id": "another"}}
-        events, sessions = diagnose.load_usage(self.projects, mapping, "acct", self.start)
+        self.write_jsonl(other, [self.usage(10, "c", "r")])
+        readings = diagnose.load_readings(self._quota_rows([
+            self.reading(1, 10), self.reading(2, 11),
+            self.reading(10, 20, reset=self.reset + 86400, account="another")]))
+        events, sessions = diagnose.load_usage(self.projects, readings, "acct", self.start)
         self.assertEqual(len(events), 2)
         self.assertEqual(sum(event["tokens"] for event in events), 20_000_000)
         self.assertEqual({event["session"] for event in events}, {"parent-uuid"})
@@ -116,7 +117,7 @@ class QuotaDiagnoseTest(unittest.TestCase):
                         "### 額度跳最快的時段", "### 這台用最多的 session",
                         "### 12 小時內用最多", "### 模型比例"):
             self.assertIn(heading, report)
-        self.assertIn("未對應帳號的 session 佔這台用量的 100%", report)
+        self.assertIn("未對應帳號的 session 佔這台用量的 0%", report)
         self.assertIn("其他來源可能", report)
         self.assertIn("10.0%", report)
 
@@ -162,27 +163,25 @@ class QuotaDiagnoseTest(unittest.TestCase):
         self.assertEqual(len(summary_rows), 2)
         self.assertTrue(all(i < first_detail for i in summary_rows))
 
-    def test_reset_shared_with_another_account(self):
-        # Two accounts can reset at the same time; only an off-cycle window with the
-        # other account's reset is a sign of a wrong label (seen on real data, 2026-11-18).
-        off_reset = self.reset + 4 * 86400
-        rows = [self.reading(1, 10), self.reading(30, 20),
-                self.reading(2, 30, account="other"),
-                self.reading(100, 40, off_reset), self.reading(101, 45, off_reset, account="other")]
+    def test_relabel_and_ambiguous_lines(self):
+        rows = [self.reading(1, 10), self.reading(2, 11, account="other"),
+                self.reading(3, 12), self.reading(4, 13, account="other"),
+                self.reading(5, 14)]
         self.write_jsonl(self.quota, rows)
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            diagnose.main(["--quota-log", str(self.quota), "--sessions-map", str(self.mapping),
-                           "--projects-root", str(self.projects), "--account", "acct",
-                           "--now", str(self.start + 110 * 3600)])
-        summary = [line for line in output.getvalue().splitlines()
-                   if line.startswith("| ") and line.count("|") == 8 and "–" in line]
-        self.assertEqual(len(summary), 2)
-        off, regular = summary
-        self.assertIn("可能標錯帳號", off)
-        self.assertIn("和另一個週期重疊", off)
-        self.assertNotIn("可能標錯帳號", regular)
-        self.assertNotIn("和另一個週期重疊", regular)
+            diagnose.main(["--quota-log", str(self.quota), "--projects-root", str(self.projects),
+                           "--now", str(self.start + 6 * 3600)])
+        self.assertIn("有 2 筆原本記在別的帳號，依週期改算到這個帳號", output.getvalue())
+        self.assertNotIn("可能標錯帳號", output.getvalue())
+        rows = [self.reading(1, 10), self.reading(2, 40, account="other"),
+                self.reading(3, 12)]
+        self.write_jsonl(self.quota, rows)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            diagnose.main(["--quota-log", str(self.quota), "--projects-root", str(self.projects),
+                           "--now", str(self.start + 4 * 3600)])
+        self.assertIn("這個週期有兩個帳號同一個重置時間，無法分開", output.getvalue())
 
     def test_bad_rows_are_skipped(self):
         self.quota.write_text("not json\n" + json.dumps(self.reading(1, 10)) + "\n", encoding="utf-8")

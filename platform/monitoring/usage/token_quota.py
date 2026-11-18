@@ -40,6 +40,7 @@ from lib import tokens_accounts as accounts
 from lib.tokens import PROJECTS_DIR, _history_db_path
 from lib.tokens_codex import CODEX_SESSION_DIRS, _usage_delta
 from lib.tokens_quota_advice import advise
+from lib.tokens_quota_attribution import attribute_rows
 from lib.tokens_timeline import _epoch, _seek_offset
 
 CLAUDE_QUOTA_LOG = Path.home() / ".claude" / "usage-quota" / "claude-rate-limits.jsonl"
@@ -245,26 +246,33 @@ def _codex_all() -> tuple[list[Reading], list[tuple]]:
 
 # ── Claude ──────────────────────────────────────────────────────────────
 
-def _claude_readings() -> list[Reading]:
+def _claude_readings(with_corrections: bool = False) -> list[Reading] | tuple[list[Reading], dict]:
     out: list[Reading] = []
     try:
         lines = CLAUDE_QUOTA_LOG.read_text(encoding="utf-8").splitlines()
     except OSError:
-        return out
+        return (out, {}) if with_corrections else out
+    rows = []
     for line in lines:
         try:
-            row = json.loads(line)
+            rows.append(json.loads(line))
         except json.JSONDecodeError:
             continue
+    corrections = {}
+    for row in attribute_rows(rows):
         for name, window_min in CLAUDE_WINDOWS.items():
             limit = (row.get("limits") or {}).get(name) or {}
             if limit.get("used_percentage") is None or not limit.get("resets_at"):
                 continue
+            if row.get("relabeled"):
+                corrections[(window_min, _hour(limit["resets_at"]),
+                             row.get("original_account_id") or "")] = (row.get("account_id") or "",
+                                                                row.get("plan") or "")
             out.append(Reading("claude", row.get("account_id") or "", window_min,
                                _hour(limit["resets_at"]), float(row["ts"]),
                                float(limit["used_percentage"]), row.get("plan") or "",
                                reset_exact=float(limit["resets_at"])))
-    return out
+    return (out, corrections) if with_corrections else out
 
 
 def _claude_usage(since: float) -> list[tuple]:
@@ -452,19 +460,71 @@ def _store(rows: list[dict], replace_source: str | None = None) -> None:
                    else r[c] for c in cols) for r in rows])
 
 
+def _repair_claude_accounts(corrections: dict, now: float) -> None:
+    """Move stored closed windows to attributed accounts, preserving usage totals."""
+    with _connect() as conn:
+        conn.row_factory = sqlite3.Row
+        for (window_min, reset, old_account), (new_account, new_plan) in corrections.items():
+            if old_account == new_account:
+                continue
+            key = ("claude", old_account, window_min, reset)
+            old = conn.execute("SELECT * FROM token_quota_window WHERE source = ? "
+                               "AND account_id = ? AND window_min = ? AND resets_at = ?", key).fetchone()
+            if old is None or (old["reset_exact"] or reset) > now:
+                continue
+            target = conn.execute("SELECT * FROM token_quota_window WHERE source = ? "
+                                  "AND account_id = ? AND window_min = ? AND resets_at = ?",
+                                  ("claude", new_account, window_min, reset)).fetchone()
+            if target is None:
+                conn.execute("UPDATE token_quota_window SET account_id = ?, plan = ? WHERE source = ? "
+                             "AND account_id = ? AND window_min = ? AND resets_at = ?",
+                             (new_account, new_plan, *key))
+                continue
+            merged = dict(target)
+            merged["first_at"] = min(target["first_at"], old["first_at"])
+            merged["last_at"] = max(target["last_at"], old["last_at"])
+            merged["used_from"] = min(target["used_from"], old["used_from"])
+            merged["used_to"] = max(target["used_to"], old["used_to"])
+            for column in ("readings", "input", "output", "cache_read", "cache_create", "clean_steps"):
+                merged[column] = (target[column] or 0) + (old[column] or 0)
+            ratios = json.loads(target["step_ratios"] or "[]") + json.loads(old["step_ratios"] or "[]")
+            merged["step_ratios"] = json.dumps(ratios)
+            merged["step_tokens_per_percent"] = statistics.median(ratios) if ratios else None
+            for column in ("step_ratios_by_model", "model_tokens"):
+                values = json.loads(target[column] or "{}")
+                for model, amount in json.loads(old[column] or "{}").items():
+                    if column == "model_tokens":
+                        values[model] = values.get(model, 0) + amount
+                    else:
+                        values.setdefault(model, []).extend(amount)
+                merged[column] = json.dumps(values)
+            conn.execute("DELETE FROM token_quota_window WHERE source = ? AND "
+                         "account_id = ? AND window_min = ? AND resets_at = ?", key)
+            columns = tuple(merged)
+            conn.execute(f"INSERT OR REPLACE INTO token_quota_window ({', '.join(columns)}) "
+                         f"VALUES ({', '.join('?' for _ in columns)})",
+                         tuple(merged[column] for column in columns))
+
+
 def refresh(now: float | None = None) -> None:
     """Recompute open windows from the logs and store them. Runs in the background."""
     now = time.time() if now is None else now
     codex_readings, codex_usage = _codex_all()
     # A closed Claude window keeps the result stored while it was open: its logs
     # are no longer read, so recomputing it now would store zero tokens.
-    claude_readings = [r for r in _claude_readings() if r.resets_at > now]
+    all_claude_readings, corrections = _claude_readings(with_corrections=True)
+    claude_readings = [r for r in all_claude_readings if r.resets_at > now]
     claude_usage = []
     if claude_readings:
         since = min(r.at for r in claude_readings)
         claude_usage = _claude_usage(max(since, now - CLAUDE_LOOKBACK_S))
     _store(_windows(codex_readings, codex_usage), replace_source="codex")
+    with _connect() as conn:
+        conn.execute("DELETE FROM token_quota_window WHERE source = ? AND "
+                     "(reset_exact > ? OR (reset_exact IS NULL AND resets_at > ?))",
+                     ("claude", now, now))
     _store(_windows(claude_readings, claude_usage))
+    _repair_claude_accounts(corrections, now)
 
 
 # ── read side ───────────────────────────────────────────────────────────
