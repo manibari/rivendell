@@ -1,0 +1,4449 @@
+{
+  "schema": 1,
+  "system": "rivendell-dashboard",
+  "config": {
+    "source_roots": [
+      "apps/dashboard-web/src",
+      "apps/dashboard-api/routes"
+    ],
+    "route_style": "next-app",
+    "route_files": [
+      "apps/dashboard-web/src/app/**/page.tsx"
+    ],
+    "e2e_dirs": [
+      "apps/dashboard-web/e2e"
+    ],
+    "e2e_report": "apps/dashboard-web/e2e/.results/report.json",
+    "base_url": "http://127.0.0.1:3005"
+  },
+  "modules": [
+    {
+      "id": "shell",
+      "name_zh": "外框與側欄",
+      "paths": [
+        "apps/dashboard-web/src/app/layout.tsx",
+        "apps/dashboard-web/src/components/Sidebar.tsx"
+      ],
+      "screens": [
+        {
+          "id": "sidebar",
+          "layout": true,
+          "controls": [
+            {
+              "id": "combobox-1",
+              "role": "combobox",
+              "name": "",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "助理",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "工作流程",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "專案",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Agent",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "Token 用量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-7",
+              "role": "link",
+              "name": "部署",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "name_zh": "agents",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/agents/[label]/**",
+        "apps/dashboard-web/src/app/agents/**"
+      ],
+      "screens": [
+        {
+          "id": "label",
+          "route": "/agents/[label]",
+          "sample": {
+            "label": "com.sk.agent.sample.tester"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "返回 sample",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "啟動",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "立即執行",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "main",
+          "route": "/agents",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "sample/tester",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "啟動",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "立即執行",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "執行歷史",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "avatar",
+      "name_zh": "avatar",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/avatar/**"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/avatar",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "重新整理",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "textbox-1",
+              "role": "textbox",
+              "name": "貼上金鑰後按儲存",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "textbox-2",
+              "role": "textbox",
+              "name": "貼上金鑰後按儲存",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "docs",
+      "name_zh": "docs",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/docs/[...slug]/**"
+      ],
+      "screens": [
+        {
+          "id": "slug",
+          "route": "/docs/[...slug]",
+          "sample": {
+            "slug": "skills-by-role"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "角色 → 工作 → PDCA",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "9. CEO／創辦人",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "10. COO／營運",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "11. 行銷",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "3. 業務／Presales",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "1. 產品開發者",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-7",
+              "role": "link",
+              "name": "4. 顧問／報告與標案撰寫",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-8",
+              "role": "link",
+              "name": "5. 分析師／投資研究",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-9",
+              "role": "link",
+              "name": "2. QA／驗收者",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-10",
+              "role": "link",
+              "name": "6. 人資",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-11",
+              "role": "link",
+              "name": "7. 知識工作者",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-12",
+              "role": "link",
+              "name": "8. 平台維護者",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-13",
+              "role": "link",
+              "name": "docs/loops/gov-tender.md",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "harvest",
+      "name_zh": "harvest",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/harvest/**"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/harvest",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "Skill 總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "依角色看",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Skill Harvest",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "待決定 (0)",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "已接受 (0)",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "已忽略 (0)",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "全部 (0)",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "name_zh": "health",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/health/agents/**",
+        "apps/dashboard-web/src/app/health/disk/**",
+        "apps/dashboard-web/src/app/health/errors/**",
+        "apps/dashboard-web/src/app/health/git/**",
+        "apps/dashboard-web/src/app/health/sensors/**",
+        "apps/dashboard-web/src/app/health/ssot/**"
+      ],
+      "screens": [
+        {
+          "id": "agents",
+          "route": "/health/agents",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "disk",
+          "route": "/health/disk",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "重新整理",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "errors",
+          "route": "/health/errors",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "git",
+          "route": "/health/git",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "sensors",
+          "route": "/health/sensors",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "1 分",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "5 分",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "15 分",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "1 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "6 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "24 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "7 天",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "30 天",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "90 天",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "1 年",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "ssot",
+          "route": "/health/ssot",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "系統監控",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "磁碟容量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "排程健康",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "最近錯誤",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "SSOT 漂移",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "name_zh": "home",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/page.tsx"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "SSOT 漂移 一致 0 筆 agents.conf ↔ projects.json · 明細 →",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "排程健康 全部載入 0/1 已載入 / 已定義 agents.conf ↔ launchd · 明細 →",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "最近錯誤 無 0 筆非空 error log reports/*-error.log · 近 14 天 · 明細 →",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "成本趨勢 資料不足 … 近7日均 $0.00 最近一日 · 近 14 日趨勢 · Token 用量 →",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "Git 衛生 乾淨 0 未提交 0 repos · 明細 →",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ports",
+      "name_zh": "ports",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/ports/**"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/ports",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "相關部署 0",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "Refresh",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "全部0",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "前端0",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "後端0",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "資料庫0",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "projects",
+      "name_zh": "projects",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/projects/[name]/**",
+        "apps/dashboard-web/src/app/projects/[name]/workflow/[flow]/**",
+        "apps/dashboard-web/src/app/projects/[name]/workflow/**",
+        "apps/dashboard-web/src/app/projects/**"
+      ],
+      "screens": [
+        {
+          "id": "name",
+          "route": "/projects/[name]",
+          "sample": {
+            "name": "sample"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "返回專案列表",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "tester 🧪 tester 9:00 —",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "name-workflow-flow",
+          "route": "/projects/[name]/workflow/[flow]",
+          "sample": {
+            "flow": "ui",
+            "name": "rivendell"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "UI Feature",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "Backend",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Slide",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "Maintenance",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "rivendell",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "/requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "/gstack-office-hours",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "/user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "/gstack-design-consultation",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "/gstack-design-shotgun",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "/mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "/gstack-design-html",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "/planning-with-files",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "/gstack-plan-eng-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-14",
+              "role": "button",
+              "name": "/gstack-plan-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-15",
+              "role": "button",
+              "name": "/gstack-plan-ceo-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-16",
+              "role": "button",
+              "name": "/gstack-autoplan",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-17",
+              "role": "button",
+              "name": "/agent-code-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-18",
+              "role": "button",
+              "name": "/gstack-investigate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-19",
+              "role": "button",
+              "name": "/gstack-freeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-20",
+              "role": "button",
+              "name": "/gstack-unfreeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-21",
+              "role": "button",
+              "name": "/gstack-careful",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-22",
+              "role": "button",
+              "name": "/gstack-codex",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-23",
+              "role": "button",
+              "name": "/gstack-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-24",
+              "role": "button",
+              "name": "/gstack-qa",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-25",
+              "role": "button",
+              "name": "/gstack-qa-only",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-26",
+              "role": "button",
+              "name": "/gstack-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-27",
+              "role": "button",
+              "name": "/gstack-land-and-deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-28",
+              "role": "button",
+              "name": "/gstack-ship",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-29",
+              "role": "button",
+              "name": "/gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-30",
+              "role": "button",
+              "name": "/gstack-document-release",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "name-workflow",
+          "route": "/projects/[name]/workflow",
+          "sample": {
+            "name": "rivendell"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "UI Feature",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "Backend",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Slide",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "Maintenance",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "rivendell",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "/requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "/gstack-office-hours",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "/user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "/gstack-design-consultation",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "/gstack-design-shotgun",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "/mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "/gstack-design-html",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "/planning-with-files",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "/gstack-plan-eng-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-14",
+              "role": "button",
+              "name": "/gstack-plan-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-15",
+              "role": "button",
+              "name": "/gstack-plan-ceo-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-16",
+              "role": "button",
+              "name": "/gstack-autoplan",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-17",
+              "role": "button",
+              "name": "/agent-code-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-18",
+              "role": "button",
+              "name": "/gstack-investigate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-19",
+              "role": "button",
+              "name": "/gstack-freeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-20",
+              "role": "button",
+              "name": "/gstack-unfreeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-21",
+              "role": "button",
+              "name": "/gstack-careful",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-22",
+              "role": "button",
+              "name": "/gstack-codex",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-23",
+              "role": "button",
+              "name": "/gstack-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-24",
+              "role": "button",
+              "name": "/gstack-qa",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-25",
+              "role": "button",
+              "name": "/gstack-qa-only",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-26",
+              "role": "button",
+              "name": "/gstack-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-27",
+              "role": "button",
+              "name": "/gstack-land-and-deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-28",
+              "role": "button",
+              "name": "/gstack-ship",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-29",
+              "role": "button",
+              "name": "/gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-30",
+              "role": "button",
+              "name": "/gstack-document-release",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "main",
+          "route": "/projects",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "新增專案",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "sample",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "使命",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "編輯",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "刪除",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skills",
+      "name_zh": "skills",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/skills/[name]/**",
+        "apps/dashboard-web/src/app/skills/**",
+        "apps/dashboard-web/src/app/skills/roles/**"
+      ],
+      "screens": [
+        {
+          "id": "name",
+          "route": "/skills/[name]",
+          "sample": {
+            "name": "sample-skill"
+          },
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "Skill 總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "依角色看",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Skill Harvest",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "Skills",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "main",
+          "route": "/skills",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "Skill 總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "依角色看",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Skill Harvest",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "循環 × PDCA",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "角色 → 工作 → PDCA",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "其他 1",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "內建 1",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "全部 2",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "全部展開",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "textbox-1",
+              "role": "textbox",
+              "name": "搜尋 skill...",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        },
+        {
+          "id": "roles",
+          "route": "/skills/roles",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "Skill 總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "依角色看",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Skill Harvest",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "Skill 總覽",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-5",
+              "role": "link",
+              "name": "原文",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "9 CEO／創辦人 4 ★10",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "10 COO／營運 4 ★13",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "3 業務／Presales 4",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "11 行銷 4 ★11",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "1 產品開發者 5",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "4 顧問／報告與標案撰寫 4 ★6",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "5 分析師／投資研究 5",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "2 QA／驗收者 4",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "6 人資 3 ★5",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "7 知識工作者 3",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-14",
+              "role": "button",
+              "name": "8 平台維護者 4",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-6",
+              "role": "link",
+              "name": "1a 新產品起手（greenfield）",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-7",
+              "role": "link",
+              "name": "1b 新功能／新頁面（UI）",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-8",
+              "role": "link",
+              "name": "1c 後端功能／修 bug／重構",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-9",
+              "role": "link",
+              "name": "1d 部署與上線",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-10",
+              "role": "link",
+              "name": "1e iOS app",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-11",
+              "role": "link",
+              "name": "task-brief",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-12",
+              "role": "link",
+              "name": "requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-13",
+              "role": "link",
+              "name": "user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-14",
+              "role": "link",
+              "name": "mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-15",
+              "role": "link",
+              "name": "app-ops-baseline",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-16",
+              "role": "link",
+              "name": "gstack-office-hours",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-17",
+              "role": "link",
+              "name": "discovery-interview",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-18",
+              "role": "link",
+              "name": "chimesflow-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-19",
+              "role": "link",
+              "name": "ui-ux-pro-max",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-20",
+              "role": "link",
+              "name": "dev-process-gate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-21",
+              "role": "link",
+              "name": "init-project",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-22",
+              "role": "link",
+              "name": "spine-auth",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-23",
+              "role": "link",
+              "name": "spine-schema-sync",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-24",
+              "role": "link",
+              "name": "spine-versioning",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-25",
+              "role": "link",
+              "name": "spine-roadmap",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-26",
+              "role": "link",
+              "name": "spine-rbac",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-27",
+              "role": "link",
+              "name": "docker-compose-setup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-28",
+              "role": "link",
+              "name": "markdown-file-ssot",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-29",
+              "role": "link",
+              "name": "setup-permissions",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-30",
+              "role": "link",
+              "name": "qa-testing",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-31",
+              "role": "link",
+              "name": "env-doctor",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-32",
+              "role": "link",
+              "name": "qa-journey",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-33",
+              "role": "link",
+              "name": "ci-pipeline",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-34",
+              "role": "link",
+              "name": "deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-35",
+              "role": "link",
+              "name": "cloudflare-tunnel-provision",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-36",
+              "role": "link",
+              "name": "doc-drift-sync",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-37",
+              "role": "link",
+              "name": "task-brief",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-38",
+              "role": "link",
+              "name": "requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-39",
+              "role": "link",
+              "name": "user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-40",
+              "role": "link",
+              "name": "mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-41",
+              "role": "link",
+              "name": "system-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-42",
+              "role": "link",
+              "name": "writing-plans",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-43",
+              "role": "link",
+              "name": "gstack-office-hours",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-44",
+              "role": "link",
+              "name": "chimesflow-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-45",
+              "role": "link",
+              "name": "ui-ux-pro-max",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-46",
+              "role": "link",
+              "name": "planning-with-files",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-47",
+              "role": "link",
+              "name": "dev-process-gate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-48",
+              "role": "link",
+              "name": "plan-check-style",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-49",
+              "role": "link",
+              "name": "executing-plans",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-50",
+              "role": "link",
+              "name": "agent-code-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-51",
+              "role": "link",
+              "name": "frontend-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-52",
+              "role": "link",
+              "name": "gstack-freeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-53",
+              "role": "link",
+              "name": "gstack-unfreeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-54",
+              "role": "link",
+              "name": "qa-planner",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-55",
+              "role": "link",
+              "name": "qa-auto",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-56",
+              "role": "link",
+              "name": "gstack-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-57",
+              "role": "link",
+              "name": "qa-journey",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-58",
+              "role": "link",
+              "name": "qa-dataflow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-59",
+              "role": "link",
+              "name": "gstack-qa",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-60",
+              "role": "link",
+              "name": "gstack-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-61",
+              "role": "link",
+              "name": "gstack-land-and-deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-62",
+              "role": "link",
+              "name": "gstack-ship",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-63",
+              "role": "link",
+              "name": "gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-64",
+              "role": "link",
+              "name": "gstack-document-release",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-65",
+              "role": "link",
+              "name": "spine-versioning",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-66",
+              "role": "link",
+              "name": "task-brief",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-67",
+              "role": "link",
+              "name": "gstack-investigate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-68",
+              "role": "link",
+              "name": "system-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-69",
+              "role": "link",
+              "name": "backend-async-jobs",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-70",
+              "role": "link",
+              "name": "spine-rbac",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-71",
+              "role": "link",
+              "name": "agent-code-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-72",
+              "role": "link",
+              "name": "spine-auth",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-73",
+              "role": "link",
+              "name": "spine-rbac",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-74",
+              "role": "link",
+              "name": "db-migration",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-75",
+              "role": "link",
+              "name": "sqlite-to-postgres",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-76",
+              "role": "link",
+              "name": "vector-search-setup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-77",
+              "role": "link",
+              "name": "imap-smtp-integration",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-78",
+              "role": "link",
+              "name": "oauth-token-vault",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-79",
+              "role": "link",
+              "name": "telegram-bot",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-80",
+              "role": "link",
+              "name": "mcp-builder",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-81",
+              "role": "link",
+              "name": "firebase-backend",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-82",
+              "role": "link",
+              "name": "audio-transcription-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-83",
+              "role": "link",
+              "name": "ai-vision-extract",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-84",
+              "role": "link",
+              "name": "dev-size-gate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-85",
+              "role": "link",
+              "name": "concurrent-session-git",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-86",
+              "role": "link",
+              "name": "resolving-merge-conflicts",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-87",
+              "role": "link",
+              "name": "agent-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-88",
+              "role": "link",
+              "name": "gstack-careful",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-89",
+              "role": "link",
+              "name": "qa-testing",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-90",
+              "role": "link",
+              "name": "gstack-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-91",
+              "role": "link",
+              "name": "qa-dataflow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-92",
+              "role": "link",
+              "name": "gstack-codex",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-93",
+              "role": "link",
+              "name": "repro-exam",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-94",
+              "role": "link",
+              "name": "deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-95",
+              "role": "link",
+              "name": "gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-96",
+              "role": "link",
+              "name": "gstack-benchmark",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-97",
+              "role": "link",
+              "name": "doc-drift-sync",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-98",
+              "role": "link",
+              "name": "deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-99",
+              "role": "link",
+              "name": "ci-pipeline",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-100",
+              "role": "link",
+              "name": "cloudflare-tunnel-provision",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-101",
+              "role": "link",
+              "name": "tunnel-proxy-deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-102",
+              "role": "link",
+              "name": "docker-compose-setup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-103",
+              "role": "link",
+              "name": "gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-104",
+              "role": "link",
+              "name": "env-doctor",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-105",
+              "role": "link",
+              "name": "gstack-cso",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-106",
+              "role": "link",
+              "name": "cloudflare-tunnel-ops",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-107",
+              "role": "link",
+              "name": "gstack-document-release",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-108",
+              "role": "link",
+              "name": "spine-versioning",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-109",
+              "role": "link",
+              "name": "doc-drift-sync",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-110",
+              "role": "link",
+              "name": "requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-111",
+              "role": "link",
+              "name": "user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-112",
+              "role": "link",
+              "name": "mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-113",
+              "role": "link",
+              "name": "system-design",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-114",
+              "role": "link",
+              "name": "swiftui-patterns",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-115",
+              "role": "link",
+              "name": "ios-integration",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-116",
+              "role": "link",
+              "name": "qa-testing",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-117",
+              "role": "link",
+              "name": "gstack-ios-qa",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-118",
+              "role": "link",
+              "name": "gstack-ios-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-119",
+              "role": "link",
+              "name": "gstack-ios-sync",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-120",
+              "role": "link",
+              "name": "gstack-ios-clean",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tokens",
+      "name_zh": "tokens",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/tokens/**"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/tokens",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "textbox-1",
+              "role": "textbox",
+              "name": "從",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "textbox-2",
+              "role": "textbox",
+              "name": "到",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "清除",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "依帳號",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "依模型",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "每分鐘",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "每小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "1 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "3 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "6 小時",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "總用量",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "輸出",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "Context 重讀",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-14",
+              "role": "button",
+              "name": "暫停",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "combobox-1",
+              "role": "combobox",
+              "name": "選擇報告",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workflow",
+      "name_zh": "workflow",
+      "status": "planned",
+      "paths": [
+        "apps/dashboard-web/src/app/workflow/**"
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "route": "/workflow",
+          "controls": [
+            {
+              "id": "button-1",
+              "role": "button",
+              "name": "系統健康 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-2",
+              "role": "button",
+              "name": "collapse",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-1",
+              "role": "link",
+              "name": "UI Feature",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-2",
+              "role": "link",
+              "name": "Backend",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-3",
+              "role": "link",
+              "name": "Slide",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "link-4",
+              "role": "link",
+              "name": "Maintenance",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-3",
+              "role": "button",
+              "name": "技能庫 expand",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-4",
+              "role": "button",
+              "name": "rivendell",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-5",
+              "role": "button",
+              "name": "/requirement",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-6",
+              "role": "button",
+              "name": "/gstack-office-hours",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-7",
+              "role": "button",
+              "name": "/user-flow",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-8",
+              "role": "button",
+              "name": "/gstack-design-consultation",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-9",
+              "role": "button",
+              "name": "/gstack-design-shotgun",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-10",
+              "role": "button",
+              "name": "/mockup",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-11",
+              "role": "button",
+              "name": "/gstack-design-html",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-12",
+              "role": "button",
+              "name": "/planning-with-files",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-13",
+              "role": "button",
+              "name": "/gstack-plan-eng-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-14",
+              "role": "button",
+              "name": "/gstack-plan-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-15",
+              "role": "button",
+              "name": "/gstack-plan-ceo-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-16",
+              "role": "button",
+              "name": "/gstack-autoplan",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-17",
+              "role": "button",
+              "name": "/agent-code-dispatch",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-18",
+              "role": "button",
+              "name": "/gstack-investigate",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-19",
+              "role": "button",
+              "name": "/gstack-freeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-20",
+              "role": "button",
+              "name": "/gstack-unfreeze",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-21",
+              "role": "button",
+              "name": "/gstack-careful",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-22",
+              "role": "button",
+              "name": "/gstack-codex",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-23",
+              "role": "button",
+              "name": "/gstack-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-24",
+              "role": "button",
+              "name": "/gstack-qa",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-25",
+              "role": "button",
+              "name": "/gstack-qa-only",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-26",
+              "role": "button",
+              "name": "/gstack-design-review",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-27",
+              "role": "button",
+              "name": "/gstack-land-and-deploy",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-28",
+              "role": "button",
+              "name": "/gstack-ship",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-29",
+              "role": "button",
+              "name": "/gstack-canary",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            },
+            {
+              "id": "button-30",
+              "role": "button",
+              "name": "/gstack-document-release",
+              "does": "unknown",
+              "evidence": "",
+              "success": "",
+              "failure": "",
+              "cases": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
