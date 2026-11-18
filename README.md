@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (139 skills)
+## Skills Catalog (140 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -182,6 +182,7 @@ as release notes.
 |-------|---------|------|
 | **qa-auto** | `/qa-auto` | 從 QA 計畫或 diff 自動產生測試程式碼、執行測試、報告覆蓋率缺口 |
 | **qa-dataflow** | `/qa-dataflow` 或自動 | 驗證資料流是否照宣稱在跑，以及路上的關卡到底擋不擋得住（寫了沒人讀、閘門不擋、基準永不報警）；產出功能關係主表 + 落差報告 |
+| **qa-feature-tree** | `/qa-feature-tree` 或自動 | One feature tree per system (module > screen > control > case) as the single… |
 | **qa-journey** | `/qa-journey` 或自動 | Persona-driven journey QA — simulate a REAL user (with limited knowledge and |
 | **qa-planner** | `/qa-planner` | 分析程式碼變更產生結構化 QA 計畫：影響分析、測試案例、風險評估 |
 | **qa-testing** | `/qa-testing` 或自動 | 跨框架測試指導：pytest / Vitest / Swift Testing 的策略、mock 模式、模板 |
@@ -334,7 +335,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 7 | 5 |
-| dev | 27 | 24 | 9 | 7 |
+| dev | 27 | 24 | 10 | 7 |
 | shared | 1 | 15 | 2 | — |
 
 

@@ -28,6 +28,8 @@ allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 
 確認一條資料流真的照宣稱在跑，而不是「看起來對」。
 
+本 skill 查資料走哪條路，不查每個按鈕有沒有測到；後者用 `qa-feature-tree`。
+
 ## 為什麼要有這個流程
 
 驗收別人（或 AI）寫的程式碼時，最常見的失敗不是「功能沒做」，而是**畫面出得來、

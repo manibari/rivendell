@@ -126,6 +126,11 @@ Full 檔的三個判準（動到資料寫入 / 跨模組傳遞 / 新增 store）
 
 #### §3.1 目錄結構（邊界的實體形式）
 
+**If the repo has `docs/qa/feature-tree.json`, the module column comes from its module
+level** (`qa-feature-tree`). Add each new module of this design to the tree with
+`status: "planned"` and its folder globs. Then check 1 of that skill keeps the folders and
+the modules in agreement after this design is done.
+
 **光有表格不夠 —— 邊界最後要能在檔案系統上看見。** 表格上切得很漂亮、程式碼還是
 `controllers/ models/ services/` 三層平鋪，等於沒切：任何人都能從任何地方 import 任何東西，
 「不負責什麼」沒有任何物理力量去執行它。

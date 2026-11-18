@@ -155,6 +155,8 @@ step count delta. A UX regression = friction score went up on an unchanged journ
 
 ## Boundaries
 
+- One path per run, by design. To know whether each control of the whole system is tested,
+  and how many are not, use `qa-feature-tree`.
 - This skill does not fix anything — report only (like qa-only). Fixes route to the
   normal implement → gstack-review pipeline, using the wiring-gap backlog as input.
 - Persona cards are product assets owned by the target project (`docs/personas/`),

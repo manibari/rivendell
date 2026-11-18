@@ -102,7 +102,7 @@
 |---|---|---|
 | Plan | `task-brief` → `requirement` → `user-flow` → `mockup` → `system-design` → `writing-plans` ｜ 視情況：`gstack-office-hours` (gstack，值不值得做)、`chimesflow-design`（新前端）、`ui-ux-pro-max`（挑風格）、`planning-with-files`（多步驟要追蹤進度時取代 writing-plans）｜ 自動：`dev-process-gate`、`plan-check-style` | 主線六步；畫面定了之後、拆任務之前先過 `system-design`（SA/SD：資料模型 / 職責邊界 / 介面契約 / 功能關係圖 target），動到 schema / 跨模組 / 新 store 時是 HARD GATE；跳步會被 gate 擋 |
 | Do | `executing-plans` → `agent-code-dispatch`（每張票派給執行者，畫面要求照 `frontend-design` 寫進 brief）｜ 視情況：`gstack-freeze` / `gstack-unfreeze` (gstack，重構時鎖穩定區) | 照任務清單一張一張派；每張都要 Claude 驗收過才算完成 |
-| Check | `qa-planner` → `qa-auto` → `gstack-review` (gstack) ｜ 視情況：`qa-journey`（有旅程要走）、`qa-dataflow`（動到資料寫入時 HARD GATE）、`gstack-qa`、`gstack-design-review` (gstack) | QA 計畫 → 自動測試 → diff 審查 |
+| Check | `qa-planner` → `qa-auto` → `gstack-review` (gstack) ｜ 視情況：`qa-feature-tree`（每個按鈕有沒有測到、還差幾個）、`qa-journey`（有旅程要走）、`qa-dataflow`（動到資料寫入時 HARD GATE）、`gstack-qa`、`gstack-design-review` (gstack) | QA 計畫 → 自動測試 → diff 審查 |
 | Act | `gstack-land-and-deploy` / `gstack-ship` → `gstack-canary` → `gstack-document-release` (gstack) ｜ 自動：`spine-versioning` | 合併部署、盯回歸、更新文件；沒 bump 版本 push 會被擋 |
 
 ### 1c 後端功能／修 bug／重構

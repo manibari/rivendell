@@ -96,6 +96,9 @@ own the data rules:
     - a ticket shows its place on the blueprint (架構位置) and its version;
     - a version lists its tickets and their modules.
 
+    If the product has `docs/qa/feature-tree.json` (`qa-feature-tree`), a blueprint module ID
+    is the same as a tree module ID. No check enforces it yet (2026-11-19).
+
     Add a test: every ticket module is a box on the blueprint, and every released
     ticket has a version. ChimesERP has box to tickets (each box lists its `apps`; the
     page reads `/api/dev-center/tracker/tickets?app=<key>`), ticket to 架構位置

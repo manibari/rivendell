@@ -62,6 +62,11 @@ Categorize each changed file:
 
 ### 1.3 Identify Impact Radius
 
+If the repo has `docs/qa/feature-tree.json` (`qa-feature-tree`), start there: the impact
+radius is each module whose `paths` globs match a changed file, and the leaves of those
+modules. List those leaf IDs and run their end-to-end tests. Then add the steps below for
+what the tree does not show.
+
 For each changed function/class/component:
 
 1. **Direct callers** — who calls this function? (`grep -rn "function_name"`)
