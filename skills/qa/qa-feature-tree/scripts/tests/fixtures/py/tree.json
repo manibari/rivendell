@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "system": "fixture",
+  "config": {
+    "source_roots": ["src/app"],
+    "route_style": "next-app",
+    "route_files": ["src/app/**/page.tsx"],
+    "e2e_dirs": ["e2e"],
+    "e2e_report": "../report.json",
+    "base_url": "http://127.0.0.1:3190"
+  },
+  "modules": [{
+    "id": "home", "name_zh": "首頁", "paths": ["src/app/page.tsx"],
+    "screens": [{"id": "main", "route": "/", "controls": [{
+      "id": "open", "role": "button", "name": "開啟", "does": "開啟頁面",
+      "evidence": "src/app/page.tsx:1", "success": "頁面開啟", "failure": "顯示錯誤",
+      "cases": [{"id": "happy", "kind": "happy", "expect": "頁面開啟"}]
+    }]}]
+  }]
+}
