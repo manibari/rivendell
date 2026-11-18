@@ -17,6 +17,10 @@ _REPORTS_DIR = Path(os.environ.get("REPORTS_DIR", str(REPO_DIR / "reports")))
 HARVEST_DECISIONS_FILE = _REPORTS_DIR / ".harvest-decisions.json"
 
 
+def _skill_repo_dir() -> Path:
+    return Path(os.environ.get("HARVEST_SKILLS_ROOT", str(REPO_DIR)))
+
+
 def _load_harvest_decisions() -> dict[str, str]:
     """Load user decisions {candidate_key: "accepted"|"dismissed"}."""
     if HARVEST_DECISIONS_FILE.exists():
@@ -319,7 +323,7 @@ def _auto_create_skill(candidate: dict[str, Any]) -> dict[str, Any]:
     category = candidate.get("category", "workflow")
     cat_dir = _CATEGORY_DIRS.get(category, "workflow")
 
-    repo_dir = REPO_DIR
+    repo_dir = _skill_repo_dir()
     skill_dir = repo_dir / "skills" / cat_dir / slug
     deploy_target = Path.home() / ".claude" / "skills" / slug
 

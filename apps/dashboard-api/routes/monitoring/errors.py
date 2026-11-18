@@ -1,6 +1,7 @@
 """Recent agent error log read model."""
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,10 @@ from typing import Any
 from fastapi import APIRouter
 
 router = APIRouter()
+
+
+def _reports_dir(repo_dir: Path) -> Path:
+    return Path(os.environ.get("REPORTS_DIR", str(repo_dir / "reports")))
 
 @router.get("/api/health/errors", tags=["Health"])
 def api_recent_errors() -> dict[str, Any]:
@@ -20,7 +25,7 @@ def api_recent_errors() -> dict[str, Any]:
     import time as _time
 
     repo_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-    reports = repo_dir / "reports"
+    reports = _reports_dir(repo_dir)
     recent_days = 14
     cutoff = _time.time() - recent_days * 86400
     errors: list[dict[str, Any]] = []

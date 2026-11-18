@@ -1,6 +1,7 @@
 """Cross-module operational issues read model."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,10 @@ from lib.agents import list_agents
 
 router = APIRouter()
 REPO_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
+
+
+def _projects_dir() -> Path:
+    return Path(os.environ.get("ISSUES_PROJECTS_DIR", str(REPO_DIR.parent)))
 
 # ── Issues ───────────────────────────────────────────────────────────
 
@@ -112,7 +117,7 @@ def api_issues() -> dict[str, Any]:
     # Next.js projects conventionally use .env.local; accept either.
     # Python/Node projects conventionally use .env; accept either.
     # Skip when the example points users to a different target ("Copy to .env.local").
-    projects_dir = REPO_DIR.parent
+    projects_dir = _projects_dir()
     for env_example in projects_dir.glob("*/.env.example"):
         proj_dir = env_example.parent
         # Accept any of these as "configured"
