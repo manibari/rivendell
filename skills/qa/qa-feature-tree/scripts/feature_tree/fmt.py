@@ -6,7 +6,7 @@ ORDER = {
     0: ("schema", "system", "config", "modules"),
     "config": ("source_roots", "route_style", "route_files", "e2e_dirs", "e2e_report", "base_url"),
     "modules": ("id", "name_zh", "status", "blueprint_id", "paths", "screens"),
-    "screens": ("id", "layout", "route", "sample", "states", "controls"),
+    "screens": ("id", "layout", "route", "redirect", "sample", "states", "controls"),
     "states": ("id", "steps"),
     "controls": ("id", "role", "name", "state", "repeat", "does", "evidence", "success", "failure", "cases"),
     "cases": ("id", "kind", "status", "na_reason", "boundary", "expect"),

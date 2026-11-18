@@ -27,6 +27,15 @@ test('scans pages, states, missing samples, failed steps, and HTTP errors', {
   const project = path.resolve(process.env.FT_PLAYWRIGHT_PROJECT);
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url, 'http://localhost').pathname;
+    if (pathname === '/http-redirect') {
+      response.writeHead(302, { location: '/plain' }).end();
+      return;
+    }
+    if (pathname === '/client-redirect') {
+      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      response.end('<!doctype html><script>location.replace("/plain")</script>');
+      return;
+    }
     const file = pathname === '/plain' ? 'plain.html'
       : pathname === '/items/a%20b' ? 'dynamic.html' : null;
     if (!file) {
@@ -54,14 +63,16 @@ test('scans pages, states, missing samples, failed steps, and HTTP errors', {
     assert.deepEqual(scan.screens.map(({ module, screen, state }) => [module, screen, state]), [
       ['demo', 'plain', 'default'], ['demo', 'plain', 'dialog'],
       ['demo', 'plain', 'failed'], ['demo', 'dynamic', 'default'],
+      ['demo', 'http-redirect', 'default'], ['demo', 'client-redirect', 'default'],
       ['demo', 'no-sample', 'default'], ['demo', 'not-found', 'default'],
     ]);
     for (const entry of scan.screens) {
-      assert.deepEqual(Object.keys(entry), ['module', 'screen', 'state', 'url', 'reached', 'error', 'controls']);
+      assert.deepEqual(Object.keys(entry), ['module', 'screen', 'state', 'url', 'reached', 'error', 'controls', 'final_url']);
     }
-    const [plain, dialog, failed, dynamic, noSample, notFound] = scan.screens;
+    const [plain, dialog, failed, dynamic, httpRedirect, clientRedirect, noSample, notFound] = scan.screens;
     assert.equal(plain.reached, true);
     assert.equal(plain.error, null);
+    assert.equal(plain.final_url, `${baseUrl}/plain`);
     assert.deepEqual(plain.controls, [
       { role: 'link', name: '首頁' }, { role: 'button', name: '開啟對話框' },
     ]);
@@ -71,17 +82,25 @@ test('scans pages, states, missing samples, failed steps, and HTTP errors', {
       { role: 'button', name: '確認' }, { role: 'button', name: '取消' },
     ]);
     assert.equal(failed.reached, false);
+    assert.equal(failed.final_url, `${baseUrl}/plain`);
     assert.match(failed.error, /步驟 1 失敗：.*不存在/s);
     assert.deepEqual(failed.controls, []);
     assert.equal(dynamic.reached, true);
     assert.equal(dynamic.url, `${baseUrl}/items/a%20b`);
+    assert.equal(dynamic.final_url, dynamic.url);
     assert.deepEqual(dynamic.controls, [
       { role: 'link', name: '返回首頁' }, { role: 'button', name: '編輯項目' },
     ]);
+    assert.equal(httpRedirect.reached, true);
+    assert.equal(httpRedirect.final_url, `${baseUrl}/plain`);
+    assert.equal(clientRedirect.reached, true);
+    assert.equal(clientRedirect.final_url, `${baseUrl}/plain`);
     assert.equal(noSample.reached, false);
+    assert.equal(noSample.final_url, null);
     assert.equal(noSample.error, '缺少 sample：label');
     assert.deepEqual(noSample.controls, []);
     assert.equal(notFound.reached, false);
+    assert.equal(notFound.final_url, null);
     assert.match(notFound.error, /步驟 0（載入頁面）失敗：HTTP 404/);
     assert.deepEqual(notFound.controls, []);
   } finally {

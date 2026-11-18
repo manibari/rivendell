@@ -110,7 +110,7 @@ async function scanEntry(browser, baseUrl, moduleId, screen, state, timeout) {
   const entry = {
     module: moduleId, screen: screen.id, state: state.id,
     url: absoluteUrl(baseUrl, missing ? screen.route : resolved),
-    reached: false, error: null, controls: [],
+    reached: false, error: null, controls: [], final_url: null,
   };
   if (missing) {
     entry.error = `缺少 sample：${missing}`;
@@ -118,12 +118,15 @@ async function scanEntry(browser, baseUrl, moduleId, screen, state, timeout) {
   }
 
   let context;
+  let page;
+  let loaded = false;
   try {
     context = await browser.newContext();
-    const page = await context.newPage();
+    page = await context.newPage();
     try {
       const response = await page.goto(entry.url, { waitUntil: 'load', timeout });
       if (response && response.status() >= 400) throw new Error(`HTTP ${response.status()}`);
+      loaded = true;
     } catch (error) {
       entry.error = `步驟 0（載入頁面）失敗：${error.message}`;
       return entry;
@@ -147,6 +150,7 @@ async function scanEntry(browser, baseUrl, moduleId, screen, state, timeout) {
   } catch (error) {
     entry.error ??= `開啟頁面失敗：${error.message}`;
   } finally {
+    if (loaded) entry.final_url = page.url();
     if (context) await context.close();
   }
   return entry;

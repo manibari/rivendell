@@ -49,14 +49,24 @@ def validate(tree):
             if screen.get("layout"):
                 if "route" in screen:
                     rows.append(row("LAYOUT_ROUTE", sp + ".route", "版面畫面不可設定路由"))
+                if "redirect" in screen:
+                    rows.append(row("LAYOUT_REDIRECT", sp + ".redirect", "版面畫面不可設定轉址"))
             elif not screen.get("route"):
                 rows.append(row("REQUIRED", sp + ".route", "一般畫面需要路由"))
+            if "redirect" in screen:
+                redirect = screen["redirect"]
+                if not isinstance(redirect, str) or not redirect.startswith("/"):
+                    rows.append(row("REDIRECT_PATH", sp + ".redirect", "轉址路徑必須以 / 開頭"))
+                if screen.get("controls") or screen.get("states"):
+                    rows.append(row("REDIRECT_WITH_CONTROLS", sp, "轉址頁不應該有自己的控制項或狀態"))
             route = screen.get("route", "")
             sample = screen.get("sample", {})
-            for match in DYNAMIC.finditer(route):
-                name = match.group(1) or match.group(2)
-                if not isinstance(sample, dict) or not sample.get(name):
-                    rows.append(row("SAMPLE_MISSING", sp + ".sample", f"動態路由缺少 {name} 範例"))
+            for path in (route, screen.get("redirect", "")):
+                if isinstance(path, str):
+                    for match in DYNAMIC.finditer(path):
+                        name = match.group(1) or match.group(2)
+                        if not isinstance(sample, dict) or not sample.get(name):
+                            rows.append(row("SAMPLE_MISSING", sp + ".sample", f"動態路由缺少 {name} 範例"))
             states = screen.get("states", [])
             _siblings(states, sp + ".states", rows)
             state_ids = {s.get("id") for s in states if isinstance(s, dict)}

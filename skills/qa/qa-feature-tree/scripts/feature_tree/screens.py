@@ -1,6 +1,7 @@
 """Compare accessibility scan entries with tree controls."""
 
 import re
+from urllib.parse import quote, urlsplit
 
 from .common import row, screens
 
@@ -18,6 +19,21 @@ def matches(control, scanned):
     return name == actual
 
 
+def resolved_path(path, sample):
+    def substitute(match):
+        name = match.group(1) or match.group(2) or match.group(3)
+        value = sample.get(name)
+        if value is None:
+            return match.group(0)
+        return "/".join(quote(segment, safe="~!*'()") for segment in str(value).split("/"))
+
+    return re.sub(r"\[\[\.\.\.([^\]]+)\]\]|\[\.\.\.([^\]]+)\]|\[([^\]]+)\]", substitute, path)
+
+
+def normalized_path(path):
+    return path.rstrip("/") or "/"
+
+
 def check(tree, scan):
     rows = []
     if scan.get("schema") != 1:
@@ -27,12 +43,27 @@ def check(tree, scan):
     layout = [(module, screen, control) for module, screen in screens(tree) if screen.get("layout")
               for control in screen.get("controls", [])]
     normal = [(module, screen) for module, screen in screens(tree) if not screen.get("layout")]
-    reached_defaults = [entry for key, entry in entries.items() if key[2] == "default" and entry.get("reached")]
+    redirect_keys = {(module["id"], screen["id"]) for module, screen in normal if "redirect" in screen}
+    reached_defaults = [entry for key, entry in entries.items() if key[2] == "default" and entry.get("reached")
+                        and key[:2] not in redirect_keys]
+    unlabeled_layout = {}
     for module, screen, control in layout:
         if not any(matches(control, scanned) for entry in reached_defaults for scanned in entry.get("controls", [])):
             rows.append(row("MISSING", f"{module['id']}.{screen['id']}.{control['id']}",
                             "共用控制項未出現在任何已到達的預設畫面"))
     for module, screen in normal:
+        if "redirect" in screen:
+            key = (module["id"], screen["id"], "default")
+            entry = entries.get(key)
+            place = ".".join(key[:2])
+            if not entry or not entry.get("reached") or not entry.get("final_url"):
+                rows.append(row("REDIRECT_UNCHECKED", place, "掃描沒有到達或沒有最終網址", "yellow"))
+            else:
+                expected = normalized_path(urlsplit(resolved_path(screen["redirect"], screen.get("sample", {}))).path)
+                actual = normalized_path(urlsplit(entry["final_url"]).path)
+                if actual != expected:
+                    rows.append(row("REDIRECT_BROKEN", place, f"預期 {expected}；實際 {actual}"))
+            continue
         states = ["default"] + [state.get("id") for state in screen.get("states", [])]
         for state in states:
             key = (module["id"], screen["id"], state)
@@ -48,12 +79,21 @@ def check(tree, scan):
             for index, scanned in enumerate(entry.get("controls", [])):
                 place = ".".join(key) + f".controls[{index}]"
                 if not scanned.get("name"):
-                    rows.append(row("UNLABELED", place, "控制項沒有可存取名稱"))
+                    layout_matches = [(layout_module, layout_screen, control)
+                                      for layout_module, layout_screen, control in layout
+                                      if control.get("name") == "" and matches(control, scanned)]
+                    for layout_module, layout_screen, control in layout_matches:
+                        layout_place = f"{layout_module['id']}.{layout_screen['id']}.{control['id']}"
+                        unlabeled_layout.setdefault(layout_place, set()).add(key[:2])
+                    if not layout_matches:
+                        rows.append(row("UNLABELED", place, "控制項沒有可存取名稱"))
                 if not any(matches(control, scanned) for control in matchers):
                     rows.append(row("ORPHAN", place, f"樹上找不到 {scanned.get('role', '')}：{scanned.get('name', '')}"))
             for control in own:
                 if not any(matches(control, scanned) for scanned in entry.get("controls", [])):
                     rows.append(row("MISSING", ".".join((*key, control["id"])), "樹上的控制項未出現在畫面"))
+    for place, seen_screens in unlabeled_layout.items():
+        rows.append(row("UNLABELED", place, f"控制項沒有可存取名稱，出現在 {len(seen_screens)} 個畫面"))
     return rows
 
 

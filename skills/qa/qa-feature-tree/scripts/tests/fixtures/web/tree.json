@@ -18,6 +18,8 @@
           "controls": []
         },
         { "id": "dynamic", "route": "/items/[label]", "sample": { "label": "a b" }, "controls": [] },
+        { "id": "http-redirect", "route": "/http-redirect", "controls": [] },
+        { "id": "client-redirect", "route": "/client-redirect", "controls": [] },
         { "id": "no-sample", "route": "/items/[label]", "controls": [] },
         { "id": "not-found", "route": "/missing", "controls": [] },
         { "id": "layout", "layout": true, "controls": [] }
