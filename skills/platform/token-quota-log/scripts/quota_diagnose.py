@@ -2,6 +2,7 @@
 """Compare Claude weekly quota readings with local session usage."""
 
 import argparse
+import importlib.util
 import json
 import math
 import re
@@ -12,6 +13,11 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
+
+MODULE_PATH = Path(__file__).resolve().parents[4] / "platform/monitoring/usage/quota_attribution.py"
+SPEC = importlib.util.spec_from_file_location("quota_attribution", MODULE_PATH)
+attribution = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(attribution)
 
 WEEK = 7 * 86400
 WEIGHTS = (1, 1.25, 0.1, 5)
@@ -31,6 +37,7 @@ def millions(value):
 def load_readings(path):
     """Return valid weekly readings in file order."""
     readings = []
+    raw_rows = []
     with path.open(encoding="utf-8") as source:
         for line in source:
             try:
@@ -43,9 +50,17 @@ def load_readings(path):
                     "used": float(weekly["used_percentage"]),
                 }
                 if all(math.isfinite(reading[key]) for key in ("ts", "reset", "used")):
-                    readings.append(reading)
+                    raw_rows.append(row)
             except (ValueError, TypeError, KeyError, AttributeError):
                 continue
+    for row in attribution.attribute_rows(raw_rows):
+        weekly = row["limits"]["seven_day"]
+        readings.append({"ts": float(row["ts"]), "account_id": str(row["account_id"]),
+                         "label": str(row.get("label") or row["account_id"]),
+                         "reset": float(weekly["resets_at"]),
+                         "used": float(weekly["used_percentage"]),
+                         "relabeled": row.get("relabeled", False),
+                         "ambiguous": row.get("ambiguous", False)})
     return readings
 
 
@@ -120,11 +135,12 @@ def project_name(name):
     return re.sub(r"^-Users-[^-]+-", "", name)
 
 
-def load_usage(root, mapping, account, first_start):
+def load_usage(root, readings, account, first_start):
     """Load main and subagent records under their parent session."""
     events, sessions, seen = [], {}, set()
     if not root.is_dir():
         return events, sessions
+    active_at = attribution.active_account_index(readings)
     for project in root.iterdir():
         if not project.is_dir():
             continue
@@ -136,12 +152,8 @@ def load_usage(root, mapping, account, first_start):
             except OSError:
                 continue
             session = path.stem if path.parent == project else path.parent.parent.name
-            mapped = mapping.get(session, {})
-            if isinstance(mapped, dict) and mapped.get("account_id") not in (None, account):
-                continue
             meta = sessions.setdefault(session, {"project": project_name(project.name),
-                                                 "title": None, "unmapped": not isinstance(mapped, dict)
-                                                 or not mapped.get("account_id")})
+                                                 "title": None, "unmapped": False})
             try:
                 with path.open(encoding="utf-8") as source:
                     for line in source:
@@ -161,6 +173,9 @@ def load_usage(root, mapping, account, first_start):
                             stamp = parse_timestamp(row.get("timestamp"))
                             key = (message["id"], row["requestId"])
                             if stamp is None or stamp < first_start or key in seen:
+                                continue
+                            active = active_at(stamp)
+                            if active != account:
                                 continue
                             amount = weighted(usage)
                             if amount <= 0:
@@ -264,8 +279,6 @@ def render(readings, windows, events, sessions, label, ratio, sample_count, now)
             name += "（進行中）"
         if window["overlap"]:
             name += "（和另一個週期重疊）"
-        if window.get("shared_with"):
-            name += "（可能標錯帳號）"
         explained_text = f"{explained:.1f}%" if ratio else "未判讀"
         other_text = f"{other:.1f}%" if ratio else "未判讀"
         out.append(f"| {name} | {window['high']:.1f}% | {local_time(hit) if hit else '未達 100%'} | "
@@ -279,9 +292,7 @@ def render(readings, windows, events, sessions, label, ratio, sample_count, now)
             sentences = [f"整週最高 {window['high']:.1f}%，到重置都沒用完。"]
         else:
             sentences = [f"目前最高使用 {window['high']:.1f}%，已經過 {days / 86400:.1f} 天。"]
-        if window.get("shared_with"):
-            sentences.append(f"同一個重置時間也出現在 {window['shared_with']} 的紀錄裡，"
-                             "這段可能是換帳號後記到了錯的帳號，數字只能參考。")
+
         if ratio and other >= 5:
             sentences.append(f"約 {other:.1f}% 的額度是在這台用量不足以解釋的時段扣掉，可能來自另一台電腦或網頁版。")
         elif ratio:
@@ -290,7 +301,13 @@ def render(readings, windows, events, sessions, label, ratio, sample_count, now)
             sentences.append("可用時段不足，其他來源占比未判讀。")
         sentences.append(f"額度增加最快的 12 小時用掉 {burst_rise:.1f}%。")
         sentences.append(f"未對應帳號的 session 佔這台用量的 {unmapped / local:.0%}。" if local else "這台在此週期沒有可用的 session 紀錄。")
-        details.extend(["", f"## {name}", "### 判讀", "".join(sentences), "", "### 額度跳最快的時段（前 5）",
+        attribution_lines = []
+        relabeled = sum(bool(row["relabeled"]) for row in window["rows"])
+        if relabeled:
+            attribution_lines.append(f"有 {relabeled} 筆原本記在別的帳號，依週期改算到這個帳號")
+        if any(row["ambiguous"] for row in window["rows"]):
+            attribution_lines.append("這個週期有兩個帳號同一個重置時間，無法分開")
+        details.extend(["", f"## {name}", *attribution_lines, "### 判讀", "".join(sentences), "", "### 額度跳最快的時段（前 5）",
                     "| 時段 | 額度 +% | 這台用量 | 這台解釋得了 | 標記 |",
                     "| --- | ---: | ---: | ---: | --- |"])
         for slot in sorted(window["slots"], key=lambda item: -item["delta"])[:5]:
@@ -322,7 +339,8 @@ def main(argv=None):
     parser.add_argument("--slot-hours", type=float, default=6)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--quota-log", type=Path, default=Path("~/.claude/usage-quota/claude-rate-limits.jsonl"))
-    parser.add_argument("--sessions-map", type=Path, default=Path("~/.claude/usage-quota/.sessions-claude.json"))
+    parser.add_argument("--sessions-map", type=Path, default=Path("~/.claude/usage-quota/.sessions-claude.json"),
+                        help="保留舊指令相容性，已不再使用")
     parser.add_argument("--projects-root", type=Path, default=Path("~/.claude/projects"))
     parser.add_argument("--now", type=float, default=None)
     args = parser.parse_args(argv)
@@ -345,14 +363,10 @@ def main(argv=None):
     if not windows:
         print("此帳號沒有可用的 seven_day 週期。", file=sys.stderr)
         return 1
-    events, sessions = load_usage(args.projects_root.expanduser(), load_map(args.sessions_map.expanduser()),
+    events, sessions = load_usage(args.projects_root.expanduser(), readings,
                                   account, min(window["start"] for window in windows))
-    shared = {row["reset"]: row["label"] for row in readings if row["account_id"] != account}
     for window in windows:
         window["slots"] = build_slots(window, events, args.slot_hours, now)
-        # Another account with the same reset is normal for a regular window. It is a
-        # sign of a wrong account label only for an off-cycle window.
-        window["shared_with"] = shared.get(window["reset"]) if window["overlap"] else None
     ratio, count = tokens_per_percent(windows)
     for window in windows:
         assess_slots(window["slots"], ratio)

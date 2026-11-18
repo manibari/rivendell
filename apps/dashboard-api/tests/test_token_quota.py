@@ -638,3 +638,51 @@ class UsageLimitHitTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class ClaudeAttributionTest(QuotaTest):
+    def test_alternating_labels_create_one_weekly_account(self) -> None:
+        resets = self.now + 86400
+        self.log.write_text("".join(quota_row(self.now - 600 + i * 60,
+                                               "acct-a" if i % 2 == 0 else "acct-b",
+                                               7 + i, resets) for i in range(11)))
+        readings = quota._claude_readings()
+        self.assertEqual({r.account for r in readings if r.window_min == 10080}, {"acct-a"})
+
+    def test_refresh_removes_old_open_window_label(self) -> None:
+        import sqlite3
+        resets = self.now + 86400
+        self.log.write_text("".join(quota_row(self.now - 600 + i * 60,
+                                               "acct-a" if i % 2 == 0 else "acct-b",
+                                               7 + i, resets) for i in range(11)))
+        with quota._connect() as conn:
+            conn.execute("INSERT INTO token_quota_window "
+                         "(source, account_id, window_min, resets_at, reset_exact, plan, "
+                         "first_at, last_at, used_from, used_to, readings, input, output, "
+                         "cache_read, cache_create) VALUES "
+                         "('claude', 'acct-b', 10080, ?, ?, '', 1, 2, 1, 2, 2, 0, 0, 0, 0)",
+                         (quota._hour(resets), resets))
+        quota.refresh(self.now)
+        with sqlite3.connect(self.root / "test.db") as conn:
+            accounts_in_db = {row[0] for row in conn.execute(
+                "SELECT account_id FROM token_quota_window WHERE source = 'claude'")}
+        self.assertEqual(accounts_in_db, {"acct-a"})
+
+    def test_refresh_merges_old_closed_window_labels(self) -> None:
+        import sqlite3
+        resets = self.now - 86400
+        self.log.write_text("".join(quota_row(resets - 3600 + i * 60,
+                                               "acct-a" if i % 2 == 0 else "acct-b",
+                                               7 + i, resets) for i in range(11)))
+        with quota._connect() as conn:
+            for account, tokens in (("acct-a", 10), ("acct-b", 20)):
+                conn.execute("INSERT INTO token_quota_window "
+                             "(source, account_id, window_min, resets_at, reset_exact, plan, "
+                             "first_at, last_at, used_from, used_to, readings, input, output, "
+                             "cache_read, cache_create) VALUES "
+                             "('claude', ?, 10080, ?, ?, '', 1, 2, 1, 2, 2, ?, 0, 0, 0)",
+                             (account, quota._hour(resets), resets, tokens))
+        quota.refresh(self.now)
+        with sqlite3.connect(self.root / "test.db") as conn:
+            stored = conn.execute("SELECT account_id, input FROM token_quota_window "
+                                  "WHERE source = 'claude'").fetchall()
+        self.assertEqual(stored, [("acct-a", 30)])
