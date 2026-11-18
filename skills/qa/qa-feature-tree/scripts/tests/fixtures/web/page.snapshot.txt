@@ -1,0 +1,14 @@
+- main:
+  - navigation:
+    - link "首頁":
+      - /url: /
+    - link "報告":
+      - /url: /reports
+  - heading "操作中心" [level=1]
+  - form:
+    - textbox "搜尋"
+    - button "送出"
+  - tablist:
+    - tab "總覽" [selected]
+    - tab "浪費報告"
+  - paragraph: 頁面內容
