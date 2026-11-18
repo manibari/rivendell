@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,6 +12,10 @@ from fastapi import APIRouter
 from lib.db import get_probes
 
 router = APIRouter()
+
+
+def _sk_command(repo_dir: Path) -> Path:
+    return Path(os.environ.get("SK_CHECK_COMMAND", str(repo_dir / "bin" / "sk")))
 
 # ── Health ─────────────────────────────────────────────────────────────
 
@@ -25,7 +30,7 @@ def api_health() -> dict[str, Any]:
     - Disk capacity of the data volume backing `$HOME` (WARN ≥90%, CRIT ≥95%).
     """
     repo_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-    sk_bin = repo_dir / "bin" / "sk"
+    sk_bin = _sk_command(repo_dir)
 
     def _sk_check_json(check: str, empty_default: dict[str, Any]) -> dict[str, Any]:
         """Run `sk check <check> --json`; return parsed JSON or an error dict.

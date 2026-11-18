@@ -1,9 +1,10 @@
 """SQLite database layer for rivendell."""
 
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "data" / "rivendell.db"
+DB_PATH = Path(os.environ.get("RIVENDELL_LEGACY_DB_PATH", str(Path(__file__).parent.parent / "data" / "rivendell.db")))
 
 
 def get_conn() -> sqlite3.Connection:

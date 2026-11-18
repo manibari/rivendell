@@ -1,6 +1,7 @@
 """Repository Git health read model."""
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,11 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
+
+def _code_root() -> Path:
+    default = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
+    return Path(os.environ.get("GIT_HEALTH_ROOT", str(default)))
+
 @router.get("/api/health/git", tags=["Health"])
 def api_git_health() -> dict[str, Any]:
     """Git hygiene across all repos under the code root (parent of this repo).
@@ -16,7 +22,7 @@ def api_git_health() -> dict[str, Any]:
     Per repo: branch, uncommitted file count, ahead/behind vs upstream. Surfaces
     work that's sitting uncommitted or unpushed. Scans ~17 repos in ~0.5s.
     """
-    code_root = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
+    code_root = _code_root()
 
     def git(repo: Path, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(

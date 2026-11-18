@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,14 @@ from typing import Any
 from fastapi import APIRouter
 
 router = APIRouter()
+
+
+def _snapshot_file(repo_dir: Path) -> Path:
+    return Path(os.environ.get("DISK_TREE_FILE", str(repo_dir / "dashboard" / "data" / "disk-tree.json")))
+
+
+def _snapshot_command(repo_dir: Path) -> Path:
+    return Path(os.environ.get("DISK_SNAPSHOT_COMMAND", str(repo_dir / "bin" / "sk-disk-snapshot")))
 
 @router.get("/api/health/disk-tree", tags=["Health"])
 def api_disk_tree() -> dict[str, Any]:
@@ -19,7 +28,7 @@ def api_disk_tree() -> dict[str, Any]:
     (`du` over $HOME is far too slow for a request).
     """
     repo_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-    snap = repo_dir / "dashboard" / "data" / "disk-tree.json"
+    snap = _snapshot_file(repo_dir)
     if not snap.exists():
         return {
             "available": False,
@@ -42,7 +51,7 @@ def api_disk_tree_refresh() -> dict[str, str]:
     detect when the new snapshot lands.
     """
     repo_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-    script = repo_dir / "bin" / "sk-disk-snapshot"
+    script = _snapshot_command(repo_dir)
     try:
         subprocess.Popen(  # noqa: S603 — trusted local script
             [str(script)],

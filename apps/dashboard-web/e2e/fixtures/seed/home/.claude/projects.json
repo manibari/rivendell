@@ -1,0 +1,8 @@
+{
+  "sample": {
+    "repo": "",
+    "description": "測試專案",
+    "agents": ["tester"],
+    "mission": {"goal": "驗證儀表板"}
+  }
+}
