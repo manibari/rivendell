@@ -47,7 +47,7 @@ system
 |---|---|---|
 | system | `schema`, `system`, `config` | - |
 | module | `id`, `name_zh`, `paths` (globs) | `status: planned`, `blueprint_id` |
-| screen | `id`, `route` | `sample` (values for dynamic routes), `states` |
+| screen | `id`, `route` (not for a layout screen) | `layout: true`, `sample` (values for dynamic routes), `states` |
 | control | `id`, `role`, `name`, `does`, `evidence`, `success`, `failure`, `cases` | `state`, `repeat: true` |
 | case | `id`, `kind`, `expect` | `status: na` + `na_reason`, `boundary: recorder` |
 
@@ -110,7 +110,54 @@ For each control, write each kind as a case, or as `status: na` with a reason. A
 }
 ```
 
-### 3.4 Format
+### 3.4 Layout, states, and steps
+
+- A screen with `"layout": true` holds the controls that show on every screen (the sidebar, the top bar). It has no `route`. The scan does not open it alone. Check 2 matches its controls on every scanned screen.
+- A control with no `state` belongs to the state `default`. The state `default` is the page right after it loads, with no steps.
+- A step is one object with one key:
+
+| Step | Value | Action |
+|---|---|---|
+| `click` | `{"role", "name"}` | Click the element `getByRole(role, {name, exact: true})` |
+| `fill` | `{"role", "name", "value"}` | Type `value` into the element |
+| `press` | `{"key"}` | Press one key, for example `Escape` |
+| `goto` | `"/path"` | Open a path under `config.base_url` |
+| `wait_for` | `{"role", "name"}` | Wait until the element is visible |
+
+- `sample` gives one value for each dynamic segment: route `/agents/[label]`, sample `{"label": "com.sk.agent.demo"}`.
+- `route_style` in `config` is `next-app` in this version: `app/<segments>/page.tsx` gives `/<segments>`. Route groups `(name)` are removed. `[x]`, `[...x]`, and `[[...x]]` stay in the route text.
+
+### 3.5 Scan file contract (`scan.json`)
+
+`screen_scan.mjs` writes this file. `tree_check.py screens` reads it.
+
+```json
+{
+  "schema": 1,
+  "base_url": "http://127.0.0.1:3190",
+  "scanned_at": "2026-11-19T10:00:00+08:00",
+  "screens": [
+    {"module": "tokens", "screen": "main", "state": "default",
+     "url": "http://127.0.0.1:3190/tokens", "reached": true, "error": null,
+     "controls": [{"role": "button", "name": "重新整理"}, {"role": "link", "name": ""}]}
+  ]
+}
+```
+
+- One entry for each non-layout screen and state, including `default`.
+- `reached: false` and a text in `error` when the page or a step fails. Then `controls` is empty.
+- `controls` lists each node with a role from §4 check 2. A repeated control shows one time for each copy. A control with no name has `"name": ""`.
+
+Check 2 compare rules, for one entry (module, screen, state):
+
+1. Matchers: the controls of this screen with this state, the controls of this screen with state `default`, and the controls of each layout screen.
+2. A scanned control with an empty name is `UNLABELED`.
+3. A scanned control that no matcher matches is `ORPHAN`. A match needs the same role, and the same name. A tree name in the form `/.../` is a regular expression that must match the full name.
+4. A tree control of this screen with this state that matches no scanned control is `MISSING`.
+5. A layout control is `MISSING` only when it matches no control in any reached `default` entry.
+6. If `reached` is false, or the entry does not exist, each tree control of that screen and state is `NOT_REACHED`.
+
+### 3.6 Format
 
 - JSON, because Python and Node read it with no extra package. PyYAML is not installed on this machine.
 - All writes go through `tree_check.py fmt`. It writes one canonical order and layout. Then a change of one leaf gives a diff of a few lines (global rule: no full re-serialization noise).
@@ -254,7 +301,7 @@ T1, T2, and T4 can run in parallel. The schema in §3 is the shared contract.
 
 ## 10. Risks and open items
 
-- **Owner decision**: the recorder in §4 rule 3 is an exception to "no fake data". Without it, a test click starts or stops real launchd jobs on this machine.
+- **Owner decision, 2026-11-19: approved** (「記錄器可以」). The recorder in §4 rule 3 is an exception to "no fake data". Without it, a test click starts or stops real launchd jobs on this machine.
 - Hidden controls (modal, drawer, tab) show only after steps. Check 2 is only as complete as the `states` list. `NOT_REACHED` makes this visible.
 - Repeated controls in a list: one tree entry, `repeat: true`, `name` as a pattern.
 - Dynamic routes (`/agents/[label]`) need `sample` values that exist in the fixture data.
