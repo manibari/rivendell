@@ -264,6 +264,10 @@
     {
       "phrase": "掛 MCP",
       "expect": "spine-mcp-gateway"
+    },
+    {
+      "phrase": "額度怎麼掉這麼快",
+      "expect": "token-quota-log"
     }
   ]
 }
