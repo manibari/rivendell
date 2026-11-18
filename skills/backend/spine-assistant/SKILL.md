@@ -18,7 +18,8 @@ description: >
   read-only vs write, which model provider, quota, memory, or how to cite sources.
   SKIP when: a one-shot model call with no tools, such as OCR or a summary
   (ai-vision-extract, or the product's own provider code) / 單次拍照辨識、單次摘要;
-  building only an MCP server (mcp-builder) / 只寫 MCP server; Claude Code agents for
+  opening the product's functions to outside AI clients over MCP (spine-mcp-gateway) /
+  對外掛 MCP; building only an MCP server (mcp-builder) / 只寫 MCP server; Claude Code agents for
   dev work (agent-headless, agent-persona) / 開發用 agent 排程; a chat bot on Telegram
   (telegram-bot); picking a coding executor (agent-code-dispatch).
 tags: [backend, ai, agent, assistant, llm, mcp, audit, spine, reference]

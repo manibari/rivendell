@@ -8,7 +8,8 @@ description: >
   TRIGGER when: building MCP servers, integrating external APIs via MCP,
   or user asks about FastMCP / MCP SDK patterns.
   DO NOT TRIGGER when: using existing MCP tools, general API development
-  without MCP, or working with non-MCP integrations.
+  without MCP, or working with non-MCP integrations; a fleet product that
+  opens its own API to AI clients through an MCP endpoint (spine-mcp-gateway).
 tags: [docs, mcp]
 version: 1
 license: Complete terms in LICENSE.txt

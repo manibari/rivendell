@@ -260,6 +260,10 @@
     {
       "phrase": "token 浪費報告",
       "expect": "token-waste-watch"
+    },
+    {
+      "phrase": "掛 MCP",
+      "expect": "spine-mcp-gateway"
     }
   ]
 }

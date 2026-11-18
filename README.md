@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (138 skills)
+## Skills Catalog (139 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -241,6 +241,7 @@ as release notes.
 | **spine-assistant** | 自動 | Canonical recipe for an in-app agentic AI assistant: tools are the only path to data, each call runs as the asking user, sources are checked, every tool attempt is audited. |
 | **spine-auth** | 自動 | Canonical FastAPI auth for the product fleet — the CONVERGENT crypto core (jose |
 | **spine-dev-center** | 自動 | Canonical recipe for the developer mode inside a product (開發中心 / 開發者模式): 開發藍圖, 開發進度 and 版本與交付 behind one guarded route prefix. |
+| **spine-mcp-gateway** | 自動 | Canonical recipe for opening a product's own functions to outside AI clients… |
 | **spine-rbac** | `/spine-rbac` 或自動 | Canonical RBAC tiering for the FastAPI product fleet. |
 | **spine-roadmap** | 自動 | Canonical 開票 + roadmap mechanism for the product fleet: every piece of work |
 | **spine-schema-sync** | 自動 | Canonical DB schema migration + dev↔prod sync for the FastAPI + Postgres fleet. |
@@ -333,7 +334,7 @@ as release notes.
 | hr | — | 1 | 1 | — |
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 7 | 5 |
-| dev | 26 | 24 | 9 | 7 |
+| dev | 27 | 24 | 9 | 7 |
 | shared | 1 | 15 | 2 | — |
 
 
