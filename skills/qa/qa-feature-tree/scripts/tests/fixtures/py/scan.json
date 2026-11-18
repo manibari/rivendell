@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "screens": [
+    {"module": "home", "screen": "main", "state": "default", "reached": true, "controls": [{"role": "button", "name": "開啟"}]}
+  ]
+}

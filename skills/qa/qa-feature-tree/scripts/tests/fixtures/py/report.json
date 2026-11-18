@@ -1,0 +1,3 @@
+{
+  "suites": [{"specs": [{"title": "opens @leaf:home.main.open.happy", "tags": [], "tests": [{"results": [{"status": "passed"}]}]}]}]
+}

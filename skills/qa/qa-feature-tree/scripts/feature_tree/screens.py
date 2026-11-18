@@ -1,0 +1,87 @@
+"""Compare accessibility scan entries with tree controls."""
+
+import re
+
+from .common import row, screens
+
+
+def matches(control, scanned):
+    if control.get("role") != scanned.get("role"):
+        return False
+    name = control.get("name", "")
+    actual = scanned.get("name", "")
+    if isinstance(name, str) and len(name) >= 2 and name.startswith("/") and name.endswith("/"):
+        try:
+            return re.fullmatch(name[1:-1], actual) is not None
+        except re.error:
+            return False
+    return name == actual
+
+
+def check(tree, scan):
+    rows = []
+    if scan.get("schema") != 1:
+        return [row("SCAN_SCHEMA", "$scan.schema", "掃描版本必須是 1")]
+    entries = {(entry.get("module"), entry.get("screen"), entry.get("state", "default")): entry
+               for entry in scan.get("screens", [])}
+    layout = [(module, screen, control) for module, screen in screens(tree) if screen.get("layout")
+              for control in screen.get("controls", [])]
+    normal = [(module, screen) for module, screen in screens(tree) if not screen.get("layout")]
+    reached_defaults = [entry for key, entry in entries.items() if key[2] == "default" and entry.get("reached")]
+    for module, screen, control in layout:
+        if not any(matches(control, scanned) for entry in reached_defaults for scanned in entry.get("controls", [])):
+            rows.append(row("MISSING", f"{module['id']}.{screen['id']}.{control['id']}",
+                            "共用控制項未出現在任何已到達的預設畫面"))
+    for module, screen in normal:
+        states = ["default"] + [state.get("id") for state in screen.get("states", [])]
+        for state in states:
+            key = (module["id"], screen["id"], state)
+            entry = entries.get(key)
+            own = [control for control in screen.get("controls", []) if control.get("state", "default") == state]
+            if not entry or not entry.get("reached"):
+                for control in own:
+                    rows.append(row("NOT_REACHED", ".".join((*key, control["id"])),
+                                    "畫面或狀態未到達", "yellow"))
+                continue
+            defaults = [control for control in screen.get("controls", []) if control.get("state", "default") == "default"]
+            matchers = own + ([] if state == "default" else defaults) + [control for _, _, control in layout]
+            for index, scanned in enumerate(entry.get("controls", [])):
+                place = ".".join(key) + f".controls[{index}]"
+                if not scanned.get("name"):
+                    rows.append(row("UNLABELED", place, "控制項沒有可存取名稱"))
+                if not any(matches(control, scanned) for control in matchers):
+                    rows.append(row("ORPHAN", place, f"樹上找不到 {scanned.get('role', '')}：{scanned.get('name', '')}"))
+            for control in own:
+                if not any(matches(control, scanned) for scanned in entry.get("controls", [])):
+                    rows.append(row("MISSING", ".".join((*key, control["id"])), "樹上的控制項未出現在畫面"))
+    return rows
+
+
+def adopt(tree, scan):
+    rows = check(tree, scan)
+    orphan_places = {item["place"] for item in rows if item["code"] == "ORPHAN"}
+    lookup = {(module["id"], screen["id"]): screen for module, screen in screens(tree)}
+    count = 0
+    for entry in scan.get("screens", []):
+        key = (entry.get("module"), entry.get("screen"))
+        screen = lookup.get(key)
+        if not screen:
+            continue
+        state = entry.get("state", "default")
+        for index, scanned in enumerate(entry.get("controls", [])):
+            place = ".".join((*key, state)) + f".controls[{index}]"
+            if place not in orphan_places:
+                continue
+            role = re.sub(r"[^a-z0-9-]+", "-", scanned.get("role", "control").lower()).strip("-") or "control"
+            existing = {control.get("id") for control in screen.get("controls", [])}
+            number = 1
+            while f"{role}-{number}" in existing:
+                number += 1
+            control = {"id": f"{role}-{number}", "role": scanned.get("role", ""),
+                       "name": scanned.get("name", ""), "does": "unknown", "evidence": "",
+                       "success": "", "failure": "", "cases": []}
+            if state != "default":
+                control["state"] = state
+            screen.setdefault("controls", []).append(control)
+            count += 1
+    return count
