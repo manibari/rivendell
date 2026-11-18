@@ -1,4 +1,4 @@
-葉子 826 片：通過 0、失敗 0、沒有測試 239、未執行 0、不適用 587。紅燈 319 項，黃燈 21 項。
+葉子 826 片：通過 0、失敗 0、沒有測試 239、未執行 0、不適用 587。紅燈 336 項，黃燈 6 項。
 
 ## 1 樹的檢查
 
@@ -46,7 +46,7 @@
 | UNLABELED | ports.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | projects.name.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | projects.name-workflow-flow.default.controls[0] | 控制項沒有可存取名稱 |
-| NOT_REACHED | projects.name-workflow-flow.skill-detail.close-detail | 畫面或狀態未到達 |
+| UNLABELED | projects.name-workflow-flow.skill-detail.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | projects.name-workflow.default.controls[0] | 控制項沒有可存取名稱 |
 | ORPHAN | projects.name-workflow.default.controls[17] | 樹上找不到 button：rivendell |
 | ORPHAN | projects.name-workflow.default.controls[18] | 樹上找不到 button：/requirement |
@@ -76,24 +76,26 @@
 | ORPHAN | projects.name-workflow.default.controls[42] | 樹上找不到 button：/gstack-canary |
 | ORPHAN | projects.name-workflow.default.controls[43] | 樹上找不到 button：/gstack-document-release |
 | UNLABELED | projects.main.default.controls[0] | 控制項沒有可存取名稱 |
-| NOT_REACHED | projects.main.new-project.project-name | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.new-project.repo-path | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.new-project.description | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.new-project.agents | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.new-project.create | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.new-project.cancel | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.edit-project.edit-description | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.edit-project.edit-agents | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.edit-project.save | 畫面或狀態未到達 |
-| NOT_REACHED | projects.main.edit-project.cancel-edit | 畫面或狀態未到達 |
+| UNLABELED | projects.main.new-project.controls[0] | 控制項沒有可存取名稱 |
+| UNLABELED | projects.main.edit-project.controls[0] | 控制項沒有可存取名稱 |
+| ORPHAN | projects.main.edit-project.controls[17] | 樹上找不到 textbox：目標（一句話） |
+| ORPHAN | projects.main.edit-project.controls[18] | 樹上找不到 textbox：期限 |
+| ORPHAN | projects.main.edit-project.controls[19] | 樹上找不到 textbox：預期收益 |
+| ORPHAN | projects.main.edit-project.controls[20] | 樹上找不到 textbox：潛在客戶（逗號分隔） |
+| ORPHAN | projects.main.edit-project.controls[21] | 樹上找不到 textbox：當前局勢 |
+| ORPHAN | projects.main.edit-project.controls[22] | 樹上找不到 textbox：商業價值 |
+| ORPHAN | projects.main.edit-project.controls[23] | 樹上找不到 textbox：阻礙（逗號分隔） |
+| ORPHAN | projects.main.edit-project.controls[24] | 樹上找不到 textbox：下一步（逗號分隔） |
+| ORPHAN | projects.main.edit-project.controls[25] | 樹上找不到 textbox：所需資源 |
 | UNLABELED | skills.name.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[23] | 控制項沒有可存取名稱 |
 | UNLABELED | skills.main.default.controls[24] | 控制項沒有可存取名稱 |
-| NOT_REACHED | skills.main.roles-view.raw-document | 畫面或狀態未到達 |
-| NOT_REACHED | skills.main.roles-view.role-choice | 畫面或狀態未到達 |
-| NOT_REACHED | skills.main.roles-view.job-anchor | 畫面或狀態未到達 |
-| NOT_REACHED | skills.main.roles-view.skill-link | 畫面或狀態未到達 |
+| UNLABELED | skills.main.roles-view.controls[0] | 控制項沒有可存取名稱 |
+| MISSING | skills.main.roles-view.raw-document | 樹上的控制項未出現在畫面 |
+| MISSING | skills.main.roles-view.role-choice | 樹上的控制項未出現在畫面 |
+| MISSING | skills.main.roles-view.job-anchor | 樹上的控制項未出現在畫面 |
+| MISSING | skills.main.roles-view.skill-link | 樹上的控制項未出現在畫面 |
 | UNLABELED | skills.roles.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | tokens.main.default.controls[0] | 控制項沒有可存取名稱 |
 | UNLABELED | workflow.main.default.controls[0] | 控制項沒有可存取名稱 |
@@ -128,6 +130,7 @@
 `UNLABELED`：控制項沒有可存取名稱。
 `NOT_REACHED`：掃描未到達畫面或狀態。
 `ORPHAN`：畫面上有、樹上沒有，控制項用途尚未記錄。
+`MISSING`：樹上的控制項沒有出現在畫面。
 
 ## 5 樹和測試
 
@@ -680,66 +683,3 @@
 | NO_TEST | tokens.main.report-select.empty | 尚未通過測試 |
 | NO_TEST | tokens.main.report-select.invalid-input | 尚未通過測試 |
 | NO_TEST | tokens.main.report-select.dependency-down | 尚未通過測試 |
-
-## 6 負責人審核摘要
-
-模組 12 個、畫面 23 個、狀態 5 個、控制項 118 個（重複項計一次）、葉子 826 片、不適用葉子 587 片。
-
-### 清單 A：用途不明的控制項
-
-| 畫面 | 角色 | 名稱 | 查過的地方 |
-| --- | --- | --- | --- |
-| shell.sidebar | combobox | 無可存取名稱 | `Sidebar.tsx:574-588` 有選項與專案清單，但找不到 `onChange`、提交或依選值更新畫面的程式；掃描只回報空名稱。 |
-
-### 清單 B：模組名稱
-
-| ID | 名稱 |
-| --- | --- |
-| shell | 外框與側欄 |
-| agents | Agent |
-| avatar | 助理 |
-| docs | 文件 |
-| harvest | Skill Harvest |
-| health | 系統健康 |
-| home | 總覽 |
-| ports | 部署 |
-| projects | 專案 |
-| skills | 技能庫 |
-| tokens | Token 用量 |
-| workflow | 工作流程 |
-
-### 清單 C：不適用原因
-
-| 原因 | 葉子數 |
-| --- | ---: |
-| 固定導覽連結，與資料筆數無關 | 38 |
-| 固定畫面控制項，與資料筆數無關 | 5 |
-| 此控制項不呼叫服務 | 102 |
-| 此控制項不接受文字輸入 | 107 |
-| 此操作不呼叫外部系統 | 104 |
-| 此操作只讀取或切換畫面 | 110 |
-| 沒有登入，只有一位本機使用者 | 118 |
-| 畫面資料由目前狀態提供 | 3 |
-
-### 介面發現
-
-- **沒有可存取名稱：** 掃描出 25 列：側欄專案下拉選單在 22 個畫面重複出現，助理頁的引擎選單 1 列，技能總覽的兩個篩選選單 2 列。後三者雖已列在樹中，掃描仍會回報 `UNLABELED`。
-- **中文畫面上的英文標籤：** 側欄 `Agent`、`Token 用量`、`UI Feature`、`Backend`、`Slide`、`Maintenance`、`Skill Harvest`；部署頁 `Refresh`；技能頁 `Skills`、`Skill 總覽`、`Repo 路徑` 等混用英文；技能說明視窗的 `close`。
-- **沒有作用的控制項：** 側欄專案下拉選單有 `select` 與選項，但沒有選值處理程式。
-- **指向不存在頁面的連結：** 在本次檢查的固定連結中未確認到；`docs/loops/gov-tender.md` 原檔存在，動態路由也存在。
-
-### 取捨與未完成的比對
-
-- `shell.sidebar` 收納所有側欄連結與群組按鈕，包含僅在目前路由或展開時顯示的子連結。這些項目從各頁草稿移除，原因是共用版面重複。
-- `skills.roles` 的角色按鈕、工作定位連結、技能連結，以及流程頁的技能按鈕，按來源元件各合併為一個重複控制項。助理頁兩個金鑰欄位共用同一個列表處理程式，也合併為一個重複控制項。
-- `/workflow` 和 `/projects/[name]/workflow` 的頁面程式都是轉址，故清空草稿控制項；原掃描把轉址後目標頁的按鈕記在這兩個來源畫面。依目前 checker 契約，這造成 54 列 `ORPHAN`；若要同時保留轉址事實並消除這些列，需由下一次掃描或 checker 正確標記轉址，不能把目標頁按鈕誤寫成來源頁控制項。
-- `projects.main` 的新增與編輯表單、流程頁的技能說明視窗、助理頁輸入金鑰後的儲存按鈕、技能頁角色視角已寫為狀態。原掃描沒有這些狀態，所以 16 列 `NOT_REACHED` 等待重掃。助理頁兩個金鑰欄位同名，現有步驟只用角色與名稱，可能無法指定其中一欄；此限制需由重掃確認。
-- 同一資料夾的直接檔案分屬不同模組，保留 5 個 `MIXED_FOLDER`。每個來源檔仍恰有一個模組負責。API 路由依畫面用途歸屬，通用樣式、字型、側欄和共用 API helper 歸 `shell`。
-- 無側欄項目的 `docs`、`workflow` 模組保留獨立名稱：前者為文件頁，後者為舊書籤轉址。沒有新增模組。
-
-### Checker 最終輸出
-
-- `validate`：1 列；最後一行：`UNKNOWN_PURPOSE $.modules[0].screens[0].controls[0].does：控制項用途尚未釐清`
-- `folders`：5 列；最後一行：`MIXED_FOLDER apps/dashboard-web/src/lib：同層檔案屬於模組：ports、shell`
-- `routes`：1 列；最後一行：`沒有問題`
-- `screens`：95 列；最後一行：`ORPHAN workflow.main.default.controls[43]：樹上找不到 button：/gstack-document-release`
