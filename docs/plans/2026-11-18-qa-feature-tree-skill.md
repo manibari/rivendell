@@ -207,7 +207,9 @@ Check 2 compare rules, for one entry (module, screen, state):
 
 `docs/qa/feature-tree-report-YYYY-MM-DD.md`. First line:
 
-> Leaves: N. Passed: P. Failed: F. No test: U. N/A: X. Red rows: R.
+> 葉子 N 片：通過 P、失敗 F、沒有測試 U、未執行 R、不適用 X。紅燈 K 項，黃燈 Y 項。
+
+The owner reads this line, so it is in Traditional Chinese (2026-11-19: this section first said English, and the executor followed it).
 
 Then the three check tables, then the uncovered leaves grouped by module. A failed leaf is a bug report. Do not change the test to make it pass.
 
