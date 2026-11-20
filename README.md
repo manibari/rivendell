@@ -102,7 +102,7 @@ Release changes should update `VERSION` and `CHANGELOG.md` together. Generated
 `reports/*` remain owned by scheduled agents and should not be manually edited
 as release notes.
 
-## Skills Catalog (140 skills)
+## Skills Catalog (141 skills)
 
 > 依角色看（我是誰、事情走到哪一步、該叫誰，每個角色一套 PDCA）→ [docs/skills-by-role.md](docs/skills-by-role.md)。
 
@@ -311,6 +311,7 @@ as release notes.
 | **gdoc-report-builder** | `/gdoc-report-builder` 或自動 | Build structured reports in Google Docs/Slides via MCP tools — batch table |
 | **internal-comms** | `/internal-comms` 或自動 | Templates and formats for ongoing organizational communications during and |
 | **iot-factory-report** | `/iot-factory-report` 或自動 | Analyze factory IoT/SCADA time-series data (CSV/Excel) and produce visual |
+| **manual-writer** | `/manual-writer` 或自動 | 寫給終端使用者的繁中操作手冊，依微軟寫作規範；附格式檢查與截圖標註腳本 |
 | **mermaid-diagram** | `/mermaid-diagram` 或自動 | 給工程師看的 Mermaid 技術圖 .mmd → PNG（README、設計文件）；指名 Mermaid 或由 chart-design / user-flow 轉入 |
 | **metadata-workshop** | `/metadata-workshop` 或自動 | Run a structured Metadata Workshop with a consulting client to convert their |
 | **office-docx** | 自動 | Word (.docx) 建立、編輯、分析，支援追蹤修訂與註解 |
@@ -336,7 +337,7 @@ as release notes.
 | knowledge | 1 | 5 | — | 1 |
 | platform | 1 | 13 | 7 | 5 |
 | dev | 27 | 24 | 10 | 7 |
-| shared | 1 | 15 | 2 | — |
+| shared | 1 | 16 | 2 | — |
 
 
 ## Anthropic 文件 skill（本機副本，不在 repo 內）

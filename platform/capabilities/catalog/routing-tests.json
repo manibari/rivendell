@@ -280,6 +280,18 @@
     {
       "phrase": "不要只有 unit test",
       "expect": "qa-feature-tree"
+    },
+    {
+      "phrase": "操作手冊",
+      "expect": "manual-writer"
+    },
+    {
+      "phrase": "使用手冊",
+      "expect": "manual-writer"
+    },
+    {
+      "phrase": "user manual",
+      "expect": "manual-writer"
     }
   ]
 }
